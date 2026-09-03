@@ -1,0 +1,57 @@
+# ============================================
+# AI Engineering Orchestra
+# Repository ignore rules
+# ============================================
+
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE / editor local files
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# VS Code local workspace settings
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.example.json
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# Environment / secret files
+.env
+.env.*
+!.env.example
+
+# Local-only Orchestra state
+.ai/local/
+.ai/cache/
+.ai/runtime/
+
+# Package/build artifacts reserved for future versions
+node_modules/
+bin/
+obj/
+dist/
+build/
+coverage/
+
+# Generated archives/packages
+*.zip
+*.nupkg
+*.tgz

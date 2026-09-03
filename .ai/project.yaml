@@ -1,0 +1,47 @@
+schema_version: "0.1"
+
+project:
+  id: ai-engineering-orchestra
+  name: AI Engineering Orchestra
+  type: framework
+  lifecycle: greenfield
+
+orchestra:
+  version: "0.1.0"
+
+complexity:
+  default: medium
+
+risk:
+  default: medium
+
+execution:
+  default_mode: standard
+
+human_control:
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+
+quality:
+  require_independent_review: true
+  require_documentation_consistency: true
+
+agents:
+  max_parallel: 3
+  max_depth: 2
+
+context:
+  strategy: progressive
+  prefer_relevant_only: true
+
+project_rules:
+  directory: ".ai/rules/"
+
+tasks:
+  directory: ".ai/tasks/"
+
+overrides:
+  directory: ".ai/overrides/"
+
+roadmap:
+  current_version: "0.1.0"

@@ -1,0 +1,7 @@
+schema_version: "0.1"
+
+project:
+  id: broken-project
+  name: Broken Project
+  type: web-application
+  lifecycle: greenfield

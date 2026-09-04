@@ -900,19 +900,24 @@ The manifest may reference or configure those systems without duplicating their 
 
 ## 31. Validation Status in v0.1
 
-AIO-002 defines the Project Manifest contract.
+The canonical Project Manifest contract is defined by this specification.
 
-Automated validation is not implemented by this Task.
+A machine-readable JSON Schema for schema version `0.1` is available at:
 
-Until automated validation exists, conformance is verified through:
+`schemas/project-manifest.schema.json`
 
+The JSON Schema validates structural conformance to this specification.
+
+The schema does not replace this document as the authoritative semantic contract.
+
+Current validation may be performed through:
+
+- JSON Schema validation
 - repository review
 - documentation consistency checks
 - independent review
 
-JSON Schema implementation will be handled by a later Task.
-
-CLI validation is reserved for a later Orchestra version.
+CLI-based validation remains reserved for a later Orchestra version.
 
 ---
 

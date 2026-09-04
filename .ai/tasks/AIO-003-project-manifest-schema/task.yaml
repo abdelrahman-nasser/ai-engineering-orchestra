@@ -1,0 +1,51 @@
+id: AIO-003
+
+title: Define Project Manifest Schema
+
+type: implementation
+
+status: completed
+
+version_target: "0.1.0"
+
+complexity: high
+risk: medium
+
+execution:
+  mode: standard
+
+objective: >
+  Implement a machine-readable schema for the canonical v0.1 Project Manifest
+  contract defined by core/project-manifest.md.
+
+scope:
+  include:
+    - Project Manifest schema
+    - required sections and fields
+    - allowed value validation
+    - scalar type validation
+    - optional field validation
+    - default documentation
+    - unknown field handling
+    - extensions namespace validation where practical
+    - canonical template validation
+    - Orchestra project manifest validation
+
+  exclude:
+    - CLI implementation
+    - automatic manifest generation
+    - Provider Adapter implementation
+    - Stack Module implementation
+    - model routing
+    - quota handling
+    - command permission enforcement
+    - Brownfield automated discovery
+    - package distribution
+
+quality_gates:
+  - documentation_consistency
+  - independent_review
+
+human_control:
+  final_review_required: true
+  breaking_contract_changes_require_approval: true

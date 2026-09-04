@@ -1,0 +1,23 @@
+schema_version: "0.1"
+
+project:
+  id: minimal-project
+  name: Minimal Project
+  type: tool
+  lifecycle: greenfield
+
+orchestra:
+  version: "0.1.0"
+
+complexity:
+  default: low
+
+risk:
+  default: low
+
+execution:
+  default_mode: lite
+
+human_control: {}
+
+quality: {}

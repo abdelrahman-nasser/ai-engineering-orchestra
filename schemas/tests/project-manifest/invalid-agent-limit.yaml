@@ -1,0 +1,27 @@
+schema_version: "0.1"
+
+project:
+  id: broken-project
+  name: Broken Project
+  type: web-application
+  lifecycle: greenfield
+
+orchestra:
+  version: "0.1.0"
+
+complexity:
+  default: medium
+
+risk:
+  default: medium
+
+execution:
+  default_mode: standard
+
+human_control: {}
+
+quality: {}
+
+agents:
+  max_parallel: 0
+  max_depth: -1

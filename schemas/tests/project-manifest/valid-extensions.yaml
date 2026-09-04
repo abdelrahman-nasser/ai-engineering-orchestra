@@ -1,0 +1,27 @@
+schema_version: "0.1"
+
+project:
+  id: extension-project
+  name: Extension Project
+  type: tool
+  lifecycle: greenfield
+
+orchestra:
+  version: "0.1.0"
+
+complexity:
+  default: medium
+
+risk:
+  default: medium
+
+execution:
+  default_mode: standard
+
+human_control: {}
+
+quality: {}
+
+extensions:
+  company.security:
+    enabled: true

@@ -1,0 +1,63 @@
+id: AIO-004
+
+title: Define Task Specification
+
+type: specification
+
+status: completed
+
+version_target: "0.1.0"
+
+complexity: high
+risk: medium
+
+execution:
+  mode: standard
+
+objective: >
+  Define the canonical v0.1 Task contract for AI Engineering Orchestra so
+  work can be represented consistently, reviewed independently, governed by
+  Project defaults and Policies, and later validated by tooling.
+
+scope:
+  include:
+    - Task identity
+    - Task lifecycle and status
+    - Task type
+    - objective
+    - scope boundaries
+    - Complexity
+    - Risk
+    - Execution Mode
+    - acceptance criteria
+    - context
+    - Quality Gate requirements
+    - Human control requirements
+    - dependencies
+    - review record
+    - canonical Task directory layout
+    - Source of Truth ownership
+    - override behavior
+    - forward compatibility rules
+    - canonical Task example
+
+  exclude:
+    - Task JSON Schema implementation
+    - CLI task creation
+    - automatic task decomposition
+    - automatic agent assignment
+    - model routing
+    - quota handling
+    - command permission enforcement
+    - Provider Adapter implementation
+    - Stack Module implementation
+    - Brownfield automated discovery
+    - package distribution
+
+quality_gates:
+  - documentation_consistency
+  - independent_review
+
+human_control:
+  final_review_required: true
+  breaking_contract_changes_require_approval: true

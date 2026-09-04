@@ -1,0 +1,42 @@
+id: EXAMPLE-001
+
+title: Example Orchestra Task
+
+type: implementation
+
+status: planned
+
+version_target: "1.0.0"
+
+complexity: medium
+risk: medium
+
+execution:
+  mode: standard
+
+objective: >
+  Demonstrate the canonical v0.1 AI Engineering Orchestra Task structure.
+
+scope:
+  include:
+    - example Task configuration
+    - example context
+    - example acceptance criteria
+    - example review record
+
+  exclude:
+    - application-specific implementation
+    - Provider-specific configuration
+    - future Orchestra functionality
+
+dependencies: []
+
+quality_gates:
+  - documentation_consistency
+  - independent_review
+
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

@@ -129,7 +129,7 @@ Future routing decisions should primarily use Capabilities instead of hardcoded 
 
 ## Task
 
-A bounded unit of engineering work.
+A Task is the canonical unit of scoped work managed through AI Engineering Orchestra.
 
 Examples:
 
@@ -138,15 +138,26 @@ Examples:
 - refactor a service
 - update documentation
 - review a pull request
+- investigate a technical problem
+- define an architecture or specification
 
-A Task should define:
+A Task defines Task-specific intent, scope, Risk, Complexity, Execution Mode, acceptance criteria, Quality Gate requirements, Human control requirements, dependencies, review evidence, and lifecycle status.
 
-- objective
-- scope
-- acceptance criteria
-- complexity
-- risk
-- applicable Workflow
+The canonical Task contract is defined in:
+
+`core/task-specification.md`
+
+The default Project Task location is:
+
+`.ai/tasks/`
+
+The canonical reusable Task example is available at:
+
+`templates/task/`
+
+A Task must operate within the precedence, context, Human control, Policy, Rule, Workflow, and Quality Gate requirements that apply to the Project.
+
+A Task may reference an applicable Workflow, but Workflow definitions and behavior remain owned by `workflows/`.
 
 ---
 

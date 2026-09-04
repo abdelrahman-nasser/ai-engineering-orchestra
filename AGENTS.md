@@ -44,6 +44,8 @@ Use these locations as authoritative sources:
 - Human control model: `core/human-control.md`
 - Project Manifest specification: `core/project-manifest.md`
 - Project Manifest template: `templates/project.yaml`
+- Task specification: `core/task-specification.md`
+- Task template: `templates/task/`
 - Roles: `roles/`
 - Workflows: `workflows/`
 - Quality Gates: `quality-gates/`

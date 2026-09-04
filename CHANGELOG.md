@@ -26,6 +26,10 @@ Status: In Development
 - canonical Quality Gate definitions for `documentation_consistency` and `independent_review`
 - canonical Project Manifest specification in `core/project-manifest.md`
 - reusable Project Manifest template in `templates/project.yaml`
+- machine-readable Project Manifest JSON Schema in `schemas/project-manifest.schema.json`
+- Project Manifest schema validation fixtures and test tooling in `schemas/tests/`
+- canonical Task specification in `core/task-specification.md`
+- reusable canonical Task template in `templates/task/`
 
 ### Architecture
 
@@ -36,6 +40,12 @@ Status: In Development
 - introduced Execution Modes
 - established progressive context loading
 - established Human authority and approval concepts
+- defined the canonical Project Manifest contract and structural validation model
+- defined the canonical Task contract and Task directory responsibilities
+- defined Task lifecycle and closure semantics
+- defined Task scope, Project-default inheritance, Quality Gate requirements, and Human control behavior
+- established persistent Task review and approval evidence
+- registered the Project Manifest and Task contracts as repository Sources of Truth
 
 ### Reserved for v0.2
 

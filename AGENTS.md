@@ -42,6 +42,8 @@ Use these locations as authoritative sources:
 - Project lifecycle: `core/lifecycle.md`
 - Context policy: `core/context-policy.md`
 - Human control model: `core/human-control.md`
+- Project Manifest specification: `core/project-manifest.md`
+- Project Manifest template: `templates/project.yaml`
 - Roles: `roles/`
 - Workflows: `workflows/`
 - Quality Gates: `quality-gates/`

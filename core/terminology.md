@@ -343,7 +343,9 @@ Default location:
 
 .ai/project.yaml
 
-It describes the project, stack, Workflow defaults, risk defaults, Quality Gates, and other Orchestra configuration.
+It defines Project-level Orchestra configuration and references the locations or defaults needed to govern Orchestra behavior for that Project.
+
+The canonical Project Manifest contract is defined in `core/project-manifest.md`.
 
 ---
 

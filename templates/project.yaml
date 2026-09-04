@@ -1,9 +1,9 @@
 schema_version: "0.1"
 
 project:
-  id: ai-engineering-orchestra
-  name: AI Engineering Orchestra
-  type: framework
+  id: example-project
+  name: Example Project
+  type: web-application
   lifecycle: greenfield
 
 orchestra:
@@ -29,8 +29,8 @@ quality:
   require_documentation_consistency: true
 
 agents:
-  max_parallel: 3
-  max_depth: 2
+  max_parallel: 1
+  max_depth: 0
 
 context:
   strategy: progressive

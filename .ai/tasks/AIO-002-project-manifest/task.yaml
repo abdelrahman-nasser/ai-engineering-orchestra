@@ -1,0 +1,54 @@
+id: AIO-002
+
+title: Define Project Manifest Specification
+
+type: specification
+
+status: completed
+
+version_target: "0.1.0"
+
+complexity: high
+risk: medium
+
+execution:
+  mode: standard
+
+objective: >
+  Define the canonical v0.1 Project Manifest contract for AI Engineering
+  Orchestra so projects can describe their Orchestra configuration using
+  a stable, provider-agnostic structure.
+
+scope:
+  include:
+    - Project Manifest purpose
+    - canonical manifest sections
+    - required fields
+    - optional fields
+    - allowed values
+    - defaults
+    - extension points
+    - override boundaries
+    - Source of Truth behavior
+    - forward compatibility rules
+    - example manifest
+
+  exclude:
+    - JSON Schema implementation
+    - CLI validation
+    - automatic manifest generation
+    - Provider-specific configuration
+    - Stack Module implementation
+    - model routing
+    - quota handling
+    - command permission enforcement
+    - Brownfield automated discovery
+    - package distribution
+
+quality_gates:
+  - documentation_consistency
+  - independent_review
+
+human_control:
+  final_review_required: true
+  breaking_contract_changes_require_approval: true

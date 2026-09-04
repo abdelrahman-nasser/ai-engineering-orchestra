@@ -24,6 +24,8 @@ Status: In Development
 - self-hosted Orchestra Task structure
 - initial project documentation
 - canonical Quality Gate definitions for `documentation_consistency` and `independent_review`
+- canonical Project Manifest specification in `core/project-manifest.md`
+- reusable Project Manifest template in `templates/project.yaml`
 
 ### Architecture
 

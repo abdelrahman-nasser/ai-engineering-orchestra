@@ -78,14 +78,13 @@ The Project Manifest provides high-level project configuration.
 
 Default location:
 
-.ai/project.yaml
+`.ai/project.yaml`
 
 Agents should use it to determine information such as:
 
 - project type
 - lifecycle
-- default Workflow
-- stack
+- default Execution Mode
 - Risk defaults
 - Quality Gate requirements
 - Human approval requirements

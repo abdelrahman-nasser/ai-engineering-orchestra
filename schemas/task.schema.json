@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-engineering-orchestra.dev/schemas/task.schema.json",
+  "title": "AI Engineering Orchestra Task",
+  "description": "Structural schema for the AI Engineering Orchestra v0.1 Task contract defined by core/task-specification.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "type",
+    "status",
+    "objective",
+    "scope"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable Task identifier."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable Task title."
+    },
+    "type": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Extensible Task classification."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["planned", "in_progress", "blocked", "completed", "cancelled"]
+    },
+    "version_target": {
+      "type": "string",
+      "minLength": 1
+    },
+    "complexity": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"]
+    },
+    "risk": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"]
+    },
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["lite", "standard", "deep", "critical"]
+        }
+      }
+    },
+    "objective": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["include"],
+      "properties": {
+        "include": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/nonEmptyText"
+          }
+        },
+        "exclude": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nonEmptyText"
+          }
+        }
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Task identifiers required by this Task. An empty array is valid when no dependencies exist."
+    },
+    "quality_gates": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "^[a-z][a-z0-9_]*$"
+      }
+    },
+    "human_control": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "final_review_required": {
+          "type": "boolean"
+        },
+        "architecture_changes_require_approval": {
+          "type": "boolean"
+        },
+        "breaking_schema_changes_require_approval": {
+          "type": "boolean"
+        },
+        "breaking_contract_changes_require_approval": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "nonEmptyText": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    }
+  }
+}

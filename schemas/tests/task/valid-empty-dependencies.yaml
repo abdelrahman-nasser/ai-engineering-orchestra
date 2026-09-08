@@ -1,0 +1,18 @@
+id: TEST-003
+title: Task With No Dependencies
+type: maintenance
+status: planned
+
+complexity: low
+risk: low
+
+execution: {}
+
+objective: >
+  Demonstrate that an empty dependency list and inherited execution mode are valid.
+
+scope:
+  include:
+    - perform a small maintenance change
+
+dependencies: []

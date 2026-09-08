@@ -1,0 +1,13 @@
+id: INVALID-003
+title: Unknown Top-Level Field
+type: implementation
+status: planned
+
+objective: >
+  Demonstrate rejection of unsupported top-level Task configuration.
+
+scope:
+  include:
+    - invalid configuration example
+
+provider: example-provider

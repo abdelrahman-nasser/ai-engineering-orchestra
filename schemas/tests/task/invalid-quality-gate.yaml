@@ -1,0 +1,14 @@
+id: INVALID-006
+title: Invalid Quality Gate Identifier
+type: implementation
+status: planned
+
+objective: >
+  Demonstrate structural validation of Quality Gate identifiers.
+
+scope:
+  include:
+    - invalid Quality Gate example
+
+quality_gates:
+  - Invalid Gate Name

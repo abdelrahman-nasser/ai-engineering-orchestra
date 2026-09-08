@@ -30,6 +30,9 @@ Status: In Development
 - Project Manifest schema validation fixtures and test tooling in `schemas/tests/`
 - canonical Task specification in `core/task-specification.md`
 - reusable canonical Task template in `templates/task/`
+- machine-readable Task JSON Schema in `schemas/task.schema.json`
+- Task schema validation fixtures in `schemas/tests/task/`
+- repository-local Task schema validation tooling in `schemas/tests/validate_task.py`
 
 ### Architecture
 
@@ -46,6 +49,8 @@ Status: In Development
 - defined Task scope, Project-default inheritance, Quality Gate requirements, and Human control behavior
 - established persistent Task review and approval evidence
 - registered the Project Manifest and Task contracts as repository Sources of Truth
+- established machine-readable structural validation for the canonical Task contract
+- documented the boundary between structural Task validation and repository-level or historical Task semantics
 
 ### Reserved for v0.2
 

@@ -46,6 +46,7 @@ Use these locations as authoritative sources:
 - Project Manifest template: `templates/project.yaml`
 - Task specification: `core/task-specification.md`
 - Task template: `templates/task/`
+- Task schema: `schemas/task.schema.json`
 - Roles: `roles/`
 - Workflows: `workflows/`
 - Quality Gates: `quality-gates/`

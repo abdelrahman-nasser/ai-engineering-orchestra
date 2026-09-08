@@ -1,0 +1,15 @@
+id: INVALID-007
+title: Unsupported Human Control Field
+type: implementation
+status: planned
+
+objective: >
+  Demonstrate rejection of unsupported nested Human control configuration.
+
+scope:
+  include:
+    - invalid Human control example
+
+human_control:
+  final_review_required: true
+  bypass_review: true

@@ -1,0 +1,7 @@
+id: INVALID-001
+title: Missing Required Scope
+type: implementation
+status: planned
+
+objective: >
+  This fixture intentionally omits the required scope field.

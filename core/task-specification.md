@@ -901,9 +901,11 @@ A Task may exist in repositories hosted through systems such as GitHub, GitLab, 
 
 ## 38. Forward Compatibility
 
+AIO-004 defined the Task contract without implementing schema validation. Structural Task JSON Schema validation is available in v0.1 through AIO-005, as described in section 41.
+
 Future Orchestra versions may introduce:
 
-- Task JSON Schema validation
+- deeper semantic Task validation, including dependency graph checks
 - CLI Task creation
 - automated decomposition
 - automated Agent assignment
@@ -912,7 +914,7 @@ Future Orchestra versions may introduce:
 - Provider Adapter references
 - Brownfield-specific Task metadata
 
-AIO-004 does not implement these capabilities.
+These future capabilities are not implemented by AIO-004 or AIO-005. Structural validation does not verify Human approval, reviewer independence, or runtime governance; those remain subject to the existing Policies and review requirements.
 
 Future additions must not silently change the meaning of existing v0.1 fields.
 
@@ -951,3 +953,57 @@ A v0.1 Task conforms to this specification when:
 8. context remains explanatory rather than conflicting with structured Task requirements
 9. review evidence accurately reflects the current Task state
 10. Task lifecycle status matches the actual lifecycle state
+
+## 41. Validation Status in v0.1
+
+The canonical Task contract is defined by this specification.
+
+A machine-readable JSON Schema for the v0.1 Task contract is available at:
+
+`schemas/task.schema.json`
+
+Repository-local validation tooling is available at:
+
+`schemas/tests/validate_task.py`
+
+Representative valid and invalid fixtures are available under:
+
+`schemas/tests/task/`
+
+The JSON Schema validates structural conformance of `task.yaml` to this specification.
+
+It can validate properties such as:
+
+- required fields
+- supported enumerations
+- scalar and collection types
+- nested object structure
+- scope structure
+- dependency list structure
+- duplicate dependency identifiers
+- Quality Gate identifier structure
+- supported Human control fields
+- unsupported Task configuration
+
+The schema does not replace this document as the authoritative semantic contract.
+
+The schema does not prove repository-level or historical facts such as:
+
+- Task ID uniqueness across the Project
+- whether a referenced dependency exists
+- whether Task dependencies contain a cycle
+- whether acceptance criteria are actually satisfied
+- whether Human approval actually occurred
+- whether an independent review was truly independent
+- whether a Task legitimately qualifies for `completed` status
+
+Those requirements remain governed by this specification, applicable Policies, Quality Gates, review evidence, Human control, and future Orchestra tooling.
+
+Current validation may be performed through:
+
+- JSON Schema validation
+- repository-local validation tooling
+- documentation consistency checks
+- independent review
+
+CLI-based Task validation remains reserved for a later Orchestra version.

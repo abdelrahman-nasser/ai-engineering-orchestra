@@ -1,0 +1,38 @@
+id: TEST-002
+title: Full Valid Task
+type: specification
+status: in_progress
+
+version_target: "0.1.0"
+
+complexity: high
+risk: medium
+
+execution:
+  mode: deep
+
+objective: >
+  Demonstrate all supported v0.1 Task fields.
+
+scope:
+  include:
+    - define behavior
+    - document behavior
+
+  exclude:
+    - future CLI behavior
+    - Provider-specific behavior
+
+dependencies:
+  - TEST-000
+  - TEST-PRE-001
+
+quality_gates:
+  - documentation_consistency
+  - independent_review
+
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: false
+  breaking_contract_changes_require_approval: true

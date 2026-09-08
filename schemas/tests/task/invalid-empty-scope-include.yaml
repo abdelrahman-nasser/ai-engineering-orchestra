@@ -1,0 +1,10 @@
+id: INVALID-004
+title: Empty Scope Include
+type: implementation
+status: planned
+
+objective: >
+  Demonstrate that scope.include must contain at least one meaningful item.
+
+scope:
+  include: []

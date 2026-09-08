@@ -1,0 +1,11 @@
+id: INVALID-002
+title: Invalid Status
+type: implementation
+status: running
+
+objective: >
+  Demonstrate rejection of an unsupported Task status.
+
+scope:
+  include:
+    - invalid status example

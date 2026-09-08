@@ -1,0 +1,15 @@
+id: INVALID-005
+title: Duplicate Dependencies
+type: implementation
+status: planned
+
+objective: >
+  Demonstrate rejection of duplicate dependency identifiers.
+
+scope:
+  include:
+    - invalid dependency example
+
+dependencies:
+  - AIO-001
+  - AIO-001

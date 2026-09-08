@@ -1,0 +1,11 @@
+id: TEST-001
+title: Minimal Valid Task
+type: implementation
+status: planned
+
+objective: >
+  Demonstrate the minimum valid Task configuration.
+
+scope:
+  include:
+    - implement one scoped change

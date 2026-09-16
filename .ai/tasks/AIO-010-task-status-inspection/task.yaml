@@ -1,0 +1,40 @@
+id: AIO-010
+title: Implement Task Status Inspection Utility
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: medium
+risk: medium
+execution:
+  mode: standard
+objective: >
+  Implement a repository-local, read-only Python utility (scripts/inspect_task.py)
+  with tests (tests/test_inspect_task.py) to inspect and report machine-readable
+  Task governance status using existing approved contracts.
+scope:
+  include:
+    - scripts/inspect_task.py read-only inspection utility
+    - tests/test_inspect_task.py comprehensive unit tests
+    - AIO-010 canonical four-file Task structure (.ai/tasks/AIO-010-task-status-inspection/)
+    - Registration of AIO-010 in schemas/tests/validate_task.py
+    - Deterministic reporting of canonical artifact presence, schema validity, core metadata, gate requirements, and human control
+    - Explicit visible reporting of the Workflow-selection schema limitation without Markdown workarounds
+    - Stage-governed execution under standard-change workflow
+    - Recorded validation evidence and independent review
+  exclude:
+    - Modifications to schemas or frozen Core semantic contracts
+    - Machine-parsing temporary Workflow-selection Markdown conventions
+    - Creating new contracts (Assignment, Execution, Planning, Evidence)
+    - Generalized CLI, runtime scheduler, provider adapters, or graph execution
+    - Tamper-evident evidence claims, hashing, or cryptographic signing
+    - External package dependencies
+dependencies:
+  - AIO-009
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: false
+  breaking_schema_changes_require_approval: false
+  breaking_contract_changes_require_approval: false

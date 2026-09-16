@@ -1,0 +1,40 @@
+# AIO-010 — Acceptance Criteria
+
+- [x] Scaffolding created in `.ai/tasks/AIO-010-task-status-inspection/` with `status: planned`.
+- [x] Context Completion Rule satisfied in Stage 1 `understand` before transitioning to `status: in_progress`.
+- [x] `scripts/inspect_task.py` implemented as a repository-local, read-only Python utility using existing dependencies (`jsonschema`, `PyYAML`, standard library).
+- [x] `inspect_task.py` inspects canonical Task artifact presence (`task.yaml`, `context.md`, `acceptance-criteria.md`, `review.md`).
+- [x] `inspect_task.py` validates `task.yaml` against `schemas/task.schema.json` and reports validity (VALID, INVALID with errors, or MISSING).
+- [x] `inspect_task.py` extracts Task core metadata: ID, title, type, status, risk, complexity, execution mode.
+- [x] `inspect_task.py` extracts Task-declared Quality Gates.
+- [x] `inspect_task.py` extracts Project-required Quality Gates where deterministically available.
+- [x] `inspect_task.py` extracts Human Control configuration relevant to the Task where deterministically available.
+- [x] `inspect_task.py` honestly reports governing Workflow as `NOT MACHINE-RESOLVED` and does NOT parse `context.md` for workflow selection.
+- [x] `inspect_task.py` labels machine-readable gate requirements accurately rather than claiming an effective gate union while workflow selection is unresolvable.
+- [x] `inspect_task.py` output ordering is deterministic and testable.
+- [x] `tests/test_inspect_task.py` covers:
+  - valid Task directory
+  - invalid `task.yaml`
+  - missing `task.yaml`
+  - missing canonical Markdown artifact
+  - completed Task
+  - in-progress Task
+  - declared Quality Gates
+  - project-required Quality Gates
+  - deterministic output ordering
+  - Workflow-selection limitation displayed rather than inferred from Markdown
+  - unknown/unexpected Task input failure behavior
+- [x] AIO-010 registered in `schemas/tests/validate_task.py` as the 21st canonical case.
+- [x] Unit tests pass via `unittest`.
+- [x] Regression validators pass:
+  - `python -B schemas/tests/validate_task.py`
+  - `python -B schemas/tests/validate_workflow.py`
+  - `python -B schemas/tests/validate_role.py`
+  - `python -B schemas/tests/validate_project_manifest.py`
+  - `git diff --check`
+- [x] Foundation schemas and frozen Core specifications remain unmodified.
+- [x] Role requirement != Quality Gate requirement distinction preserved and documented.
+- [x] Workflow-required Roles vs Stage actors distinguished and documented.
+- [x] Independent review conducted separately with clean review context by `reviewer` Role.
+- [x] Quality Gates evaluated: `documentation_consistency` PASS, `independent_review` PASS.
+- [x] Human control checkpoint satisfied: explicit Human approval recorded.

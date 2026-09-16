@@ -47,4 +47,10 @@ Canonical AIO Workflow definitions use kebab-case identifiers by convention. Thi
 
 > Markdown is the current canonical documentation representation of Workflow definitions. AIO-008 does not establish Markdown as the runtime, persistence, API, or future machine-readable Workflow serialization format.
 
-A future specification-to-schema task (AIO-009) will provide machine-readable structural schema validation for normalized Workflow projections, following the same semantic-specification / structural-schema hierarchy established for Roles.
+AIO-009 provides `schemas/workflow.schema.json` for normalized Workflow objects. The schema is semantically subordinate to `core/workflow-specification.md`; schema validity does not prove semantic or governance correctness.
+
+Run `python -B schemas/tests/validate_workflow.py` from the repository root after installing `schemas/tests/requirements.txt`. This repository-local test tool validates the schema, registered fixtures, and strict in-memory projections of the three canonical Markdown definitions. The extractor preserves Stage order and omission, adds no defaults, and is not a public parser or runtime serializer.
+
+The validator separately reports repository semantic ID-uniqueness checks across inspected definitions. Role and Quality Gate references remain open strings in the schema; their canonical existence was manually verified in the AIO-009 review record. Fixtures named `valid-structurally-*` demonstrate structural permissiveness, not recommended Workflow design.
+
+AIO-009 does not add machine-readable Task-to-Workflow or Project-default Workflow selection. The current Task and Project Manifest schemas do not accept `workflow` and `workflows.default`, respectively. Explicit Human/orchestrator selection remains available for the first vertical slice; automatic resolution is not provided.

@@ -1,0 +1,21 @@
+# Structural fixture only; acceptance does not establish semantic correctness.
+{
+  "id": "",
+  "name": "Example",
+  "purpose": "",
+  "stages": [
+    {
+      "id": "",
+      "purpose": "Review the change.",
+      "required_roles": [
+        ""
+      ],
+      "required_quality_gates": [
+        ""
+      ]
+    }
+  ],
+  "applicable_task_types": [
+    ""
+  ]
+}

@@ -50,7 +50,8 @@ Use these locations as authoritative sources:
 - Role specification: `core/role-specification.md` — authoritative semantic contract for Roles; governs semantics if it conflicts with the Role schema.
 - Role schema: `schemas/role.schema.json` — machine-readable structural validation of the Role contract; semantically subordinate to `core/role-specification.md`.
 - Roles: `roles/`
-- Workflow specification: `core/workflow-specification.md` — authoritative semantic contract for Workflows.
+- Workflow specification: `core/workflow-specification.md` — authoritative semantic contract for Workflows; governs semantics if it conflicts with the Workflow schema.
+- Workflow schema: `schemas/workflow.schema.json` — authoritative machine-readable structural validation of normalized Workflow objects; semantically subordinate to `core/workflow-specification.md`.
 - Workflows: `workflows/` — canonical reusable Workflow definitions governed by `core/workflow-specification.md`.
 - Quality Gates: `quality-gates/`
 - Architecture decisions: `docs/adr/`

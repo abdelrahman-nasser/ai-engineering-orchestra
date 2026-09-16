@@ -1,0 +1,6 @@
+# Structural fixture only; acceptance does not establish semantic correctness.
+{
+  "id": "example",
+  "name": "Example",
+  "purpose": "Govern a bounded change."
+}

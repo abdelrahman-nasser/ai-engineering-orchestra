@@ -1,0 +1,30 @@
+# Structural fixture only; acceptance does not establish semantic correctness.
+{
+  "id": "Example Workflow/1",
+  "name": "Full Workflow",
+  "purpose": "Govern implementation and review.",
+  "applicable_task_types": [
+    "custom/task"
+  ],
+  "stages": [
+    {
+      "id": "Stage One",
+      "purpose": "Implement.",
+      "required_roles": [
+        "custom/Role"
+      ],
+      "required_quality_gates": [
+        "custom.Gate"
+      ],
+      "human_control_checkpoint": false
+    },
+    {
+      "id": "Stage Two",
+      "purpose": "Review.",
+      "required_roles": [
+        "reviewer"
+      ],
+      "human_control_checkpoint": true
+    }
+  ]
+}

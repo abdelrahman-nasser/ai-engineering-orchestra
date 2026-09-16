@@ -1,0 +1,12 @@
+# Structural fixture only; acceptance does not establish semantic correctness.
+{
+  "id": "example",
+  "name": "Example",
+  "purpose": 42,
+  "stages": [
+    {
+      "id": "review",
+      "purpose": "Review the change."
+    }
+  ]
+}

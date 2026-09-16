@@ -1,0 +1,44 @@
+id: AIO-009
+title: Define Workflow Schema
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: medium
+execution:
+  mode: standard
+objective: >
+  Implement machine-readable structural validation for normalized v0.1 Workflow
+  objects governed by AIO-008, with repository-local canonical projection and
+  fixture validation, without introducing new Workflow semantics.
+scope:
+  include:
+    - Workflow and Stage JSON Schema
+    - Strict test-only canonical Markdown projection
+    - Registered structural fixtures and extraction tests
+    - Separately labelled canonical ID uniqueness checks
+    - Manual canonical Role and Quality Gate reference verification
+    - Validator exit behavior and regression execution
+    - AIO-009 Task records and registration in the Task validator
+    - Source-of-Truth hierarchy and factual validation-status documentation
+    - Documentation consistency and independent review evidence
+  exclude:
+    - Reopening AIO-008 or changing approved Workflow semantics
+    - New Workflow fields or definitions
+    - Unsupported string, array, vocabulary, default, or extension constraints
+    - Public Markdown parser, runtime serializer, or CLI contract
+    - Automatic Workflow selection and Task or Project selection schema changes
+    - Branching, loops, applies_when, or graph execution
+    - Assignment or Execution Contracts and actor identity
+    - Provider, model, tool, permission, or runtime enforcement behavior
+    - Generalized reference resolution
+dependencies:
+  - AIO-008
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

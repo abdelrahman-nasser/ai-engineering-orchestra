@@ -1,0 +1,25 @@
+# AIO-009 — Acceptance Criteria
+
+- [x] Draft 2020-12 schema meta-validation passes.
+- [x] Workflow and Stage shapes exactly match approved fields and requiredness.
+- [x] Both objects reject unknown fields; stages requires at least one item.
+- [x] Only Workflow name and Stage purpose require non-empty strings.
+- [x] Optional arrays, duplicate references, and open strings remain structurally permitted.
+- [x] No defaults, enums, naming grammars, extensions, or runtime fields are introduced.
+- [x] All three canonical Markdown projections validate without modifying their definitions.
+- [x] Exact projection tests preserve values, Stage order, booleans, and omissions.
+- [x] Extractor rejects duplicate/unknown sections and fields, malformed nesting, ambiguous scalars, inconsistent numbering, missing explicit Stage IDs, and invalid boolean literals.
+- [x] Registered fixtures cover required fields, wrong types, empty stages, unknown fields, permitted edge cases, and exact intended keyword/path errors.
+- [x] Missing and unregistered fixtures cause failure.
+- [x] Actual mismatched expectations produce nonzero exit, followed by a normal passing run.
+- [x] Repository semantic checks separately verify canonical Workflow and Stage ID uniqueness and exercise duplicate rejection.
+- [x] Canonical Role and Quality Gate references are manually verified against declared IDs and recorded.
+- [x] AIO-009 is registered in the Task validator and remains in_progress until closure approval.
+- [x] Workflow, Task, Role, and Project Manifest validators pass.
+- [x] git diff --check passes.
+- [x] AGENTS.md makes semantic specification precedence over structural schema explicit.
+- [x] Specification Section 15 and dependent documentation accurately report available validation.
+- [x] AIO-008 records/semantics and existing schemas remain unchanged; the selection gap is documented and not implemented.
+- [x] documentation_consistency passes.
+- [x] independent_review passes.
+- [x] Final Human approval is obtained before closure.

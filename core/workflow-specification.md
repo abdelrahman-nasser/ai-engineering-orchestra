@@ -494,10 +494,13 @@ A separate `documentation-change` Workflow is intentionally excluded because doc
 
 Initial Workflow definitions in `workflows/` are maintained as structured Markdown documents.
 
-### Future Schema Validation
+### Structural Schema Validation
 
-A machine-readable structural schema for normalized Workflow objects is intentionally deferred to a subsequent specification-to-schema task (AIO-009). Following the architecture established in AIO-007 for Roles:
+AIO-009 provides machine-readable structural validation of normalized Workflow objects through `schemas/workflow.schema.json`, using JSON Schema Draft 2020-12.
 
-- This specification (`core/workflow-specification.md`) is the authoritative semantic contract.
-- Any future Workflow schema will be structurally subordinate to this specification.
-- Schema validity will validate structural shape only and will not replace semantic review or governance verification.
+- This specification (`core/workflow-specification.md`) remains the authoritative semantic Workflow contract.
+- The schema is semantically subordinate to this specification.
+- Schema validity establishes structural conformance only; it does not prove semantic correctness, meaningful governance, approval truth, or correct execution.
+- `schemas/tests/validate_workflow.py` validates normalized in-memory projections of the three canonical Markdown definitions and registered fixtures in `schemas/tests/workflow/`.
+- The Markdown extractor is strict, repository-local test tooling. It inserts no defaults and establishes no public parser, runtime serialization, persistence, API, or CLI contract.
+- Canonical Workflow-ID and per-Workflow Stage-ID uniqueness checks are separately labelled repository semantic validation, not JSON Schema validation. Role and Quality Gate reference existence is verified manually for AIO-009.

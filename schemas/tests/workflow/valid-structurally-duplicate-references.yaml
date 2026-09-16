@@ -1,0 +1,24 @@
+# Structural fixture only; acceptance does not establish semantic correctness.
+{
+  "id": "example",
+  "name": "Example",
+  "purpose": "Govern a bounded change.",
+  "stages": [
+    {
+      "id": "review",
+      "purpose": "Review the change.",
+      "required_roles": [
+        "custom",
+        "custom"
+      ],
+      "required_quality_gates": [
+        "custom",
+        "custom"
+      ]
+    }
+  ],
+  "applicable_task_types": [
+    "review",
+    "review"
+  ]
+}

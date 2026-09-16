@@ -40,6 +40,8 @@ Status: In Development
 - repository-local Role schema validation tooling in `schemas/tests/validate_role.py`
 - canonical Workflow specification in `core/workflow-specification.md`
 - initial canonical engineering Workflow library in `workflows/` (`standard-change`, `architecture-change`, `security-sensitive-change`)
+- normalized Workflow JSON Schema in `schemas/workflow.schema.json`
+- registered Workflow fixtures and strict repository-local Markdown projection tests in `schemas/tests/validate_workflow.py`
 
 ### Architecture
 
@@ -65,6 +67,7 @@ Status: In Development
 - established Quality Gate three-source composition (Project ∪ Workflow ∪ Task) and non-weakening invariant
 - defined non-blocking Human Control checkpoint evaluation semantics
 - established the architectural boundary between declarative AIO governance choreography and executable workflow runtimes
+- added structural Workflow validation subordinate to the approved specification, with separately labelled repository semantic ID-uniqueness checks; no runtime serialization or automatic Workflow selection is introduced
 
 ### Reserved for v0.2
 

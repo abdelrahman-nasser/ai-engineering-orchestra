@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-engineering-orchestra.dev/schemas/workflow.schema.json",
+  "title": "AI Engineering Orchestra Workflow",
+  "description": "Structural validation of normalized v0.1 Workflow objects; semantically subordinate to core/workflow-specification.md. Schema validity does not prove governance correctness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "purpose", "stages"],
+  "properties": {
+    "id": {"type": "string"},
+    "name": {"type": "string", "minLength": 1},
+    "purpose": {"type": "string"},
+    "applicable_task_types": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Advisory Task types only; does not select or authorize a Workflow."
+    },
+    "stages": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/stage"},
+      "description": "Ordered governance stages. Stage-ID uniqueness requires separate semantic validation."
+    }
+  },
+  "$defs": {
+    "stage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "purpose"],
+      "properties": {
+        "id": {"type": "string"},
+        "purpose": {"type": "string", "minLength": 1},
+        "required_roles": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "required_quality_gates": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "human_control_checkpoint": {
+          "type": "boolean",
+          "description": "A process location for evaluating applicable Human Control. Omission declares no checkpoint; no value is inserted."
+        }
+      }
+    }
+  }
+}

@@ -2,25 +2,29 @@
 
 This directory contains canonical Role definitions used by AI Engineering Orchestra.
 
-A Role defines an engineering responsibility that may be assigned to an Agent.
+The canonical Role contract is defined in:
 
-Examples may include:
+`core/role-specification.md`
 
-- Orchestrator
-- Architect
-- Developer
-- Tester
-- Reviewer
-- Documentation Agent
+A Role is a reusable, provider-independent, declarative description of an engineering responsibility and its required abstract competencies. A Role is not directly executable and does not grant authority, permissions, approval authority, or actor eligibility.
 
-## v0.1 Status
+## Initial v0.1 Roles
 
-Detailed Role specifications are not part of task `AIO-001`.
+- [Architect](architect.md)
+- [Software Engineer](software-engineer.md)
+- [Reviewer](reviewer.md)
+- [Security Reviewer](security-reviewer.md)
+- [Documentation Specialist](documentation-specialist.md)
 
-At the current Foundation stage, the Orchestra defines the concept of a Role, but individual Role contracts have not yet been established.
+Role definitions use the canonical fields:
 
-Agents must not invent missing authoritative Role definitions.
+- `id`
+- `name`
+- `purpose`
+- `responsibilities`
+- `required_capabilities`
+- optional `applicable_task_types`
 
-Later v0.1 Tasks will define the initial Role contract and reusable engineering Roles.
+Capability identifiers describe stable engineering competencies. They do not describe runtime tools, commands, provider features, or permissions.
 
-Until then, this directory is the canonical location for Role definitions but does not claim that those definitions already exist.
+Task assignment, actor selection, execution behavior, Workflow sequencing, authority, approval, and separation of duties remain owned by other Orchestra contracts and policies.

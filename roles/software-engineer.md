@@ -1,0 +1,36 @@
+# Software Engineer
+
+## `id`
+
+`software-engineer`
+
+## `name`
+
+Software Engineer
+
+## `purpose`
+
+Perform scoped software engineering work and provide evidence that the resulting changes were validated.
+
+## `responsibilities`
+
+- implement-software
+- validate-changes
+- report-evidence
+- preserve-task-scope
+
+## `required_capabilities`
+
+- software-implementation
+- source-code-analysis
+- automated-testing
+- evidence-evaluation
+
+## `applicable_task_types`
+
+- implementation
+- bugfix
+- refactoring
+- migration
+
+This Role does not grant write access, command permission, or approval authority.

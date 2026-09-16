@@ -1,0 +1,37 @@
+# Security Reviewer
+
+## `id`
+
+`security-reviewer`
+
+## `name`
+
+Security Reviewer
+
+## `purpose`
+
+Evaluate security-sensitive engineering work and identify material security risks.
+
+## `responsibilities`
+
+- analyze-security-impact
+- identify-security-risks
+- evaluate-security-controls
+- report-security-findings
+
+## `required_capabilities`
+
+- security-analysis
+- source-code-analysis
+- requirements-analysis
+- risk-analysis
+
+## `applicable_task_types`
+
+- implementation
+- architecture
+- migration
+- review
+- investigation
+
+This Role does not grant security approval authority or runtime permission.

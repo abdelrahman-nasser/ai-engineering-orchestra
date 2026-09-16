@@ -1,0 +1,70 @@
+id: AIO-006
+
+title: Define Role Specification
+
+type: specification
+
+status: completed
+
+version_target: "0.1.0"
+
+complexity: high
+risk: medium
+
+execution:
+  mode: standard
+
+objective: >
+  Define the minimal provider-independent Role contract for AI Engineering
+  Orchestra and establish a small reusable library of engineering Roles
+  without introducing assignment, execution, permission, or Task schema
+  behavior.
+
+scope:
+  include:
+    - Role ownership boundary
+    - declarative Role contract
+    - canonical Role fields
+    - abstract engineering capability semantics
+    - Role invariants
+    - advisory applicable Task type semantics
+    - initial Architect Role
+    - initial Software Engineer Role
+    - initial Reviewer Role
+    - initial Security Reviewer Role
+    - initial Documentation Specialist Role
+    - Role relationship to future Assignment and Execution Contracts
+    - Role documentation and repository references
+    - canonical Task validation registration for AIO-006
+
+  exclude:
+    - Role JSON Schema
+    - Role machine validation
+    - Task schema changes
+    - Task-to-Role assignment
+    - Agent implementation
+    - Human or Agent identity management
+    - Assignment Contract implementation
+    - Execution Contract implementation
+    - Provider integrations or adapters
+    - model routing
+    - prompts or personas
+    - runtime tools or permissions
+    - Workflow definitions or execution
+    - approval authority or Human Approver Role
+    - separation-of-duties enforcement
+    - escalation machinery
+    - project planning or decomposition
+    - unrelated documentation cleanup
+
+dependencies:
+  - AIO-001
+  - AIO-004
+
+quality_gates:
+  - documentation_consistency
+  - independent_review
+
+human_control:
+  final_review_required: true
+  breaking_contract_changes_require_approval: true

@@ -1,0 +1,11 @@
+# Demonstrates structural permissiveness only.
+# Schema-valid does not imply semantically valid, useful, recommended, or review-approved.
+# AIO-006 did not authorize minItems constraints on responsibilities or required_capabilities.
+# Semantic review remains responsible for determining whether Role responsibilities and
+# capabilities satisfy the AIO-006 contract.
+id: placeholder-role
+name: Placeholder Role
+purpose: Demonstrate structural permissiveness of empty required arrays.
+responsibilities: []
+required_capabilities: []
+

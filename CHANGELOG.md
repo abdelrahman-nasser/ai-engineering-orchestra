@@ -33,6 +33,11 @@ Status: In Development
 - machine-readable Task JSON Schema in `schemas/task.schema.json`
 - Task schema validation fixtures in `schemas/tests/task/`
 - repository-local Task schema validation tooling in `schemas/tests/validate_task.py`
+- canonical Role specification in `core/role-specification.md`
+- initial canonical engineering Role library in `roles/`
+- machine-readable Role JSON Schema in `schemas/role.schema.json`
+- Role schema validation fixtures in `schemas/tests/role/`
+- repository-local Role schema validation tooling in `schemas/tests/validate_role.py`
 
 ### Architecture
 
@@ -51,6 +56,9 @@ Status: In Development
 - registered the Project Manifest and Task contracts as repository Sources of Truth
 - established machine-readable structural validation for the canonical Task contract
 - documented the boundary between structural Task validation and repository-level or historical Task semantics
+- defined the canonical Role contract separating abstract engineering responsibilities and competencies from runtime agents, providers, permissions, and authority
+- established machine-readable structural validation for normalized Role objects
+- established the architectural boundary between structural schema validation, canonical Markdown definitions, and semantic review
 
 ### Reserved for v0.2
 

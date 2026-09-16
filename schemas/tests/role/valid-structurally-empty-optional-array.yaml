@@ -1,0 +1,12 @@
+# Demonstrates structural permissiveness only.
+# Schema-valid does not imply semantically valid, useful, recommended, or review-approved.
+# AIO-006 did not authorize minItems constraints on applicable_task_types.
+id: general-engineer
+name: General Engineer
+purpose: Perform general engineering activities across any task context.
+responsibilities:
+  - general-engineering
+required_capabilities:
+  - software-implementation
+applicable_task_types: []
+

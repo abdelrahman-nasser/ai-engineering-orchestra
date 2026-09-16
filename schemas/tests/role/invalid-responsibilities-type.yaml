@@ -1,0 +1,7 @@
+id: test-role
+name: Test Role
+purpose: Validate scalar responsibilities rejection.
+responsibilities: "not-an-array"
+required_capabilities:
+  - test-capability
+

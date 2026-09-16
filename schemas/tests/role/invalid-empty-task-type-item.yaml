@@ -1,0 +1,10 @@
+id: test-role
+name: Test Role
+purpose: Validate empty string task type item rejection.
+responsibilities:
+  - test-responsibility
+required_capabilities:
+  - test-capability
+applicable_task_types:
+  - ""
+

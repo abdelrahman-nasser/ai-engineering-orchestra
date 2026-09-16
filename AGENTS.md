@@ -47,6 +47,8 @@ Use these locations as authoritative sources:
 - Task specification: `core/task-specification.md`
 - Task template: `templates/task/`
 - Task schema: `schemas/task.schema.json`
+- Role specification: `core/role-specification.md` — authoritative semantic contract for Roles; governs semantics if it conflicts with the Role schema.
+- Role schema: `schemas/role.schema.json` — machine-readable structural validation of the Role contract; semantically subordinate to `core/role-specification.md`.
 - Roles: `roles/`
 - Workflows: `workflows/`
 - Quality Gates: `quality-gates/`

@@ -1,0 +1,6 @@
+id: test-role
+name: Test Role
+purpose: Validate missing responsibilities rejection.
+required_capabilities:
+  - test-capability
+

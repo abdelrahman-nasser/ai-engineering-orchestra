@@ -1,0 +1,8 @@
+id: test-role
+name: ""
+purpose: Validate empty name rejection.
+responsibilities:
+  - test-responsibility
+required_capabilities:
+  - test-capability
+

@@ -228,3 +228,50 @@ The initial reusable Roles are:
 These Roles are responsibility and capability contracts. They are not personas, Agents, providers, permissions, or approval authorities.
 
 Human Approver is not an ordinary canonical engineering Role. Human approval remains governed by `core/human-control.md`.
+
+---
+
+## 9. Validation Status in v0.1
+
+The canonical Role contract is defined by this specification.
+
+A machine-readable JSON Schema for normalized Role objects is available at:
+
+`schemas/role.schema.json`
+
+Repository-local validation tooling is available at:
+
+`schemas/tests/validate_role.py`
+
+Representative valid and invalid fixtures are available under:
+
+`schemas/tests/role/`
+
+### Architectural Boundary of Role Schema Validation
+
+`schemas/role.schema.json` defines the structural schema of a **normalized Role object**.
+
+AIO-007 validates a normalized in-memory projection of the current canonical Markdown Role definitions. It does not establish Markdown as the future runtime Role serialization format.
+
+The existing canonical Role definitions remain Markdown. A future task may separately decide the runtime/persistence representation of Role instances.
+
+The Markdown extractor implemented for repository validation is:
+
+- test-only,
+- repository-local,
+- intentionally minimal,
+- limited to the current canonical Role document structure,
+- unable to infer missing values,
+- unable to supply defaults,
+- strict about duplicate or ambiguous sections,
+- visibly failing when extraction cannot be performed safely.
+
+It is not exposed as a public Role parser, library, CLI contract, or runtime serialization mechanism.
+
+### Structural vs Semantic Validity
+
+Schema-valid does not imply semantically valid, useful, recommended, or review-approved.
+
+The Role schema validates structural shape (required fields, scalar types, array container types). It deliberately does not enforce unapproved semantic constraints such as array minimum lengths, array uniqueness, identifier regexes, or capability vocabulary enums.
+
+Semantic review remains responsible for determining whether Role responsibilities and capabilities satisfy the AIO-006 contract.

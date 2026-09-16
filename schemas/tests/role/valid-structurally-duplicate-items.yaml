@@ -1,0 +1,18 @@
+# Demonstrates structural permissiveness only.
+# Schema-valid does not imply semantically valid, useful, recommended, or review-approved.
+# AIO-006 did not authorize uniqueItems constraints on arrays.
+# Semantic review remains responsible for determining whether Role responsibilities and
+# capabilities satisfy the AIO-006 contract.
+id: duplicate-item-role
+name: Duplicate Item Role
+purpose: Demonstrate structural permissiveness of duplicate items in arrays.
+responsibilities:
+  - review-code
+  - review-code
+required_capabilities:
+  - source-code-analysis
+  - source-code-analysis
+applicable_task_types:
+  - review
+  - review
+

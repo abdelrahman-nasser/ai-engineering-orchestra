@@ -1,0 +1,9 @@
+id: test-role
+name: Test Role
+purpose: Validate unknown top-level field rejection.
+responsibilities:
+  - test-responsibility
+required_capabilities:
+  - test-capability
+provider: custom-provider
+

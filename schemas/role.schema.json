@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-engineering-orchestra.dev/schemas/role.schema.json",
+  "title": "AI Engineering Orchestra Role",
+  "description": "Structural schema for the AI Engineering Orchestra v0.1 normalized Role contract defined by core/role-specification.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "name",
+    "purpose",
+    "responsibilities",
+    "required_capabilities"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable machine-readable Role identifier."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable Role name."
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Concise statement of Role responsibility."
+    },
+    "responsibilities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Declarative responsibilities associated with the Role."
+    },
+    "required_capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Stable abstract engineering competencies required by the Role."
+    },
+    "applicable_task_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Advisory Task categories for which the Role is commonly suitable."
+    }
+  }
+}
+

@@ -1,0 +1,7 @@
+id: test-role
+name: Test Role
+responsibilities:
+  - test-responsibility
+required_capabilities:
+  - test-capability
+

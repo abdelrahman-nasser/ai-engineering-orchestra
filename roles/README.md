@@ -28,3 +28,13 @@ Role definitions use the canonical fields:
 Capability identifiers describe stable engineering competencies. They do not describe runtime tools, commands, provider features, or permissions.
 
 Task assignment, actor selection, execution behavior, Workflow sequencing, authority, approval, and separation of duties remain owned by other Orchestra contracts and policies.
+
+## Role Schema Validation
+
+A machine-readable structural schema for normalized Role objects is available in:
+
+`schemas/role.schema.json`
+
+Repository-local validation tests validate normalized in-memory projections of the Markdown definitions in this directory via `schemas/tests/validate_role.py`.
+
+Schema-valid does not imply semantically valid, useful, recommended, or review-approved. The existing canonical Role definitions remain Markdown; Markdown is not established as the runtime Role serialization format.

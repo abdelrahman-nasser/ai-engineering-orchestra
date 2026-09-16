@@ -1,0 +1,8 @@
+id: test-role
+name: Test Role
+purpose: Validate empty string responsibility item rejection.
+responsibilities:
+  - ""
+required_capabilities:
+  - test-capability
+

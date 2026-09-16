@@ -1,0 +1,16 @@
+id: systems-architect
+name: Systems Architect
+purpose: Design and evaluate system architectures and cross-component interfaces.
+responsibilities:
+  - analyze-architecture
+  - evaluate-technical-design
+  - document-architecture-decisions
+required_capabilities:
+  - architecture-analysis
+  - requirements-analysis
+  - source-code-analysis
+applicable_task_types:
+  - architecture
+  - specification
+  - investigation
+

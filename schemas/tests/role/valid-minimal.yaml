@@ -1,0 +1,10 @@
+id: test-engineer
+name: Test Engineer
+purpose: Execute automated test suites and report quality findings.
+responsibilities:
+  - execute-tests
+  - report-defects
+required_capabilities:
+  - automated-testing
+  - evidence-evaluation
+

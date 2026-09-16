@@ -38,6 +38,8 @@ Status: In Development
 - machine-readable Role JSON Schema in `schemas/role.schema.json`
 - Role schema validation fixtures in `schemas/tests/role/`
 - repository-local Role schema validation tooling in `schemas/tests/validate_role.py`
+- canonical Workflow specification in `core/workflow-specification.md`
+- initial canonical engineering Workflow library in `workflows/` (`standard-change`, `architecture-change`, `security-sensitive-change`)
 
 ### Architecture
 
@@ -59,6 +61,10 @@ Status: In Development
 - defined the canonical Role contract separating abstract engineering responsibilities and competencies from runtime agents, providers, permissions, and authority
 - established machine-readable structural validation for normalized Role objects
 - established the architectural boundary between structural schema validation, canonical Markdown definitions, and semantic review
+- defined the canonical Workflow contract establishing declarative governance choreography stages, canonical Role references, Quality Gate composition semantics, Human Control checkpoint boundaries, and external-runtime delegation boundaries
+- established Quality Gate three-source composition (Project ∪ Workflow ∪ Task) and non-weakening invariant
+- defined non-blocking Human Control checkpoint evaluation semantics
+- established the architectural boundary between declarative AIO governance choreography and executable workflow runtimes
 
 ### Reserved for v0.2
 

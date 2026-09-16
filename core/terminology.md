@@ -172,6 +172,14 @@ Examples:
 - refactor Workflow
 - architecture-change Workflow
 
+The canonical Workflow contract is defined in:
+
+`core/workflow-specification.md`
+
+The canonical reusable Workflow definitions are maintained in:
+
+`workflows/`
+
 ---
 
 ## Stage
@@ -186,6 +194,10 @@ Examples:
 - Test
 - Review
 - Validate
+
+The canonical Stage contract is defined in:
+
+`core/workflow-specification.md`
 
 ---
 

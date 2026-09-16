@@ -2,28 +2,49 @@
 
 This directory contains canonical Workflow definitions used by AI Engineering Orchestra.
 
-A Workflow defines the ordered engineering stages used to complete a class of Task.
+The authoritative semantic Workflow contract is defined in:
 
-Examples may include:
+`core/workflow-specification.md`
 
-- feature development
-- bug fixing
-- refactoring
-- architecture changes
-- documentation changes
+A Workflow is a reusable, provider-independent, declarative description of the ordered governance stages required to complete a class of engineering work. A Workflow defines WHEN governance checkpoints occur, what Roles are required, and what Quality Gates must be satisfied.
 
-## v0.1 Status
+A Workflow is not directly executable and does not select actors, grant permissions, route messages, or manage runtime state.
 
-Detailed Workflow specifications are not part of task `AIO-001`.
+## Initial v0.1 Workflows
 
-At the current Foundation stage, the Orchestra defines the concept of a Workflow and the default Execution Modes, but task-specific Workflow definitions have not yet been established.
+- [Standard Change](standard-change.md) (`standard-change`) — Baseline 4-stage governance workflow for routine engineering work.
+- [Architecture Change](architecture-change.md) (`architecture-change`) — 5-stage governance workflow for architectural decisions, structural framework evolution, or specification design.
+- [Security-Sensitive Change](security-sensitive-change.md) (`security-sensitive-change`) — 5-stage governance workflow for work with security impact, access controls, or protected resources.
 
-Agents must not invent missing Workflow definitions.
+## Canonical Contract Structure
 
-If a Task references a Workflow that does not yet exist, the missing definition must be reported rather than inferred as an authoritative Orchestra Workflow.
+Workflow definitions use the canonical fields:
 
-## Planned v0.1 Work
+- `id`: Stable machine-readable Workflow identifier
+- `name`: Human-readable display name
+- `purpose`: Concise statement of governance intent
+- optional `applicable_task_types`: Advisory Task categories
+- `stages`: Ordered list of governance stages
 
-Later v0.1 Tasks will define the initial Workflow contract and the first reusable Workflows.
+Each Stage defines:
 
-Until then, this directory acts as the canonical location for Workflow definitions but does not claim that those definitions already exist.
+- `id`: Stable machine-readable stage identifier
+- `purpose`: Concise statement of stage governance objective
+- optional `required_roles`: Canonical Role IDs required for the stage (references only)
+- optional `required_quality_gates`: Canonical Quality Gate IDs required for the stage (references only)
+- optional `human_control_checkpoint`: Optional boolean indicating a process location where Human Control is evaluated (if omitted, the Stage does not declare a checkpoint)
+
+Canonical AIO Workflow definitions use kebab-case identifiers by convention. This convention is not a normative identifier grammar in v0.1.
+
+## Governance and Runtime Boundaries
+
+- **Role References**: Stages reference canonical Role IDs from `roles/` to specify required responsibilities/capabilities. Actor selection is deferred to a future Assignment Contract.
+- **Quality Gates**: Stages reference Quality Gate IDs from `quality-gates/`. Effective gates are the union of Project required gates, Workflow stage gates, and Task gates (non-weakening principle).
+- **Human Control**: `human_control_checkpoint: true` identifies WHEN Human Control is evaluated. It does not independently require approval; execution pauses only if applicable Human Control rules require approval.
+- **External Runtime**: Workflow execution, state, retries, and actor orchestration belong to an external runtime integration layer.
+
+## Markdown Representation Notice
+
+> Markdown is the current canonical documentation representation of Workflow definitions. AIO-008 does not establish Markdown as the runtime, persistence, API, or future machine-readable Workflow serialization format.
+
+A future specification-to-schema task (AIO-009) will provide machine-readable structural schema validation for normalized Workflow projections, following the same semantic-specification / structural-schema hierarchy established for Roles.

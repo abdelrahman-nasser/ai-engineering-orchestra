@@ -1,0 +1,74 @@
+id: AIO-008
+
+title: Define Workflow Specification
+
+type: specification
+
+status: completed
+
+version_target: "0.1.0"
+
+complexity: high
+risk: medium
+
+execution:
+  mode: standard
+
+objective: >
+  Define the canonical v0.1 Workflow contract for AI Engineering Orchestra,
+  establishing declarative governance choreography stages, canonical Role references,
+  Quality Gate composition semantics, Human Control checkpoint boundaries,
+  and external-runtime delegation boundaries, supported by an initial library
+  of reusable Workflows.
+
+scope:
+  include:
+    - Workflow ownership and architectural boundary
+    - declarative Workflow contract and top-level fields
+    - declarative Stage contract and fields
+    - ordered stage progression semantics without conditional logic
+    - canonical Role reference semantics in Workflow stages
+    - Quality Gate composition across Project, Workflow, and Task
+    - non-weakening Quality Gate invariant
+    - Human Control checkpoint location and non-blocking evaluation semantics
+    - Execution Mode orthogonality documentation
+    - external-runtime delegation and boundary definition
+    - normative Workflow invariants
+    - initial standard-change Workflow
+    - initial architecture-change Workflow
+    - initial security-sensitive-change Workflow
+    - canonical Task validation registration for AIO-008
+    - Source of Truth registration in AGENTS.md
+    - terminology updates for Workflow and Stage
+
+  exclude:
+    - Workflow JSON or YAML schema
+    - Workflow machine validation tooling
+    - runtime workflow execution engine
+    - graph execution engine or directed graph transitions
+    - conditional branching, loops, or expression languages
+    - applies_when or runtime predicates
+    - event-driven transitions or message routing
+    - automatic Workflow selection or activation
+    - actor assignment or selection
+    - Assignment Contract implementation
+    - Execution Contract implementation
+    - Agent lifecycle, state, or checkpoints
+    - retries, backoff, or fault recovery
+    - Provider or model configuration or routing
+    - runtime tools or permission grants
+    - Task schema changes or Task-to-Workflow mapping
+    - documentation-change workflow definition
+
+dependencies:
+  - AIO-001
+  - AIO-004
+  - AIO-006
+
+quality_gates:
+  - documentation_consistency
+  - independent_review
+
+human_control:
+  final_review_required: true
+  breaking_contract_changes_require_approval: true

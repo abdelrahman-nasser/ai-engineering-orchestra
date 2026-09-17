@@ -1,6 +1,7 @@
-"""Read-only structural validation. Results are evidence, never Quality Gates.
+"""Read-only structural and cross-resource validation.
 
-No Role representation, project command execution, or Task lifecycle is defined.
+Results are evidence, never Quality Gates. No project command execution, Role
+assignment, or Task lifecycle behavior is defined.
 """
 
 from dataclasses import dataclass, field
@@ -10,8 +11,9 @@ from typing import Any, Literal
 import yaml
 
 from engineering_orchestration.project import find_project_root, task_directory
+from engineering_orchestration.role_catalog import RoleCatalog, load_role_catalog
 from engineering_orchestration.schema_resources import load_validator, schema_errors
-from engineering_orchestration.workflow_catalog import load_workflow_catalog
+from engineering_orchestration.workflow_catalog import WorkflowCatalog, load_workflow_catalog
 
 
 @dataclass(frozen=True)
@@ -61,6 +63,27 @@ def manifest_semantic_errors(manifest: dict) -> list[str]:
     return errors
 
 
+def workflow_role_reference_findings(
+    workflows: WorkflowCatalog,
+    roles: RoleCatalog,
+) -> list[Finding]:
+    """Resolve Workflow Role references without assigning or selecting Actors."""
+    findings: list[Finding] = []
+    for workflow_id in workflows.workflow_ids:
+        workflow = workflows.definitions[workflow_id]
+        path = workflow.source_path or workflows.workflows_dir
+        for stage in workflow.stages:
+            for role_id in stage.required_roles:
+                if roles.get(role_id) is None:
+                    findings.append(Finding(
+                        "FAIL",
+                        path,
+                        f"Workflow '{workflow_id}' stage '{stage.id}' references "
+                        f"unknown Role: {role_id}",
+                    ))
+    return findings
+
+
 def validate_project(start: Path | None = None) -> ValidationResult:
     """Validate the nearest active project's supported AIO data.
 
@@ -97,6 +120,16 @@ def validate_project(start: Path | None = None) -> ValidationResult:
         for message in catalog.load_errors:
             status = "ERROR" if message in catalog.infrastructure_errors else "FAIL"
             result.findings.append(Finding(status, location, message))
+        role_catalog = load_role_catalog()
+        if not role_catalog.is_valid:
+            diagnostics = "; ".join(role_catalog.load_errors) or "unknown catalog failure"
+            result.findings.append(Finding(
+                "ERROR",
+                location,
+                f"Framework Role catalog could not load: {diagnostics}",
+            ))
+        else:
+            result.findings.extend(workflow_role_reference_findings(catalog, role_catalog))
         location = tasks
         if not tasks.is_dir():
             result.findings.append(Finding("FAIL", tasks, "Tasks directory not found"))

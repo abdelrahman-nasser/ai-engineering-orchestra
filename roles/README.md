@@ -1,6 +1,7 @@
 # Roles
 
-This directory contains canonical Role definitions used by AI Engineering Orchestra.
+This directory contains canonical framework-owned Role definitions used by AI
+Engineering Orchestra.
 
 The canonical Role contract is defined in:
 
@@ -8,13 +9,27 @@ The canonical Role contract is defined in:
 
 A Role is a reusable, provider-independent, declarative description of an engineering responsibility and its required abstract competencies. A Role is not directly executable and does not grant authority, permissions, approval authority, or actor eligibility.
 
+## Authority Hierarchy
+
+Role authority is ordered as follows:
+
+1. `core/role-specification.md` — semantic authority
+2. `schemas/role.schema.json` — structural authority
+3. `roles/*.yaml` — canonical Role instances
+4. `roles/*.md` — non-authoritative compatibility/documentation stubs
+5. `schemas/tests/validate_role.py` — regression tooling only
+
+Projects may reference these framework Role IDs. Project-defined Roles,
+extensions, overrides, directories, and precedence rules are not supported.
+
 ## Initial v0.1 Roles
 
-- [Architect](architect.md)
-- [Software Engineer](software-engineer.md)
-- [Reviewer](reviewer.md)
-- [Security Reviewer](security-reviewer.md)
-- [Documentation Specialist](documentation-specialist.md)
+- [Architect](architect.yaml) (`architect`)
+- [Documentation Specialist](documentation-specialist.yaml)
+  (`documentation-specialist`)
+- [Reviewer](reviewer.yaml) (`reviewer`)
+- [Security Reviewer](security-reviewer.yaml) (`security-reviewer`)
+- [Software Engineer](software-engineer.yaml) (`software-engineer`)
 
 Role definitions use the canonical fields:
 
@@ -35,6 +50,11 @@ A machine-readable structural schema for normalized Role objects is available in
 
 `schemas/role.schema.json`
 
-Repository-local validation tests validate normalized in-memory projections of the Markdown definitions in this directory via `schemas/tests/validate_role.py`.
+Repository-local validation reads the canonical YAML definitions directly through
+`schemas/tests/validate_role.py`. Runtime code uses the packaged YAML resources
+through `engineering_orchestration.role_catalog`; it does not inspect the active
+project or parse Markdown.
 
-Schema-valid does not imply semantically valid, useful, recommended, or review-approved. The existing canonical Role definitions remain Markdown; Markdown is not established as the runtime Role serialization format.
+Schema-valid does not imply semantically valid, useful, recommended, or
+review-approved. The retained Markdown files are minimal historical-link stubs
+and contain no duplicate Role contract data.

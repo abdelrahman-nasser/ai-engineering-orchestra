@@ -2,6 +2,7 @@
 
 import ast
 import importlib
+import engineering_orchestration.role_catalog as role_catalog
 from importlib.metadata import EntryPoint
 import json
 from pathlib import Path
@@ -11,15 +12,27 @@ import unittest
 from unittest.mock import patch
 
 from engineering_orchestration import cli
+from engineering_orchestration.role_catalog import (
+    find_default_roles_resource,
+    load_role_catalog,
+)
 from engineering_orchestration.schema_resources import schema_resource
 
 
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGED_SCHEMAS = (
     "actor.schema.json",
+    "role.schema.json",
     "task.schema.json",
     "workflow.schema.json",
     "project-manifest.schema.json",
+)
+PACKAGED_ROLES = (
+    "architect.yaml",
+    "documentation-specialist.yaml",
+    "reviewer.yaml",
+    "security-reviewer.yaml",
+    "software-engineer.yaml",
 )
 
 
@@ -54,15 +67,41 @@ class PackagingTests(unittest.TestCase):
             self.assertEqual(schema_resource(name).read_bytes(),
                              (ROOT / "schemas" / name).read_bytes())
 
+    def test_packaged_role_content_matches_canonical_source(self):
+        resources = find_default_roles_resource()
+        self.assertIsNotNone(resources)
+        actual = sorted(
+            item.name for item in resources.iterdir()
+            if item.is_file() and item.name.endswith(".yaml")
+        )
+        self.assertEqual(actual, list(PACKAGED_ROLES))
+        for name in PACKAGED_ROLES:
+            self.assertEqual(
+                resources.joinpath(name).read_bytes(),
+                (ROOT / "roles" / name).read_bytes(),
+            )
+
     def test_schema_lookup_does_not_consult_cwd(self):
         with patch("pathlib.Path.cwd", side_effect=AssertionError("CWD is project data")):
             for name in PACKAGED_SCHEMAS:
                 self.assertIsInstance(json.loads(schema_resource(name).read_text()), dict)
 
+    def test_role_lookup_does_not_consult_cwd(self):
+        with patch("pathlib.Path.cwd", side_effect=AssertionError("CWD is project data")):
+            self.assertEqual(len(load_role_catalog().role_ids), 5)
+
     def test_missing_installed_schema_never_uses_checkout_fallback(self):
         with tempfile.TemporaryDirectory() as folder:
             with patch("engineering_orchestration.schema_resources.files", return_value=Path(folder)):
                 self.assertIsNone(schema_resource("task.schema.json"))
+
+    def test_missing_installed_roles_never_use_checkout_fallback(self):
+        with tempfile.TemporaryDirectory() as folder:
+            missing = ModuleNotFoundError(name="engineering_orchestration._roles")
+            with patch("engineering_orchestration.role_catalog.files", side_effect=missing), \
+                    patch("engineering_orchestration.role_catalog.__file__",
+                          str(Path(folder) / "package" / "role_catalog.py")):
+                self.assertIsNone(role_catalog.find_default_roles_resource())
 
     def test_uninstalled_resource_failure_does_not_search_target(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -84,9 +123,12 @@ class PackagingTests(unittest.TestCase):
         config = data["tool"]["setuptools"]
         self.assertFalse(config["include-package-data"])
         self.assertEqual(config["packages"],
-                         ["engineering_orchestration", "engineering_orchestration._schemas"])
-        self.assertEqual(config["package-data"], {"engineering_orchestration._schemas":
-                         list(PACKAGED_SCHEMAS)})
+                         ["engineering_orchestration", "engineering_orchestration._schemas",
+                          "engineering_orchestration._roles"])
+        self.assertEqual(config["package-data"], {
+            "engineering_orchestration._schemas": list(PACKAGED_SCHEMAS),
+            "engineering_orchestration._roles": ["*.yaml"],
+        })
 
     def test_documented_scope_is_local_and_verify_is_portable(self):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")

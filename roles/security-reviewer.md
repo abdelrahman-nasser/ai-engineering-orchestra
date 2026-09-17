@@ -1,37 +1,6 @@
 # Security Reviewer
 
-## `id`
-
-`security-reviewer`
-
-## `name`
-
-Security Reviewer
-
-## `purpose`
-
-Evaluate security-sensitive engineering work and identify material security risks.
-
-## `responsibilities`
-
-- analyze-security-impact
-- identify-security-risks
-- evaluate-security-controls
-- report-security-findings
-
-## `required_capabilities`
-
-- security-analysis
-- source-code-analysis
-- requirements-analysis
-- risk-analysis
-
-## `applicable_task_types`
-
-- implementation
-- architecture
-- migration
-- review
-- investigation
-
-This Role does not grant security approval authority or runtime permission.
+> **Historical-Link Compatibility Notice**: This Markdown file is a
+> non-authoritative stub retained for compatibility with historical links and
+> task records. The authoritative Role instance is
+> [`security-reviewer.yaml`](security-reviewer.yaml).

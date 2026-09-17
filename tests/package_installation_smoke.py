@@ -41,6 +41,7 @@ def source_digest() -> dict[str, str]:
     paths = [ROOT / "pyproject.toml", ROOT / "aio.py"]
     paths += list((ROOT / "engineering_orchestration").glob("*.py"))
     paths += list((ROOT / "schemas").glob("*.json"))
+    paths += list((ROOT / "roles").glob("*.yaml"))
     return {str(path): hashlib.sha256(path.read_bytes()).hexdigest() for path in paths}
 
 
@@ -73,7 +74,14 @@ def make_project(base: Path) -> Path:
     (project / "workflows/unrelated-filename.yaml").write_text(json.dumps({
         "id": "external-flow", "name": "External", "purpose": "Local governance",
         "stages": [{"id": "external-stage", "purpose": "Local check",
+                    "required_roles": ["software-engineer"],
                     "required_quality_gates": ["external_gate"]}],
+    }), encoding="utf-8")
+    (project / "roles").mkdir()
+    (project / "roles/software-engineer.yaml").write_text(json.dumps({
+        "id": "project-only-role", "name": "Project override",
+        "purpose": "Must be ignored by the framework Role catalog.",
+        "responsibilities": [], "required_capabilities": [],
     }), encoding="utf-8")
     (project / "src/nested").mkdir(parents=True)
     return project
@@ -110,16 +118,23 @@ def main() -> None:
                     names = archive.namelist()
                     modules = {f"engineering_orchestration/{name}" for name in
                                ("__init__.py", "actor_coverage.py", "cli.py", "list_tasks.py", "inspect_task.py",
-                                "verify_repo.py", "workflow_catalog.py", "schema_resources.py",
+                                "verify_repo.py", "workflow_catalog.py", "role_catalog.py", "schema_resources.py",
                                 "project.py", "validation.py", "project_verification.py")}
                     schemas = {f"engineering_orchestration/_schemas/{name}" for name in
-                               ("actor.schema.json", "task.schema.json", "workflow.schema.json",
+                               ("actor.schema.json", "role.schema.json", "task.schema.json", "workflow.schema.json",
                                 "project-manifest.schema.json")}
+                    roles = {f"engineering_orchestration/_roles/{name}" for name in
+                             ("architect.yaml", "documentation-specialist.yaml", "reviewer.yaml",
+                              "security-reviewer.yaml", "software-engineer.yaml")}
                     payload = {name for name in names if ".dist-info/" not in name}
-                    require(payload == modules | schemas, f"Unexpected wheel payload: {payload}")
+                    require(payload == modules | schemas | roles,
+                            f"Unexpected wheel payload: {payload}")
                     for name in schemas:
                         require(archive.read(name) == (ROOT / "schemas" / Path(name).name).read_bytes(),
                                 "Installed schema differs from canonical source")
+                    for name in roles:
+                        require(archive.read(name) == (ROOT / "roles" / Path(name).name).read_bytes(),
+                                "Installed Role differs from canonical source")
                     print("WHEEL CONTENTS:\n" + "\n".join(names), flush=True)
                 run([str(python), "-m", "pip", "install", str(wheel)], base, run_env)
             run([str(python), "-m", "pip", "check"], base, run_env)
@@ -129,11 +144,23 @@ from pathlib import Path
 import engineering_orchestration.cli as cli
 import engineering_orchestration.actor_coverage as actor_coverage
 import engineering_orchestration.project_verification as project_verification
+import engineering_orchestration.role_catalog as role_catalog
 from engineering_orchestration.schema_resources import schema_resource
+catalog = role_catalog.load_role_catalog()
+software_engineer = catalog.get('software-engineer')
+actor = {'id': 'installed-agent', 'kind': 'agent',
+         'competencies': list(software_engineer['required_capabilities'])}
+coverage = actor_coverage.evaluate_actor_role_coverage(actor, software_engineer)
+role_source = role_catalog.find_default_roles_resource()
 print(json.dumps({'module': cli.__file__, 'actor_module': actor_coverage.__file__,
     'runner_module': project_verification.__file__,
+    'role_module': role_catalog.__file__, 'role_ids': catalog.role_ids,
+    'role_valid': catalog.is_valid, 'coverage': coverage.compatible,
+    'roles': [str(role_source.joinpath(name)) for name in
+    ('architect.yaml', 'documentation-specialist.yaml', 'reviewer.yaml',
+     'security-reviewer.yaml', 'software-engineer.yaml')],
     'schemas': [str(schema_resource(n)) for n in
-    ('actor.schema.json', 'task.schema.json', 'workflow.schema.json',
+    ('actor.schema.json', 'role.schema.json', 'task.schema.json', 'workflow.schema.json',
      'project-manifest.schema.json')], 'sys_path': sys.path}))
 """
             evidence = json.loads(run([str(python), "-B", "-c", probe], project / "src/nested", run_env))
@@ -145,10 +172,20 @@ print(json.dumps({'module': cli.__file__, 'actor_module': actor_coverage.__file_
                         "Normal runner import leaked to source")
                 require(Path(evidence["actor_module"]).resolve().is_relative_to(environment),
                         "Normal Actor evaluator import leaked to source")
+                require(Path(evidence["role_module"]).resolve().is_relative_to(environment),
+                        "Normal Role catalog import leaked to source")
                 for path in evidence["schemas"]:
                     require(Path(path).resolve().is_relative_to(environment), "Resource leaked to source")
+                for path in evidence["roles"]:
+                    require(Path(path).resolve().is_relative_to(environment),
+                            "Role resource leaked to source")
                 require(all(not Path(p).resolve().is_relative_to(ROOT) for p in evidence["sys_path"] if p),
                         "Checkout unexpectedly present on sys.path")
+            require(evidence["role_valid"], "Installed Role catalog is invalid")
+            require(evidence["role_ids"] == ["architect", "documentation-specialist", "reviewer",
+                                             "security-reviewer", "software-engineer"],
+                    "Installed Role IDs differ from canonical catalog")
+            require(evidence["coverage"], "Installed Role-to-Actor coverage failed")
             for cwd in (ROOT, ROOT / "scripts"):
                 for args, marker in [(["--help"], "{tasks,inspect,verify}"),
                                      (["tasks"], "AIO-016"),
@@ -235,10 +272,18 @@ try:
     check('FAIL')
 finally:
     flow.write_text(saved)
+saved = flow.read_text()
+try:
+    data = json.loads(saved)
+    data['stages'][0]['required_roles'] = ['nonexistent-role']
+    flow.write_text(json.dumps(data))
+    check('FAIL')
+finally:
+    flow.write_text(saved)
 with patch('engineering_orchestration.schema_resources.schema_resource', return_value=None):
     check('ERROR')
 check('PASS')
-print('PASS: installed structural validation, custom paths, invalid data, identities, references, resources')
+print('PASS: installed structural validation, custom paths, invalid data, identities, references, framework Roles, resources')
 """
             print(run([str(python), "-B", "-c", structural_probe], project / "src/nested", run_env), flush=True)
             run([str(aio), "tasks"], base, run_env, expected=2)

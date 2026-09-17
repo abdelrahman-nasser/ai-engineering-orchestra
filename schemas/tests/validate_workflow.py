@@ -15,6 +15,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 from engineering_orchestration.workflow_catalog import semantic_uniqueness_errors
 
+from engineering_orchestration.role_catalog import load_role_catalog
 from engineering_orchestration.schema_resources import schema_errors
 
 SCHEMA_PATH = REPO_ROOT / "schemas" / "workflow.schema.json"
@@ -200,7 +201,33 @@ def main() -> int:
             passed = semantic_uniqueness_errors(documents) == expected_errors
             print(f"{'PASS' if passed else 'FAIL'} {label}")
             results.append(passed)
-        print("Role/Quality Gate existence: manual review; NOT established by this validator.")
+
+        print("\nRepository semantic validation - Workflow Role references")
+        role_catalog = load_role_catalog()
+        if role_catalog.is_valid:
+            reference_errors = []
+            for definition in sorted(definitions, key=lambda item: item["id"]):
+                for stage in definition["stages"]:
+                    for role_id in stage.get("required_roles", []):
+                        if role_catalog.get(role_id) is None:
+                            reference_errors.append(
+                                f"{definition['id']}.{stage['id']}: unknown Role {role_id}"
+                            )
+            references_valid = not reference_errors
+        else:
+            reference_errors = [
+                "framework Role catalog could not load: "
+                + "; ".join(role_catalog.load_errors)
+            ]
+            references_valid = False
+        print(
+            f"{'PASS' if references_valid else 'FAIL'} canonical Workflow Role "
+            "references resolve"
+        )
+        for error in reference_errors:
+            print("  " + error)
+        results.append(references_valid)
+        print("Quality Gate existence remains manual review.")
     except Exception as error:
         print(f"FAIL validation could not complete: {type(error).__name__}: {error}")
         return 1

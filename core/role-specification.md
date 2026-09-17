@@ -12,11 +12,12 @@ A Role is a reusable, provider-independent description of an engineering respons
 
 A Role describes what responsibility is required. It does not select, authorize, configure, or control the actor that fulfils the Role.
 
-The canonical Role directory is:
+Canonical Role instances are framework-owned and maintained as YAML in:
 
-`roles/`
+`roles/*.yaml`
 
-The initial reusable Role definitions are maintained in that directory.
+Projects may reference their IDs, but AIO-022 defines no project Role directory,
+custom Role, extension, override, or precedence mechanism.
 
 ---
 
@@ -207,18 +208,22 @@ are defined separately in `core/actor-specification.md`.
 
 ---
 
-## 7. Future Relationship to Tasks
+## 7. Relationship to Workflows, Actors, and Tasks
 
 A Task continues to own the work that must be performed.
 
-Future work may identify multiple responsibility requirements for one Task, such as:
+Workflows may identify multiple Role requirements for engineering work, such as:
 
 - implementation -> Software Engineer
 - architecture review -> Architect
 - security review -> Security Reviewer
 - independent review -> Reviewer
 
-AIO-006 does not choose the Task-to-Role representation. The future Assignment Contract must determine how multiple responsibility requirements, actor selection, eligibility, and separation of duties are represented.
+Workflow stages reference canonical Role IDs through `required_roles`. The
+framework Role catalog resolves those IDs to Role objects, and the pure Actor
+coverage evaluator can compare a caller-supplied Actor with a resolved Role.
+That result is eligibility evidence only. The future Assignment Contract must
+still determine actor selection, binding, availability, and separation of duties.
 
 The Task schema is not changed by this specification.
 
@@ -242,13 +247,25 @@ Human Approver is not an ordinary canonical engineering Role. Human approval rem
 
 ## 9. Validation Status in v0.1
 
-The canonical Role contract is defined by this specification.
+Role authority is deliberately ordered as follows:
+
+1. `core/role-specification.md` is the semantic authority.
+2. `schemas/role.schema.json` is the structural authority and is semantically
+   subordinate to this specification.
+3. `roles/*.yaml` contains the canonical Role instances.
+4. `roles/*.md` contains non-authoritative compatibility/documentation stubs.
+5. `schemas/tests/validate_role.py` is development regression tooling only.
 
 A machine-readable JSON Schema for normalized Role objects is available at:
 
 `schemas/role.schema.json`
 
-Repository-local validation tooling is available at:
+Canonical Role YAML resources and the Role schema are packaged from those
+Sources of Truth for `engineering_orchestration.role_catalog`. The catalog uses
+package-safe resource access, validates each parsed object, indexes by declared
+`id`, and does not consult CWD or an active project's `roles/` directory.
+
+Repository-local regression tooling is available at:
 
 `schemas/tests/validate_role.py`
 
@@ -256,26 +273,17 @@ Representative valid and invalid fixtures are available under:
 
 `schemas/tests/role/`
 
-### Architectural Boundary of Role Schema Validation
+### Architectural Boundary of Role Loading and Validation
 
-`schemas/role.schema.json` defines the structural schema of a **normalized Role object**.
+`schemas/role.schema.json` defines structural validity for parsed Role objects.
+Canonical YAML definitions are validated directly, without Markdown extraction
+or a generated projection. Markdown compatibility stubs contain no Role contract
+data and must not be parsed by runtime or validation tooling.
 
-AIO-007 validates a normalized in-memory projection of the current canonical Markdown Role definitions. It does not establish Markdown as the future runtime Role serialization format.
-
-The existing canonical Role definitions remain Markdown. A future task may separately decide the runtime/persistence representation of Role instances.
-
-The Markdown extractor implemented for repository validation is:
-
-- test-only,
-- repository-local,
-- intentionally minimal,
-- limited to the current canonical Role document structure,
-- unable to infer missing values,
-- unable to supply defaults,
-- strict about duplicate or ambiguous sections,
-- visibly failing when extraction cannot be performed safely.
-
-It is not exposed as a public Role parser, library, CLI contract, or runtime serialization mechanism.
+The Role catalog performs data access and validation only. It does not evaluate
+Actor coverage, choose or rank Actors, create Assignments, inspect availability,
+authorize or execute work, or evaluate Quality Gates. Actor coverage remains the
+separate responsibility of `engineering_orchestration.actor_coverage`.
 
 ### Structural vs Semantic Validity
 

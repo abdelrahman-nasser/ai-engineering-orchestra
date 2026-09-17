@@ -49,7 +49,9 @@ Run commands from the managed project or a subdirectory. The nearest ancestor
 containing `.ai/project.yaml` determines the active project, never the installed
 package location. `tasks` and `inspect` resolve `tasks.directory` from the active
 Manifest (default `.ai/tasks/`). Workflows remain in the target project's
-`workflows/`; canonical schemas belong to the tool.
+`workflows/`; canonical schemas and Roles belong to the tool. An adopter's own
+`roles/` directory is ignored because project Role extensions and overrides are
+not part of the current contract.
 
 `aio verify` validates the active project's supported AIO structure and then runs
 its project-declared Verification Checks from `.ai/project.yaml` in declaration
@@ -108,20 +110,41 @@ for finding in result.findings:
 An optional `start=Path(...)` chooses the discovery starting directory. Validation
 covers the Project Manifest, immediate Task child directories in the configured
 Task path, declared Task ID uniqueness, Workflow YAMLs and ID uniqueness,
-Workflow-local Stage ID uniqueness, and declared Task-to-Workflow references.
+Workflow-local Stage ID uniqueness, declared Task-to-Workflow references, and
+Workflow-to-framework-Role references.
 Directory and file names do not define IDs. Missing required project structures
 or invalid data produce FAIL; missing installed resources, I/O problems, and
 internal failures produce ERROR. ERROR takes precedence over FAIL. PASS covers
 only the supported structural rules, without establishing Quality Gate results.
 
-The installed tool packages canonical Actor, Task, Workflow, and Project Manifest
-schemas from their single sources in `schemas/`. Managed projects need no schema
-regression scripts, fixtures, Orchestra Task history, Git, Node/npm, or Python
-tests. Python and the declared tool dependencies run the validator; the target
-project's own language is irrelevant. The API executes no project commands and
-changes no files. Actor and Role project discovery is outside coverage: no Actor
-catalog exists, and current Role Markdown extraction is test-only rather than a
-runtime representation contract. No SKIP results are emitted.
+The installed tool packages canonical Actor, Role, Task, Workflow, and Project
+Manifest schemas from their single sources in `schemas/`, plus the five
+framework-owned canonical Role YAML instances from `roles/`. Managed projects
+need no schema regression scripts, fixtures, Orchestra Task history, Git,
+Node/npm, or Python tests. Python and the declared tool dependencies run the
+validator; the target project's own language is irrelevant. The API executes no
+project commands and changes no files. No Actor catalog exists. No SKIP results
+are emitted.
+
+## Runtime Role Catalog
+
+Canonical Role instances are machine-readable and package-owned:
+
+```python
+from engineering_orchestration.role_catalog import load_role_catalog
+
+catalog = load_role_catalog()
+role = catalog.get("software-engineer")
+print(catalog.role_ids, role["required_capabilities"])
+```
+
+The catalog safe-loads and validates packaged `roles/*.yaml`, indexes by declared
+Role `id` rather than filename, rejects duplicate IDs, and returns `None` for an
+unknown lookup. It never searches CWD or a managed project's `roles/` directory.
+The authority order is Role specification, Role schema, canonical Role YAML,
+then non-authoritative Markdown compatibility stubs. The catalog does not select
+or assign Actors, inspect availability, authorize execution, or evaluate Quality
+Gates.
 
 ## Actor Competency Coverage
 
@@ -131,7 +154,9 @@ compares already-normalized Actor competencies with Role requirements:
 
 ```python
 from engineering_orchestration.actor_coverage import evaluate_actor_role_coverage
+from engineering_orchestration.role_catalog import load_role_catalog
 
+role = load_role_catalog().get("software-engineer")
 coverage = evaluate_actor_role_coverage(actor, role)
 print(coverage.compatible, coverage.missing_competencies)
 ```

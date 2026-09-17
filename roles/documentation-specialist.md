@@ -1,35 +1,6 @@
 # Documentation Specialist
 
-## `id`
-
-`documentation-specialist`
-
-## `name`
-
-Documentation Specialist
-
-## `purpose`
-
-Analyze and maintain documentation that accurately represents engineering contracts and repository behavior.
-
-## `responsibilities`
-
-- analyze-documentation
-- maintain-documentation-consistency
-- document-engineering-contracts
-- report-documentation-findings
-
-## `required_capabilities`
-
-- documentation-analysis
-- requirements-analysis
-- evidence-evaluation
-
-## `applicable_task_types`
-
-- documentation
-- specification
-- review
-- maintenance
-
-This Role does not grant permission to modify documentation or approve changes.
+> **Historical-Link Compatibility Notice**: This Markdown file is a
+> non-authoritative stub retained for compatibility with historical links and
+> task records. The authoritative Role instance is
+> [`documentation-specialist.yaml`](documentation-specialist.yaml).

@@ -1,36 +1,6 @@
 # Software Engineer
 
-## `id`
-
-`software-engineer`
-
-## `name`
-
-Software Engineer
-
-## `purpose`
-
-Perform scoped software engineering work and provide evidence that the resulting changes were validated.
-
-## `responsibilities`
-
-- implement-software
-- validate-changes
-- report-evidence
-- preserve-task-scope
-
-## `required_capabilities`
-
-- software-implementation
-- source-code-analysis
-- automated-testing
-- evidence-evaluation
-
-## `applicable_task_types`
-
-- implementation
-- bugfix
-- refactoring
-- migration
-
-This Role does not grant write access, command permission, or approval authority.
+> **Historical-Link Compatibility Notice**: This Markdown file is a
+> non-authoritative stub retained for compatibility with historical links and
+> task records. The authoritative Role instance is
+> [`software-engineer.yaml`](software-engineer.yaml).

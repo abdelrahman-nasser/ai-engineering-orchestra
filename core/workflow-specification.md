@@ -299,8 +299,16 @@ Workflow Stage
   └─ declares: required_roles: [reviewer]
         │
         ▼
+Framework Role Catalog
+  └─ resolves: reviewer -> required competencies
+        │
+        ▼
+Actor-Role Competency Coverage
+  └─ compares: supplied Actor -> eligibility evidence
+        │
+        ▼
 Future Assignment Contract
-  └─ selects: eligible Human or Agent actor possessing reviewer capabilities
+  └─ may select and bind an eligible Human or Agent actor
         │
         ▼
 Future Execution Contract
@@ -308,6 +316,12 @@ Future Execution Contract
 ```
 
 Workflows reference Roles directly. AI Engineering Orchestra does not introduce an intermediate "responsibility requirement" taxonomy between Workflow and Role.
+
+Portable validation resolves `required_roles` against the framework-owned Role
+catalog. An unresolved Role ID is semantic cross-resource failure, not a
+Workflow schema rule. If the packaged Role catalog itself is unavailable or
+corrupt, validation reports infrastructure error without per-reference cascades.
+Role resolution and competency coverage do not create an Assignment.
 
 ### Composition Rules
 

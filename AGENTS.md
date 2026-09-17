@@ -49,7 +49,10 @@ Use these locations as authoritative sources:
 - Task schema: `schemas/task.schema.json`
 - Role specification: `core/role-specification.md` — authoritative semantic contract for Roles; governs semantics if it conflicts with the Role schema.
 - Role schema: `schemas/role.schema.json` — machine-readable structural validation of the Role contract; semantically subordinate to `core/role-specification.md`.
-- Roles: `roles/`
+- Canonical Role instances: `roles/*.yaml` — framework-owned Role data; identity
+  comes from each object's declared `id`.
+- Role compatibility stubs: `roles/*.md` — non-authoritative historical-link and
+  documentation paths; never runtime Role data.
 - Actor specification: `core/actor-specification.md` — authoritative semantic contract for Actors and Actor-to-Role competency coverage; governs semantics if it conflicts with the Actor schema.
 - Actor schema: `schemas/actor.schema.json` — machine-readable structural validation of the Actor contract; semantically subordinate to `core/actor-specification.md`.
 - Workflow specification: `core/workflow-specification.md` — authoritative semantic contract for Workflows; governs semantics if it conflicts with the Workflow schema.

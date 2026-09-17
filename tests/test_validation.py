@@ -12,6 +12,7 @@ import yaml
 
 from engineering_orchestration import cli
 from engineering_orchestration.project import task_directory
+from engineering_orchestration.role_catalog import RoleCatalog
 from engineering_orchestration.schema_resources import load_validator, schema_errors
 from engineering_orchestration.validation import manifest_semantic_errors, validate_project
 
@@ -222,9 +223,87 @@ class StructuralValidationTests(unittest.TestCase):
                 self.workflow_path.write_text(content, encoding="utf-8")
                 self.assert_status("FAIL")
 
+    def test_external_workflow_framework_role_reference_resolves(self):
+        self.workflow["stages"][0]["required_roles"] = ["software-engineer"]
+        write(self.workflow_path, self.workflow)
+        self.assert_status("PASS")
+
+    def test_external_project_roles_directory_is_ignored(self):
+        self.workflow["stages"][0]["required_roles"] = ["project-only-role"]
+        write(self.workflow_path, self.workflow)
+        write(self.root / "roles/project-only-role.yaml", {
+            "id": "project-only-role", "name": "Override",
+            "purpose": "Must not load", "responsibilities": [],
+            "required_capabilities": [],
+        })
+        self.assert_status("FAIL", "unknown Role: project-only-role")
+
+    def test_unknown_workflow_role_reference_is_semantic_fail(self):
+        self.workflow["stages"][0]["required_roles"] = ["nonexistent-role"]
+        write(self.workflow_path, self.workflow)
+        result = self.assert_status("FAIL", "unknown Role: nonexistent-role")
+        self.assertEqual(
+            [finding.status for finding in result.findings
+             if "unknown Role" in finding.message],
+            ["FAIL"],
+        )
+
+    def test_multiple_unknown_workflow_roles_preserve_deterministic_source_order(self):
+        self.workflow["stages"] = [
+            {"id": "first", "purpose": "First",
+             "required_roles": ["z-missing", "a-missing"]},
+            {"id": "second", "purpose": "Second",
+             "required_roles": ["m-missing"]},
+        ]
+        write(self.workflow_path, self.workflow)
+        first = self.assert_status("FAIL")
+        second = self.assert_status("FAIL")
+        messages = [item.message for item in first.findings if "unknown Role" in item.message]
+        self.assertEqual(messages, [
+            "Workflow 'example' stage 'first' references unknown Role: z-missing",
+            "Workflow 'example' stage 'first' references unknown Role: a-missing",
+            "Workflow 'example' stage 'second' references unknown Role: m-missing",
+        ])
+        self.assertEqual(messages, [
+            item.message for item in second.findings if "unknown Role" in item.message
+        ])
+
+    def test_broken_framework_role_catalog_is_one_error_without_reference_cascade(self):
+        self.workflow["stages"][0]["required_roles"] = ["one", "two"]
+        write(self.workflow_path, self.workflow)
+        broken = RoleCatalog(
+            roles_source=None,
+            load_errors=["packaged data corrupt", "schema unavailable"],
+            infrastructure_errors=["packaged data corrupt", "schema unavailable"],
+        )
+        with patch("engineering_orchestration.validation.load_role_catalog",
+                   return_value=broken):
+            result = self.assert_status("ERROR", "Framework Role catalog could not load")
+        catalog_findings = [
+            finding for finding in result.findings
+            if "Framework Role catalog" in finding.message
+        ]
+        self.assertEqual(len(catalog_findings), 1)
+        self.assertFalse(any("unknown Role" in finding.message for finding in result.findings))
+
+    def test_applicable_task_types_do_not_control_role_resolution(self):
+        self.task["type"] = "documentation"
+        self.workflow["stages"][0]["required_roles"] = ["software-engineer"]
+        write(self.task_path, self.task)
+        write(self.workflow_path, self.workflow)
+        self.assert_status("PASS")
+
+    def test_workflow_schema_does_not_encode_role_existence(self):
+        schema = load_validator("workflow.schema.json").schema
+        role_items = schema["$defs"]["stage"]["properties"]["required_roles"]["items"]
+        self.assertEqual(role_items, {"type": "string"})
+
     def test_missing_schema_is_error(self):
         from engineering_orchestration.schema_resources import schema_resource
-        for name in ("task.schema.json", "workflow.schema.json", "project-manifest.schema.json"):
+        for name in (
+            "role.schema.json", "task.schema.json", "workflow.schema.json",
+            "project-manifest.schema.json",
+        ):
             with self.subTest(name=name), patch(
                 "engineering_orchestration.schema_resources.schema_resource",
                 side_effect=lambda requested: None if requested == name else schema_resource(requested),

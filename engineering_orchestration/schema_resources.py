@@ -14,6 +14,7 @@ def schema_resource(name: str) -> Traversable | None:
     """
     if name not in {
         "actor.schema.json",
+        "role.schema.json",
         "task.schema.json",
         "workflow.schema.json",
         "project-manifest.schema.json",

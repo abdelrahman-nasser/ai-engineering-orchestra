@@ -1,36 +1,6 @@
 # Reviewer
 
-## `id`
-
-`reviewer`
-
-## `name`
-
-Reviewer
-
-## `purpose`
-
-Evaluate engineering work against its requirements, scope, and available evidence.
-
-## `responsibilities`
-
-- inspect-changes
-- evaluate-acceptance-criteria
-- evaluate-validation-evidence
-- report-findings
-
-## `required_capabilities`
-
-- source-code-analysis
-- requirements-analysis
-- evidence-evaluation
-
-## `applicable_task_types`
-
-- implementation
-- bugfix
-- refactoring
-- migration
-- review
-
-Independence and separation-of-duties requirements are defined outside this Role.
+> **Historical-Link Compatibility Notice**: This Markdown file is a
+> non-authoritative stub retained for compatibility with historical links and
+> task records. The authoritative Role instance is
+> [`reviewer.yaml`](reviewer.yaml).

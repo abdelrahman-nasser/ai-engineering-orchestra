@@ -1,0 +1,35 @@
+id: AIO-022
+title: Add Machine-Readable Runtime Role Representation and Catalog
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: medium
+execution:
+  mode: deep
+workflow: architecture-change
+objective: >
+  Make the five framework-owned Roles directly machine-readable through
+  canonical packaged YAML and a concrete runtime catalog, then resolve Workflow
+  Role references semantically without assigning Actors.
+scope:
+  include:
+    - Five canonical YAML Role instances and Markdown compatibility stubs
+    - Package-safe Role schema and Role instance resources
+    - Concrete runtime Role catalog indexed by declared Role ID
+    - Workflow-to-Role semantic reference validation
+    - Direct YAML Role validation, tests, documentation, and package evidence
+  exclude:
+    - Assignment, Actor selection, ranking, persistence, or availability
+    - Project-defined Roles, overrides, extensions, or Role directory configuration
+    - Provider, model, runtime, reasoning, permission, or execution behavior
+    - Capability registry, aliases, levels, scoring, or normalization changes
+    - CLI commands, generic catalog frameworks, generated projections, or AIO-023
+dependencies:
+  - AIO-021
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true

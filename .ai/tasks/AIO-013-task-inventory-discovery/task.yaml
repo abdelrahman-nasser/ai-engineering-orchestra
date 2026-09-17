@@ -1,0 +1,43 @@
+id: AIO-013
+title: Implement Task Inventory and Discovery Utility
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: medium
+risk: medium
+execution:
+  mode: standard
+workflow: standard-change
+objective: >
+  Implement scripts/list_tasks.py providing a deterministic repository-level inventory of Tasks
+  under .ai/tasks/, consuming existing Task and Workflow infrastructure without introducing new
+  contracts, runtime execution machinery, or ID-to-directory coupling.
+scope:
+  include:
+    - Task discovery and inventory utility in scripts/list_tasks.py
+    - CLI filtering for status (--status) and declared workflow ID (--workflow)
+    - Direct reuse of existing inspect_task.py inspection logic without subprocess spawning or stdout parsing
+    - Deterministic tabular presentation and repository anomaly reporting
+    - Comprehensive unit tests in tests/test_list_tasks.py covering all 16 required scenarios
+    - Canonical Task artifacts in .ai/tasks/AIO-013-task-inventory-discovery/
+    - Governed execution under standard-change workflow with independent review
+  exclude:
+    - Deriving Task identity from directory names
+    - Modifying task, workflow, role, or project manifest schemas
+    - Adding runtime execution, actor assignment, or stage tracking machinery
+    - Subprocess execution or stdout parsing of inspect_task.py
+    - Output formats beyond deterministic human-readable text (no JSON, CSV, pagination, interactive UI)
+    - Workflow auto-selection or default workflow inheritance
+    - Modifying canonical historical tasks AIO-001 through AIO-012
+dependencies:
+  - AIO-010
+  - AIO-011
+  - AIO-012
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: false
+  breaking_schema_changes_require_approval: false
+  breaking_contract_changes_require_approval: false

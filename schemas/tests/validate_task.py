@@ -32,6 +32,7 @@ CANONICAL_TASKS = [
     REPO_ROOT / ".ai" / "tasks" / "AIO-010-task-status-inspection" / "task.yaml",
     REPO_ROOT / ".ai" / "tasks" / "AIO-011-task-workflow-binding" / "task.yaml",
     REPO_ROOT / ".ai" / "tasks" / "AIO-012-workflow-representation-resolution" / "task.yaml",
+    REPO_ROOT / ".ai" / "tasks" / "AIO-013-task-inventory-discovery" / "task.yaml",
 ]
 
 

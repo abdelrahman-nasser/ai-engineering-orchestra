@@ -12,7 +12,7 @@ def schema_resource(name: str) -> Traversable | None:
     Uninstalled source wrappers also work: only this module's own checkout
     (identified by its packaging metadata) may supply that resource directory.
     """
-    if name not in {"task.schema.json", "workflow.schema.json"}:
+    if name not in {"task.schema.json", "workflow.schema.json", "project-manifest.schema.json"}:
         raise ValueError(f"Unknown tool schema: {name}")
     try:
         resource = files("engineering_orchestration._schemas").joinpath(name)
@@ -24,3 +24,22 @@ def schema_resource(name: str) -> Traversable | None:
             return None
         resource = source_root / "schemas" / name
     return resource if resource.is_file() else None
+
+
+def load_validator(name: str):
+    """Load and self-check a canonical tool schema; resource failures propagate."""
+    import json
+    from jsonschema import Draft202012Validator
+
+    resource = schema_resource(name)
+    if resource is None:
+        raise FileNotFoundError(f"Required tool schema missing: {name}")
+    schema = json.loads(resource.read_text(encoding="utf-8"))
+    Draft202012Validator.check_schema(schema)
+    return Draft202012Validator(schema)
+
+
+def schema_errors(validator, document):
+    """Deterministic structural errors, retaining jsonschema evidence objects."""
+    return sorted(validator.iter_errors(document),
+                  key=lambda error: (str(list(error.absolute_path)), str(error.validator)))

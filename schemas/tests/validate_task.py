@@ -15,10 +15,13 @@ if str(REPO_ROOT) not in sys.path:
 
 from scripts.workflow_catalog import load_workflow_catalog
 
+from engineering_orchestration.schema_resources import schema_errors
+
 SCHEMA_PATH = REPO_ROOT / "schemas" / "task.schema.json"
 FIXTURE_DIR = REPO_ROOT / "schemas" / "tests" / "task"
 
 CANONICAL_TASKS = [
+    REPO_ROOT / ".ai" / "tasks" / "AIO-017-installed-structural-validation" / "task.yaml",
     REPO_ROOT / "templates" / "task" / "task.yaml",
     REPO_ROOT / ".ai" / "tasks" / "AIO-001-foundation" / "task.yaml",
     REPO_ROOT / ".ai" / "tasks" / "AIO-002-project-manifest" / "task.yaml",
@@ -128,10 +131,7 @@ def validate_case(
         print(f"FAIL {label}: could not load YAML: {exc}")
         return False
 
-    errors = sorted(
-        validator.iter_errors(document),
-        key=lambda error: (str(list(error.absolute_path)), str(error.validator)),
-    )
+    errors = schema_errors(validator, document)
 
     actual_valid = not errors
 

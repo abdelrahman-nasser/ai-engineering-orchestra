@@ -18,7 +18,7 @@ import yaml
 from jsonschema import Draft202012Validator
 from importlib.resources.abc import Traversable
 
-from engineering_orchestration.schema_resources import schema_resource
+from engineering_orchestration.schema_resources import schema_resource, schema_errors
 
 from engineering_orchestration.workflow_catalog import (
     WorkflowCatalog,
@@ -274,10 +274,7 @@ def inspect_task(
     try:
         schema_dict = load_schema(active_schema_path)
         validator = Draft202012Validator(schema_dict)
-        errors = sorted(
-            validator.iter_errors(raw_yaml),
-            key=lambda e: (str(list(e.absolute_path)), str(e.validator)),
-        )
+        errors = schema_errors(validator, raw_yaml)
         if errors:
             result.schema_status = "INVALID"
             for err in errors:

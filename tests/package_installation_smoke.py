@@ -46,13 +46,16 @@ def source_digest() -> dict[str, str]:
 
 def make_project(base: Path) -> Path:
     project = base / "external project"
-    tasks = project / ".ai/tasks/unrelated-directory"
+    tasks = project / "governance/tasks/unrelated-directory"
     tasks.mkdir(parents=True)
+    (project / ".ai").mkdir()
     manifest = {
         "schema_version": "0.1", "project": {"id": "external", "name": "External",
         "type": "application", "lifecycle": "greenfield"},
         "orchestra": {"version": "0.1.0"}, "complexity": {"default": "medium"},
         "risk": {"default": "low"}, "execution": {"default_mode": "standard"},
+        "human_control": {}, "quality": {},
+        "tasks": {"directory": "governance/tasks"},
     }
     (project / ".ai/project.yaml").write_text(json.dumps(manifest), encoding="utf-8")
     (tasks / "task.yaml").write_text(json.dumps({
@@ -80,7 +83,7 @@ def main() -> None:
     env["PYTHONUTF8"] = "1"
     before = source_digest()
     print(f"Python: {sys.version}; PYTHONPATH/PYTHONHOME removed", flush=True)
-    with tempfile.TemporaryDirectory(prefix="aio016-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="aio017-") as temporary:
         base = Path(temporary).resolve()
         require(not base.is_relative_to(ROOT), "Temporary environments must be outside checkout")
         project = make_project(base)
@@ -101,9 +104,10 @@ def main() -> None:
                     names = archive.namelist()
                     modules = {f"engineering_orchestration/{name}" for name in
                                ("__init__.py", "cli.py", "list_tasks.py", "inspect_task.py",
-                                "verify_repo.py", "workflow_catalog.py", "schema_resources.py")}
+                                "verify_repo.py", "workflow_catalog.py", "schema_resources.py",
+                                "project.py", "validation.py")}
                     schemas = {f"engineering_orchestration/_schemas/{name}" for name in
-                               ("task.schema.json", "workflow.schema.json")}
+                               ("task.schema.json", "workflow.schema.json", "project-manifest.schema.json")}
                     payload = {name for name in names if ".dist-info/" not in name}
                     require(payload == modules | schemas, f"Unexpected wheel payload: {payload}")
                     for name in schemas:
@@ -118,7 +122,7 @@ from pathlib import Path
 import engineering_orchestration.cli as cli
 from engineering_orchestration.schema_resources import schema_resource
 print(json.dumps({'module': cli.__file__, 'schemas': [str(schema_resource(n)) for n in
-    ('task.schema.json', 'workflow.schema.json')], 'sys_path': sys.path}))
+    ('task.schema.json', 'workflow.schema.json', 'project-manifest.schema.json')], 'sys_path': sys.path}))
 """
             evidence = json.loads(run([str(python), "-B", "-c", probe], project / "src/nested", env))
             print(f"{mode.upper()} IMPORT/RESOURCE EVIDENCE: {json.dumps(evidence)}", flush=True)
@@ -142,6 +146,65 @@ print(json.dumps({'module': cli.__file__, 'schemas': [str(schema_resource(n)) fo
                 if args[0] == "inspect":
                     require("external_gate" in output and "Resolution: RESOLVED" in output,
                             "Target Workflow was not used")
+            structural_probe = """
+import json
+from pathlib import Path
+from unittest.mock import patch
+from engineering_orchestration.validation import validate_project
+root = Path.cwd().parents[1]
+assert not any((root / name).exists() for name in ('.git', 'tests', 'schemas', 'node_modules'))
+task = root / 'governance/tasks/unrelated-directory/task.yaml'
+flow = root / 'workflows/unrelated-filename.yaml'
+manifest = root / '.ai/project.yaml'
+def check(expected):
+    with patch('subprocess.run', side_effect=AssertionError('No project commands')), \
+         patch('subprocess.Popen', side_effect=AssertionError('No project commands')):
+        result = validate_project()
+    assert result.status == expected, result
+check('PASS')
+for path in (manifest, task):
+    saved = path.read_text()
+    try:
+        path.write_text('[]')
+        check('FAIL')
+    finally:
+        path.write_text(saved)
+duplicate = task.parent.parent / 'different-directory'
+duplicate.mkdir()
+try:
+    (duplicate / 'task.yaml').write_text(task.read_text())
+    check('FAIL')
+finally:
+    (duplicate / 'task.yaml').unlink()
+    duplicate.rmdir()
+saved = task.read_text()
+try:
+    data = json.loads(saved)
+    data['workflow'] = 'unknown'
+    task.write_text(json.dumps(data))
+    check('FAIL')
+finally:
+    task.write_text(saved)
+duplicate = flow.with_name('duplicate.yaml')
+try:
+    duplicate.write_text(flow.read_text())
+    check('FAIL')
+finally:
+    duplicate.unlink()
+saved = flow.read_text()
+try:
+    data = json.loads(saved)
+    data['stages'].append(data['stages'][0])
+    flow.write_text(json.dumps(data))
+    check('FAIL')
+finally:
+    flow.write_text(saved)
+with patch('engineering_orchestration.schema_resources.schema_resource', return_value=None):
+    check('ERROR')
+check('PASS')
+print('PASS: installed structural validation, custom paths, invalid data, identities, references, resources')
+"""
+            print(run([str(python), "-B", "-c", structural_probe], project / "src/nested", env), flush=True)
             run([str(aio), "tasks"], base, env, expected=2)
             run([str(aio), "inspect", "MISSING"], project, env, expected=1)
             alias = """

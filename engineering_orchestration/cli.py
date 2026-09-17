@@ -18,33 +18,7 @@ import sys
 from pathlib import Path
 
 
-def find_project_root(start: Path | None = None) -> Path:
-    """Discover the project root by walking up from start to find .ai/project.yaml.
-
-    The active project is determined from the caller's context (current working
-    directory), not from the physical location of CLI source files. This ensures
-    correct behavior both during source development and after package installation.
-
-    Args:
-        start: Starting directory for upward search. Defaults to Path.cwd().
-
-    Returns:
-        Resolved Path to the project root directory.
-
-    Raises:
-        FileNotFoundError: If no .ai/project.yaml exists in start or any parent.
-    """
-    if start is None:
-        start = Path.cwd()
-    candidate = start.resolve()
-    if (candidate / ".ai" / "project.yaml").is_file():
-        return candidate
-    for parent in candidate.parents:
-        if (parent / ".ai" / "project.yaml").is_file():
-            return parent
-    raise FileNotFoundError(
-        f"No .ai/project.yaml found in '{start}' or any parent directory."
-    )
+from engineering_orchestration.project import find_project_root, task_directory
 
 
 def cmd_tasks(args: argparse.Namespace, project_root: Path) -> int:
@@ -54,9 +28,8 @@ def cmd_tasks(args: argparse.Namespace, project_root: Path) -> int:
     """
     from engineering_orchestration.list_tasks import discover_tasks, format_inventory_table
 
-    tasks_dir = project_root / ".ai" / "tasks"
-
     try:
+        tasks_dir = task_directory(project_root)
         inventory = discover_tasks(
             tasks_dir=tasks_dir,
             project_manifest_path=project_root / ".ai" / "project.yaml",
@@ -88,9 +61,8 @@ def cmd_inspect(args: argparse.Namespace, project_root: Path) -> int:
     from engineering_orchestration.inspect_task import format_report, inspect_task
     from engineering_orchestration.list_tasks import discover_tasks
 
-    tasks_dir = project_root / ".ai" / "tasks"
-
     try:
+        tasks_dir = task_directory(project_root)
         inventory = discover_tasks(
             tasks_dir=tasks_dir,
             project_manifest_path=project_root / ".ai" / "project.yaml",
@@ -167,7 +139,7 @@ def build_parser() -> argparse.ArgumentParser:
     tasks_parser = subparsers.add_parser(
         "tasks",
         help="List repository Tasks",
-        description="List and filter repository Tasks under .ai/tasks/.",
+        description="List and filter Tasks in the Manifest-configured directory.",
     )
     tasks_parser.add_argument(
         "--status",

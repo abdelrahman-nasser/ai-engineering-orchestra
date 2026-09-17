@@ -20,4 +20,4 @@ include-package-data = false
 "engineering_orchestration._schemas" = "schemas"
 
 [tool.setuptools.package-data]
-"engineering_orchestration._schemas" = ["task.schema.json", "workflow.schema.json"]
+"engineering_orchestration._schemas" = ["task.schema.json", "workflow.schema.json", "project-manifest.schema.json"]

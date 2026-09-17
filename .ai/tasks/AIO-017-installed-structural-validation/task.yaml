@@ -1,0 +1,33 @@
+id: AIO-017
+title: Extract Installed Structural Validation and Honor Project Task Paths
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: medium
+risk: medium
+execution:
+  mode: standard
+workflow: standard-change
+objective: >
+  Validate supported project AIO structures with installed tool-owned schemas
+  and share Manifest Task-directory resolution without generalizing verify.
+scope:
+  include:
+    - Programmatic Manifest, Task, and Workflow structural validation
+    - Shared Manifest Task-directory resolution for inventory and inspection
+    - Canonical schema resources and portable validation reuse
+    - Regression and installed external-project evidence
+    - Documentation consistency and independent review
+  exclude:
+    - Generic verify, project commands, and command execution contracts
+    - Role representation or runtime Markdown parsing
+    - Task lifecycle, Workflow execution, and Quality Gate result mapping
+    - Historical Task edits, schema semantic changes, publishing, and AIO-018
+dependencies:
+  - AIO-016
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true

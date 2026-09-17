@@ -11,6 +11,12 @@ from jsonschema import Draft202012Validator
 # Repository-local tests only. Canonical Workflow definitions are serialized in YAML.
 # Schema validity does not prove semantic/governance correctness.
 REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+from engineering_orchestration.workflow_catalog import semantic_uniqueness_errors
+
+from engineering_orchestration.schema_resources import schema_errors
+
 SCHEMA_PATH = REPO_ROOT / "schemas" / "workflow.schema.json"
 FIXTURE_DIR = REPO_ROOT / "schemas" / "tests" / "workflow"
 CANONICAL_WORKFLOWS = [
@@ -81,23 +87,6 @@ SAMPLE_WORKFLOW: dict[str, Any] = {
 }
 
 
-def semantic_uniqueness_errors(workflows: list[dict[str, Any]]) -> list[str]:
-    """Repository semantic validation on schema-valid objects, not JSON Schema."""
-    errors = []
-    seen_workflows: set[str] = set()
-    for workflow in workflows:
-        workflow_id = workflow["id"]
-        if workflow_id in seen_workflows:
-            errors.append("Duplicate Workflow ID: " + workflow_id)
-        seen_workflows.add(workflow_id)
-        seen_stages: set[str] = set()
-        for stage in workflow["stages"]:
-            if stage["id"] in seen_stages:
-                errors.append(f"Duplicate Stage ID in {workflow_id}: {stage['id']}")
-            seen_stages.add(stage["id"])
-    return errors
-
-
 def check_fixture_coverage() -> bool:
     if not FIXTURE_DIR.is_dir():
         print(f"FAIL fixture coverage: directory missing: {FIXTURE_DIR}")
@@ -126,7 +115,7 @@ def validate_document(
     label: str,
     expected_failure: ExpectedFailure | None = None,
 ) -> bool:
-    errors = list(validator.iter_errors(document))
+    errors = schema_errors(validator, document)
     if expected_failure is None:
         passed = not errors
     else:

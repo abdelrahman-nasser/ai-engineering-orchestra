@@ -9,6 +9,10 @@ from jsonschema import Draft202012Validator
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+from engineering_orchestration.schema_resources import schema_errors
+
 SCHEMA_PATH = REPO_ROOT / "schemas" / "project-manifest.schema.json"
 FIXTURE_DIR = REPO_ROOT / "schemas" / "tests" / "project-manifest"
 
@@ -46,10 +50,7 @@ def validate_manifest(
         print(f"      Unable to parse YAML: {exc}")
         return False
 
-    errors = sorted(
-        validator.iter_errors(manifest),
-        key=lambda error: list(error.absolute_path),
-    )
+    errors = schema_errors(validator, manifest)
 
     actual_valid = not errors
     passed = actual_valid == expected_valid

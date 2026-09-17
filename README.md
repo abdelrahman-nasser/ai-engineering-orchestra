@@ -46,9 +46,9 @@ must be reinstalled to receive source changes. Uninstall with
 
 Run commands from the managed project or a subdirectory. The nearest ancestor
 containing `.ai/project.yaml` determines the active project, never the installed
-package location. `tasks` and `inspect` currently assume `.ai/tasks/` and
-`workflows/`; they do not yet honor a custom Manifest Task directory. Workflows
-belong to the target project; Task and Workflow schemas belong to the tool.
+package location. `tasks` and `inspect` resolve `tasks.directory` from the active
+Manifest (default `.ai/tasks/`). Workflows remain in the target project's
+`workflows/`; canonical schemas belong to the tool.
 
 **`verify` remains Orchestra development tooling, not generic project verification.**
 It requires this repository's `tests/`, four `schemas/tests/validate_*.py`
@@ -73,3 +73,38 @@ the managed project's framework expectation. No version synchronization is impli
 This is an explicitly authorized local-installability experiment. It does not
 complete the future public distribution milestone. No PyPI publication, public
 name reservation, release automation, or generic verifier is provided.
+
+## Installed Structural Validation
+
+The programmatic API reads the nearest active project's supported AIO structures:
+
+```python
+from engineering_orchestration.validation import validate_project
+
+result = validate_project()  # CWD, then ancestors containing .ai/project.yaml
+print(result.status)  # PASS, FAIL, or ERROR
+for finding in result.findings:
+    print(finding.status, finding.path, finding.message)
+```
+
+An optional `start=Path(...)` chooses the discovery starting directory. Validation
+covers the Project Manifest, immediate Task child directories in the configured
+Task path, declared Task ID uniqueness, Workflow YAMLs and ID uniqueness,
+Workflow-local Stage ID uniqueness, and declared Task-to-Workflow references.
+Directory and file names do not define IDs. Missing required project structures
+or invalid data produce FAIL; missing installed resources, I/O problems, and
+internal failures produce ERROR. ERROR takes precedence over FAIL. PASS covers
+only the supported structural rules, without establishing Quality Gate results.
+
+The installed tool packages canonical Task, Workflow, and Project Manifest schemas
+from their single sources in `schemas/`. Managed projects need no schema regression
+scripts, fixtures, Orchestra Task history, Git, Node/npm, or Python tests. Python
+and the declared tool dependencies run the validator; the target project's own
+language is irrelevant. The API executes no project commands and changes no files.
+Role project validation is outside coverage: the current Markdown extraction is
+test-only, not a runtime representation contract. No SKIP results are emitted.
+
+AIO-017 adds no structural CLI command and preserves `aio verify` unchanged.
+The future intended verify direction is structural validation followed by
+project-declared mechanical checks. The latter still needs a separate command
+and trust contract; it is not implemented or added to the Manifest here.

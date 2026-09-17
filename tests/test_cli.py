@@ -141,7 +141,7 @@ class TestTasksDelegation(unittest.TestCase):
         )
 
         captured = StringIO()
-        with patch("scripts.cli.find_project_root", return_value=Path("/fake")):
+        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), patch("scripts.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
             with patch("scripts.list_tasks.discover_tasks", return_value=inventory):
                 with patch("sys.stdout", captured):
                     exit_code = main(["tasks"])
@@ -164,7 +164,7 @@ class TestTasksStatusFilter(unittest.TestCase):
         )
 
         captured = StringIO()
-        with patch("scripts.cli.find_project_root", return_value=Path("/fake")):
+        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), patch("scripts.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
             with patch("scripts.list_tasks.discover_tasks", return_value=inventory):
                 with patch("sys.stdout", captured):
                     exit_code = main(["tasks", "--status", "completed"])
@@ -189,7 +189,7 @@ class TestTasksWorkflowFilter(unittest.TestCase):
         )
 
         captured = StringIO()
-        with patch("scripts.cli.find_project_root", return_value=Path("/fake")):
+        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), patch("scripts.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
             with patch("scripts.list_tasks.discover_tasks", return_value=inventory):
                 with patch("sys.stdout", captured):
                     exit_code = main(["tasks", "--workflow", "standard-change"])
@@ -222,7 +222,7 @@ class TestInspectByDeclaredId(unittest.TestCase):
         mock_result.schema_status = "VALID"
 
         captured = StringIO()
-        with patch("scripts.cli.find_project_root", return_value=Path("/fake")):
+        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), patch("scripts.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
             with patch("scripts.list_tasks.discover_tasks", return_value=inventory):
                 with patch("scripts.inspect_task.inspect_task", return_value=mock_result):
                     with patch("scripts.inspect_task.format_report", return_value="Task: TEST-001\nTitle: Alpha Task"):
@@ -256,7 +256,7 @@ class TestDirNameDiffersFromId(unittest.TestCase):
         mock_result.schema_status = "VALID"
 
         captured = StringIO()
-        with patch("scripts.cli.find_project_root", return_value=Path("/fake")):
+        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), patch("scripts.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
             with patch("scripts.list_tasks.discover_tasks", return_value=inventory):
                 with patch("scripts.inspect_task.inspect_task", return_value=mock_result) as mock_inspect:
                     with patch("scripts.inspect_task.format_report", return_value="Task: LOOKUP-042\nTitle: Mismatched Dir Task"):
@@ -286,7 +286,7 @@ class TestUnknownTaskId(unittest.TestCase):
         )
 
         captured_err = StringIO()
-        with patch("scripts.cli.find_project_root", return_value=Path("/fake")):
+        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), patch("scripts.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
             with patch("scripts.list_tasks.discover_tasks", return_value=inventory):
                 with patch("sys.stderr", captured_err):
                     exit_code = main(["inspect", "DOES-NOT-EXIST"])
@@ -315,7 +315,7 @@ class TestVerifyDelegation(unittest.TestCase):
             ],
         )
 
-        with patch("scripts.cli.find_project_root", return_value=Path("/fake")):
+        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), patch("scripts.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
             with patch("scripts.verify_repo.run_preflight", return_value=mock_result):
                 with patch("scripts.verify_repo.format_preflight_output", return_value="MOCK OUTPUT"):
                     captured = StringIO()
@@ -344,7 +344,7 @@ class TestVerifyExitCodePropagation(unittest.TestCase):
             ],
         )
 
-        with patch("scripts.cli.find_project_root", return_value=Path("/fake")):
+        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), patch("scripts.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
             with patch("scripts.verify_repo.run_preflight", return_value=mock_result):
                 with patch("scripts.verify_repo.format_preflight_output", return_value="FAIL"):
                     captured = StringIO()
@@ -368,7 +368,7 @@ class TestVerifyExitCodePropagation(unittest.TestCase):
             ],
         )
 
-        with patch("scripts.cli.find_project_root", return_value=Path("/fake")):
+        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), patch("scripts.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
             with patch("scripts.verify_repo.run_preflight", return_value=mock_result):
                 with patch("scripts.verify_repo.format_preflight_output", return_value="ERROR"):
                     captured = StringIO()
@@ -417,7 +417,7 @@ class TestSubdirectoryInvocation(unittest.TestCase):
         )
 
         captured = StringIO()
-        with patch("scripts.cli.find_project_root", return_value=Path("/fake")):
+        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), patch("scripts.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
             with patch("scripts.list_tasks.discover_tasks", return_value=inventory):
                 with patch("sys.stdout", captured):
                     exit_code = main(["tasks"])
@@ -483,7 +483,7 @@ class TestNoTaskDirReconstruction(unittest.TestCase):
         mock_result.schema_status = "VALID"
 
         captured = StringIO()
-        with patch("scripts.cli.find_project_root", return_value=Path("/fake")):
+        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), patch("scripts.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
             with patch("scripts.list_tasks.discover_tasks", return_value=inventory) as mock_discover:
                 with patch("scripts.inspect_task.inspect_task", return_value=mock_result):
                     with patch("scripts.inspect_task.format_report", return_value="Task: FIND-ME-007"):
@@ -530,15 +530,15 @@ class TestNoDuplicatedPreflightBattery(unittest.TestCase):
 class TestNoNewThirdPartyDependency(unittest.TestCase):
     """19. No new third-party dependency.
 
-    scripts/cli.py should only use standard library imports at module level.
+    The router may share project discovery without adding third-party imports.
     """
 
     ALLOWED_STDLIB = {
         "__future__", "argparse", "sys", "pathlib",
     }
 
-    def test_cli_module_level_imports_are_stdlib_only(self):
-        """Module-level imports in cli.py must be standard library only."""
+    def test_cli_module_level_imports_are_stdlib_or_shared_project(self):
+        """Permit only stdlib and the shared project discovery module."""
         cli_source = (REPO_ROOT / "engineering_orchestration" / "cli.py").read_text(encoding="utf-8")
         tree = ast.parse(cli_source)
 
@@ -551,6 +551,8 @@ class TestNoNewThirdPartyDependency(unittest.TestCase):
                         f"Unexpected module-level import: {alias.name}"
                     )
             elif isinstance(node, ast.ImportFrom) and node.module:
+                if node.module == "engineering_orchestration.project":
+                    continue
                 top_module = node.module.split(".")[0]
                 self.assertIn(
                     top_module, self.ALLOWED_STDLIB,

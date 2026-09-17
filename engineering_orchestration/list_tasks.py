@@ -2,7 +2,7 @@
 """AI Engineering Orchestra — Task Inventory and Discovery Utility.
 
 Deterministic repository-level inventory and discovery utility to enumerate
-and report Tasks under .ai/tasks/ using existing Task and Workflow infrastructure.
+and report Tasks in the Manifest-configured directory using existing infrastructure.
 """
 
 from __future__ import annotations
@@ -56,15 +56,10 @@ class TaskInventoryResult:
 
 
 def find_default_tasks_dir() -> Path | None:
-    """Locate the default tasks directory relative to this script or current working directory."""
-    candidates = [
-        Path(__file__).resolve().parent.parent / ".ai" / "tasks",
-        Path.cwd() / ".ai" / "tasks",
-    ]
-    for candidate in candidates:
-        if candidate.is_dir():
-            return candidate.resolve()
-    return None
+    """Resolve the active Manifest's Task directory."""
+    from engineering_orchestration.project import find_project_root, task_directory
+
+    return task_directory(find_project_root())
 
 
 def discover_tasks(
@@ -86,7 +81,7 @@ def discover_tasks(
         resolved_dir = find_default_tasks_dir()
 
     if resolved_dir is None or not resolved_dir.is_dir():
-        target = tasks_dir or ".ai/tasks"
+        target = resolved_dir or tasks_dir
         raise FileNotFoundError(f"Tasks directory not found: {target}")
 
     inventory = TaskInventoryResult(tasks_dir=resolved_dir)
@@ -246,7 +241,7 @@ def format_inventory_table(
 def main(argv: list[str] | None = None) -> int:
     """CLI entrypoint."""
     parser = argparse.ArgumentParser(
-        description="List and inspect repository Tasks under .ai/tasks/."
+        description="List and inspect Tasks in the Manifest-configured directory."
     )
     parser.add_argument(
         "--status",
@@ -264,7 +259,7 @@ def main(argv: list[str] | None = None) -> int:
         "--tasks-dir",
         type=Path,
         default=None,
-        help="Path to tasks directory (default: auto-discover .ai/tasks/).",
+        help="Path to tasks directory (default: resolve the active Manifest).",
     )
 
     args = parser.parse_args(argv)

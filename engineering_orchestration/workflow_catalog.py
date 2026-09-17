@@ -19,7 +19,7 @@ import yaml
 from jsonschema import Draft202012Validator
 from importlib.resources.abc import Traversable
 
-from engineering_orchestration.schema_resources import schema_resource
+from engineering_orchestration.schema_resources import schema_resource, schema_errors
 
 
 class WorkflowCatalogError(Exception):
@@ -84,6 +84,7 @@ class WorkflowCatalog:
     workflows_dir: Path
     definitions: dict[str, WorkflowDefinition] = field(default_factory=dict)
     load_errors: list[str] = field(default_factory=list)
+    infrastructure_errors: list[str] = field(default_factory=list)
 
     def get(self, workflow_id: str) -> WorkflowDefinition | None:
         """Resolve a Workflow by its declared ID."""
@@ -101,6 +102,23 @@ class WorkflowCatalog:
     def is_valid(self) -> bool:
         """True if definitions loaded without errors."""
         return len(self.load_errors) == 0 and len(self.definitions) > 0
+
+
+def semantic_uniqueness_errors(workflows: list[dict[str, Any]]) -> list[str]:
+    """Check declared IDs on schema-valid objects; Stage IDs are Workflow-local."""
+    errors = []
+    seen_workflows: set[str] = set()
+    for workflow in workflows:
+        workflow_id = workflow["id"]
+        if workflow_id in seen_workflows:
+            errors.append("Duplicate Workflow ID: " + workflow_id)
+        seen_workflows.add(workflow_id)
+        seen_stages: set[str] = set()
+        for stage in workflow["stages"]:
+            if stage["id"] in seen_stages:
+                errors.append(f"Duplicate Stage ID in {workflow_id}: {stage['id']}")
+            seen_stages.add(stage["id"])
+    return errors
 
 
 def find_default_workflow_schema_path() -> Traversable | None:
@@ -159,6 +177,7 @@ def load_workflow_catalog(
         return WorkflowCatalog(
             workflows_dir=resolved_dir,
             load_errors=[err],
+            infrastructure_errors=[err],
         )
 
     try:
@@ -173,6 +192,7 @@ def load_workflow_catalog(
         return WorkflowCatalog(
             workflows_dir=resolved_dir,
             load_errors=[err],
+            infrastructure_errors=[err],
         )
 
     catalog = WorkflowCatalog(workflows_dir=resolved_dir)
@@ -186,9 +206,14 @@ def load_workflow_catalog(
         try:
             content = yaml_file.read_text(encoding="utf-8")
             data = yaml.safe_load(content)
-        except Exception as exc:
+        except (yaml.YAMLError, UnicodeError) as exc:
             msg = f"{yaml_file.name}: YAML parse error: {exc}"
             catalog.load_errors.append(msg)
+            continue
+        except OSError as exc:
+            msg = f"{yaml_file.name}: unable to read Workflow: {exc}"
+            catalog.load_errors.append(msg)
+            catalog.infrastructure_errors.append(msg)
             continue
 
         if not isinstance(data, dict):
@@ -196,10 +221,7 @@ def load_workflow_catalog(
             catalog.load_errors.append(msg)
             continue
 
-        errors = sorted(
-            validator.iter_errors(data),
-            key=lambda e: (str(list(e.absolute_path)), str(e.validator)),
-        )
+        errors = schema_errors(validator, data)
         if errors:
             for err in errors:
                 location = ".".join(str(part) for part in err.absolute_path)
@@ -220,33 +242,19 @@ def load_workflow_catalog(
             catalog.load_errors.append(msg)
             continue
 
-        # Check stage ID uniqueness within this workflow
-        seen_stage_ids: set[str] = set()
-        stage_has_duplicates = False
-        parsed_stages: list[WorkflowStage] = []
-
-        for stage_raw in data.get("stages", []):
-            s_id = stage_raw["id"]
-            if s_id in seen_stage_ids:
-                catalog.load_errors.append(
-                    f"{yaml_file.name}: duplicate Stage ID '{s_id}' within workflow '{declared_id}'"
-                )
-                stage_has_duplicates = True
-            seen_stage_ids.add(s_id)
-
-            parsed_stages.append(
-                WorkflowStage(
-                    id=s_id,
-                    purpose=stage_raw["purpose"],
-                    required_roles=list(stage_raw.get("required_roles", [])),
-                    required_quality_gates=list(stage_raw.get("required_quality_gates", [])),
-                    human_control_checkpoint=stage_raw.get("human_control_checkpoint"),
-                )
-            )
-
-        if stage_has_duplicates:
+        uniqueness_errors = semantic_uniqueness_errors([data])
+        if uniqueness_errors:
+            catalog.load_errors.extend(f"{yaml_file.name}: {msg}" for msg in uniqueness_errors)
             continue
-
+        parsed_stages = [
+            WorkflowStage(
+                id=stage["id"], purpose=stage["purpose"],
+                required_roles=list(stage.get("required_roles", [])),
+                required_quality_gates=list(stage.get("required_quality_gates", [])),
+                human_control_checkpoint=stage.get("human_control_checkpoint"),
+            )
+            for stage in data["stages"]
+        ]
         wf_def = WorkflowDefinition(
             id=declared_id,
             name=data["name"],

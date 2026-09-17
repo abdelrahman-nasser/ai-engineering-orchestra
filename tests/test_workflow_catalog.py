@@ -180,7 +180,7 @@ class TestWorkflowCatalog(unittest.TestCase):
 
         catalog = load_workflow_catalog(workflows_dir=self.test_workflows_dir)
         self.assertFalse(catalog.is_valid)
-        self.assertTrue(any("duplicate Stage ID 'understand'" in err for err in catalog.load_errors))
+        self.assertTrue(any("Duplicate Stage ID in" in err for err in catalog.load_errors))
 
     def test_stage_order_preserved(self) -> None:
         """Verify stage order in the parsed definition strictly matches the source file."""

@@ -48,6 +48,19 @@ def _document(path: Path, validator, result: ValidationResult) -> Any:
     return None if errors else document
 
 
+def manifest_semantic_errors(manifest: dict) -> list[str]:
+    """Data-only checks after successful Project Manifest schema validation."""
+    errors = []
+    seen = set()
+    for index, check in enumerate(manifest.get("verification", {}).get("checks", [])):
+        check_id = check["id"]
+        if check_id in seen:
+            errors.append(
+                f"verification.checks.{index}.id: Duplicate Verification Check ID: {check_id}")
+        seen.add(check_id)
+    return errors
+
+
 def validate_project(start: Path | None = None) -> ValidationResult:
     """Validate the nearest active project's supported AIO data.
 
@@ -71,6 +84,8 @@ def validate_project(start: Path | None = None) -> ValidationResult:
         manifest = _document(location, manifest_validator, result)
         if manifest is None:
             return result
+        for message in manifest_semantic_errors(manifest):
+            result.findings.append(Finding("FAIL", location, message))
         try:
             tasks = task_directory(root, manifest)
         except ValueError as exc:

@@ -51,6 +51,7 @@ The Project Manifest may describe:
 - default Execution Mode
 - Human control requirements
 - Quality Gate requirements
+- Project Verification Check declarations
 - Agent execution limits
 - context-loading behavior
 - Project Rule locations
@@ -139,6 +140,7 @@ The v0.1 Project Manifest defines these canonical top-level sections:
 | `execution` | Yes | default Execution Mode |
 | `human_control` | Yes | Human approval requirements |
 | `quality` | Yes | required Quality Gates |
+| `verification` | No | project-owned mechanical check declarations |
 | `agents` | No | Agent execution limits |
 | `context` | No | context-loading configuration |
 | `project_rules` | No | Project Rule location |
@@ -748,6 +750,8 @@ v0.1 defaults are:
 | `project_rules.directory` | `.ai/rules/` |
 | `tasks.directory` | `.ai/tasks/` |
 | `overrides.directory` | `.ai/overrides/` |
+| `verification.checks[].cwd` | active project root |
+| `verification.checks[].timeout_seconds` | `600` seconds |
 
 Required fields do not receive implicit defaults unless explicitly stated.
 
@@ -759,7 +763,7 @@ Agents must not invent defaults.
 
 Paths declared by the Project Manifest must:
 
-- be repository-relative unless a future specification explicitly permits otherwise
+- be repository-relative except executable paths and literal command arguments permitted by section 33
 - use forward slashes in canonical documentation and generated examples
 - not rely on a particular operating system
 - not contain credentials or secrets
@@ -917,7 +921,10 @@ Current validation may be performed through:
 - documentation consistency checks
 - independent review
 
-CLI-based validation remains reserved for a later Orchestra version.
+The installed `validate_project()` API validates supported project structures,
+including these declarations, without executing commands. Duplicate Verification
+Check IDs require data-only semantic validation in addition to JSON Schema.
+`aio verify` still runs only Orchestra's seven-check development preflight.
 
 ---
 
@@ -933,3 +940,158 @@ A Project Manifest conforms to schema version `0.1` when:
 6. Provider-specific configuration is not embedded in Orchestra Core sections
 7. application runtime configuration is kept outside the manifest
 8. explicit defaults and Source of Truth boundaries are respected
+
+---
+
+## 33. `verification` — Project Verification Checks
+
+A **Project Verification Check** (short form: **Verification Check**) is a
+declarative project-owned definition of a mechanical repository check that may
+later be executed by AIO to collect mechanical evidence. The Project Manifest
+specification owns this declaration at `.ai/project.yaml` under
+`verification.checks`. There is no separate `.ai/verification.yaml`.
+Commands do not belong in Workflow, Quality Gate, Role, or Stack Module files.
+
+A Check is not a Task, Workflow Stage, Quality Gate, Agent, Assignment,
+Execution Contract, or approval mechanism. Tasks describe scoped work; Workflows
+describe governance choreography; Roles describe responsibility and capability;
+Quality Gates describe evaluation requirements. Checks define mechanical commands.
+Verification Check ID != Quality Gate ID. Verification Check PASS != Quality Gate
+PASS. No check ID maps to a Gate ID, and no Check result updates Gate state or
+establishes governance approval. Checks are repository-level definitions, with no
+Task filtering, Stage binding, lifecycle behavior, or AI actor assignment.
+
+### Optionality and declaration shape
+
+The entire section is optional; existing Manifests without it remain valid.
+Absence means **0 project verification checks declared**, not automatic discovery
+from repository contents, `package.json`, solution files, stack metadata, or test
+directories. When `verification` exists, `checks` is a required array; an empty
+array is valid. Both the section and each Check reject unknown fields.
+
+```yaml
+verification:
+  checks:
+    - id: backend-tests
+      command:
+        - dotnet
+        - test
+      cwd: backend
+      timeout_seconds: 600
+```
+
+Only `id`, `command`, `cwd`, and `timeout_seconds` are supported. There are no
+description, dependency, parallel, environment, shell, retry, continue-on-error,
+Quality Gate, Task type, Provider, Agent, executable/args, command-name, or working
+directory alias fields. The template uses `checks: []`, without technology bias.
+This is an optional additive contract under schema version `0.1`; older closed
+schemas may reject the new section. Compatibility means old valid Manifests remain
+valid under the updated schema, not that older tools understand new declarations.
+
+### Field definitions
+
+| Field | Requirement | Semantics |
+| --- | --- | --- |
+| `id` | Required nonempty string | Stable identity unique within this project's `verification.checks` |
+| `command` | Required nonempty string array | First string is the declared executable/program; later strings are literal arguments |
+| `cwd` | Optional nonempty string | Working directory relative to the active project root; omission means that root |
+| `timeout_seconds` | Optional positive integer | Maximum future execution duration; omission means `600` seconds |
+
+IDs must match `^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$` for the entire string (no trailing
+newline). Examples include `backend-tests`, `frontend-tests`, `lint`, and
+`build-api`. Duplicate IDs are a semantic validation failure. Quality Gate IDs
+must not be used as check identity.
+
+The first command element must contain non-whitespace content. Every element must
+be a string, and NUL characters are prohibited in every position. Later empty
+strings are valid and must be preserved, along with whitespace and all other
+literal argument content. Scalar commands such as `command: "dotnet test"` are
+invalid; there is no scalar-to-array coercion.
+
+`cwd` uses `/` as its canonical separator. Absolute, rooted, UNC, backslash, and
+Windows drive-relative forms are invalid, including `C:/work/backend`,
+`C:backend`, `/backend`, `\backend`, and `\\server\share`. NUL is invalid.
+`backend`, `frontend/app`, and `backend/../frontend` are structurally valid;
+relative traversal such as `../outside` is representation-valid but does not
+establish execution-plan validity. Before future execution, the resolved effective
+cwd must exist and remain inside the active project root, including after
+symlink/junction resolution. Declaration validation does not check existence,
+resolve symlinks/junctions, enforce final containment, construct execution-ready
+cwd objects, or launch anything.
+
+`timeout_seconds` rejects boolean, string, null, zero, and negative values.
+There is no unlimited/infinite value or `0 = disabled` convention. The default is
+semantic; validation does not mutate declarations to materialize defaults.
+Timeout enforcement is deferred to the future runner.
+
+### Future execution semantics — specification only
+
+AIO-018 defines and validates configuration data only. It executes zero declared
+commands. `validate_project()`, `aio tasks`, and `aio inspect` remain data-reading
+operations and must never execute declarations merely because they are present.
+`aio verify` still runs the unchanged Orchestra seven-check development preflight;
+it does not execute Project Verification Checks. Orchestra's own Manifest does not
+migrate those seven checks. No runner, executable lookup, or new verify flags are
+introduced here.
+
+Future execution uses argument arrays with `shell=False`. AIO does not concatenate
+arguments into command strings, interpret `&&` or `|`, perform shell expansion,
+variable interpolation, command substitution, or glob expansion. For example,
+`[pytest, 'tests/*']` passes `tests/*` literally; the invoked program may interpret
+it itself. A declared executable may itself be a shell, for example
+`[powershell, -Command, '...']`. Argument arrays are not sandboxing.
+
+Future executable resolution is deterministic: a bare program such as `dotnet`,
+`npm`, or `pytest` uses inherited PATH with platform conventions. A relative
+executable such as `./tools/check.py` resolves from the Check's effective cwd,
+without inferred interpreters. A project may explicitly declare
+`[python, ./tools/check.py]` instead. Absolute executable paths are allowed; they
+reduce portability but add no fundamentally new authority over PATH-resolved
+external programs. Availability belongs to execution-environment state, not
+declaration validity. Structural validation performs no executable resolution or
+`shutil.which` calls.
+
+Future checks inherit the caller's execution environment. There are no environment
+overrides, secrets, interpolation, variable substitution, or credential
+configuration fields, and no secret-management responsibilities.
+
+Checks are ordered by declaration order. Initial future execution is expected to
+be sequential, continuing after individual FAIL and check-local ERROR where safe
+to collect complete mechanical evidence. No DAGs, dependencies, parallel
+scheduling, priority, or groups are defined.
+
+The complete declaration set must be valid before future command execution begins.
+Duplicate IDs, malformed/empty commands, invalid timeouts, invalid cwd
+representations, and unknown fields invalidate the declaration set. A future
+runner must never execute a valid prefix of a malformed list. This contract
+validity check is separate from future execution-plan validity.
+
+| Future result | Meaning |
+| --- | --- |
+| PASS | Command launched, completed, and returned exit code `0` |
+| FAIL | Command launched, completed, and returned any nonzero exit code, including `2` |
+| ERROR | AIO could not obtain an evaluable completion: unavailable executable, launch failure, invalid execution cwd, timeout, or runner failure |
+
+No persisted result state or SKIP is defined. No checks means **0 project checks
+configured**; an unavailable executable means ERROR, not SKIP. Intended future
+aggregate exit codes are `0` for no FAIL or ERROR, `1` for at least one FAIL and
+zero ERROR, and `2` for one or more ERROR. ERROR dominates FAIL. These semantics
+do not change current CLI behavior or define Quality Gate results.
+
+A Check must never deliberately configure `aio verify` as its own command: that
+would recursively invoke the aggregate verifier. General recursion detection is
+not implemented; arbitrary wrappers may conceal recursion and AIO cannot prove
+its absence.
+
+### Trust and authority boundary
+
+Repository configuration defines commands; it does not grant execution permission.
+A future `aio verify` invocation expresses explicit intent to perform project
+verification under the caller's existing authority. Declarations grant no
+filesystem, network, credential, Agent, Workflow, or approval authority.
+
+Future commands may read/write accessible files, access network resources, use
+inherited credentials, spawn processes, generate build artifacts, modify caches,
+and update lockfiles. AIO claims no sandboxing, purity, read-only execution,
+harmlessness, or process isolation. No new permission engine, trust persistence,
+or first-run confirmation mechanism is introduced by this contract.

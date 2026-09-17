@@ -1,0 +1,32 @@
+id: AIO-018
+title: Define Project Verification Check Contract
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: medium
+risk: medium
+execution:
+  mode: standard
+workflow: standard-change
+objective: >
+  Define and validate the project-owned declarative contract for future mechanical
+  verification commands without executing checks or changing aio verify behavior.
+scope:
+  include:
+    - Manifest specification, schema, terminology, template, and migration documentation
+    - Data-only semantic validation and comprehensive contract regression tests
+    - Packaged schema and installed validation evidence
+    - Independent review and a separate security-focused reviewer execution
+  exclude:
+    - Project command execution, executable lookup, and cwd execution planning
+    - Verify behavior, flags, Orchestra check migration, and project check dogfooding
+    - Quality Gate mapping, Task or Workflow binding, and Provider or Agent fields
+    - Permission engines, runtime state, speculative fields, and AIO-019
+dependencies:
+  - AIO-017
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true

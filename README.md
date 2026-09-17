@@ -104,7 +104,15 @@ language is irrelevant. The API executes no project commands and changes no file
 Role project validation is outside coverage: the current Markdown extraction is
 test-only, not a runtime representation contract. No SKIP results are emitted.
 
-AIO-017 adds no structural CLI command and preserves `aio verify` unchanged.
-The future intended verify direction is structural validation followed by
-project-declared mechanical checks. The latter still needs a separate command
-and trust contract; it is not implemented or added to the Manifest here.
+AIO-018 defines the optional Project Verification Check contract in
+[`core/project-manifest.md`](core/project-manifest.md#33-verification--project-verification-checks),
+at `.ai/project.yaml` → `verification.checks`. Declarations contain `id`, an
+argument-array `command`, optional project-relative `cwd`, and optional positive
+`timeout_seconds` (default `600`). Structural validation checks their shape and
+ID uniqueness without executing them. Existing Manifests remain valid; omitted
+checks mean zero declarations, with no automatic command discovery.
+
+The contract exists, but `aio verify` does **not** execute declared checks yet.
+It still runs Orchestra's seven-check development preflight. Future execution
+would use the caller's existing authority and inherited environment; declarations
+grant no permission, promise no sandbox, and do not establish Quality Gate results.

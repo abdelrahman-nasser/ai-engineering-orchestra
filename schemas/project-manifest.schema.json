@@ -217,6 +217,9 @@
         }
       }
     },
+    "verification": {
+      "$ref": "#/$defs/verification"
+    },
     "extensions": {
       "type": "object",
       "propertyNames": {
@@ -232,6 +235,55 @@
         ]
       },
       "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["checks"],
+      "properties": {
+        "checks": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/verificationCheck"}
+        }
+      }
+    },
+    "verificationCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "command"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$(?![\\s\\S])"
+        },
+        "command": {
+          "type": "array",
+          "minItems": 1,
+          "prefixItems": [{
+            "type": "string",
+            "pattern": "\\S",
+            "not": {"pattern": "\u0000"}
+          }],
+          "items": {
+            "type": "string",
+            "not": {"pattern": "\u0000"}
+          }
+        },
+        "cwd": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?![A-Za-z]:)[^\\\\\u0000]+$(?![\\s\\S])",
+          "description": "Project-relative forward-slash path; default is the active project root. Execution planning is deferred."
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 600
+        }
+      }
     }
   }
 }

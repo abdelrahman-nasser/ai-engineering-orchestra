@@ -12,6 +12,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 from engineering_orchestration.schema_resources import schema_errors
+from engineering_orchestration.validation import manifest_semantic_errors
 
 SCHEMA_PATH = REPO_ROOT / "schemas" / "project-manifest.schema.json"
 FIXTURE_DIR = REPO_ROOT / "schemas" / "tests" / "project-manifest"
@@ -52,7 +53,8 @@ def validate_manifest(
 
     errors = schema_errors(validator, manifest)
 
-    actual_valid = not errors
+    semantic_errors = [] if errors else manifest_semantic_errors(manifest)
+    actual_valid = not errors and not semantic_errors
     passed = actual_valid == expected_valid
 
     expectation = "valid" if expected_valid else "invalid"
@@ -72,6 +74,9 @@ def validate_manifest(
     if errors:
         for error in errors:
             print(f"      {format_error(error)}")
+    elif semantic_errors:
+        for message in semantic_errors:
+            print(f"      {message}")
     else:
         print("      Manifest unexpectedly passed schema validation.")
 

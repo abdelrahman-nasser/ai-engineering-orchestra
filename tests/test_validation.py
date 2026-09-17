@@ -8,9 +8,12 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
+import yaml
+
 from engineering_orchestration import cli
 from engineering_orchestration.project import task_directory
-from engineering_orchestration.validation import validate_project
+from engineering_orchestration.schema_resources import load_validator, schema_errors
+from engineering_orchestration.validation import manifest_semantic_errors, validate_project
 
 
 def write(path, data):
@@ -71,6 +74,87 @@ class StructuralValidationTests(unittest.TestCase):
         self.manifest.pop("tasks")
         write(self.manifest_path, self.manifest)
         self.assertEqual(task_directory(self.root), self.root / ".ai/tasks")
+
+    def test_verification_contract_fixtures_through_schema_and_project_validation(self):
+        fixtures = Path(__file__).resolve().parents[1] / "schemas/tests/project-manifest"
+        validator = load_validator("project-manifest.schema.json")
+        paths = sorted(fixtures.glob("*-verification-*.yaml"))
+        self.assertGreaterEqual(len(paths), 34)
+        for path in paths:
+            with self.subTest(fixture=path.name):
+                declaration = yaml.safe_load(path.read_text(encoding="utf-8"))["verification"]
+                self.manifest["verification"] = declaration
+                before = json.dumps(self.manifest)
+                errors = schema_errors(validator, self.manifest)
+                semantic = [] if errors else manifest_semantic_errors(self.manifest)
+                expected_valid = path.name.startswith("valid-")
+                self.assertEqual(not errors and not semantic, expected_valid)
+                if path.name == "invalid-verification-duplicate-id.yaml":
+                    self.assertFalse(errors, "Duplicate identity is semantic, not whole-object equality")
+                    self.assertIn("Duplicate Verification Check ID", semantic[0])
+                elif not expected_valid:
+                    self.assertTrue(errors)
+                    self.assertTrue(all(list(e.absolute_path)[0] == "verification" for e in errors))
+                write(self.manifest_path, self.manifest)
+                with patch("subprocess.run") as run, patch("subprocess.Popen") as popen, \
+                        patch("shutil.which") as which:
+                    self.assert_status("PASS" if expected_valid else "FAIL")
+                run.assert_not_called()
+                popen.assert_not_called()
+                which.assert_not_called()
+                self.assertEqual(json.dumps(self.manifest), before)
+                self.assertEqual(json.loads(self.manifest_path.read_text()), self.manifest)
+
+    def test_declared_checks_never_run_during_validation_tasks_or_inspect(self):
+        self.manifest["verification"] = {"checks": [{
+            "id": "must-not-run", "command": ["unavailable-program", "", "tests/*"],
+            "cwd": "../absent-outside-project", "timeout_seconds": 1}]}
+        write(self.manifest_path, self.manifest)
+        original = self.manifest_path.read_bytes()
+        with patch("pathlib.Path.cwd", return_value=self.nested), \
+                patch("subprocess.run") as run, patch("subprocess.Popen") as popen, \
+                patch("os.system") as system, patch("shutil.which") as which:
+            self.assertEqual(validate_project().status, "PASS")
+            for arguments in (["tasks"], ["inspect", "EXAMPLE-001"]):
+                with redirect_stdout(StringIO()) as output:
+                    self.assertEqual(cli.main(arguments), 0)
+                self.assertIn("EXAMPLE-001", output.getvalue())
+        for operation in (run, popen, system, which):
+            operation.assert_not_called()
+        self.assertEqual(self.manifest_path.read_bytes(), original)
+
+    def test_checks_preserve_order_arguments_and_omitted_defaults(self):
+        checks = [{"id": "z-last", "command": ["tool", "", "  ", "&&", "|", "$HOME", "tests/*"]},
+                  {"id": "a-first", "command": ["./relative-tool"]}]
+        self.manifest["verification"] = {"checks": checks}
+        write(self.manifest_path, self.manifest)
+        self.assert_status("PASS")
+        self.assertEqual(json.loads(self.manifest_path.read_text())["verification"]["checks"], checks)
+        self.assertEqual(manifest_semantic_errors(self.manifest), [])
+        self.assertNotIn("cwd", checks[0])
+        self.assertNotIn("timeout_seconds", checks[0])
+
+    def test_all_speculative_check_fields_are_rejected(self):
+        fields = ("description", "depends_on", "parallel", "env", "environment", "shell",
+                  "retry", "continue_on_error", "quality_gate", "task_types", "provider",
+                  "agent", "working_directory", "command_name", "executable", "args",
+                  "model", "role", "stage")
+        for name in fields:
+            with self.subTest(field=name):
+                self.manifest["verification"] = {"checks": [{
+                    "id": "check", "command": ["tool"], name: "unsupported"}]}
+                write(self.manifest_path, self.manifest)
+                self.assert_status("FAIL", "Additional properties")
+
+    def test_checks_do_not_change_quality_gate_or_task_state(self):
+        self.manifest["quality"] = {"require_independent_review": True}
+        self.task["quality_gates"] = ["independent_review"]
+        write(self.task_path, self.task)
+        self.manifest["verification"] = {"checks": [{"id": "tests", "command": ["tool"]}]}
+        write(self.manifest_path, self.manifest)
+        before = {p: p.read_bytes() for p in (self.manifest_path, self.task_path, self.workflow_path)}
+        self.assert_status("PASS")
+        self.assertEqual({p: p.read_bytes() for p in before}, before)
 
     def test_configured_missing_directory_never_falls_back(self):
         self.manifest["tasks"]["directory"] = "absent"

@@ -56,6 +56,9 @@ def make_project(base: Path) -> Path:
         "risk": {"default": "low"}, "execution": {"default_mode": "standard"},
         "human_control": {}, "quality": {},
         "tasks": {"directory": "governance/tasks"},
+        "verification": {"checks": [{"id": "never-execute",
+            "command": ["unavailable-project-tool", "", "tests/*"],
+            "cwd": "../absent-unresolved", "timeout_seconds": 7}]},
     }
     (project / ".ai/project.yaml").write_text(json.dumps(manifest), encoding="utf-8")
     (tasks / "task.yaml").write_text(json.dumps({
@@ -162,6 +165,22 @@ def check(expected):
         result = validate_project()
     assert result.status == expected, result
 check('PASS')
+saved_manifest = manifest.read_text()
+try:
+    data = json.loads(saved_manifest)
+    data.pop('verification')
+    manifest.write_text(json.dumps(data))
+    check('PASS')
+    data = json.loads(saved_manifest)
+    data['verification']['checks'][0]['timeout_seconds'] = True
+    manifest.write_text(json.dumps(data))
+    check('FAIL')
+    data = json.loads(saved_manifest)
+    data['verification']['checks'].append(dict(data['verification']['checks'][0], command=['different']))
+    manifest.write_text(json.dumps(data))
+    check('FAIL')
+finally:
+    manifest.write_text(saved_manifest)
 for path in (manifest, task):
     saved = path.read_text()
     try:

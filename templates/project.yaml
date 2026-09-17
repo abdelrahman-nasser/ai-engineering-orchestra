@@ -44,3 +44,7 @@ tasks:
 
 overrides:
   directory: ".ai/overrides/"
+
+# Optional declarations only; aio verify does not execute these checks yet.
+verification:
+  checks: []

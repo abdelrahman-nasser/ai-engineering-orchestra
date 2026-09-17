@@ -216,6 +216,24 @@ A Quality Gate is not simply a recommendation.
 
 ---
 
+## Project Verification Check
+
+A declarative project-owned definition of a mechanical repository check that may
+later be executed by AIO to collect mechanical evidence. **Verification Check**
+is the preferred short form when context is unambiguous.
+
+The declaration is owned by `core/project-manifest.md`, under
+`.ai/project.yaml` → `verification.checks`.
+
+A Check is not a Quality Gate, Task, Workflow Stage, Agent execution, Assignment,
+Execution Contract, or approval mechanism. Its ID is not a Quality Gate ID, and
+Verification Check PASS is not Quality Gate PASS. Mechanical evidence does not
+itself establish governance approval or confer execution authority.
+
+The contract exists; `aio verify` does not execute these declarations yet.
+
+---
+
 ## Policy
 
 A rule governing Agent behavior.

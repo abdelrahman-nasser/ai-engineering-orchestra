@@ -55,6 +55,11 @@
         }
       }
     },
+    "workflow": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable identifier of the governing Workflow explicitly selected for this Task."
+    },
     "objective": {
       "type": "string",
       "minLength": 1

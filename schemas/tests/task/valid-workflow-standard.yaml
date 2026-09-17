@@ -1,0 +1,12 @@
+id: TEST-003
+title: Valid Task With Standard Workflow
+type: implementation
+status: planned
+workflow: standard-change
+
+objective: >
+  Demonstrate valid Task configuration declaring a standard Workflow binding.
+
+scope:
+  include:
+    - valid workflow binding

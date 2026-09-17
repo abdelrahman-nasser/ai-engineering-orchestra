@@ -1,0 +1,12 @@
+id: TEST-004
+title: Valid Task With Custom Workflow
+type: implementation
+status: planned
+workflow: "Custom Workflow Name"
+
+objective: >
+  Demonstrate open vocabulary Workflow binding with a non-kebab-case string.
+
+scope:
+  include:
+    - custom workflow binding

@@ -1,0 +1,12 @@
+id: INVALID-008
+title: Invalid Workflow Empty String
+type: implementation
+status: planned
+workflow: ""
+
+objective: >
+  Demonstrate rejection of an empty Workflow binding string.
+
+scope:
+  include:
+    - empty workflow string

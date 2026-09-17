@@ -1,0 +1,12 @@
+id: INVALID-009
+title: Invalid Workflow Numeric
+type: implementation
+status: planned
+workflow: 123
+
+objective: >
+  Demonstrate rejection of a numeric Workflow binding value.
+
+scope:
+  include:
+    - numeric workflow value

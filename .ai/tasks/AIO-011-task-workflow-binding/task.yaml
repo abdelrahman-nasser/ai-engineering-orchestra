@@ -1,0 +1,44 @@
+id: AIO-011
+title: Add Machine-Readable Task Workflow Binding
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: low
+risk: low
+execution:
+  mode: standard
+workflow: standard-change
+objective: >
+  Add an optional machine-readable Task field (`workflow`) to record the stable
+  identifier of the explicitly selected governing Workflow, updating the Task
+  specification, Task schema, test fixtures, task status inspection utility,
+  and test suites without altering Workflow semantics or implementing runtime resolution.
+scope:
+  include:
+    - Optional `workflow` property in schemas/task.schema.json
+    - Normative Task workflow binding specification in core/task-specification.md without section renumbering
+    - Dedicated test fixtures in schemas/tests/task/ and registration in schemas/tests/validate_task.py
+    - scripts/inspect_task.py enhancement to report TASK-DECLARED workflow binding
+    - tests/test_inspect_task.py coverage for declared, omitted, and invalid workflow bindings
+    - Canonical four-file Task structure under .ai/tasks/AIO-011-task-workflow-binding/
+    - Traversal under standard-change workflow with independent review
+  exclude:
+    - Automatic Workflow selection or inference from type, risk, or complexity
+    - Execution of Workflow stages, runtime configuration, or stage state
+    - Alteration of Workflow semantics or schema
+    - Project-level default workflow inheritance in .ai/project.yaml or schemas/project-manifest.schema.json
+    - Modification or backfilling of historical Tasks AIO-001 through AIO-010
+    - Modification of existing Task test fixtures
+    - Markdown parsing from context.md or production extractor promotion
+    - Hardcoded Workflow ID validation or regex in task schema
+    - Deep Workflow content loading or stage gate resolution in inspect_task.py
+dependencies:
+  - AIO-010
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: false
+  breaking_schema_changes_require_approval: false
+  breaking_contract_changes_require_approval: false

@@ -159,6 +159,7 @@ The v0.1 Task contract defines these top-level fields:
 | `complexity` | No | Task Complexity |
 | `risk` | No | Task Risk |
 | `execution` | No | Task execution configuration, including `execution.mode` |
+| `workflow` | No | Stable identifier of the governing Workflow explicitly selected for this Task |
 | `objective` | Yes | Primary Task outcome |
 | `scope` | Yes | Included and excluded work |
 | `dependencies` | No | Tasks that must be satisfied first |
@@ -434,6 +435,36 @@ A lower Task Execution Mode must not weaken:
 - Human approval requirements
 - other higher-precedence requirements
 
+### Governing Workflow Binding (`workflow`)
+
+`workflow` records the stable identifier of the Workflow explicitly selected to govern this Task.
+
+Example:
+
+```yaml
+workflow: standard-change
+```
+
+Requirements:
+
+- optional
+- when present, must be a non-empty string
+- represents an explicit Human or orchestrator selection decision
+- does not perform automatic Workflow selection or inference
+- does not alter Workflow semantics
+- does not execute the Workflow
+
+The Task contract owns which Workflow is declared as governing the Task. The Workflow contract owns what that Workflow means.
+
+Preserve this distinction:
+
+- **Selection**: deciding which Workflow applies (explicit Human/orchestrator decision)
+- **Binding**: recording that decision on the Task (`workflow` field)
+- **Resolution**: loading and verifying the referenced Workflow definition
+- **Execution**: traversing Workflow stages at runtime
+
+The v0.1 Task contract provides Task-level Workflow binding only. It does not infer Workflow from Task `type`, `risk`, or `complexity`, does not configure a runtime, does not assign actors, does not manage stage state, and does not inherit a Project default Workflow.
+
 ---
 
 ## 16. `objective`
@@ -639,6 +670,8 @@ Quality Gates and Human control requirements are cumulative rather than simple r
 Task configuration may become stricter than Project defaults.
 
 It must not weaken protected or higher-precedence requirements.
+
+In v0.1, `workflow` does not inherit a Project default; Workflow binding must be explicitly declared on the Task when present.
 
 ---
 

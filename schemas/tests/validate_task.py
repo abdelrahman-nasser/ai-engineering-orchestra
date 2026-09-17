@@ -26,6 +26,7 @@ CANONICAL_TASKS = [
     REPO_ROOT / ".ai" / "tasks" / "AIO-008-workflow-specification" / "task.yaml",
     REPO_ROOT / ".ai" / "tasks" / "AIO-009-workflow-schema" / "task.yaml",
     REPO_ROOT / ".ai" / "tasks" / "AIO-010-task-status-inspection" / "task.yaml",
+    REPO_ROOT / ".ai" / "tasks" / "AIO-011-task-workflow-binding" / "task.yaml",
 ]
 
 
@@ -40,6 +41,8 @@ FIXTURE_CASES: dict[str, ExpectedFailure | None] = {
     "valid-minimal.yaml": None,
     "valid-full.yaml": None,
     "valid-empty-dependencies.yaml": None,
+    "valid-workflow-standard.yaml": None,
+    "valid-workflow-custom.yaml": None,
     "invalid-duplicate-dependencies.yaml": ExpectedFailure(
         "uniqueItems", ("dependencies",)
     ),
@@ -53,6 +56,18 @@ FIXTURE_CASES: dict[str, ExpectedFailure | None] = {
     "invalid-quality-gate.yaml": ExpectedFailure("pattern", ("quality_gates", 0)),
     "invalid-status.yaml": ExpectedFailure("enum", ("status",)),
     "invalid-unknown-top-level.yaml": ExpectedFailure("additionalProperties", ()),
+    "invalid-workflow-empty-string.yaml": ExpectedFailure(
+        "minLength", ("workflow",)
+    ),
+    "invalid-workflow-type-numeric.yaml": ExpectedFailure(
+        "type", ("workflow",)
+    ),
+    "invalid-workflow-type-boolean.yaml": ExpectedFailure(
+        "type", ("workflow",)
+    ),
+    "invalid-workflow-type-null.yaml": ExpectedFailure(
+        "type", ("workflow",)
+    ),
 }
 
 

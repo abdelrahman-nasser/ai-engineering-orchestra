@@ -1,0 +1,12 @@
+id: INVALID-010
+title: Invalid Workflow Boolean
+type: implementation
+status: planned
+workflow: true
+
+objective: >
+  Demonstrate rejection of a boolean Workflow binding value.
+
+scope:
+  include:
+    - boolean workflow value

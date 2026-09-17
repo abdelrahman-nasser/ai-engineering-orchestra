@@ -1,0 +1,48 @@
+# AIO-011 — Acceptance Criteria
+
+- [x] Scaffolding created in `.ai/tasks/AIO-011-task-workflow-binding/` with `status: in_progress` and `workflow: standard-change`.
+- [x] Context Completion Rule satisfied in Stage 1 `understand` before source implementation.
+- [x] `core/task-specification.md` updated with normative `workflow` binding semantics without renumbering existing sections.
+- [x] `core/task-specification.md` explicitly states: "The Task contract owns which Workflow is declared as governing the Task. The Workflow contract owns what that Workflow means."
+- [x] `core/task-specification.md` preserves the distinction between Selection, Binding, Resolution, and Execution.
+- [x] `schemas/task.schema.json` updated with optional `workflow` string property with `minLength: 1` and without `enum`, regex, default, or filename conventions.
+- [x] No Project Manifest specification or schema changes made (no `workflows.default`).
+- [x] Existing Task schema fixtures left unchanged (`valid-full.yaml`, `valid-minimal.yaml`, etc.).
+- [x] Dedicated new Task schema fixtures added to `schemas/tests/task/`:
+  - `valid-workflow-standard.yaml`
+  - `valid-workflow-custom.yaml` (demonstrating open vocabulary)
+  - `invalid-workflow-empty-string.yaml` (`minLength` failure)
+  - `invalid-workflow-type-numeric.yaml` (`type` failure)
+  - `invalid-workflow-type-boolean.yaml` (`type` failure)
+  - `invalid-workflow-type-null.yaml` (`type` failure)
+- [x] `schemas/tests/validate_task.py` updated to register new fixtures and register AIO-011 in `CANONICAL_TASKS`.
+- [x] Historical Tasks AIO-001 through AIO-010 remain unmodified and structurally valid.
+- [x] `scripts/inspect_task.py` enhanced to read `task.yaml.workflow` directly:
+  - When present: reports `<workflow>` with `Binding: TASK-DECLARED` and truthful v0.1 notice.
+  - When omitted: reports `NOT DECLARED`.
+- [x] `scripts/inspect_task.py` does NOT machine-parse `context.md`, does NOT import test Workflow validators, does NOT assume filename mapping, and does NOT claim canonical/resolved status.
+- [x] `scripts/inspect_task.py` continues reporting Task-declared and Project-required gates without falsely claiming complete effective union.
+- [x] `tests/test_inspect_task.py` updated with comprehensive coverage:
+  - declared Workflow displayed as `TASK-DECLARED`
+  - omitted Workflow displayed as `NOT DECLARED`
+  - schema-invalid Workflow types rejected
+  - empty Workflow string rejected
+  - no Markdown parsing from `context.md`
+  - no assumption of filename resolution
+  - existing AIO-010 behavior remains valid without a `workflow` field
+- [x] Canonical Workflow definition inspected to verify AIO-011's declared `standard-change` matches the authoritative declared `id` (authoritative ID, not filename assumption).
+- [x] Repository test suites pass:
+  - `python -m unittest discover -s tests -p "test_*.py" -v`
+  - `python -B schemas/tests/validate_task.py`
+  - `python -B schemas/tests/validate_workflow.py`
+  - `python -B schemas/tests/validate_role.py`
+  - `python -B schemas/tests/validate_project_manifest.py`
+  - `git diff --check`
+- [x] Traversal governed under `standard-change` workflow:
+  - Stage 1 `understand` [x]
+  - Stage 2 `implement` with required Role `software-engineer` [x]
+  - Stage 3 `validate` [x]
+  - Stage 4 `review` with required Role `reviewer` [x] + Human Control checkpoint [x] (approved by Human Project Owner)
+- [x] Independent review conducted separately by dedicated reviewer subagent with clean review context.
+- [x] Quality Gates evaluated: `documentation_consistency` PASS, `independent_review` PASS.
+- [x] Human approval explicitly obtained, recorded in `review.md`, and closure authorized.

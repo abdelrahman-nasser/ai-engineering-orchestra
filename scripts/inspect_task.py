@@ -59,11 +59,15 @@ class TaskInspectionResult:
     task_human_control: dict[str, bool] = field(default_factory=dict)
     project_human_control: dict[str, bool] = field(default_factory=dict)
     effective_human_control: dict[str, tuple[bool, str]] = field(default_factory=dict)
-    workflow_status: str = "NOT MACHINE-RESOLVED"
-    workflow_note: str = (
-        "Current AIO v0.1 Task and Project Manifest schemas do not provide\n"
-        "machine-readable Workflow selection."
-    )
+    workflow: str | None = None
+    workflow_binding: str | None = None
+
+    @property
+    def workflow_status(self) -> str:
+        """Backward-compatible workflow status indicator."""
+        if self.workflow is not None:
+            return self.workflow_binding or "TASK-DECLARED"
+        return "NOT DECLARED"
 
     @property
     def is_valid(self) -> bool:
@@ -336,6 +340,15 @@ def inspect_task(
 
     result.effective_human_control = effective_hc
 
+    # Workflow
+    if (
+        "workflow" in raw_yaml
+        and isinstance(raw_yaml["workflow"], str)
+        and len(raw_yaml["workflow"]) > 0
+    ):
+        result.workflow = raw_yaml["workflow"]
+        result.workflow_binding = "TASK-DECLARED"
+
     return result
 
 
@@ -428,7 +441,7 @@ def format_report(result: TaskInspectionResult) -> str:
     else:
         lines.append("None")
     lines.append(
-        "(Note: Excludes Workflow contributions because governing Workflow is not machine-resolved.)"
+        "(Note: Excludes Workflow contributions because Workflow stage/gate content is not loaded by this utility in v0.1.)"
     )
 
     # Human Control
@@ -443,13 +456,19 @@ def format_report(result: TaskInspectionResult) -> str:
     else:
         lines.append("None declared")
 
-    # Workflow Section (HONEST LIMITATION)
+    # Workflow
     lines.append("")
     lines.append("Workflow")
     lines.append("--------")
-    lines.append(result.workflow_status)
-    lines.append("")
-    lines.append(result.workflow_note)
+    if result.workflow is not None:
+        lines.append(result.workflow)
+        lines.append(f"Binding: {result.workflow_binding}")
+        lines.append("")
+        lines.append(
+            "Notice: Workflow identity is Task-declared, but Workflow stage/gate content is not loaded by this utility in v0.1."
+        )
+    else:
+        lines.append("NOT DECLARED")
 
     return "\n".join(lines)
 

@@ -34,6 +34,7 @@ def create_minimal_valid_task_yaml(
     risk: str = "medium",
     complexity: str = "medium",
     execution_mode: str = "standard",
+    workflow: str | None = None,
 ) -> dict:
     doc = {
         "id": task_id,
@@ -53,6 +54,8 @@ def create_minimal_valid_task_yaml(
         },
         "dependencies": ["AIO-001"],
     }
+    if workflow is not None:
+        doc["workflow"] = workflow
     if quality_gates is not None:
         doc["quality_gates"] = quality_gates
     if human_control is not None:
@@ -345,8 +348,67 @@ class TestInspectTask(unittest.TestCase):
 
         self.assertEqual(rep1, rep2)
 
-    def test_workflow_selection_limitation_displayed(self) -> None:
-        """Correction 4: inspect_task must NOT machine-parse workflow from context.md."""
+    def test_workflow_declared_displayed(self) -> None:
+        """Verify declared workflow is reported with TASK-DECLARED binding."""
+        self._populate_canonical_artifacts(
+            create_minimal_valid_task_yaml(workflow="standard-change")
+        )
+        result = inspect_task(
+            self.task_dir, project_manifest_path=self.project_manifest_path
+        )
+        self.assertTrue(result.is_valid)
+        self.assertEqual(result.workflow, "standard-change")
+        self.assertEqual(result.workflow_binding, "TASK-DECLARED")
+
+        report = format_report(result)
+        expected_workflow_block = (
+            "Workflow\n"
+            "--------\n"
+            "standard-change\n"
+            "Binding: TASK-DECLARED\n\n"
+            "Notice: Workflow identity is Task-declared, but Workflow stage/gate content is not loaded by this utility in v0.1."
+        )
+        self.assertIn(expected_workflow_block, report)
+
+    def test_workflow_omitted_displayed(self) -> None:
+        """Verify omitted workflow is reported as NOT DECLARED."""
+        self._populate_canonical_artifacts(create_minimal_valid_task_yaml())
+        result = inspect_task(
+            self.task_dir, project_manifest_path=self.project_manifest_path
+        )
+        self.assertTrue(result.is_valid)
+        self.assertIsNone(result.workflow)
+        self.assertIsNone(result.workflow_binding)
+
+        report = format_report(result)
+        self.assertIn("Workflow\n--------\nNOT DECLARED", report)
+
+    def test_workflow_invalid_type(self) -> None:
+        """Verify non-string workflow type fails schema validation."""
+        data = create_minimal_valid_task_yaml()
+        data["workflow"] = 123
+        self._populate_canonical_artifacts(data)
+        result = inspect_task(
+            self.task_dir, project_manifest_path=self.project_manifest_path
+        )
+        self.assertFalse(result.is_valid)
+        self.assertEqual(result.schema_status, "INVALID")
+        self.assertTrue(any("workflow" in e for e in result.schema_errors))
+
+    def test_workflow_empty_string(self) -> None:
+        """Verify empty string workflow fails schema validation."""
+        data = create_minimal_valid_task_yaml()
+        data["workflow"] = ""
+        self._populate_canonical_artifacts(data)
+        result = inspect_task(
+            self.task_dir, project_manifest_path=self.project_manifest_path
+        )
+        self.assertFalse(result.is_valid)
+        self.assertEqual(result.schema_status, "INVALID")
+        self.assertTrue(any("workflow" in e for e in result.schema_errors))
+
+    def test_no_markdown_parsing_from_context(self) -> None:
+        """Verify inspect_task does NOT machine-parse workflow from context.md."""
         context_with_workflow = (
             "# Context\n\n"
             "## Governing Workflow\n\n"
@@ -361,15 +423,38 @@ class TestInspectTask(unittest.TestCase):
         )
         report = format_report(result)
 
-        self.assertEqual(result.workflow_status, "NOT MACHINE-RESOLVED")
-        self.assertIn("Workflow\n--------\nNOT MACHINE-RESOLVED", report)
-        self.assertIn(
-            "Current AIO v0.1 Task and Project Manifest schemas do not provide\n"
-            "machine-readable Workflow selection.",
-            report,
+        self.assertIsNone(result.workflow)
+        self.assertIn("Workflow\n--------\nNOT DECLARED", report)
+        self.assertNotIn("Binding: TASK-DECLARED", report)
+
+    def test_no_workflow_filename_resolution(self) -> None:
+        """Verify inspect_task does not attempt filename resolution or claim canonical resolution."""
+        self._populate_canonical_artifacts(
+            create_minimal_valid_task_yaml(workflow="arbitrary-custom-wf")
         )
-        # Ensure 'standard-change' was NOT extracted as the machine workflow
-        self.assertNotIn("standard-change", report)
+        result = inspect_task(
+            self.task_dir, project_manifest_path=self.project_manifest_path
+        )
+        self.assertTrue(result.is_valid)
+        self.assertEqual(result.workflow, "arbitrary-custom-wf")
+        self.assertEqual(result.workflow_binding, "TASK-DECLARED")
+
+        report = format_report(result)
+        self.assertIn("arbitrary-custom-wf", report)
+        self.assertNotIn("canonical: yes", report.lower())
+        self.assertNotIn("resolved: yes", report.lower())
+
+    def test_existing_aio_010_behavior_remains_valid(self) -> None:
+        """Verify existing AIO-010 task remains valid without workflow field."""
+        aio_010_dir = REPO_ROOT / ".ai" / "tasks" / "AIO-010-task-status-inspection"
+        self.assertTrue(aio_010_dir.is_dir())
+        result = inspect_task(aio_010_dir)
+        self.assertTrue(result.is_valid)
+        self.assertEqual(result.schema_status, "VALID")
+        self.assertIsNone(result.workflow)
+
+        report = format_report(result)
+        self.assertIn("Workflow\n--------\nNOT DECLARED", report)
 
     def test_unknown_input_nonexistent_directory(self) -> None:
         """Verify CLI and function handle nonexistent path properly."""

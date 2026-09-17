@@ -1,0 +1,12 @@
+id: INVALID-011
+title: Invalid Workflow Null
+type: implementation
+status: planned
+workflow: null
+
+objective: >
+  Demonstrate rejection of a null Workflow binding value.
+
+scope:
+  include:
+    - null workflow value

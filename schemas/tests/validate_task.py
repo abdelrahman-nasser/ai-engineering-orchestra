@@ -21,6 +21,7 @@ SCHEMA_PATH = REPO_ROOT / "schemas" / "task.schema.json"
 FIXTURE_DIR = REPO_ROOT / "schemas" / "tests" / "task"
 
 CANONICAL_TASKS = [
+    REPO_ROOT / ".ai" / "tasks" / "AIO-019-project-verification-runner" / "task.yaml",
     REPO_ROOT / ".ai" / "tasks" / "AIO-018-project-verification-contract" / "task.yaml",
     REPO_ROOT / ".ai" / "tasks" / "AIO-017-installed-structural-validation" / "task.yaml",
     REPO_ROOT / "templates" / "task" / "task.yaml",

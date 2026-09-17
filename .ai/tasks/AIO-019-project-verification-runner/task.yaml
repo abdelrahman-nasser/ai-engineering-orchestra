@@ -1,0 +1,34 @@
+id: AIO-019
+title: Implement Project Verification Runner
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: high
+execution:
+  mode: deep
+workflow: security-sensitive-change
+objective: >
+  Implement a programmatic planner and sequential runner for validated Project
+  Verification Check declarations that produces bounded PASS, FAIL, and ERROR
+  evidence without changing the existing aio verify preflight.
+scope:
+  include:
+    - Complete immutable planning with resolved and contained working directories
+    - Sequential command execution with launch-time revalidation and platform-aware executable resolution
+    - Noninteractive execution, bounded diagnostics, timeouts, durations, and result classification
+    - Focused cross-platform tests, full repository regression, security review, and independent review
+  exclude:
+    - Migration of aio verify or addition of another permanent CLI command
+    - Orchestra Manifest dogfooding or verification declarations
+    - Task, Workflow Stage, Agent, Provider, Assignment, Execution Contract, or Quality Gate execution
+    - Sandboxing, environment configuration, retries, parallelism, persistence, and process-tree supervision
+    - AIO-020 and public publishing work
+dependencies:
+  - AIO-018
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true

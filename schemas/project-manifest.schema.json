@@ -276,7 +276,7 @@
           "type": "string",
           "minLength": 1,
           "pattern": "^(?!/)(?![A-Za-z]:)[^\\\\\u0000]+$(?![\\s\\S])",
-          "description": "Project-relative forward-slash path; default is the active project root. Execution planning is deferred."
+          "description": "Project-relative forward-slash path; default is the active project root. Programmatic execution planning validates resolved existence, directory type, and containment."
         },
         "timeout_seconds": {
           "type": "integer",

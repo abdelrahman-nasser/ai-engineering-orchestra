@@ -72,7 +72,7 @@ the managed project's framework expectation. No version synchronization is impli
 
 This is an explicitly authorized local-installability experiment. It does not
 complete the future public distribution milestone. No PyPI publication, public
-name reservation, release automation, or generic verifier is provided.
+name reservation, release automation, or generic verification CLI is provided.
 
 ## Installed Structural Validation
 
@@ -112,7 +112,26 @@ argument-array `command`, optional project-relative `cwd`, and optional positive
 ID uniqueness without executing them. Existing Manifests remain valid; omitted
 checks mean zero declarations, with no automatic command discovery.
 
-The contract exists, but `aio verify` does **not** execute declared checks yet.
-It still runs Orchestra's seven-check development preflight. Future execution
-would use the caller's existing authority and inherited environment; declarations
-grant no permission, promise no sandbox, and do not establish Quality Gate results.
+The contract has a programmatic planner and runner:
+
+```python
+from pathlib import Path
+from engineering_orchestration.project_verification import (
+    plan_project_checks,
+    run_project_checks,
+)
+
+planning = plan_project_checks(Path("/path/to/project"))
+if planning.is_ready:
+    evidence = run_project_checks(planning.plan)
+```
+
+Planning validates all declarations and resolved working directories before any
+command runs. Execution is sequential, noninteractive, timeout-bounded, and
+captures bounded stdout/stderr excerpts as PASS, FAIL, or ERROR evidence. Commands
+use the caller's existing authority and inherited environment; declarations grant
+no permission, promise no sandbox, and do not establish Quality Gate results.
+Timeout or interruption cleanup covers the direct child only, not all descendants.
+
+`aio verify` does **not** execute declared checks yet. It still runs Orchestra's
+seven-check development preflight, and Orchestra's Manifest has not been migrated.

@@ -946,9 +946,9 @@ A Project Manifest conforms to schema version `0.1` when:
 ## 33. `verification` — Project Verification Checks
 
 A **Project Verification Check** (short form: **Verification Check**) is a
-declarative project-owned definition of a mechanical repository check that may
-later be executed by AIO to collect mechanical evidence. The Project Manifest
-specification owns this declaration at `.ai/project.yaml` under
+declarative project-owned definition of a mechanical repository check that can
+be executed programmatically by AIO to collect mechanical evidence. The Project
+Manifest specification owns this declaration at `.ai/project.yaml` under
 `verification.checks`. There is no separate `.ai/verification.yaml`.
 Commands do not belong in Workflow, Quality Gate, Role, or Stack Module files.
 
@@ -995,7 +995,7 @@ valid under the updated schema, not that older tools understand new declarations
 | `id` | Required nonempty string | Stable identity unique within this project's `verification.checks` |
 | `command` | Required nonempty string array | First string is the declared executable/program; later strings are literal arguments |
 | `cwd` | Optional nonempty string | Working directory relative to the active project root; omission means that root |
-| `timeout_seconds` | Optional positive integer | Maximum future execution duration; omission means `600` seconds |
+| `timeout_seconds` | Optional positive integer | Maximum execution duration; omission means `600` seconds |
 
 IDs must match `^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$` for the entire string (no trailing
 newline). Examples include `backend-tests`, `frontend-tests`, `lint`, and
@@ -1013,7 +1013,7 @@ Windows drive-relative forms are invalid, including `C:/work/backend`,
 `C:backend`, `/backend`, `\backend`, and `\\server\share`. NUL is invalid.
 `backend`, `frontend/app`, and `backend/../frontend` are structurally valid;
 relative traversal such as `../outside` is representation-valid but does not
-establish execution-plan validity. Before future execution, the resolved effective
+establish execution-plan validity. Before execution, the resolved effective
 cwd must exist and remain inside the active project root, including after
 symlink/junction resolution. Declaration validation does not check existence,
 resolve symlinks/junctions, enforce final containment, construct execution-ready
@@ -1021,77 +1021,105 @@ cwd objects, or launch anything.
 
 `timeout_seconds` rejects boolean, string, null, zero, and negative values.
 There is no unlimited/infinite value or `0 = disabled` convention. The default is
-semantic; validation does not mutate declarations to materialize defaults.
-Timeout enforcement is deferred to the future runner.
+semantic; validation does not mutate declarations to materialize defaults. The
+programmatic planner materializes it, and the runner enforces it.
 
-### Future execution semantics — specification only
+### Programmatic execution semantics
 
-AIO-018 defines and validates configuration data only. It executes zero declared
-commands. `validate_project()`, `aio tasks`, and `aio inspect` remain data-reading
-operations and must never execute declarations merely because they are present.
-`aio verify` still runs the unchanged Orchestra seven-check development preflight;
-it does not execute Project Verification Checks. Orchestra's own Manifest does not
-migrate those seven checks. No runner, executable lookup, or new verify flags are
-introduced here.
+AIO-018 defined the configuration contract and its structural validation. AIO-019
+adds the separate programmatic planner and runner in
+`engineering_orchestration.project_verification`. `validate_project()`, `aio
+tasks`, and `aio inspect` remain data-reading operations and never execute
+declarations merely because they are present. `aio verify` still runs the
+unchanged Orchestra seven-check development preflight; it does not execute Project
+Verification Checks. Orchestra's own Manifest does not migrate those seven checks,
+and no new verification CLI command is introduced.
 
-Future execution uses argument arrays with `shell=False`. AIO does not concatenate
+Execution uses argument arrays with `shell=False`. AIO does not concatenate
 arguments into command strings, interpret `&&` or `|`, perform shell expansion,
 variable interpolation, command substitution, or glob expansion. For example,
 `[pytest, 'tests/*']` passes `tests/*` literally; the invoked program may interpret
 it itself. A declared executable may itself be a shell, for example
-`[powershell, -Command, '...']`. Argument arrays are not sandboxing.
+`[powershell, -Command, '...']`. Argument arrays are not sandboxing. On Windows,
+the operating system may still process resolved `.cmd` and `.bat` wrappers through
+the command interpreter; their argument behavior must not be described as having
+the same literal-safety guarantee as native executables.
 
-Future executable resolution is deterministic: a bare program such as `dotnet`,
+Executable resolution is deterministic: a bare program such as `dotnet`,
 `npm`, or `pytest` uses inherited PATH with platform conventions. A relative
 executable such as `./tools/check.py` resolves from the Check's effective cwd,
 without inferred interpreters. A project may explicitly declare
 `[python, ./tools/check.py]` instead. Absolute executable paths are allowed; they
 reduce portability but add no fundamentally new authority over PATH-resolved
-external programs. Availability belongs to execution-environment state, not
-declaration validity. Structural validation performs no executable resolution or
-`shutil.which` calls.
+external programs. On Windows, drive-relative forms such as `C:tool.exe` and
+rooted-without-drive forms such as `\tool.exe` are rejected at execution because
+they cannot be deterministically anchored to the effective cwd; drive-absolute
+and UNC executable paths remain supported. Availability belongs to
+execution-environment state, not declaration or plan validity. Structural
+validation and planning perform no executable resolution; each Check resolves its
+executable immediately before its own launch.
 
-Future checks inherit the caller's execution environment. There are no environment
+Checks inherit the caller's execution environment. There are no environment
 overrides, secrets, interpolation, variable substitution, or credential
-configuration fields, and no secret-management responsibilities.
+configuration fields, and no secret-management responsibilities. Commands receive
+EOF through noninteractive stdin.
 
-Checks are ordered by declaration order. Initial future execution is expected to
-be sequential, continuing after individual FAIL and check-local ERROR where safe
-to collect complete mechanical evidence. No DAGs, dependencies, parallel
-scheduling, priority, or groups are defined.
+Checks run sequentially in declaration order, continuing after individual FAIL
+and check-local ERROR where safe to collect complete mechanical evidence. No DAGs,
+dependencies, parallel scheduling, priority, or groups are defined.
 
-The complete declaration set must be valid before future command execution begins.
+The complete declaration set must be valid before command execution begins.
 Duplicate IDs, malformed/empty commands, invalid timeouts, invalid cwd
-representations, and unknown fields invalidate the declaration set. A future
-runner must never execute a valid prefix of a malformed list. This contract
-validity check is separate from future execution-plan validity.
+representations, and unknown fields invalidate the declaration set. The runner
+never executes a valid prefix of a malformed list. This contract validity check is
+separate from execution-plan validity. The planner also resolves every effective
+cwd before the first command; each must exist, be a directory, and resolve to the
+project root or inside it after symlink or junction resolution. Immediately before
+each launch, the runner re-resolves the project root and Check cwd, verifies
+containment again, and compares available filesystem identity. This detects
+obvious replacement but does not eliminate time-of-check/time-of-use races or
+confine what the launched process can access.
 
-| Future result | Meaning |
+| Result | Meaning |
 | --- | --- |
 | PASS | Command launched, completed, and returned exit code `0` |
 | FAIL | Command launched, completed, and returned any nonzero exit code, including `2` |
 | ERROR | AIO could not obtain an evaluable completion: unavailable executable, launch failure, invalid execution cwd, timeout, or runner failure |
 
 No persisted result state or SKIP is defined. No checks means **0 project checks
-configured**; an unavailable executable means ERROR, not SKIP. Intended future
+configured**; an unavailable executable means ERROR, not SKIP. Programmatic
 aggregate exit codes are `0` for no FAIL or ERROR, `1` for at least one FAIL and
 zero ERROR, and `2` for one or more ERROR. ERROR dominates FAIL. These semantics
 do not change current CLI behavior or define Quality Gate results.
 
+The runner captures stdout and stderr separately as bytes in temporary files and
+retains at most the final 64 KiB of each stream with an explicit truncation marker.
+Excerpts use the preferred platform encoding with replacement for invalid bytes;
+they are unsanitized and may contain sensitive command output. Normal formatting
+suppresses PASS output and shows bounded FAIL or ERROR diagnostics. Durations use
+a monotonic clock. A timeout is ERROR with no return code and preserves available
+partial diagnostics. Timeout and user interruption best-effort terminate and reap
+only the directly launched child; descendants may survive. KeyboardInterrupt
+propagates and stops remaining Checks.
+
 A Check must never deliberately configure `aio verify` as its own command: that
 would recursively invoke the aggregate verifier. General recursion detection is
 not implemented; arbitrary wrappers may conceal recursion and AIO cannot prove
-its absence.
+its absence. An aggregate guard remains deferred until a separately approved CLI
+migration.
 
 ### Trust and authority boundary
 
 Repository configuration defines commands; it does not grant execution permission.
-A future `aio verify` invocation expresses explicit intent to perform project
-verification under the caller's existing authority. Declarations grant no
-filesystem, network, credential, Agent, Workflow, or approval authority.
+Calling the programmatic runner requires separately established authority and runs
+under the caller's existing privileges. Its availability does not authorize an
+Agent to invoke it automatically. Declarations grant no filesystem, network,
+credential, Agent, Workflow, or approval authority.
 
-Future commands may read/write accessible files, access network resources, use
+Commands may read/write accessible files, access network resources, use
 inherited credentials, spawn processes, generate build artifacts, modify caches,
 and update lockfiles. AIO claims no sandboxing, purity, read-only execution,
 harmlessness, or process isolation. No new permission engine, trust persistence,
-or first-run confirmation mechanism is introduced by this contract.
+or first-run confirmation mechanism is introduced by this contract. The runner
+does not execute Tasks, Workflow Stages, Roles, Providers, Assignments, Execution
+Contracts, or Quality Gates.

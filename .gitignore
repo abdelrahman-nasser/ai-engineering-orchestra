@@ -49,6 +49,9 @@ bin/
 obj/
 dist/
 build/
+*.egg-info/
+__pycache__/
+*.py[cod]
 coverage/
 
 # Generated archives/packages

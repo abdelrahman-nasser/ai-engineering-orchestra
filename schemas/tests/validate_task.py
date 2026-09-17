@@ -35,6 +35,7 @@ CANONICAL_TASKS = [
     REPO_ROOT / ".ai" / "tasks" / "AIO-013-task-inventory-discovery" / "task.yaml",
     REPO_ROOT / ".ai" / "tasks" / "AIO-014-repository-preflight" / "task.yaml",
     REPO_ROOT / ".ai" / "tasks" / "AIO-015-unified-cli-entry-point" / "task.yaml",
+    REPO_ROOT / ".ai" / "tasks" / "AIO-016-local-cli-package-installation" / "task.yaml",
 ]
 
 

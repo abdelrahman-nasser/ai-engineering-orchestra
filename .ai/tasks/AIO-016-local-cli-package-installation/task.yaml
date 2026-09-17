@@ -1,0 +1,36 @@
+id: AIO-016
+title: Add Local CLI Package Installation
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: medium
+risk: medium
+execution:
+  mode: standard
+workflow: standard-change
+objective: >
+  Prove isolated editable and normal local installation of the existing CLI
+  through a temporary aio console entry point, with a neutral import boundary
+  and installed tool-owned schemas, preserving existing command semantics.
+scope:
+  include:
+    - Setuptools pyproject metadata and Python >=3.12 support baseline
+    - Mechanical migration into engineering_orchestration and compatibility wrappers
+    - Package-safe access to authoritative Task and Workflow schema resources
+    - Truthful declaration of existing PyYAML and jsonschema dependencies
+    - Isolated installation, external-project, artifact, alias, and uninstall evidence
+    - Focused tests, documentation, canonical Task registration, and independent review
+  exclude:
+    - Public publishing, package-name reservation, release automation, and distribution channels
+    - Generic verification, configurable checks, and Manifest-driven verification
+    - New commands, JSON output, Task mutation, Agent or Workflow execution
+    - Product rename, historical Task changes, and schema semantic changes
+    - Dynamic version tooling, auto-update, telemetry, and launcher hacks
+dependencies:
+  - AIO-015
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true

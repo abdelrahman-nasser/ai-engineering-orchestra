@@ -502,7 +502,7 @@ class TestNoDuplicatedPreflightBattery(unittest.TestCase):
     """
 
     def test_cli_does_not_define_check_commands(self):
-        cli_source = (REPO_ROOT / "scripts" / "cli.py").read_text(encoding="utf-8")
+        cli_source = (REPO_ROOT / "engineering_orchestration" / "cli.py").read_text(encoding="utf-8")
         tree = ast.parse(cli_source)
 
         # Look for CheckDefinition or DEFAULT_CHECKS in the CLI module
@@ -539,7 +539,7 @@ class TestNoNewThirdPartyDependency(unittest.TestCase):
 
     def test_cli_module_level_imports_are_stdlib_only(self):
         """Module-level imports in cli.py must be standard library only."""
-        cli_source = (REPO_ROOT / "scripts" / "cli.py").read_text(encoding="utf-8")
+        cli_source = (REPO_ROOT / "engineering_orchestration" / "cli.py").read_text(encoding="utf-8")
         tree = ast.parse(cli_source)
 
         for node in ast.iter_child_nodes(tree):
@@ -706,7 +706,7 @@ class TestBrandIsolation(unittest.TestCase):
 
     def test_cli_module_does_not_hardcode_aio(self):
         """scripts/cli.py should not contain 'aio' as a hardcoded brand reference."""
-        cli_source = (REPO_ROOT / "scripts" / "cli.py").read_text(encoding="utf-8")
+        cli_source = (REPO_ROOT / "engineering_orchestration" / "cli.py").read_text(encoding="utf-8")
         tree = ast.parse(cli_source)
 
         for node in ast.walk(tree):
@@ -742,11 +742,11 @@ class TestBrandIsolation(unittest.TestCase):
     def test_rename_to_rook_requires_no_domain_changes(self):
         """Verify that domain modules don't reference the brand 'aio'."""
         domain_modules = [
-            REPO_ROOT / "scripts" / "cli.py",
-            REPO_ROOT / "scripts" / "list_tasks.py",
-            REPO_ROOT / "scripts" / "inspect_task.py",
-            REPO_ROOT / "scripts" / "verify_repo.py",
-            REPO_ROOT / "scripts" / "workflow_catalog.py",
+            REPO_ROOT / "engineering_orchestration" / "cli.py",
+            REPO_ROOT / "engineering_orchestration" / "list_tasks.py",
+            REPO_ROOT / "engineering_orchestration" / "inspect_task.py",
+            REPO_ROOT / "engineering_orchestration" / "verify_repo.py",
+            REPO_ROOT / "engineering_orchestration" / "workflow_catalog.py",
         ]
         for module_path in domain_modules:
             if not module_path.exists():

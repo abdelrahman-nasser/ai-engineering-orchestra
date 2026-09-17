@@ -318,7 +318,7 @@ class TestListTasks(unittest.TestCase):
     # 15. No subprocess parsing of inspect_task.py
     def test_no_subprocess_parsing_of_inspect_task(self) -> None:
         """Verify list_tasks.py does NOT spawn subprocesses or parse inspect_task stdout."""
-        script_file = REPO_ROOT / "scripts" / "list_tasks.py"
+        script_file = REPO_ROOT / "engineering_orchestration" / "list_tasks.py"
         source = script_file.read_text(encoding="utf-8")
         tree = ast.parse(source)
 

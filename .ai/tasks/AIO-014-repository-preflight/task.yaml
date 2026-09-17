@@ -1,0 +1,48 @@
+id: AIO-014
+title: Implement Repository Preflight Utility
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: medium
+risk: low
+execution:
+  mode: standard
+workflow: standard-change
+objective: >
+  Implement scripts/verify_repo.py consolidating the repository's existing mechanical verification
+  battery into one deterministic command producing a concise summary, strictly preserving the semantic
+  boundary between repository verification and Quality Gate satisfaction.
+scope:
+  include:
+    - Repository preflight utility in scripts/verify_repo.py executing the 7 established mechanical checks
+    - Deterministic repository root resolution and cwd-independent execution
+    - Argument array subprocess execution with shell=False and platform-safe executable resolution
+    - Distinct exit codes (0 for all pass, 1 for check failures, 2 for infrastructure/utility errors)
+    - Distinct classification of PASS, FAIL, and ERROR
+    - Concise PASS display, detailed failure/error diagnostics, no verbose success streaming
+    - Comprehensive unit tests in tests/test_verify_repo.py avoiding test recursion
+    - Registration of AIO-014 in schemas/tests/validate_task.py
+    - Canonical Task artifacts in .ai/tasks/AIO-014-repository-preflight/
+    - Governed execution under standard-change workflow with independent review
+  exclude:
+    - Quality Gate runner, checker registry, or gate satisfaction engine
+    - Mapping checks to Quality Gate IDs or claiming gate satisfaction
+    - Automating independent review or reviewer judgment
+    - Task awareness, --task flag, or loading Task Quality Gates
+    - Configurable runner framework, YAML configuration, plugins, or dynamic shell commands
+    - Concurrency, async execution, or timeout subsystem
+    - CLI flags like --quiet or --verbose
+    - Modifying schemas or historical tasks AIO-001 through AIO-013
+dependencies:
+  - AIO-010
+  - AIO-011
+  - AIO-012
+  - AIO-013
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: false
+  breaking_schema_changes_require_approval: false
+  breaking_contract_changes_require_approval: false

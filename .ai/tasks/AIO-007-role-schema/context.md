@@ -17,6 +17,7 @@ AIO-007 does NOT define Markdown as a public machine-readable Role serialization
 The existing canonical Role definitions remain Markdown.
 
 The Markdown extractor implemented for repository validation is:
+
 - test-only,
 - repository-local,
 - intentionally minimal,
@@ -35,6 +36,7 @@ A future task may separately decide the runtime/persistence representation of Ro
 ### Clarification 2 — Structurally Valid vs Semantically Recommended
 
 The schema enforces only the structural constraints approved under AIO-006:
+
 - root `type: object` with `additionalProperties: false`,
 - required fields: `id`, `name`, `purpose`, `responsibilities`, `required_capabilities`,
 - optional field: `applicable_task_types`,
@@ -56,6 +58,7 @@ AIO-007 begins in the `in_progress` status under the existing Task contract. It 
 ## Prohibited Extensions
 
 AIO-007 does not introduce:
+
 - `schema_version` as an instance field
 - `extensions`
 - Provider or model configuration
@@ -67,4 +70,3 @@ AIO-007 does not introduce:
 - Workflow definitions or execution
 - Execution modes or contracts
 - Estimates, billing, or Task relationships
-

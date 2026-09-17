@@ -12,6 +12,7 @@ Preserve all foundation contracts and schemas without modification.
 ## Stage 1 — Understand
 
 Completed.
+
 - Context Completion Rule satisfied (`core/context-policy.md` §22, see `context.md`).
 - Governing Workflow: `standard-change` (explicit Human/orchestrator selection).
 - Distinction between Stage actors and Workflow-required Roles preserved and documented.
@@ -23,6 +24,7 @@ Completed.
 ## Stage 2 — Implement
 
 Completed.
+
 - Required Role: `software-engineer`.
 - Fulfilled by: Primary implementation actor.
 - Implementation deliverables:
@@ -35,6 +37,7 @@ Completed.
 ## Stage 3 — Validate
 
 Completed.
+
 - No `required_roles` declared by `workflows/standard-change.md` for this stage.
 - Executed by: Primary implementation actor.
 - Deterministic verification commands and results:
@@ -55,6 +58,7 @@ Completed.
 ## Stage 4 — Review
 
 Completed.
+
 - Required Role: `reviewer`.
 - Human Control checkpoint: `true`.
 - Executed by: Independent Reviewer subagent (`conversationId: 07f5d829-10e2-4bac-8130-c961ac52dd3b`) operating under clean review context and governed by `roles/reviewer.md` and `quality-gates/independent-review.md`.
@@ -89,6 +93,7 @@ The Human Project Owner explicitly stated:
 > "I approve AIO-010. Record the Human approval for: AIO-010 — Implement Task Status Inspection Utility. This is the first governed implementation vertical slice. Complete the closure process, but do not start any future Task."
 
 Approval covers:
+
 - `scripts/inspect_task.py`
 - `tests/test_inspect_task.py`
 - AIO-010 Task artifacts
@@ -100,6 +105,7 @@ Approval covers:
 AIO-010 is completed with all 22 acceptance criteria checked, documentation consistency PASS, independent review PASS (APPROVE), unit tests PASS (17/17), Task validator PASS (21/21), Workflow validator PASS (68/68), Role validator PASS (34/34), Project Manifest validator PASS (12/12), `git diff --check` PASS, task status inspection utility verifying AIO-010 status as `completed`, and explicit Human approval recorded.
 
 Proven boundaries:
+
 - Governing workflow remains recorded in `context.md` as explicit Human/orchestrator selection.
 - `inspect_task.py` does not machine-parse Workflow selection from Markdown and reports `NOT MACHINE-RESOLVED`.
 - Machine-readable gate requirements do not falsely claim unresolvable Workflow contributions.

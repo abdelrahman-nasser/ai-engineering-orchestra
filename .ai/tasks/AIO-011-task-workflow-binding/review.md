@@ -12,6 +12,7 @@ and test suites without altering Workflow semantics or implementing runtime reso
 ## Stage 1 — Understand
 
 Completed.
+
 - Context Completion Rule satisfied (`core/context-policy.md` §22, see `context.md`).
 - Governing Workflow: `standard-change` (explicitly declared on `task.yaml`).
 - Distinction between Stage actors and Workflow-required Roles preserved and documented.
@@ -26,6 +27,7 @@ Completed.
 ## Stage 2 — Implement
 
 Completed.
+
 - Required Role: `software-engineer`.
 - Fulfilled by: Primary implementation actor.
 - Implementation deliverables:
@@ -48,6 +50,7 @@ Completed.
 ## Stage 3 — Validate
 
 Completed.
+
 - No `required_roles` declared by `workflows/standard-change.md` for this stage.
 - Executed by: Primary implementation actor.
 - Deterministic verification commands and results:
@@ -74,6 +77,7 @@ Completed.
 ## Stage 4 — Review
 
 Completed.
+
 - Required Role: `reviewer`.
 - Human Control checkpoint: `true`.
 - Executed by: Independent Reviewer subagent (`conversationId: 748b7211-dc1d-46c1-8235-0781556b34fa`) operating under clean review context and governed by `roles/reviewer.md` and `quality-gates/independent-review.md`.
@@ -119,6 +123,7 @@ The Human Project Owner explicitly stated:
 > "I approve AIO-011. Record explicit Human approval for: AIO-011 — Add Machine-Readable Task Workflow Binding. Then complete the closure process."
 
 Approval covers:
+
 - Task specification integration change (`core/task-specification.md`)
 - Task schema integration change (`schemas/task.schema.json`)
 - Task Workflow fixtures (`schemas/tests/task/`)
@@ -133,6 +138,7 @@ Approval covers:
 AIO-011 is completed with all acceptance criteria satisfied, documentation consistency PASS, independent review PASS (APPROVE), unit tests PASS (23/23), Task validator PASS (28/28), Workflow validator PASS (68/68), Role validator PASS (34/34), Project Manifest validator PASS (12/12), `git diff --check` PASS, task status inspection utility verifying AIO-011 status as `completed` with `Binding: TASK-DECLARED`, and explicit Human approval recorded.
 
 Preserved boundaries:
+
 - Selection remains a Human/orchestrator decision.
 - Binding records that decision on the Task.
 - Canonical Workflow resolution remains separate.

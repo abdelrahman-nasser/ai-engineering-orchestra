@@ -245,7 +245,7 @@ docs/adr/
 
 Current Task requirements:
 
-.ai/tasks/<task-id>/
+.ai/tasks/\<task-id\>/
 
 Duplicated or historical documents must not silently override authoritative Sources of Truth.
 

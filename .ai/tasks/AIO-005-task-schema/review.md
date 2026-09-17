@@ -144,6 +144,7 @@ AIO-005 is eligible for closure and its Task status is now `completed`.
 ## Closure Validation
 
 After the closure record updates, both validators were rerun:
+
 - `python -B schemas/tests/validate_project_manifest.py`: 12/12 cases passed;
   Schema validation PASSED; exit code 0.
 - `python -B schemas/tests/validate_task.py`: 16/16 cases passed;

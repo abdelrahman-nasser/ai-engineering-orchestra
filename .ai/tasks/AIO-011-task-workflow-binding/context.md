@@ -13,6 +13,7 @@ new foundation abstraction.
 ## Core Objective and Conceptual Distinctions
 
 AIO-011 introduces the optional machine-readable Task field:
+
 ```yaml
 workflow: standard-change
 ```
@@ -21,6 +22,7 @@ Semantic meaning:
 > `workflow` records the stable identifier of the Workflow explicitly selected to govern this Task.
 
 This is BINDING only. It SHALL NOT:
+
 - automatically select a Workflow,
 - infer from Task type, risk, or complexity,
 - execute Workflow stages,
@@ -30,6 +32,7 @@ This is BINDING only. It SHALL NOT:
 - alter the referenced Workflow.
 
 The canonical distinctions preserved in AIO are:
+
 - **Selection**: Deciding which Workflow applies (conducted explicitly by Human/orchestrator).
 - **Binding**: Recording that decision on the Task (`workflow` field on `task.yaml`).
 - **Resolution**: Loading and verifying the referenced Workflow definition.
@@ -41,9 +44,11 @@ or runtime execution.
 ## First Canonical Task with Machine-Readable Workflow Binding
 
 AIO-011 itself uses the newly introduced field:
+
 ```yaml
 workflow: standard-change
 ```
+
 This is the first canonical Task in AI Engineering Orchestra using machine-readable
 Workflow binding.
 
@@ -56,12 +61,14 @@ all historical Tasks remain structurally valid under the updated schema.
 Governing Workflow: `standard-change` (explicitly declared on `task.yaml`).
 
 Ordered Workflow stages:
+
 1. `understand`
 2. `implement`
 3. `validate`
 4. `review`
 
 Role fulfillment and stage execution:
+
 - **Stage 1 — `understand`**:
   No `required_roles` declared by `workflows/standard-change.md`.
   Primary implementation actor verifies context acquisition and satisfies Context Completion Rule.
@@ -81,17 +88,20 @@ Role fulfillment and stage execution:
 ## Quality Gate Determination
 
 **Role requirement != Quality Gate requirement.**
+
 - Project required gates: `documentation_consistency`, `independent_review` (from `.ai/project.yaml`)
 - Workflow stage required gates: None (the `standard-change` Workflow declares no mandatory gate floor)
 - Task quality gates: `documentation_consistency`, `independent_review` (from `task.yaml`)
 
 Effective union:
+
 - `documentation_consistency`
 - `independent_review`
 
 ## Evidence Terminology
 
 In accordance with established framework policy, evidence is described using truthful, accurate terminology:
+
 - auditable evidence,
 - version-controlled evidence,
 - recorded verification evidence.

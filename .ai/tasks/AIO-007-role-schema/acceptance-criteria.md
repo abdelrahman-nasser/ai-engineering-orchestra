@@ -54,4 +54,3 @@ AIO-007 is complete when all applicable criteria below are satisfied and Human a
 - [x] AIO-006 contract semantics remain unchanged.
 - [x] No future-version or out-of-scope concepts are introduced.
 - [x] Final Human approval is obtained before Task closure.
-

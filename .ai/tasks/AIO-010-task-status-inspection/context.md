@@ -19,6 +19,7 @@ Explicit Human/orchestrator selection: `standard-change`.
 > This is explicit Human/orchestrator Workflow selection for the first vertical slice. It is not machine-readable Task→Workflow binding and does not modify the Task schema.
 
 Ordered Workflow stages:
+
 1. `understand`
 2. `implement`
 3. `validate`
@@ -58,11 +59,13 @@ The requirement for the `reviewer` Role in Stage 4 does not automatically invoke
 the `independent_review` Quality Gate; they are distinct governance contracts.
 
 For AIO-010, the effective Quality Gate set is computed strictly from authoritative sources:
+
 - Project required gates: `documentation_consistency`, `independent_review` (from `.ai/project.yaml`)
 - Workflow stage required gates: None (the `standard-change` Workflow declares no mandatory gate floor)
 - Task quality gates: `documentation_consistency`, `independent_review` (from `task.yaml`)
 
 Effective union:
+
 - `documentation_consistency`
 - `independent_review`
 
@@ -70,6 +73,7 @@ Effective union:
 
 In accordance with Correction 3, AIO does not claim to provide "tamper-evident evidence."
 Evidence is described using truthful, accurate terminology:
+
 - auditable evidence,
 - version-controlled evidence,
 - recorded verification evidence.

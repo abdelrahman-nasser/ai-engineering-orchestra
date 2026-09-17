@@ -25,6 +25,7 @@ The review evaluated:
 Result: PASS
 
 Sources of Truth updated and aligned:
+
 - `AGENTS.md` registers `core/role-specification.md` and `schemas/role.schema.json` under Sources of Truth with explicit hierarchy annotations.
 - `core/role-specification.md` adds Section 9 documenting schema, repository test tooling, fixture locations, and explicit boundaries:
   - Validates a normalized in-memory projection of Markdown definitions; does not establish Markdown as runtime serialization format.
@@ -56,28 +57,35 @@ Result: pass
 ## Validation Summary
 
 ### 1. Role Schema Validation
+
 Command: `python schemas/tests/validate_role.py`
 Result: PASS — 34/34 checks passed; exit code 0.
 Coverage:
+
 - Canonical Role projections: 5/5 passed (`architect.md`, `documentation-specialist.md`, `reviewer.md`, `security-reviewer.md`, `software-engineer.md`)
 - Extraction failure tests: 7/7 passed (`duplicate_section`, `unknown_section`, `empty_section`, `multiline_id`, `prose_before_bullets`, `bullet_after_prose`, `no_valid_sections`)
 - Fixture cases: 22/22 passed (5 valid fixtures including structural edge cases, 17 invalid fixtures testing exact `ExpectedFailure` constraints)
 
 ### 2. Role Schema Validator Nonzero Exit Demonstration
+
 Commands:
+
 - `python schemas/tests/validate_role.py --test-mismatch`: Observed exit code 1.
 - Injected unregistered fixture: Observed diagnostic `FAIL fixture coverage: unregistered entries: unregistered.yaml` and exit code 1.
 
 ### 3. Task Schema Validation
+
 Command: `python schemas/tests/validate_task.py`
 Result: PASS — 18/18 cases passed; exit code 0.
 Canonical tasks validated: `templates/task/task.yaml`, `AIO-001`, `AIO-002`, `AIO-003`, `AIO-004`, `AIO-005`, `AIO-006`, and `AIO-007`.
 
 ### 4. Project Manifest Schema Validation
+
 Command: `python schemas/tests/validate_project_manifest.py`
 Result: PASS — 12/12 cases passed; exit code 0.
 
 ### 5. Git Diff & Hygiene Check
+
 Command: `git diff --check`
 Result: PASS — Clean; no whitespace errors or merge conflict markers.
 
@@ -94,12 +102,14 @@ A final Human-directed read-only architectural review identified one blocking fi
 **F-1 (resolved):** `AGENTS.md` originally listed `core/role-specification.md` and `schemas/role.schema.json` as flat peer Sources of Truth with no precedence relationship stated. An Agent reading `AGENTS.md` alone could not resolve a spec-vs-schema conflict.
 
 **Remediation applied:** Both entries in `AGENTS.md` were updated with explicit inline annotations:
+
 - Role specification entry: "authoritative semantic contract for Roles; governs semantics if it conflicts with the Role schema."
 - Role schema entry: "machine-readable structural validation of the Role contract; semantically subordinate to `core/role-specification.md`."
 
 **Post-remediation review result:** SOURCE-OF-TRUTH HIERARCHY: PASS.
 
 Post-remediation validators confirmed:
+
 - Role validator: 34/34 PASS
 - Task validator: 18/18 PASS
 - Project Manifest validator: 12/12 PASS

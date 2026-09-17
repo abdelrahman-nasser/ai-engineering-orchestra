@@ -58,12 +58,14 @@ The v0.1 Workflow contract contains these top-level fields:
 `id` is the stable machine-readable identity of the Workflow.
 
 Requirements:
+
 - MUST be unique across all Workflows in the project.
 - MUST be stable — changing an ID is a breaking change.
 
 Canonical AIO Workflow definitions use kebab-case identifiers by convention (e.g., `standard-change`, `architecture-change`). This convention is not a normative identifier grammar in v0.1.
 
 Example:
+
 ```yaml
 id: standard-change
 ```
@@ -73,10 +75,12 @@ id: standard-change
 `name` is the human-readable display name of the Workflow.
 
 Requirements:
+
 - MUST be a non-empty string.
 - Descriptive and recognizable.
 
 Example:
+
 ```yaml
 name: Standard Change
 ```
@@ -86,10 +90,12 @@ name: Standard Change
 `purpose` briefly explains the class of engineering work governed by the Workflow.
 
 Requirements:
+
 - MUST be a concise statement of why this Workflow exists.
 - MUST describe a governance objective rather than runtime instructions.
 
 Example:
+
 ```yaml
 purpose: Govern standard engineering work through disciplined understanding, implementation, validation, and review.
 ```
@@ -99,11 +105,13 @@ purpose: Govern standard engineering work through disciplined understanding, imp
 `applicable_task_types` lists Task categories for which the Workflow is commonly suitable.
 
 Requirements:
+
 - Optional list of string identifiers matching valid Task types (e.g., `implementation`, `architecture`).
 - **Advisory only**: It SHALL NOT automatically select, trigger, assign, or authorize a Workflow.
 - It does not restrict a Workflow from being used with other Task types when authorized by project configuration or Human direction.
 
 Example:
+
 ```yaml
 applicable_task_types:
   - implementation
@@ -116,6 +124,7 @@ applicable_task_types:
 `stages` defines the ordered sequence of governance stages that constitute the Workflow choreography.
 
 Requirements:
+
 - MUST be a non-empty list of Stage objects conforming to the Stage Contract.
 - Order is significant and defines the sequential progression of governance stages.
 
@@ -140,6 +149,7 @@ The v0.1 Stage contract contains these fields:
 `id` is the stable machine-readable identifier of the stage within the Workflow.
 
 Requirements:
+
 - MUST be unique within the Workflow's `stages` list.
 - MUST be stable within the containing Workflow.
 
@@ -150,6 +160,7 @@ Canonical AIO Workflow definitions use kebab-case stage identifiers by conventio
 `purpose` describes the specific governance objective of the stage.
 
 Requirements:
+
 - MUST be a non-empty concise statement of what this stage achieves.
 
 ### `required_roles`
@@ -157,11 +168,13 @@ Requirements:
 `required_roles` lists the canonical Role IDs required by this stage.
 
 Requirements:
+
 - Optional list of stable Role IDs defined in `roles/`.
 - **References only**: This is NOT actor assignment. It indicates that the governance stage requires the capability and responsibility contract represented by the referenced Role(s).
 - Actor selection belongs to the future Assignment Contract.
 
 Example:
+
 ```yaml
 required_roles:
   - reviewer
@@ -172,10 +185,12 @@ required_roles:
 `required_quality_gates` lists the canonical Quality Gate IDs that must be satisfied before the stage may complete.
 
 Requirements:
+
 - Optional list of stable Quality Gate IDs defined in `quality-gates/`.
 - **References only**: The Workflow does not define gate logic or evaluation methods; it declares that the named gate is a mandatory completion condition for this stage.
 
 Example:
+
 ```yaml
 required_quality_gates:
   - independent_review
@@ -186,6 +201,7 @@ required_quality_gates:
 `human_control_checkpoint` declares whether this stage represents a process location where Human Control rules are evaluated.
 
 Semantics:
+
 - `human_control_checkpoint` is optional.
 - If omitted, the Stage does not declare a Human Control checkpoint.
 - If `true`, the Stage declares a process location at which applicable Human Control rules are evaluated.
@@ -193,6 +209,7 @@ Semantics:
 - See Section 9 for detailed semantics and boundaries.
 
 Example:
+
 ```yaml
 human_control_checkpoint: true
 ```
@@ -372,6 +389,7 @@ Normative semantic rule:
 > A Human-control checkpoint SHALL NOT independently grant, require, or define approval authority. At a checkpoint, applicable Human Control rules are evaluated. If those rules require approval, progression pauses until valid approval is obtained; if they require no approval, the checkpoint does not independently block progression.
 
 Specifically:
+
 - **Evaluation**: When a Workflow stage declares `human_control_checkpoint: true`, the runtime inspects applicable Human Control rules (from `core/principles.md`, `core/human-control.md`, `.ai/project.yaml`, and the Task's `human_control` configuration).
 - **Pausing**: If any applicable rule requires Human approval (e.g., architecture change, security-sensitive change, breaking contract change, or Task-level `final_review_required: true`), execution pauses at this checkpoint until explicit Human approval is recorded.
 - **Continuing**: If no applicable rule requires Human approval for the current work, the checkpoint is satisfied immediately and does not independently block progression.
@@ -387,6 +405,7 @@ Execution Mode (`core/task-specification.md`) and Workflow are **orthogonal** co
 - **Execution Mode**: Defines the *depth of engineering process and agent autonomy* applied to an individual Task (`lite`, `standard`, `deep`, `critical`).
 
 In v0.1:
+
 - Workflows do not define mode-specific stage counts.
 - Workflows are not selected by Execution Mode.
 - No mode-to-Workflow mapping matrix exists.
@@ -404,6 +423,7 @@ Workflow definition is strictly decoupled from Workflow selection:
 - **Selection**: The decision of which Workflow applies to a specific Task.
 
 In v0.1:
+
 - A Task may explicitly declare its governing Workflow via `workflow: <workflow-id>` in `task.yaml`.
 - The Project Manifest may configure a default Workflow via `workflows.default` in `.ai/project.yaml`.
 - `applicable_task_types` on a Workflow is advisory only and does NOT automatically select or bind a Workflow.

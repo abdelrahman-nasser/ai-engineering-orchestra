@@ -29,6 +29,7 @@ The review evaluated:
 Result: PASS
 
 Sources of Truth updated and verified:
+
 - `AGENTS.md` registers `core/workflow-specification.md` and `workflows/` as Sources of Truth. No Workflow schema entry added.
 - `core/terminology.md` updates Workflow and Stage term definitions with canonical specification cross-references.
 - `workflows/README.md` documents library index, contract overview, and Markdown representation notice.
@@ -76,18 +77,22 @@ Independent review completed with zero findings and outcome APPROVE.
 ## Validation Summary
 
 ### 1. Task Schema Validation
+
 Command: `python -B schemas/tests/validate_task.py`
 Result: PASS — 19/19 cases passed (including registered AIO-008); exit code 0.
 
 ### 2. Project Manifest Schema Validation
+
 Command: `python -B schemas/tests/validate_project_manifest.py`
 Result: PASS — 12/12 cases passed; exit code 0.
 
 ### 3. Role Schema Validation
+
 Command: `python -B schemas/tests/validate_role.py`
 Result: PASS — 34/34 checks passed; exit code 0.
 
 ### 4. Git Whitespace Validation
+
 Command: `git diff --check`
 Result: PASS — 0 whitespace errors; exit code 0.
 

@@ -450,7 +450,7 @@ AI Engineering Orchestra governance choreography is strictly separated from exec
 ┌────────────────────────────────────────────────────────┐
 │ External / Future Execution Runtime                    │
 │                                                        │
-│ - Actor instantiation and execution                    │
+│ - Agent instantiation and execution                    │
 │ - Graph execution and transition mechanics             │
 │ - Agent lifecycle management                           │
 │ - Runtime state and checkpoint persistence             │

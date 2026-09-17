@@ -1,0 +1,5 @@
+id: agent-engineer-1
+kind: agent
+competencies:
+  - source-code-analysis
+provider: example-provider

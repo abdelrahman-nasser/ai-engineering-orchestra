@@ -1,0 +1,5 @@
+id: human-specialist-1
+kind: human
+competencies:
+  - project-defined-specialism
+  - Software-Implementation

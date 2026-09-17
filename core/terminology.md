@@ -29,13 +29,14 @@ Examples may include:
 - Antigravity
 - future AI providers
 
-A Provider is not a Role.
+A Provider is not a Role or Actor and does not fulfil a Role. A Provider may
+supply many Agent Actors. A Human Actor has no Provider requirement.
 
 For example:
 
 Claude != Architect
 
-Claude may execute the Architect Role.
+A Provider may supply an Agent Actor capable of fulfilling the Architect Role.
 
 ---
 
@@ -73,9 +74,13 @@ Provider Adapters may map tiers to actual Provider models.
 
 ## Agent
 
-An individual AI execution instance performing work.
+An AI participant that may be represented as an Actor with `kind: agent`.
 
-An Agent receives:
+Agent identity may be supplied as a candidate before assignment or execution.
+Provider, model, runtime, reasoning configuration, availability, and execution
+state are not part of the Actor contract.
+
+When an Agent executes work, it may receive:
 
 - a Task
 - a Role
@@ -84,15 +89,53 @@ An Agent receives:
 - applicable Policies
 - available Capabilities
 
-An Agent is temporary.
+An Agent Actor does not receive execution authority merely by being an Agent.
+A runtime execution remains separate from Actor identity.
 
 A Role is reusable.
 
 ---
 
+## Actor
+
+A concrete, identifiable Human or Agent candidate capable of fulfilling a Role.
+
+Actor identity is separate from availability, assignment, authority, permission,
+approval, and execution. Actor answers **who**; Provider identifies a supplying
+system or platform, and runtime describes **where or how** an Agent executes.
+
+The canonical contract and matching semantics are defined in:
+
+`core/actor-specification.md`
+
+---
+
+## Actor Competency
+
+An exact, case-sensitive engineering competency identifier declared by an
+Actor. Actor competencies use boolean set membership only; they have no levels,
+weights, aliases, implications, or scores.
+
+Actor competency is not runtime Capability, permission, authority, availability,
+assignment, approval, or execution.
+
+---
+
+## Actor-Role Competency Coverage
+
+Pure evidence that an Actor declares every engineering competency in a Role's
+`required_capabilities` set.
+
+Coverage does not select or assign an Actor and does not establish availability,
+authority, permission, execution, Quality Gate PASS, or independent-review
+satisfaction. A Role with no semantically approved required competencies is not
+automatically matchable.
+
+---
+
 ## Role
 
-A defined engineering responsibility.
+A reusable engineering responsibility and its required competencies.
 
 Examples:
 

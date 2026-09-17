@@ -1,0 +1,8 @@
+id: agent-architect-1
+kind: agent
+competencies:
+  - architecture-analysis
+  - requirements-analysis
+  - source-code-analysis
+  - evidence-evaluation
+  - documentation-analysis

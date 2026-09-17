@@ -1,0 +1,34 @@
+id: AIO-021
+title: Define Actor and Role-Capability Coverage Foundation
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: medium
+execution:
+  mode: deep
+workflow: architecture-change
+objective: >
+  Define the smallest canonical Actor identity and competency contract for
+  Human and Agent candidates, together with pure exact Role competency coverage
+  semantics that introduce no assignment, authority, or execution behavior.
+scope:
+  include:
+    - Canonical Actor semantic specification and three-field structural schema
+    - Human and Agent Actor symmetry with exact competency identifiers
+    - Pure deterministic Actor-to-Role competency coverage evaluation
+    - Terminology, packaging, tests, and Task evidence for the Actor foundation
+  exclude:
+    - Assignment, availability, authority, permission, approval, or execution
+    - Provider, model, runtime, reasoning, cost, quota, tools, or credentials
+    - Actor catalogs, project Actor storage, profiles, instances, or canonical Actors
+    - Capability registry, levels, aliases, hierarchy, scoring, ranking, or selection
+    - Role catalog integration, CLI commands, Quality Gate results, or AIO-022
+dependencies:
+  - AIO-020
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true

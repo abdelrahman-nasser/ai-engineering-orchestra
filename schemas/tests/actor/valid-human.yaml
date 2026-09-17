@@ -1,0 +1,7 @@
+id: human-engineer-1
+kind: human
+competencies:
+  - software-implementation
+  - source-code-analysis
+  - automated-testing
+  - evidence-evaluation

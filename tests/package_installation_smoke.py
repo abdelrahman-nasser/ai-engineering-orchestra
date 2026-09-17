@@ -109,11 +109,12 @@ def main() -> None:
                 with zipfile.ZipFile(wheel) as archive:
                     names = archive.namelist()
                     modules = {f"engineering_orchestration/{name}" for name in
-                               ("__init__.py", "cli.py", "list_tasks.py", "inspect_task.py",
+                               ("__init__.py", "actor_coverage.py", "cli.py", "list_tasks.py", "inspect_task.py",
                                 "verify_repo.py", "workflow_catalog.py", "schema_resources.py",
                                 "project.py", "validation.py", "project_verification.py")}
                     schemas = {f"engineering_orchestration/_schemas/{name}" for name in
-                               ("task.schema.json", "workflow.schema.json", "project-manifest.schema.json")}
+                               ("actor.schema.json", "task.schema.json", "workflow.schema.json",
+                                "project-manifest.schema.json")}
                     payload = {name for name in names if ".dist-info/" not in name}
                     require(payload == modules | schemas, f"Unexpected wheel payload: {payload}")
                     for name in schemas:
@@ -126,11 +127,14 @@ def main() -> None:
 import json, sys
 from pathlib import Path
 import engineering_orchestration.cli as cli
+import engineering_orchestration.actor_coverage as actor_coverage
 import engineering_orchestration.project_verification as project_verification
 from engineering_orchestration.schema_resources import schema_resource
-print(json.dumps({'module': cli.__file__, 'runner_module': project_verification.__file__,
+print(json.dumps({'module': cli.__file__, 'actor_module': actor_coverage.__file__,
+    'runner_module': project_verification.__file__,
     'schemas': [str(schema_resource(n)) for n in
-    ('task.schema.json', 'workflow.schema.json', 'project-manifest.schema.json')], 'sys_path': sys.path}))
+    ('actor.schema.json', 'task.schema.json', 'workflow.schema.json',
+     'project-manifest.schema.json')], 'sys_path': sys.path}))
 """
             evidence = json.loads(run([str(python), "-B", "-c", probe], project / "src/nested", run_env))
             print(f"{mode.upper()} IMPORT/RESOURCE EVIDENCE: {json.dumps(evidence)}", flush=True)
@@ -139,6 +143,8 @@ print(json.dumps({'module': cli.__file__, 'runner_module': project_verification.
                         "Normal install imports leaked to source")
                 require(Path(evidence["runner_module"]).resolve().is_relative_to(environment),
                         "Normal runner import leaked to source")
+                require(Path(evidence["actor_module"]).resolve().is_relative_to(environment),
+                        "Normal Actor evaluator import leaked to source")
                 for path in evidence["schemas"]:
                     require(Path(path).resolve().is_relative_to(environment), "Resource leaked to source")
                 require(all(not Path(p).resolve().is_relative_to(ROOT) for p in evidence["sys_path"] if p),

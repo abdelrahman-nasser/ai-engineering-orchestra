@@ -1,0 +1,7 @@
+id: ai-engineer-1
+kind: agent
+competencies:
+  - software-implementation
+  - source-code-analysis
+  - automated-testing
+  - evidence-evaluation

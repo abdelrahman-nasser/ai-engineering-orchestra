@@ -15,6 +15,12 @@ from engineering_orchestration.schema_resources import schema_resource
 
 
 ROOT = Path(__file__).resolve().parents[1]
+PACKAGED_SCHEMAS = (
+    "actor.schema.json",
+    "task.schema.json",
+    "workflow.schema.json",
+    "project-manifest.schema.json",
+)
 
 
 class PackagingTests(unittest.TestCase):
@@ -44,13 +50,13 @@ class PackagingTests(unittest.TestCase):
                                      for n in ast.walk(tree)))
 
     def test_packaged_schema_content_matches_canonical_source(self):
-        for name in ("task.schema.json", "workflow.schema.json", "project-manifest.schema.json"):
+        for name in PACKAGED_SCHEMAS:
             self.assertEqual(schema_resource(name).read_bytes(),
                              (ROOT / "schemas" / name).read_bytes())
 
     def test_schema_lookup_does_not_consult_cwd(self):
         with patch("pathlib.Path.cwd", side_effect=AssertionError("CWD is project data")):
-            for name in ("task.schema.json", "workflow.schema.json", "project-manifest.schema.json"):
+            for name in PACKAGED_SCHEMAS:
                 self.assertIsInstance(json.loads(schema_resource(name).read_text()), dict)
 
     def test_missing_installed_schema_never_uses_checkout_fallback(self):
@@ -80,7 +86,7 @@ class PackagingTests(unittest.TestCase):
         self.assertEqual(config["packages"],
                          ["engineering_orchestration", "engineering_orchestration._schemas"])
         self.assertEqual(config["package-data"], {"engineering_orchestration._schemas":
-                         ["task.schema.json", "workflow.schema.json", "project-manifest.schema.json"]})
+                         list(PACKAGED_SCHEMAS)})
 
     def test_documented_scope_is_local_and_verify_is_portable(self):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")

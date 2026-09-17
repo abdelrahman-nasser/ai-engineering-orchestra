@@ -114,13 +114,33 @@ or invalid data produce FAIL; missing installed resources, I/O problems, and
 internal failures produce ERROR. ERROR takes precedence over FAIL. PASS covers
 only the supported structural rules, without establishing Quality Gate results.
 
-The installed tool packages canonical Task, Workflow, and Project Manifest schemas
-from their single sources in `schemas/`. Managed projects need no schema regression
-scripts, fixtures, Orchestra Task history, Git, Node/npm, or Python tests. Python
-and the declared tool dependencies run the validator; the target project's own
-language is irrelevant. The API executes no project commands and changes no files.
-Role project validation is outside coverage: the current Markdown extraction is
-test-only, not a runtime representation contract. No SKIP results are emitted.
+The installed tool packages canonical Actor, Task, Workflow, and Project Manifest
+schemas from their single sources in `schemas/`. Managed projects need no schema
+regression scripts, fixtures, Orchestra Task history, Git, Node/npm, or Python
+tests. Python and the declared tool dependencies run the validator; the target
+project's own language is irrelevant. The API executes no project commands and
+changes no files. Actor and Role project discovery is outside coverage: no Actor
+catalog exists, and current Role Markdown extraction is test-only rather than a
+runtime representation contract. No SKIP results are emitted.
+
+## Actor Competency Coverage
+
+The framework defines a Provider-neutral Actor as a concrete Human or Agent
+candidate with an ID, kind, and engineering competencies. The pure evaluator
+compares already-normalized Actor competencies with Role requirements:
+
+```python
+from engineering_orchestration.actor_coverage import evaluate_actor_role_coverage
+
+coverage = evaluate_actor_role_coverage(actor, role)
+print(coverage.compatible, coverage.missing_competencies)
+```
+
+Matching is exact and case-sensitive. A Role with empty required capabilities is
+explicitly non-matchable. Coverage is evidence only: it does not rank, select,
+assign, authorize, or execute an Actor; inspect availability; or produce a
+Quality Gate result. The semantic contract is defined in
+[`core/actor-specification.md`](core/actor-specification.md).
 
 AIO-018 defines the optional Project Verification Check contract in
 [`core/project-manifest.md`](core/project-manifest.md#33-verification--project-verification-checks),

@@ -12,7 +12,12 @@ def schema_resource(name: str) -> Traversable | None:
     Uninstalled source wrappers also work: only this module's own checkout
     (identified by its packaging metadata) may supply that resource directory.
     """
-    if name not in {"task.schema.json", "workflow.schema.json", "project-manifest.schema.json"}:
+    if name not in {
+        "actor.schema.json",
+        "task.schema.json",
+        "workflow.schema.json",
+        "project-manifest.schema.json",
+    }:
         raise ValueError(f"Unknown tool schema: {name}")
     try:
         resource = files("engineering_orchestration._schemas").joinpath(name)

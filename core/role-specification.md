@@ -25,8 +25,11 @@ The initial reusable Role definitions are maintained in that directory.
 The following concepts remain separate:
 
 - **Role**: the declarative responsibility and required competencies.
-- **Agent**: a temporary runtime actor that may fulfil a Role.
-- **Human**: a possible actor or approval authority where Human Control permits.
+- **Actor**: a concrete, identifiable Human or Agent candidate that may fulfil a
+  Role, as defined by `core/actor-specification.md`.
+- **Agent**: the AI Actor kind; Agent identity does not imply current execution.
+- **Human**: the Human Actor kind; Human approval authority remains governed by
+  Human Control.
 - **Task**: the scoped work that must be performed.
 - **Workflow**: the ordered stages used to complete a class of Task.
 - **Provider or Model**: implementation technology behind an Agent.
@@ -125,7 +128,8 @@ The following are not Role capabilities:
 - `call-api`
 - `create-branch`
 
-Those concepts belong to actor profiles, runtime/tooling, execution configuration, or Policy as applicable.
+Those concepts belong to future runtime/tooling or execution contracts, or to
+Policy as applicable.
 
 Required capabilities describe what the Role requires. They do not describe which capabilities an actor possesses.
 
@@ -185,16 +189,21 @@ The absence of a Role field does not imply permission. Permission and authority 
 
 ## 6. External Fulfilment Boundary
 
-The Role contract is intentionally suitable for different future actors and runtimes:
+The Role contract is intentionally suitable for different Actors and future
+runtimes:
 
 ```text
 AIO Role
   -> fulfilled by an Actor
-       -> Human or Agent
-            -> executed using a future runtime or Provider
+       -> Human
+       -> Agent
+            -> may be supplied by a Provider
+            -> may execute in a future runtime
 ```
 
-AIO-006 defines no adapters, integrations, runtime assignment, or execution behavior.
+AIO-006 defines no adapters, integrations, Actor assignment, or execution
+behavior. The canonical Actor contract and pure competency coverage semantics
+are defined separately in `core/actor-specification.md`.
 
 ---
 

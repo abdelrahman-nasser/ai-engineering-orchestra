@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-engineering-orchestra.dev/schemas/actor.schema.json",
+  "title": "AI Engineering Orchestra Actor",
+  "description": "Structural schema for the AI Engineering Orchestra v0.1 Actor contract defined by core/actor-specification.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "kind",
+    "competencies"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Opaque stable Actor identity within the supplied Actor set or assignment context."
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "human",
+        "agent"
+      ],
+      "description": "Human or Agent Actor category; kind grants no authority."
+    },
+    "competencies": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Nonempty semantic set of exact, case-sensitive engineering competency identifiers."
+    }
+  }
+}

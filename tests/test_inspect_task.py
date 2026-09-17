@@ -349,7 +349,7 @@ class TestInspectTask(unittest.TestCase):
         self.assertEqual(rep1, rep2)
 
     def test_workflow_declared_displayed(self) -> None:
-        """Verify declared workflow is reported with TASK-DECLARED binding."""
+        """Verify declared workflow is reported with TASK-DECLARED binding and RESOLVED status."""
         self._populate_canonical_artifacts(
             create_minimal_valid_task_yaml(workflow="standard-change")
         )
@@ -359,14 +359,19 @@ class TestInspectTask(unittest.TestCase):
         self.assertTrue(result.is_valid)
         self.assertEqual(result.workflow, "standard-change")
         self.assertEqual(result.workflow_binding, "TASK-DECLARED")
+        self.assertEqual(result.workflow_resolution, "RESOLVED")
+        self.assertEqual(result.workflow_stages_count, 4)
+        self.assertEqual(result.workflow_checkpoints, ["review"])
 
         report = format_report(result)
         expected_workflow_block = (
             "Workflow\n"
             "--------\n"
             "standard-change\n"
-            "Binding: TASK-DECLARED\n\n"
-            "Notice: Workflow identity is Task-declared, but Workflow stage/gate content is not loaded by this utility in v0.1."
+            "Binding: TASK-DECLARED\n"
+            "Resolution: RESOLVED\n"
+            "Stages: 4\n"
+            "Human Control Checkpoints: review"
         )
         self.assertIn(expected_workflow_block, report)
 
@@ -379,6 +384,7 @@ class TestInspectTask(unittest.TestCase):
         self.assertTrue(result.is_valid)
         self.assertIsNone(result.workflow)
         self.assertIsNone(result.workflow_binding)
+        self.assertIsNone(result.workflow_resolution)
 
         report = format_report(result)
         self.assertIn("Workflow\n--------\nNOT DECLARED", report)
@@ -427,22 +433,77 @@ class TestInspectTask(unittest.TestCase):
         self.assertIn("Workflow\n--------\nNOT DECLARED", report)
         self.assertNotIn("Binding: TASK-DECLARED", report)
 
-    def test_no_workflow_filename_resolution(self) -> None:
-        """Verify inspect_task does not attempt filename resolution or claim canonical resolution."""
+    def test_workflow_unresolved_unknown_binding(self) -> None:
+        """Verify inspect_task reports UNRESOLVED and invalid for unknown workflow binding."""
         self._populate_canonical_artifacts(
             create_minimal_valid_task_yaml(workflow="arbitrary-custom-wf")
         )
         result = inspect_task(
             self.task_dir, project_manifest_path=self.project_manifest_path
         )
-        self.assertTrue(result.is_valid)
+        self.assertFalse(result.is_valid)
         self.assertEqual(result.workflow, "arbitrary-custom-wf")
         self.assertEqual(result.workflow_binding, "TASK-DECLARED")
+        self.assertEqual(result.workflow_resolution, "UNRESOLVED")
 
         report = format_report(result)
         self.assertIn("arbitrary-custom-wf", report)
-        self.assertNotIn("canonical: yes", report.lower())
-        self.assertNotIn("resolved: yes", report.lower())
+        self.assertIn("Resolution: UNRESOLVED", report)
+
+    def test_effective_quality_gates_includes_workflow_contribution(self) -> None:
+        """Verify workflow stage quality gates are merged into effective quality gates."""
+        no_gates_manifest = self.test_root / "no_gates.yaml"
+        with no_gates_manifest.open("w", encoding="utf-8") as f:
+            yaml.safe_dump(
+                create_minimal_project_manifest(require_review=False, require_doc=False), f
+            )
+
+        self._populate_canonical_artifacts(
+            create_minimal_valid_task_yaml(quality_gates=[], workflow="architecture-change")
+        )
+        result = inspect_task(self.task_dir, project_manifest_path=no_gates_manifest)
+        self.assertTrue(result.is_valid)
+        self.assertEqual(result.workflow_resolution, "RESOLVED")
+        self.assertEqual(
+            result.workflow_required_gates,
+            ["documentation_consistency", "independent_review"],
+        )
+        self.assertEqual(
+            result.effective_quality_gates,
+            ["documentation_consistency", "independent_review"],
+        )
+
+    def test_resolution_independent_of_filename_in_inspection(self) -> None:
+        """Verify inspection resolves workflow by declared ID even when filename differs."""
+        custom_wf_dir = self.test_root / "custom_workflows"
+        custom_wf_dir.mkdir()
+        wf_content = {
+            "id": "my-special-flow",
+            "name": "Special Flow",
+            "purpose": "A special governance flow.",
+            "stages": [
+                {
+                    "id": "stage-one",
+                    "purpose": "First stage.",
+                    "required_quality_gates": ["custom_stage_gate"],
+                }
+            ],
+        }
+        with (custom_wf_dir / "differing_filename.yaml").open("w", encoding="utf-8") as f:
+            yaml.safe_dump(wf_content, f)
+
+        self._populate_canonical_artifacts(
+            create_minimal_valid_task_yaml(workflow="my-special-flow")
+        )
+        result = inspect_task(
+            self.task_dir,
+            project_manifest_path=self.project_manifest_path,
+            workflows_dir=custom_wf_dir,
+        )
+        self.assertTrue(result.is_valid)
+        self.assertEqual(result.workflow_resolution, "RESOLVED")
+        self.assertEqual(result.workflow_stages_count, 1)
+        self.assertIn("custom_stage_gate", result.effective_quality_gates)
 
     def test_existing_aio_010_behavior_remains_valid(self) -> None:
         """Verify existing AIO-010 task remains valid without workflow field."""

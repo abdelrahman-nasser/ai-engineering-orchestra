@@ -10,6 +10,10 @@ from jsonschema import Draft202012Validator
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.workflow_catalog import load_workflow_catalog
 
 SCHEMA_PATH = REPO_ROOT / "schemas" / "task.schema.json"
 FIXTURE_DIR = REPO_ROOT / "schemas" / "tests" / "task"
@@ -27,6 +31,7 @@ CANONICAL_TASKS = [
     REPO_ROOT / ".ai" / "tasks" / "AIO-009-workflow-schema" / "task.yaml",
     REPO_ROOT / ".ai" / "tasks" / "AIO-010-task-status-inspection" / "task.yaml",
     REPO_ROOT / ".ai" / "tasks" / "AIO-011-task-workflow-binding" / "task.yaml",
+    REPO_ROOT / ".ai" / "tasks" / "AIO-012-workflow-representation-resolution" / "task.yaml",
 ]
 
 
@@ -165,6 +170,39 @@ def validate_case(
     return False
 
 
+def validate_task_workflow_references() -> bool:
+    """Repository semantic validation of declared Task workflow references against catalog."""
+    print("\nRepository semantic validation - Task Workflow reference resolution")
+    catalog = load_workflow_catalog()
+    if not catalog.is_valid:
+        print("FAIL Workflow catalog has load errors:")
+        for err in catalog.load_errors:
+            print(f"  - {err}")
+        return False
+
+    semantic_passed = 0
+    semantic_total = 0
+
+    for path in CANONICAL_TASKS:
+        try:
+            doc = load_yaml(path)
+        except Exception:
+            continue
+        if isinstance(doc, dict) and "workflow" in doc:
+            semantic_total += 1
+            wf_id = doc["workflow"]
+            resolved = catalog.get(wf_id)
+            label = str(path.relative_to(REPO_ROOT))
+            if resolved is not None:
+                print(f"PASS {label}: declared workflow '{wf_id}' resolved in catalog")
+                semantic_passed += 1
+            else:
+                print(f"FAIL {label}: declared workflow '{wf_id}' not found in catalog")
+
+    print(f"Result: {semantic_passed}/{semantic_total} declared Task Workflow references resolved")
+    return semantic_passed == semantic_total
+
+
 def main() -> int:
     print("AI Engineering Orchestra - Task Schema Validation")
     print("=" * 63)
@@ -217,12 +255,19 @@ def main() -> int:
     print()
     print(f"Result: {passed}/{total} cases passed")
 
-    if passed == total:
-        print("Schema validation PASSED.")
-        return 0
+    if passed != total:
+        print("Schema validation FAILED.")
+        return 1
 
-    print("Schema validation FAILED.")
-    return 1
+    print("Schema validation PASSED.")
+
+    # Repository semantic reference validation
+    if not validate_task_workflow_references():
+        print("Repository semantic reference validation FAILED.")
+        return 1
+
+    print("Repository semantic reference validation PASSED.")
+    return 0
 
 
 if __name__ == "__main__":

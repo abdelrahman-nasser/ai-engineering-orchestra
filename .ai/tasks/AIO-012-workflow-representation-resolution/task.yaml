@@ -1,0 +1,49 @@
+id: AIO-012
+title: Machine-Readable Workflow Representation and Resolution
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: medium
+risk: medium
+execution:
+  mode: standard
+workflow: standard-change
+objective: >
+  Migrate canonical Workflow instance definitions from Markdown to authoritative YAML
+  files in workflows/, retain minimal non-authoritative historical-link Markdown stubs,
+  retire the test-only Markdown extractor, establish a lightweight shared Workflow catalog
+  and loader resolving by declared ID without ID-to-filename coupling, and enhance task
+  inspection and validation tooling to report resolved Workflows and effective Quality Gate
+  unions without introducing runtime execution.
+scope:
+  include:
+    - Authoritative canonical Workflow definitions in workflows/standard-change.yaml, workflows/architecture-change.yaml, workflows/security-sensitive-change.yaml
+    - Non-authoritative compatibility Markdown stubs in workflows/standard-change.md, workflows/architecture-change.md, workflows/security-sensitive-change.md
+    - Documentation updates in workflows/README.md and core/workflow-specification.md
+    - Lightweight shared Workflow catalog and loader in scripts/workflow_catalog.py
+    - Retirement of extract_workflow_from_markdown in schemas/tests/validate_workflow.py and direct validation of canonical YAML files
+    - Task semantic reference validation in schemas/tests/validate_task.py
+    - Enhanced Workflow resolution and Effective Quality Gate union reporting in scripts/inspect_task.py
+    - Unit tests in tests/test_inspect_task.py and new resolution tests in tests/test_workflow_catalog.py
+    - Canonical four-file Task structure in .ai/tasks/AIO-012-workflow-representation-resolution/
+    - Governed execution under standard-change workflow with independent review
+  exclude:
+    - Automatic Workflow selection or inference from Task type, risk, or complexity
+    - Project-level default workflow inheritance in .ai/project.yaml or schemas/project-manifest.schema.json
+    - Runtime Workflow execution, stage state persistence, DAGs, retries, or scheduling
+    - Actor assignment, Assignment Contract, or Execution Contract
+    - Provider or model routing
+    - Modification of schemas/workflow.schema.json unless an actual incompatibility is discovered
+    - Hardcoding Workflow IDs or enums in schemas/task.schema.json or schemas/workflow.schema.json
+    - Deriving Workflow resolution from filenames (ID-to-filename coupling)
+    - Modifying or backfilling historical Tasks AIO-001 through AIO-011
+dependencies:
+  - AIO-011
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: false
+  breaking_schema_changes_require_approval: false
+  breaking_contract_changes_require_approval: false

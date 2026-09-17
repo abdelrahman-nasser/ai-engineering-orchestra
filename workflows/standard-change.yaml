@@ -1,0 +1,24 @@
+id: standard-change
+name: Standard Change
+purpose: Govern standard engineering work through disciplined understanding, implementation, validation, and review.
+applicable_task_types:
+  - implementation
+  - bugfix
+  - refactoring
+  - migration
+  - maintenance
+  - documentation
+stages:
+  - id: understand
+    purpose: Acquire necessary context, verify task scope, and understand requirements before implementation.
+  - id: implement
+    purpose: Execute scoped implementation changes according to task acceptance criteria.
+    required_roles:
+      - software-engineer
+  - id: validate
+    purpose: Execute tests, builds, and automated verification to establish evidence of correctness.
+  - id: review
+    purpose: Evaluate changes against acceptance criteria and verify ready state for human evaluation.
+    required_roles:
+      - reviewer
+    human_control_checkpoint: true

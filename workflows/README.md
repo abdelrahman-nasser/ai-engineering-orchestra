@@ -12,9 +12,20 @@ A Workflow is not directly executable and does not select actors, grant permissi
 
 ## Initial v0.1 Workflows
 
-- [Standard Change](standard-change.md) (`standard-change`) — Baseline 4-stage governance workflow for routine engineering work.
-- [Architecture Change](architecture-change.md) (`architecture-change`) — 5-stage governance workflow for architectural decisions, structural framework evolution, or specification design.
-- [Security-Sensitive Change](security-sensitive-change.md) (`security-sensitive-change`) — 5-stage governance workflow for work with security impact, access controls, or protected resources.
+- [Standard Change](standard-change.yaml) (`standard-change`) — Baseline 4-stage governance workflow for routine engineering work.
+- [Architecture Change](architecture-change.yaml) (`architecture-change`) — 5-stage governance workflow for architectural decisions, structural framework evolution, or specification design.
+- [Security-Sensitive Change](security-sensitive-change.yaml) (`security-sensitive-change`) — 5-stage governance workflow for work with security impact, access controls, or protected resources.
+
+## Directory Structure and Authority Hierarchy
+
+AI Engineering Orchestra enforces a strict hierarchy for Workflow definitions:
+
+1. **Authoritative Canonical Definitions** (`workflows/*.yaml`):
+   The canonical Source of Truth for Workflow instance definitions. All tooling, resolution, and validation must load from these YAML files.
+2. **Historical-Link Compatibility Stubs** (`workflows/*.md`):
+   Minimal non-authoritative stubs retained solely to preserve link targets in completed historical Task review records and documentation. These stubs contain no workflow contract data or stage definitions, must not be parsed by tooling, and must not be treated as Workflow definitions.
+3. **Directory Catalog Documentation** (`workflows/README.md`):
+   Human-facing directory overview, index, and usage documentation.
 
 ## Canonical Contract Structure
 
@@ -43,14 +54,10 @@ Canonical AIO Workflow definitions use kebab-case identifiers by convention. Thi
 - **Human Control**: `human_control_checkpoint: true` identifies WHEN Human Control is evaluated. It does not independently require approval; execution pauses only if applicable Human Control rules require approval.
 - **External Runtime**: Workflow execution, state, retries, and actor orchestration belong to an external runtime integration layer.
 
-## Markdown Representation Notice
+## Representation and Validation Status
 
-> Markdown is the current canonical documentation representation of Workflow definitions. AIO-008 does not establish Markdown as the runtime, persistence, API, or future machine-readable Workflow serialization format.
+Canonical Workflow definitions are serialized in YAML (`workflows/*.yaml`).
 
-AIO-009 provides `schemas/workflow.schema.json` for normalized Workflow objects. The schema is semantically subordinate to `core/workflow-specification.md`; schema validity does not prove semantic or governance correctness.
+`schemas/workflow.schema.json` provides machine-readable structural validation of parsed Workflow objects using JSON Schema Draft 2020-12. The schema is semantically subordinate to `core/workflow-specification.md`; schema validity does not prove semantic or governance correctness.
 
-Run `python -B schemas/tests/validate_workflow.py` from the repository root after installing `schemas/tests/requirements.txt`. This repository-local test tool validates the schema, registered fixtures, and strict in-memory projections of the three canonical Markdown definitions. The extractor preserves Stage order and omission, adds no defaults, and is not a public parser or runtime serializer.
-
-The validator separately reports repository semantic ID-uniqueness checks across inspected definitions. Role and Quality Gate references remain open strings in the schema; their canonical existence was manually verified in the AIO-009 review record. Fixtures named `valid-structurally-*` demonstrate structural permissiveness, not recommended Workflow design.
-
-AIO-009 does not add machine-readable Task-to-Workflow or Project-default Workflow selection. The current Task and Project Manifest schemas do not accept `workflow` and `workflows.default`, respectively. Explicit Human/orchestrator selection remains available for the first vertical slice; automatic resolution is not provided.
+Run `python -B schemas/tests/validate_workflow.py` from the repository root after installing `schemas/tests/requirements.txt`. This validator checks the Draft 2020-12 schema, registered structural fixtures, and canonical YAML workflow definitions. It separately validates repository semantic ID-uniqueness across definitions.

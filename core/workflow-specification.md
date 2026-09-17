@@ -330,7 +330,7 @@ The effective Quality Gate requirements for any given engineering activity are c
 └───────────────────────────┬─────────────────────────────┘
                             │  +
 ┌───────────────────────────▼─────────────────────────────┐
-│ 2. Governing Workflow (workflows/<workflow>.md)         │
+│ 2. Governing Workflow (workflows/<workflow>.yaml)       │
 │    stage.required_quality_gates: [<gate_id>]            │
 │    (Establishes process-stage minimum gate floor)       │
 └───────────────────────────┬─────────────────────────────┘
@@ -508,19 +508,20 @@ A separate `documentation-change` Workflow is intentionally excluded because doc
 
 ## 15. Representation and Validation Status in v0.1
 
-### Markdown Representation Notice
+### Canonical YAML Representation
 
-> Markdown is the current canonical documentation representation of Workflow definitions in v0.1. AIO-008 does not establish Markdown as the runtime, persistence, API, or future machine-readable Workflow serialization format.
+Canonical Workflow instance definitions in `workflows/` are serialized as YAML documents (`workflows/*.yaml`).
 
-Initial Workflow definitions in `workflows/` are maintained as structured Markdown documents.
+- YAML is the authoritative machine-readable serialization format for Workflow instance definitions in AI Engineering Orchestra.
+- Markdown is no longer the canonical per-Workflow data representation. Historical Markdown paths (`workflows/*.md`) are preserved solely as minimal non-authoritative compatibility stubs for historical links and task review records; they contain no workflow contract data and must not be parsed by tooling.
+- Canonical Workflow representation is declarative process choreography data and SHALL NOT imply runtime execution, scheduling, or actor dispatch.
 
 ### Structural Schema Validation
 
-AIO-009 provides machine-readable structural validation of normalized Workflow objects through `schemas/workflow.schema.json`, using JSON Schema Draft 2020-12.
+`schemas/workflow.schema.json` provides machine-readable structural validation of parsed Workflow objects using JSON Schema Draft 2020-12.
 
 - This specification (`core/workflow-specification.md`) remains the authoritative semantic Workflow contract.
 - The schema is semantically subordinate to this specification.
 - Schema validity establishes structural conformance only; it does not prove semantic correctness, meaningful governance, approval truth, or correct execution.
-- `schemas/tests/validate_workflow.py` validates normalized in-memory projections of the three canonical Markdown definitions and registered fixtures in `schemas/tests/workflow/`.
-- The Markdown extractor is strict, repository-local test tooling. It inserts no defaults and establishes no public parser, runtime serialization, persistence, API, or CLI contract.
-- Canonical Workflow-ID and per-Workflow Stage-ID uniqueness checks are separately labelled repository semantic validation, not JSON Schema validation. Role and Quality Gate reference existence is verified manually for AIO-009.
+- Parsed YAML definitions are validated directly against `schemas/workflow.schema.json` without intermediate text extraction or custom Markdown parsing.
+- Canonical Workflow-ID and per-Workflow Stage-ID uniqueness checks are separately labelled repository semantic validation, not JSON Schema validation.

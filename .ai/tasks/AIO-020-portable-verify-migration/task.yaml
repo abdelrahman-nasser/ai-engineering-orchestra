@@ -1,0 +1,36 @@
+id: AIO-020
+title: Dogfood Project Verification and Migrate aio verify
+type: migration
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: high
+execution:
+  mode: deep
+workflow: security-sensitive-change
+objective: >
+  Migrate the public aio verify command to compose supported structural
+  validation with project-declared Verification Checks and the Project
+  Verification Runner, while preserving Orchestra's seven development checks
+  as Manifest-owned declarations and remaining portable to adopting projects.
+scope:
+  include:
+    - Unified structural and project verification composition with documented aggregate exit semantics
+    - Safe structural-only CLI mode, execution transparency, and recursion protection
+    - Orchestra Manifest dogfooding of the existing seven mechanical checks
+    - Compatibility convergence for installed aio, aio.py, run_preflight, and scripts/verify_repo.py
+    - Cross-platform, packaging, security, documentation, and independent-review evidence
+  exclude:
+    - Verification Check contract expansion or inferred repository checks
+    - Sandboxing, permission enforcement, trust persistence, or process-tree guarantees
+    - Task, Workflow Stage, Agent, Provider, or Quality Gate execution and mapping
+    - Dry-run, JSON, Rich, retries, parallelism, dependency graphs, and public distribution
+    - AIO-021 or later roadmap work
+dependencies:
+  - AIO-019
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true

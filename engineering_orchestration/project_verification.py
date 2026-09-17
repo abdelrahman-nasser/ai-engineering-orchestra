@@ -1,8 +1,9 @@
 """Programmatic planning and execution of Project Verification Checks.
 
 This module consumes only the Manifest's ``verification.checks`` declaration.
-It does not run Tasks, Workflow stages, Agents, Providers, or Quality Gates, and
-it is intentionally not wired to the CLI or the legacy repository preflight.
+It does not run Tasks, Workflow stages, Agents, Providers, or Quality Gates.
+The aggregate verifier composes supported structural validation with planning
+and execution while keeping those result boundaries explicit.
 
 Declared commands run sequentially with the caller's effective authority and
 inherited environment. They may access files, networks, credentials, and spawn
@@ -13,9 +14,9 @@ through the command interpreter. On timeout or interruption, only the directly
 launched child is terminated and reaped on a best-effort basis.
 
 Diagnostic excerpts are bounded but unsanitized and may contain sensitive
-command output. Project Verification Checks must not deliberately invoke the
-aggregate AIO verifier recursively; recursion detection is deferred until the
-aggregate verifier is migrated.
+command output. A brand-neutral inherited environment marker blocks ordinary
+nested aggregate execution, but wrappers can remove it and arbitrary recursion
+cannot be proven absent.
 """
 
 from __future__ import annotations
@@ -28,18 +29,24 @@ import tempfile
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import BinaryIO, Literal
+from typing import BinaryIO, Callable, Literal
 
 import yaml
 
 from engineering_orchestration.schema_resources import load_validator, schema_errors
-from engineering_orchestration.validation import Finding, manifest_semantic_errors
+from engineering_orchestration.validation import (
+    Finding,
+    ValidationResult,
+    manifest_semantic_errors,
+    validate_project,
+)
 
 
 DEFAULT_TIMEOUT_SECONDS = 600
 DIAGNOSTIC_EXCERPT_LIMIT = 64 * 1024
 _DIRECT_CHILD_STOP_GRACE_SECONDS = 0.2
 _DEFAULT_WINDOWS_PATHEXT = ".COM;.EXE;.BAT;.CMD"
+VERIFY_DEPTH_ENV = "ENGINEERING_ORCHESTRATION_VERIFY_DEPTH"
 
 CheckStatus = Literal["PASS", "FAIL", "ERROR"]
 _FileIdentity = tuple[int, int]
@@ -124,6 +131,38 @@ class VerificationRunResult:
         if self.fatal_error is not None or self.error_count:
             return "ERROR"
         return "FAIL" if self.failed_count else "PASS"
+
+    @property
+    def exit_code(self) -> int:
+        if self.status == "ERROR":
+            return 2
+        return 1 if self.status == "FAIL" else 0
+
+
+@dataclass(frozen=True)
+class ProjectVerificationResult:
+    """Combined structural, planning, and execution evidence.
+
+    This is a mechanical result, not a Quality Gate result. ``planning`` and
+    ``execution`` are absent for structural-only verification. Execution is
+    present only when planning was ready and the runner was invoked.
+    """
+
+    structural: ValidationResult
+    planning: VerificationPlanResult | None = None
+    execution: VerificationRunResult | None = None
+    infrastructure_error: str | None = None
+
+    @property
+    def status(self) -> CheckStatus:
+        statuses = [self.structural.status]
+        if self.planning is not None:
+            statuses.append(self.planning.status)
+        if self.execution is not None:
+            statuses.append(self.execution.status)
+        if self.infrastructure_error is not None or "ERROR" in statuses:
+            return "ERROR"
+        return "FAIL" if "FAIL" in statuses else "PASS"
 
     @property
     def exit_code(self) -> int:
@@ -606,6 +645,74 @@ def run_project_checks(plan: VerificationPlan) -> VerificationRunResult:
     return VerificationRunResult(plan=plan, results=tuple(results))
 
 
+def verify_project(
+    project_root: Path,
+    *,
+    execute_checks: bool = True,
+    before_execute: Callable[[VerificationPlan], None] | None = None,
+) -> ProjectVerificationResult:
+    """Compose supported structure with declared project verification.
+
+    Structural-only mode deliberately returns before recursion inspection,
+    planning, executable resolution, marker mutation, or runner invocation.
+    For full verification, only ``planning.is_ready`` gates execution; unrelated
+    structural findings remain part of the aggregate result but do not suppress
+    a usable plan.
+    """
+
+    root = Path(project_root)
+    structural = validate_project(root)
+    if not execute_checks:
+        return ProjectVerificationResult(structural=structural)
+
+    inherited_depth = os.environ.get(VERIFY_DEPTH_ENV)
+    if inherited_depth not in (None, "0"):
+        return ProjectVerificationResult(
+            structural=structural,
+            infrastructure_error=(
+                f"Nested project verification rejected: {VERIFY_DEPTH_ENV} "
+                "must be unset or '0'"
+            ),
+        )
+
+    planning = plan_project_checks(root)
+    if not planning.is_ready:
+        return ProjectVerificationResult(
+            structural=structural,
+            planning=planning,
+        )
+
+    assert planning.plan is not None
+    plan = planning.plan
+    if plan.checks and before_execute is not None:
+        before_execute(plan)
+
+    previous = os.environ.get(VERIFY_DEPTH_ENV)
+    try:
+        os.environ[VERIFY_DEPTH_ENV] = "1"
+        execution = run_project_checks(plan)
+    finally:
+        if previous is None:
+            os.environ.pop(VERIFY_DEPTH_ENV, None)
+        else:
+            os.environ[VERIFY_DEPTH_ENV] = previous
+
+    return ProjectVerificationResult(
+        structural=structural,
+        planning=planning,
+        execution=execution,
+    )
+
+
+def format_structural_validation_output(result: ValidationResult) -> str:
+    """Format only the supported structural-validation evidence."""
+
+    lines = ["Supported AIO Structure", "=" * 23, result.status]
+    for finding in result.findings:
+        lines.append(f"  {finding.status} {finding.path}: {finding.message}")
+    return "\n".join(lines)
+
+
 def format_project_verification_output(result: VerificationRunResult) -> str:
     """Format concise evidence while suppressing successful command output."""
 
@@ -616,6 +723,8 @@ def format_project_verification_output(result: VerificationRunResult) -> str:
         lines.append(f"{item.id:<30} {item.status:<5} {item.duration_seconds:.3f}s")
         if item.status == "PASS":
             continue
+        if item.return_code is not None:
+            lines.append(f"  Return code: {item.return_code}")
         if item.error:
             lines.append(f"  Error: {item.error}")
         if item.stdout_excerpt:
@@ -628,8 +737,63 @@ def format_project_verification_output(result: VerificationRunResult) -> str:
             lines.append("  (no output captured)")
     if result.fatal_error is not None:
         lines.append(f"Fatal runner error: {result.fatal_error}")
+    displayed_errors = result.error_count + (1 if result.fatal_error is not None else 0)
     lines.append(
         f"Summary: {result.passed_count} PASS, {result.failed_count} FAIL, "
-        f"{result.error_count} ERROR"
+        f"{displayed_errors} ERROR"
     )
+    return "\n".join(lines)
+
+
+def _planning_findings_for_output(
+    result: ProjectVerificationResult,
+) -> tuple[Finding, ...]:
+    """Suppress planner copies of an already-reported Manifest problem."""
+
+    if result.planning is None:
+        return ()
+    manifest_path = result.planning.plan.project_root / ".ai" / "project.yaml" \
+        if result.planning.plan is not None else None
+    if manifest_path is None:
+        structural_manifest_paths = {
+            finding.path
+            for finding in result.structural.findings
+            if finding.path.name == "project.yaml" and finding.path.parent.name == ".ai"
+        }
+        if structural_manifest_paths:
+            return tuple(
+                finding for finding in result.planning.findings
+                if finding.path not in structural_manifest_paths
+            )
+    return result.planning.findings
+
+
+def format_verification_output(result: ProjectVerificationResult) -> str:
+    """Format aggregate evidence without implying Quality Gate satisfaction."""
+
+    lines = [format_structural_validation_output(result.structural), ""]
+    if result.infrastructure_error is not None:
+        lines.extend((f"Verification error: {result.infrastructure_error}", ""))
+    elif result.planning is not None and not result.planning.is_ready:
+        findings = _planning_findings_for_output(result)
+        if findings:
+            lines.extend(("Project Verification Planning", "=" * 29))
+            for finding in findings:
+                lines.append(f"  {finding.status} {finding.path}: {finding.message}")
+            lines.append("")
+        lines.extend((
+            "Project Verification Checks",
+            "=" * 27,
+            "Project checks were not executed because the verification plan was not ready.",
+            "",
+        ))
+    elif result.execution is not None:
+        lines.extend((format_project_verification_output(result.execution), ""))
+
+    if result.status == "PASS":
+        lines.append("Verification passed.")
+    elif result.status == "FAIL":
+        lines.append("Verification failed.")
+    else:
+        lines.append("Verification could not complete due to an error.")
     return "\n".join(lines)

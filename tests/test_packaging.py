@@ -82,9 +82,11 @@ class PackagingTests(unittest.TestCase):
         self.assertEqual(config["package-data"], {"engineering_orchestration._schemas":
                          ["task.schema.json", "workflow.schema.json", "project-manifest.schema.json"]})
 
-    def test_documented_scope_is_local_and_verify_is_development_only(self):
+    def test_documented_scope_is_local_and_verify_is_portable(self):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
-        self.assertIn("not generic project verification", readme)
+        self.assertIn("project-declared Verification Checks", readme)
+        self.assertIn("aio verify --structure", readme)
+        self.assertIn("no sandbox", readme)
         self.assertIn("No PyPI publication", readme)
         self.assertIn("does not\ncomplete the future public distribution milestone", readme)
 

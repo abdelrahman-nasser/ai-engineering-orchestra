@@ -230,8 +230,10 @@ Execution Contract, or approval mechanism. Its ID is not a Quality Gate ID, and
 Verification Check PASS is not Quality Gate PASS. Mechanical evidence does not
 itself establish governance approval or confer execution authority.
 
-The contract and programmatic runner exist; `aio verify` does not execute these
-declarations yet.
+The contract, programmatic runner, and public `aio verify` composition execute
+these declarations when the Human caller explicitly invokes full verification.
+This mechanism does not grant execution authority to Agents or establish Quality
+Gate results.
 
 ---
 

@@ -109,20 +109,42 @@ def cmd_inspect(args: argparse.Namespace, project_root: Path) -> int:
 
 
 def cmd_verify(args: argparse.Namespace, project_root: Path) -> int:
-    """Execute the 'verify' subcommand.
+    """Execute supported structure and optionally declared project Checks."""
+    from engineering_orchestration.project_verification import (
+        VerificationPlan,
+        format_structural_validation_output,
+        format_verification_output,
+        verify_project,
+    )
 
-    Delegates to the package's existing repository preflight capability.
-    """
-    from engineering_orchestration.verify_repo import format_preflight_output, run_preflight
+    def announce(plan: VerificationPlan) -> None:
+        print(
+            f"Running {len(plan.checks)} project verification checks from "
+            f".ai/project.yaml (active project: {plan.project_root}):"
+        )
+        print(
+            "  Commands use the caller's environment and permissions; "
+            "AIO provides no sandbox or isolation."
+        )
+        for check in plan.checks:
+            print(f"  {check.id}")
+        print(flush=True)
 
     try:
-        preflight = run_preflight(repo_root=project_root)
+        if args.structure:
+            result = verify_project(project_root, execute_checks=False)
+            print(format_structural_validation_output(result.structural))
+            return result.exit_code
+
+        result = verify_project(project_root, before_execute=announce)
+        print(format_verification_output(result))
+        return result.exit_code
+    except KeyboardInterrupt:
+        print("Verification interrupted by user.", file=sys.stderr)
+        return 130
     except Exception as exc:
         print(f"UNEXPECTED ERROR: {exc}", file=sys.stderr)
         return 2
-
-    print(format_preflight_output(preflight))
-    return preflight.exit_code
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -167,10 +189,22 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     # verify subcommand
-    subparsers.add_parser(
+    verify_parser = subparsers.add_parser(
         "verify",
-        help="Run repository mechanical verification",
-        description="Run the repository mechanical verification battery.",
+        help="Validate supported AIO structure and project verification checks",
+        description=(
+            "Validate supported AIO structure and run project-declared verification "
+            "checks from .ai/project.yaml using the caller's current environment and "
+            "permissions. Declared commands are not sandboxed or isolated."
+        ),
+    )
+    verify_parser.add_argument(
+        "--structure",
+        action="store_true",
+        help=(
+            "Validate supported AIO structure only; do not plan, resolve, or execute "
+            "project-declared commands."
+        ),
     )
 
     return parser

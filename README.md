@@ -35,6 +35,7 @@ aio --help
 aio tasks
 aio inspect AIO-015
 aio verify
+aio verify --structure
 ```
 
 For a normal installation, use `python -m pip install .` instead. The command is
@@ -50,13 +51,30 @@ package location. `tasks` and `inspect` resolve `tasks.directory` from the activ
 Manifest (default `.ai/tasks/`). Workflows remain in the target project's
 `workflows/`; canonical schemas belong to the tool.
 
-**`verify` remains Orchestra development tooling, not generic project verification.**
-It requires this repository's `tests/`, four `schemas/tests/validate_*.py`
-programs and their fixtures/canonical inputs, Markdown lint setup, and Git working
-tree. Git and Node/npm (`npx`) must already be available on PATH. They are not
-Python dependencies and are not automatically installed. Python checks use the
-CLI environment's interpreter. All seven checks remain mandatory; mechanical
+`aio verify` validates the active project's supported AIO structure and then runs
+its project-declared Verification Checks from `.ai/project.yaml` in declaration
+order. Omitted or empty checks mean zero commands; AIO does not infer checks from
+repository contents and has no Orchestra-specific fallback. Before execution the
+CLI names the declaration source and ordered Check IDs. `aio verify --structure`
+is the non-executing inspection path: it validates supported structure without
+planning, resolving, or running declared commands.
+
+Declared commands use the caller's filesystem access, network access,
+credentials, environment, and process authority. AIO provides no sandbox,
+filesystem or network isolation, credential isolation, purity, read-only
+guarantee, harmlessness, or full descendant containment. Bounded failure output
+is unsanitized and may enter terminal or CI logs. The inherited
+`ENGINEERING_ORCHESTRATION_VERIFY_DEPTH` marker blocks ordinary nested aggregate
+verification, but wrappers can remove it and arbitrary recursion cannot be
+proven absent. Repository declarations and command availability do not authorize
+an Agent to invoke verification or grant any execution authority. Mechanical
 PASS is not Quality Gate satisfaction or Human approval.
+
+This repository dogfoods the same portable path with seven Manifest declarations.
+Git and Node/npm (`npx`) must already be available on PATH; they are not Python
+dependencies and are not installed automatically. Verification must run from a
+supported/activated development environment where PATH-selected `python` has the
+repository's required dependencies.
 
 Source commands (`python -B aio.py ...` and `python -B scripts/list_tasks.py`,
 `scripts/inspect_task.py`, `scripts/verify_repo.py`) remain available. Normal console
@@ -72,7 +90,7 @@ the managed project's framework expectation. No version synchronization is impli
 
 This is an explicitly authorized local-installability experiment. It does not
 complete the future public distribution milestone. No PyPI publication, public
-name reservation, release automation, or generic verification CLI is provided.
+name reservation, release automation, or full CLI lifecycle is provided.
 
 ## Installed Structural Validation
 
@@ -112,18 +130,21 @@ argument-array `command`, optional project-relative `cwd`, and optional positive
 ID uniqueness without executing them. Existing Manifests remain valid; omitted
 checks mean zero declarations, with no automatic command discovery.
 
-The contract has a programmatic planner and runner:
+The contract has a programmatic planner, runner, and thin aggregate composition:
 
 ```python
 from pathlib import Path
 from engineering_orchestration.project_verification import (
     plan_project_checks,
     run_project_checks,
+    verify_project,
 )
 
 planning = plan_project_checks(Path("/path/to/project"))
 if planning.is_ready:
     evidence = run_project_checks(planning.plan)
+
+aggregate = verify_project(Path("/path/to/project"))
 ```
 
 Planning validates all declarations and resolved working directories before any
@@ -132,6 +153,7 @@ captures bounded stdout/stderr excerpts as PASS, FAIL, or ERROR evidence. Comman
 use the caller's existing authority and inherited environment; declarations grant
 no permission, promise no sandbox, and do not establish Quality Gate results.
 Timeout or interruption cleanup covers the direct child only, not all descendants.
-
-`aio verify` does **not** execute declared checks yet. It still runs Orchestra's
-seven-check development preflight, and Orchestra's Manifest has not been migrated.
+Only planning readiness gates project command execution, so unrelated Task or
+Workflow structural findings remain reported without suppressing a valid plan.
+Aggregate exit codes are 0 for PASS, 1 for FAIL without ERROR, 2 for any ERROR,
+and 130 when the public CLI is interrupted by the user.

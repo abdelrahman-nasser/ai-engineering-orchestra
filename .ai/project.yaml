@@ -42,5 +42,51 @@ project_rules:
 tasks:
   directory: ".ai/tasks/"
 
+verification:
+  checks:
+    - id: unit-tests
+      command:
+        - python
+        - -B
+        - -m
+        - unittest
+        - discover
+        - -s
+        - tests
+        - -p
+        - "test_*.py"
+        - -v
+    - id: task-validator
+      command:
+        - python
+        - -B
+        - schemas/tests/validate_task.py
+    - id: workflow-validator
+      command:
+        - python
+        - -B
+        - schemas/tests/validate_workflow.py
+    - id: role-validator
+      command:
+        - python
+        - -B
+        - schemas/tests/validate_role.py
+    - id: manifest-validator
+      command:
+        - python
+        - -B
+        - schemas/tests/validate_project_manifest.py
+    - id: markdown-lint
+      command:
+        - npx
+        - --yes
+        - markdownlint-cli2
+        - "**/*.md"
+    - id: git-diff-check
+      command:
+        - git
+        - diff
+        - --check
+
 overrides:
   directory: ".ai/overrides/"

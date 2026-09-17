@@ -118,6 +118,21 @@ class TestVerifyHelp(unittest.TestCase):
             parser.parse_args(["verify", "--help"])
         self.assertEqual(cm.exception.code, 0)
 
+    def test_verify_help_discloses_execution_and_structure_only_mode(self):
+        with patch("sys.stdout", new_callable=StringIO) as output, \
+                self.assertRaises(SystemExit) as raised:
+            main(["verify", "--help"])
+        self.assertEqual(raised.exception.code, 0)
+        help_text = output.getvalue()
+        self.assertIn("project-declared verification checks", help_text)
+        self.assertIn("current environment and permissions", help_text)
+        self.assertIn("not sandboxed or isolated", help_text)
+        self.assertIn("--structure", help_text)
+        self.assertIn(
+            "do not plan, resolve, or execute",
+            " ".join(help_text.split()),
+        )
+
 
 class TestUnknownCommand(unittest.TestCase):
     """5. Unknown command → exit 2."""
@@ -299,83 +314,111 @@ class TestUnknownTaskId(unittest.TestCase):
 class TestVerifyDelegation(unittest.TestCase):
     """12. Verify delegation."""
 
-    def test_verify_delegates_to_preflight(self):
-        """Verify command delegates to run_preflight and format_preflight_output."""
-        from scripts.verify_repo import CheckResult, PreflightResult
+    def test_verify_delegates_to_aggregate_composition(self):
+        """Verify delegates to one aggregate path and formatter."""
+        mock_result = type("Result", (), {"exit_code": 0})()
 
-        mock_result = PreflightResult(
-            repo_root=Path("/fake"),
-            results=[
-                CheckResult(
-                    name="Test Check",
-                    command=["echo", "test"],
-                    status="PASS",
-                    exit_code=0,
-                ),
-            ],
-        )
-
-        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), patch("scripts.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
-            with patch("scripts.verify_repo.run_preflight", return_value=mock_result):
-                with patch("scripts.verify_repo.format_preflight_output", return_value="MOCK OUTPUT"):
-                    captured = StringIO()
-                    with patch("sys.stdout", captured):
-                        exit_code = main(["verify"])
+        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), \
+                patch("engineering_orchestration.project_verification.verify_project",
+                      return_value=mock_result) as aggregate, \
+                patch("engineering_orchestration.project_verification.format_verification_output",
+                      return_value="MOCK OUTPUT"), \
+                patch("sys.stdout", new_callable=StringIO) as captured:
+            exit_code = main(["verify"])
 
         self.assertEqual(exit_code, 0)
         self.assertIn("MOCK OUTPUT", captured.getvalue())
+        aggregate.assert_called_once()
+        self.assertEqual(aggregate.call_args.args, (Path("/fake"),))
+        self.assertTrue(callable(aggregate.call_args.kwargs["before_execute"]))
+
+    def test_structure_delegates_without_execution(self):
+        structural = object()
+        mock_result = type("Result", (), {"structural": structural, "exit_code": 1})()
+        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), \
+                patch("engineering_orchestration.project_verification.verify_project",
+                      return_value=mock_result) as aggregate, \
+                patch("engineering_orchestration.project_verification.format_structural_validation_output",
+                      return_value="STRUCTURE"), \
+                patch("sys.stdout", new_callable=StringIO) as captured:
+            exit_code = main(["verify", "--structure"])
+        self.assertEqual(exit_code, 1)
+        self.assertIn("STRUCTURE", captured.getvalue())
+        aggregate.assert_called_once_with(Path("/fake"), execute_checks=False)
+
+    def test_announces_manifest_source_and_ordered_ids_before_execution(self):
+        result = type("Result", (), {"exit_code": 0})()
+        checks = tuple(type("Check", (), {"id": item})()
+                       for item in ("unit-tests", "markdown-lint"))
+        plan = type("Plan", (), {
+            "checks": checks,
+            "project_root": Path("/fake"),
+        })()
+
+        def compose(_root, *, before_execute):
+            before_execute(plan)
+            return result
+
+        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), \
+                patch("engineering_orchestration.project_verification.verify_project",
+                      side_effect=compose), \
+                patch("engineering_orchestration.project_verification.format_verification_output",
+                      return_value="DONE"), \
+                patch("sys.stdout", new_callable=StringIO) as output:
+            self.assertEqual(main(["verify"]), 0)
+        text = output.getvalue()
+        self.assertLess(text.index(".ai/project.yaml"), text.index("unit-tests"))
+        self.assertLess(text.index("unit-tests"), text.index("markdown-lint"))
+        self.assertLess(text.index("markdown-lint"), text.index("DONE"))
+        self.assertIn("no sandbox or isolation", text)
 
 
 class TestVerifyExitCodePropagation(unittest.TestCase):
     """13. Verify exit-code propagation."""
 
     def test_verify_propagates_failure_exit_code(self):
-        from scripts.verify_repo import CheckResult, PreflightResult
-
-        mock_result = PreflightResult(
-            repo_root=Path("/fake"),
-            results=[
-                CheckResult(
-                    name="Failing Check",
-                    command=["false"],
-                    status="FAIL",
-                    exit_code=1,
-                ),
-            ],
-        )
-
-        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), patch("scripts.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
-            with patch("scripts.verify_repo.run_preflight", return_value=mock_result):
-                with patch("scripts.verify_repo.format_preflight_output", return_value="FAIL"):
-                    captured = StringIO()
-                    with patch("sys.stdout", captured):
-                        exit_code = main(["verify"])
+        mock_result = type("Result", (), {"exit_code": 1})()
+        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), \
+                patch("engineering_orchestration.project_verification.verify_project",
+                      return_value=mock_result), \
+                patch("engineering_orchestration.project_verification.format_verification_output",
+                      return_value="FAIL"), \
+                patch("sys.stdout", new_callable=StringIO):
+            exit_code = main(["verify"])
 
         self.assertEqual(exit_code, 1)
 
     def test_verify_propagates_error_exit_code(self):
-        from scripts.verify_repo import CheckResult, PreflightResult
-
-        mock_result = PreflightResult(
-            repo_root=Path("/fake"),
-            results=[
-                CheckResult(
-                    name="Error Check",
-                    command=["missing"],
-                    status="ERROR",
-                    error_message="Not found",
-                ),
-            ],
-        )
-
-        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), patch("scripts.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
-            with patch("scripts.verify_repo.run_preflight", return_value=mock_result):
-                with patch("scripts.verify_repo.format_preflight_output", return_value="ERROR"):
-                    captured = StringIO()
-                    with patch("sys.stdout", captured):
-                        exit_code = main(["verify"])
+        mock_result = type("Result", (), {"exit_code": 2})()
+        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), \
+                patch("engineering_orchestration.project_verification.verify_project",
+                      return_value=mock_result), \
+                patch("engineering_orchestration.project_verification.format_verification_output",
+                      return_value="ERROR"), \
+                patch("sys.stdout", new_callable=StringIO):
+            exit_code = main(["verify"])
 
         self.assertEqual(exit_code, 2)
+
+    def test_keyboard_interrupt_maps_to_130_without_traceback(self):
+        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), \
+                patch("engineering_orchestration.project_verification.verify_project",
+                      side_effect=KeyboardInterrupt), \
+                patch("sys.stderr", new_callable=StringIO) as error:
+            exit_code = main(["verify"])
+        self.assertEqual(exit_code, 130)
+        self.assertIn("interrupted by user", error.getvalue())
+        self.assertNotIn("Traceback", error.getvalue())
+
+    def test_structure_keyboard_interrupt_maps_to_130_without_traceback(self):
+        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), \
+                patch("engineering_orchestration.project_verification.verify_project",
+                      side_effect=KeyboardInterrupt), \
+                patch("sys.stderr", new_callable=StringIO) as error:
+            exit_code = main(["verify", "--structure"])
+        self.assertEqual(exit_code, 130)
+        self.assertIn("interrupted by user", error.getvalue())
+        self.assertNotIn("Traceback", error.getvalue())
 
 
 class TestProjectDiscoveryFromCwd(unittest.TestCase):
@@ -645,12 +688,15 @@ class TestActiveProjectIntegration(unittest.TestCase):
                          "ERROR: No Task with declared ID 'unrelated-directory' found.")
 
     def test_verify_receives_cwd_project_root(self):
-        from scripts.verify_repo import PreflightResult
-        with patch("scripts.verify_repo.run_preflight",
-                   return_value=PreflightResult(repo_root=self.root)) as preflight:
+        result = type("Result", (), {"exit_code": 0})()
+        with patch("engineering_orchestration.project_verification.verify_project",
+                   return_value=result) as aggregate, \
+                patch("engineering_orchestration.project_verification.format_verification_output",
+                      return_value="PASS"):
             code, _, _ = self.invoke("verify")
         self.assertEqual(code, 0)
-        preflight.assert_called_once_with(repo_root=self.root)
+        aggregate.assert_called_once()
+        self.assertEqual(aggregate.call_args.args, (self.root,))
 
     def test_nearest_project_marker_wins(self):
         (self.child / ".ai").mkdir()
@@ -688,7 +734,7 @@ class TestActiveProjectIntegration(unittest.TestCase):
                 (["--help"], "{tasks,inspect,verify}"),
                 (["tasks", "--help"], "--status"),
                 (["inspect", "--help"], "task_id"),
-                (["verify", "--help"], "mechanical verification"),
+                (["verify", "--help"], "project-declared verification checks"),
             ]:
                 with self.subTest(args=args), \
                         patch("sys.stdout", new_callable=StringIO) as out, \

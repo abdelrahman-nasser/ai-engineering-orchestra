@@ -924,7 +924,8 @@ Current validation may be performed through:
 The installed `validate_project()` API validates supported project structures,
 including these declarations, without executing commands. Duplicate Verification
 Check IDs require data-only semantic validation in addition to JSON Schema.
-`aio verify` still runs only Orchestra's seven-check development preflight.
+`aio verify --structure` exposes this non-executing supported validation path;
+full `aio verify` composes it with declared Project Verification Checks.
 
 ---
 
@@ -1027,13 +1028,15 @@ programmatic planner materializes it, and the runner enforces it.
 ### Programmatic execution semantics
 
 AIO-018 defined the configuration contract and its structural validation. AIO-019
-adds the separate programmatic planner and runner in
-`engineering_orchestration.project_verification`. `validate_project()`, `aio
-tasks`, and `aio inspect` remain data-reading operations and never execute
-declarations merely because they are present. `aio verify` still runs the
-unchanged Orchestra seven-check development preflight; it does not execute Project
-Verification Checks. Orchestra's own Manifest does not migrate those seven checks,
-and no new verification CLI command is introduced.
+added the separate programmatic planner and runner in
+`engineering_orchestration.project_verification`. Full `aio verify` now composes
+supported structural validation, planning, and runner execution. Only
+`planning.is_ready` gates command execution: unrelated Task or Workflow findings
+remain part of the aggregate result without suppressing a usable plan. `aio verify
+--structure`, `validate_project()`, `aio tasks`, and `aio inspect` remain
+data-reading operations and never execute declarations merely because they are
+present. Orchestra's seven development checks are ordinary declarations in its
+Manifest; no hidden fallback battery exists.
 
 Execution uses argument arrays with `shell=False`. AIO does not concatenate
 arguments into command strings, interpret `&&` or `|`, perform shell expansion,
@@ -1089,8 +1092,9 @@ confine what the launched process can access.
 No persisted result state or SKIP is defined. No checks means **0 project checks
 configured**; an unavailable executable means ERROR, not SKIP. Programmatic
 aggregate exit codes are `0` for no FAIL or ERROR, `1` for at least one FAIL and
-zero ERROR, and `2` for one or more ERROR. ERROR dominates FAIL. These semantics
-do not change current CLI behavior or define Quality Gate results.
+zero ERROR, and `2` for one or more ERROR. ERROR dominates FAIL. The public CLI
+also returns `130` for user interruption. These semantics do not define Quality
+Gate results.
 
 The runner captures stdout and stderr separately as bytes in temporary files and
 retains at most the final 64 KiB of each stream with an explicit truncation marker.
@@ -1102,11 +1106,14 @@ partial diagnostics. Timeout and user interruption best-effort terminate and rea
 only the directly launched child; descendants may survive. KeyboardInterrupt
 propagates and stops remaining Checks.
 
-A Check must never deliberately configure `aio verify` as its own command: that
-would recursively invoke the aggregate verifier. General recursion detection is
-not implemented; arbitrary wrappers may conceal recursion and AIO cannot prove
-its absence. An aggregate guard remains deferred until a separately approved CLI
-migration.
+A Check must never deliberately configure the aggregate verifier as its own
+command. Full verification sets the brand-neutral inherited marker
+`ENGINEERING_ORCHESTRATION_VERIFY_DEPTH=1` only around runner execution and
+restores its prior state in `finally`. A nested full verifier rejects a nonzero or
+malformed marker; an unset marker or `0` allows the outer invocation. Structural
+mode ignores the marker. Wrappers can deliberately remove it, arbitrary scripts
+may conceal recursion, and AIO cannot prove recursion absent or provide a
+process-tree guarantee.
 
 ### Trust and authority boundary
 
@@ -1119,7 +1126,9 @@ credential, Agent, Workflow, or approval authority.
 Commands may read/write accessible files, access network resources, use
 inherited credentials, spawn processes, generate build artifacts, modify caches,
 and update lockfiles. AIO claims no sandboxing, purity, read-only execution,
-harmlessness, or process isolation. No new permission engine, trust persistence,
+harmlessness, filesystem/network/credential isolation, or full descendant
+containment. Bounded diagnostics are unsanitized and may expose sensitive output
+in terminal or CI logs. No new permission engine, trust persistence,
 or first-run confirmation mechanism is introduced by this contract. The runner
 does not execute Tasks, Workflow Stages, Roles, Providers, Assignments, Execution
 Contracts, or Quality Gates.

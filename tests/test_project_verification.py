@@ -25,7 +25,6 @@ from engineering_orchestration.project_verification import (
     resolve_executable,
     run_project_checks,
 )
-from engineering_orchestration.verify_repo import DEFAULT_CHECKS
 
 
 class ProjectFixture(unittest.TestCase):
@@ -965,25 +964,22 @@ class VerificationBoundaryTests(ProjectFixture):
         for forbidden in ("inspect_task", "list_tasks", "workflow_catalog", "agent", "provider"):
             self.assertFalse(any(forbidden in name for name in imported), imported)
 
-    def test_no_cli_migration_and_legacy_preflight_remains_seven_checks(self) -> None:
+    def test_cli_uses_project_verification_without_a_fixed_battery(self) -> None:
         from engineering_orchestration import cli
+        from engineering_orchestration import verify_repo
 
         source = Path(cli.__file__).read_text(encoding="utf-8")
-        self.assertNotIn("project_verification", source)
-        self.assertEqual(len(DEFAULT_CHECKS), 7)
-        self.assertEqual(
-            [item.name for item in DEFAULT_CHECKS],
-            [
-                "Unit Tests", "Task Validation", "Workflow Validation",
-                "Role Validation", "Project Manifest Validation",
-                "Markdown Lint", "Git Diff Check",
-            ],
-        )
+        self.assertIn("project_verification", source)
+        self.assertFalse(hasattr(verify_repo, "DEFAULT_CHECKS"))
 
-    def test_orchestra_manifest_remains_without_verification_dogfood(self) -> None:
+    def test_orchestra_manifest_dogfoods_declared_verification(self) -> None:
+        import yaml
+
         repository_root = Path(__file__).resolve().parents[1]
-        manifest = (repository_root / ".ai" / "project.yaml").read_text(encoding="utf-8")
-        self.assertNotIn("verification:", manifest)
+        manifest = yaml.safe_load(
+            (repository_root / ".ai" / "project.yaml").read_text(encoding="utf-8")
+        )
+        self.assertEqual(len(manifest["verification"]["checks"]), 7)
 
 
 if __name__ == "__main__":

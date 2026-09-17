@@ -1,7 +1,7 @@
 """Explicit local integration check; not collected by normal unittest discovery.
 
 Creates and removes two temporary venvs. Requires Python 3.12+, package/build
-dependency access, Git, and Node/npm for the unchanged development preflight.
+dependency access, Git, and Node/npm for Manifest-driven repository verification.
 Run: python -B tests/package_installation_smoke.py
 """
 
@@ -56,9 +56,10 @@ def make_project(base: Path) -> Path:
         "risk": {"default": "low"}, "execution": {"default_mode": "standard"},
         "human_control": {}, "quality": {},
         "tasks": {"directory": "governance/tasks"},
-        "verification": {"checks": [{"id": "never-execute",
-            "command": ["unavailable-project-tool", "", "tests/*"],
-            "cwd": "../absent-unresolved", "timeout_seconds": 7}]},
+        "verification": {"checks": [{"id": "tests",
+            "command": [sys.executable, "-c",
+                "from pathlib import Path; Path('verification-ran').touch()"],
+            "timeout_seconds": 7}]},
     }
     (project / ".ai/project.yaml").write_text(json.dumps(manifest), encoding="utf-8")
     (tasks / "task.yaml").write_text(json.dumps({
@@ -96,12 +97,14 @@ def main() -> None:
             executable_dir = environment / ("Scripts" if os.name == "nt" else "bin")
             python = executable_dir / ("python.exe" if os.name == "nt" else "python")
             aio = executable_dir / ("aio.exe" if os.name == "nt" else "aio")
+            run_env = dict(env)
+            run_env["PATH"] = str(executable_dir) + os.pathsep + run_env.get("PATH", "")
             if mode == "editable":
-                run([str(python), "-m", "pip", "install", "-e", str(ROOT)], base, env)
+                run([str(python), "-m", "pip", "install", "-e", str(ROOT)], base, run_env)
             else:
                 wheel_dir = base / "wheels"
                 run([str(python), "-m", "pip", "wheel", "--no-deps", "--wheel-dir",
-                     str(wheel_dir), str(ROOT)], base, env)
+                     str(wheel_dir), str(ROOT)], base, run_env)
                 wheel = next(wheel_dir.glob("ai_engineering_orchestra-*.whl"))
                 with zipfile.ZipFile(wheel) as archive:
                     names = archive.namelist()
@@ -117,8 +120,8 @@ def main() -> None:
                         require(archive.read(name) == (ROOT / "schemas" / Path(name).name).read_bytes(),
                                 "Installed schema differs from canonical source")
                     print("WHEEL CONTENTS:\n" + "\n".join(names), flush=True)
-                run([str(python), "-m", "pip", "install", str(wheel)], base, env)
-            run([str(python), "-m", "pip", "check"], base, env)
+                run([str(python), "-m", "pip", "install", str(wheel)], base, run_env)
+            run([str(python), "-m", "pip", "check"], base, run_env)
             probe = """
 import json, sys
 from pathlib import Path
@@ -129,7 +132,7 @@ print(json.dumps({'module': cli.__file__, 'runner_module': project_verification.
     'schemas': [str(schema_resource(n)) for n in
     ('task.schema.json', 'workflow.schema.json', 'project-manifest.schema.json')], 'sys_path': sys.path}))
 """
-            evidence = json.loads(run([str(python), "-B", "-c", probe], project / "src/nested", env))
+            evidence = json.loads(run([str(python), "-B", "-c", probe], project / "src/nested", run_env))
             print(f"{mode.upper()} IMPORT/RESOURCE EVIDENCE: {json.dumps(evidence)}", flush=True)
             if mode == "normal":
                 require(Path(evidence["module"]).resolve().is_relative_to(environment),
@@ -143,12 +146,16 @@ print(json.dumps({'module': cli.__file__, 'runner_module': project_verification.
             for cwd in (ROOT, ROOT / "scripts"):
                 for args, marker in [(["--help"], "{tasks,inspect,verify}"),
                                      (["tasks"], "AIO-016"),
-                                     (["inspect", "AIO-015"], "Schema: VALID"),
-                                     (["verify"], "Summary: 7/7 checks passed")]:
-                    output = run([str(aio), *args], cwd, env)
+                                     (["inspect", "AIO-015"], "Schema: VALID")]:
+                    output = run([str(aio), *args], cwd, run_env)
                     require(marker in output, f"Missing expected output: {marker}")
+            output = run([str(aio), "verify", "--structure"], ROOT / "scripts", run_env)
+            require("Supported AIO Structure" in output, "Installed structure mode failed")
+            output = run([str(aio), "verify"], ROOT, run_env)
+            require("Verification passed." in output and "unit-tests" in output,
+                    "Installed Orchestra verification did not use Manifest checks")
             for args in (["tasks"], ["inspect", "LOCAL-123"]):
-                output = run([str(aio), *args], project / "src/nested", env)
+                output = run([str(aio), *args], project / "src/nested", run_env)
                 require("LOCAL-123" in output and "AIO-015" not in output, "Wrong active project")
                 if args[0] == "inspect":
                     require("external_gate" in output and "Resolution: RESOLVED" in output,
@@ -227,9 +234,28 @@ with patch('engineering_orchestration.schema_resources.schema_resource', return_
 check('PASS')
 print('PASS: installed structural validation, custom paths, invalid data, identities, references, resources')
 """
-            print(run([str(python), "-B", "-c", structural_probe], project / "src/nested", env), flush=True)
-            run([str(aio), "tasks"], base, env, expected=2)
-            run([str(aio), "inspect", "MISSING"], project, env, expected=1)
+            print(run([str(python), "-B", "-c", structural_probe], project / "src/nested", run_env), flush=True)
+            run([str(aio), "tasks"], base, run_env, expected=2)
+            run([str(aio), "inspect", "MISSING"], project, run_env, expected=1)
+
+            marker = project / "verification-ran"
+            marker.unlink(missing_ok=True)
+            output = run([str(aio), "verify"], project / "src/nested", run_env)
+            require(marker.exists(), "Installed verifier did not execute adopter declaration")
+            require("tests" in output and "Verification passed." in output,
+                    "Installed adopter verification output incomplete")
+            saved_manifest = (project / ".ai/project.yaml").read_text(encoding="utf-8")
+            try:
+                data = json.loads(saved_manifest)
+                data["verification"]["checks"] = []
+                (project / ".ai/project.yaml").write_text(json.dumps(data), encoding="utf-8")
+                marker.unlink(missing_ok=True)
+                output = run([str(aio), "verify"], project, run_env)
+                require("0 project checks configured" in output,
+                        "Installed zero-check project did not remain empty")
+                require(not marker.exists(), "Zero-check verification executed a command")
+            finally:
+                (project / ".ai/project.yaml").write_text(saved_manifest, encoding="utf-8")
             alias = """
 import sys
 from importlib.metadata import EntryPoint, distribution
@@ -238,16 +264,16 @@ assert EntryPoint(name='rook', value=entry.value, group='console_scripts').load(
 sys.argv = ['rook', '--help']
 entry.load()()
 """
-            output = run([str(python), "-B", "-c", alias], base, env)
+            output = run([str(python), "-B", "-c", alias], base, run_env)
             require("rook" in output, "Alias help did not reflect caller name")
-            run([str(python), "-m", "pip", "uninstall", "-y", "ai-engineering-orchestra"], base, env)
+            run([str(python), "-m", "pip", "uninstall", "-y", "ai-engineering-orchestra"], base, run_env)
             require(not aio.exists(), "Uninstall left executable behind")
             run([str(python), "-B", "-c",
                  "import importlib.util; assert importlib.util.find_spec('engineering_orchestration') is None"],
-                base, env)
+                base, run_env)
             require(before == source_digest(), "Install/uninstall modified authoritative sources")
             print(f"{mode.upper()}: commands, external project, alias and uninstall PASS", flush=True)
-        print("External verify: intentionally not applicable; no genericity claim or skipped battery.", flush=True)
+        print("External and zero-check installed verification PASS.", flush=True)
     require(not base.exists(), "Temporary environments were not cleaned")
     print("PASS: both temporary venvs and fixtures removed; no sdist generated", flush=True)
 

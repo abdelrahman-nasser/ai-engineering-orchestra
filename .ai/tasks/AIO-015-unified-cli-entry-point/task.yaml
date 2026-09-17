@@ -1,0 +1,52 @@
+id: AIO-015
+title: Unified CLI Entry Point for Repository Tooling
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: medium
+risk: low
+execution:
+  mode: standard
+workflow: standard-change
+objective: >
+  Create a thin unified command surface (tasks, inspect, verify) over proven
+  Foundation utilities, using a brand-neutral CLI router (scripts/cli.py)
+  and temporary branded entry point (aio.py), with project root discovery
+  from the caller's working directory and Task ID-based inspection lookup.
+scope:
+  include:
+    - Brand-neutral CLI router in scripts/cli.py with argparse subcommands
+    - Temporary branded entry point aio.py delegating to scripts/cli.py
+    - tasks subcommand delegating to existing Task inventory capability
+    - inspect subcommand with declared Task ID lookup via discover_tasks()
+    - verify subcommand delegating to existing repository preflight capability
+    - Project root discovery from caller current working directory ancestry
+    - Explicit active-project manifest and Workflow paths, including missing Workflow directory isolation
+    - Comprehensive CLI unit tests in tests/test_cli.py
+    - Registration of AIO-015 in schemas/tests/validate_task.py
+    - Canonical Task artifacts in .ai/tasks/AIO-015-unified-cli-entry-point/
+    - Governed execution under standard-change workflow with independent review
+  exclude:
+    - Package distribution (pyproject.toml, setup.py, console-script entry points)
+    - Global PATH installation or standalone executable
+    - Shell completion
+    - New third-party dependencies (Click, Typer, Rich)
+    - Workflow execution, task mutation, planning, agent commands
+    - Product rename migration tooling
+    - Historical Task renaming (AIO-001 through AIO-014)
+    - Full future CLI milestone completion
+    - Deletion of existing scripts (list_tasks.py, inspect_task.py, verify_repo.py)
+    - Quality Gate runner or gate satisfaction engine
+    - Modifying schemas or historical tasks AIO-001 through AIO-014
+dependencies:
+  - AIO-010
+  - AIO-013
+  - AIO-014
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: false
+  breaking_schema_changes_require_approval: false
+  breaking_contract_changes_require_approval: false

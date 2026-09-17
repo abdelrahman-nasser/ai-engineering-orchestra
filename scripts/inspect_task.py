@@ -389,9 +389,9 @@ def inspect_task(
         # Resolve via catalog
         wf_dir: Path | None = None
         if workflows_dir is not None:
-            explicit_wf = Path(workflows_dir)
-            if explicit_wf.is_dir():
-                wf_dir = explicit_wf.resolve()
+            # An explicit project path must not fall back to the tool's catalog,
+            # even when that project's workflows directory is missing.
+            wf_dir = Path(workflows_dir).resolve()
         else:
             wf_dir = find_workflows_dir(task_path)
 

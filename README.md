@@ -127,9 +127,84 @@ assert execution_mode_satisfies("deep", "standard")
 Complexity, Risk, and Execution Mode remain independent values with explicit
 Task values taking precedence over their matching Project defaults. The former
 Model Tier values (`fast`, `standard`, `high`) are deprecated and non-consumable;
-no replacement tier or routing behavior exists pending evidence-backed option
-inventory research. Canonical semantics are defined in
+Inference Option identity and availability add no replacement tier or routing
+behavior. Canonical Execution Mode semantics are defined in
 [`core/task-specification.md`](core/task-specification.md#15-execution).
+
+## Inference Option Definition and Availability
+
+An Inference Option is a caller/environment-supplied identity for one accessible
+way to address a model through an operational Provider boundary. Its Definition
+contains exactly `option_id`, `provider_id`, and Provider-scoped `model_id`:
+
+```python
+from engineering_orchestration.inference_option import (
+    InferenceOptionDefinition,
+    validate_inference_option_inventory,
+)
+
+options = [
+    InferenceOptionDefinition("primary", "provider-a", "model-x"),
+    InferenceOptionDefinition("secondary", "provider-a", "model-x"),
+]
+inventory = validate_inference_option_inventory(options)
+```
+
+`option_id` is the unique identity within one supplied inventory. Two options
+may use the same Provider/model pair. IDs remain opaque and case-sensitive; no
+Provider or model enum, catalog, endpoint, credential, capability, or discovery
+contract exists.
+
+Availability is separate ephemeral evidence:
+
+```python
+from engineering_orchestration.inference_option_availability import (
+    InferenceOptionAvailabilityObservation,
+    InferenceOptionAvailabilityState,
+    validate_inference_option_availability,
+)
+
+availability = validate_inference_option_availability(
+    [
+        InferenceOptionAvailabilityObservation(
+            "primary", InferenceOptionAvailabilityState.AVAILABLE
+        )
+    ],
+    options,
+)
+```
+
+States are exactly `available`, `unavailable`, and `unknown`. Missing
+observations normalize to unknown. Duplicate option IDs, duplicate observations,
+and unknown-option references invalidate their complete input without partial
+normalized output. Available does not mean selected, authorized, executable,
+within quota, compatible with Execution Mode, or backed by an available runtime.
+
+The current architecture boundary is:
+
+```text
+Actor responsibility
+  -> Actor Selection / Assignment
+
+Task Execution Mode
+
+Caller/environment
+  -> Inference Option inventory + availability
+
+future:
+Runtime inventory
+  -> policy/configuration assessment
+  -> authorization
+  -> Execution Contract
+  -> invocation
+```
+
+AIO-028 performs no option selection, routing, Provider integration, network
+access, persistence, Runtime Option modeling, authorization, or invocation. The
+semantic authorities are
+[`core/inference-option-specification.md`](core/inference-option-specification.md)
+and
+[`core/inference-option-availability-specification.md`](core/inference-option-availability-specification.md).
 
 ## Installed Structural Validation
 
@@ -155,9 +230,10 @@ internal failures produce ERROR. ERROR takes precedence over FAIL. PASS covers
 only the supported structural rules, without establishing Quality Gate results.
 
 The installed tool packages canonical Actor, Actor Availability Observation,
-Assignment, Role, Task, Workflow, and Project Manifest schemas from their single
-sources in `schemas/`, plus the five framework-owned canonical Role YAML
-instances from `roles/`. Managed projects
+Assignment, Inference Option, Inference Option Availability Observation, Role,
+Task, Workflow, and Project Manifest schemas from their single sources in
+`schemas/`, plus the five framework-owned canonical Role YAML instances from
+`roles/`. Managed projects
 need no schema regression scripts, fixtures, Orchestra Task history, Git,
 Node/npm, or Python tests. Python and the declared tool dependencies run the
 validator; the target project's own language is irrelevant. The API executes no

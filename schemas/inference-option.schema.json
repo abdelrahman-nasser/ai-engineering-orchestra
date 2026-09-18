@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-engineering-orchestra.dev/schemas/inference-option.schema.json",
+  "title": "AI Engineering Orchestra Inference Option Definition",
+  "description": "Structural schema for the AI Engineering Orchestra v0.1 Inference Option Definition contract defined by core/inference-option-specification.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "option_id",
+    "provider_id",
+    "model_id"
+  ],
+  "properties": {
+    "option_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable opaque identity for one Inference Option within a caller-supplied inventory."
+    },
+    "provider_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Opaque identity of the operational Provider access boundary through which the model is addressed."
+    },
+    "model_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Opaque Provider-scoped model locator."
+    }
+  }
+}

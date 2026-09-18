@@ -55,6 +55,12 @@ Status: In Development
   coverage and normalized availability, without ranking or Assignment creation
 - immutable canonical Execution Mode order and pure minimum-satisfaction helper
   with schema-synchronization, relation, inheritance, and Workflow-invariance tests
+- canonical three-field Inference Option Definition specification and schema,
+  with opaque option, Provider, and Provider-scoped model identity
+- canonical two-field Inference Option Availability Observation specification
+  and schema with explicit unknown normalization
+- immutable Inference Option values and pure deterministic inventory and
+  availability validation, including duplicate and unknown-reference handling
 - canonical Workflow specification in `core/workflow-specification.md`
 - initial canonical engineering Workflow library in `workflows/` (`standard-change`, `architecture-change`, `security-sensitive-change`)
 - normalized Workflow JSON Schema in `schemas/workflow.schema.json`
@@ -94,8 +100,14 @@ Status: In Development
   Provider/model, authority, approval, and Quality Gate mappings
 - established that mode changes depth inside unchanged Workflow choreography and
   provides no Stage-, Role-, or responsibility-specific override
-- deprecated the mixed-axis Model Tier values as non-consumable pending
-  evidence-backed Provider/model option inventory research
+- deprecated the mixed-axis Model Tier values as non-consumable, with no
+  replacement tier, capability scale, reasoning mapping, or routing behavior
+- separated caller-supplied Inference Option identity from model identity,
+  Runtime Option, Agent Service, capabilities, credentials, selection,
+  authorization, and invocation
+- separated ephemeral Inference Option availability from static option identity,
+  with `unknown != unavailable` and no implication of runtime availability,
+  Execution Mode fit, quota, selection, authorization, or execution
 - established the Role authority hierarchy from semantic specification to
   structural schema, canonical YAML instances, compatibility Markdown, and
   regression tooling

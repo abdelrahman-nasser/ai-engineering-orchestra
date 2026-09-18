@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-engineering-orchestra.dev/schemas/inference-option-availability.schema.json",
+  "title": "AI Engineering Orchestra Inference Option Availability Observation",
+  "description": "Structural schema for the AI Engineering Orchestra v0.1 Inference Option Availability Observation contract defined by core/inference-option-availability-specification.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "option_id",
+    "state"
+  ],
+  "properties": {
+    "option_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact opaque reference to one caller-supplied Inference Option."
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "available",
+        "unavailable",
+        "unknown"
+      ],
+      "description": "Currently known availability state of the referenced Inference Option within one caller-supplied evaluation snapshot."
+    }
+  }
+}

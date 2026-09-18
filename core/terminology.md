@@ -20,17 +20,14 @@ It is independent of any specific AI provider, model, programming language, fram
 
 ## Provider
 
-A system or platform capable of supplying AI agents or models.
-
-Examples may include:
-
-- Claude
-- Codex
-- Antigravity
-- future AI providers
+A system or platform forming an operational access boundary through which
+models or Agent execution services may be supplied. For an Inference Option,
+the Provider is the boundary through which its model is addressed. The
+Provider need not be the organization that developed the model.
 
 A Provider is not a Role or Actor and does not fulfil a Role. A Provider may
-supply many Agent Actors. A Human Actor has no Provider requirement.
+expose many models or supply many Agent Actors. A Human Actor has no Provider
+requirement.
 
 For example:
 
@@ -42,7 +39,9 @@ A Provider may supply an Agent Actor capable of fulfilling the Architect Role.
 
 ## Model
 
-A specific AI model available through a Provider.
+A Provider-addressable inference capability. A model identifier is meaningful
+only within its Provider namespace; AIO v0.1 defines no global model namespace,
+Model contract, catalog, family, version, tier, or capability registry.
 
 Models may differ in:
 
@@ -58,6 +57,59 @@ Projects should avoid directly depending on specific model names where possible.
 
 ---
 
+## Inference Option
+
+A Provider-neutral identity describing one caller/environment-accessible way to
+address a model for inference.
+
+The canonical Definition contains exactly opaque, case-sensitive `option_id`,
+`provider_id`, and Provider-scoped `model_id`. `option_id` is unique only within
+one supplied inventory. It remains the identity even when multiple options use
+the same Provider/model pair.
+
+An Inference Option does not describe a Runtime Option, Agent Service, tool or
+session ownership, credentials, endpoint, capabilities, availability,
+selection, authorization, or invocation. The canonical contract is defined in:
+
+`core/inference-option-specification.md`
+
+---
+
+## Inference Option Availability Observation
+
+An immutable, Provider-neutral, ephemeral value describing the currently known
+availability state of one Inference Option within one caller-supplied evaluation
+snapshot.
+
+The state is exactly `available`, `unavailable`, or `unknown`; unknown is not
+unavailable. A missing observation normalizes to unknown. Availability does not
+change option identity and does not establish capability fit, selection,
+authorization, execution, quota, price, Execution Mode satisfaction, or Runtime
+Option availability. The canonical contract is defined in:
+
+`core/inference-option-availability-specification.md`
+
+---
+
+## Runtime Option
+
+A reserved boundary term for a future option describing where and how an Agent
+loop executes and who owns tools, state, sessions, and lifecycle. No Runtime
+Option contract, schema, inventory, or implementation exists in AIO v0.1.
+
+Runtime Option is not Inference Option.
+
+---
+
+## Agent Service
+
+A managed service that may own Agent sessions, tools, state, lifecycle,
+scheduling, and model choice. Agent Service is distinct from bare model
+inference and from Inference Option. No Agent Service contract or implementation
+exists in AIO v0.1.
+
+---
+
 ## Model Tier
 
 **Deprecated.** Model Tier previously described the values `fast`, `standard`,
@@ -66,9 +118,10 @@ latency and capability dimensions, so they are withdrawn and non-consumable.
 
 Model Tier has no active semantics, schema, ordering, runtime behavior, or
 routing behavior. It is not Execution Mode and is not a Provider reasoning
-setting. Consumers must not use the former values for matching or routing until
-evidence-backed Provider/model inventory research establishes stable option-side
-dimensions through a future contract. No replacement enum is defined in v0.1.
+setting. AIO-028 adds only opaque Inference Option identity and separate
+availability evidence; it establishes no replacement tier, capability scale,
+requirement matching, reasoning mapping, or routing behavior. No replacement
+enum is defined in v0.1.
 
 ---
 

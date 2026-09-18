@@ -1,0 +1,41 @@
+id: AIO-028
+title: Inference Option Definition and Availability Foundation
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: medium
+execution:
+  mode: deep
+workflow: architecture-change
+objective: >
+  Define the smallest Provider-neutral Inference Option identity and separate
+  ephemeral availability-observation contracts needed to validate a
+  caller-supplied option inventory without implementing runtime, adapter,
+  selection, authorization, or invocation behavior.
+scope:
+  include:
+    - Canonical three-field Inference Option Definition specification and schema
+    - Canonical two-field Inference Option Availability Observation specification and schema
+    - Opaque option, Provider, and Provider-scoped model identity semantics
+    - Pure deterministic inventory and availability validation and normalization
+    - Missing, unknown-option, duplicate-option, and duplicate-observation handling
+    - Focused tests, package resources, documentation, and Task evidence
+  exclude:
+    - Provider or Model catalogs, registries, enums, adapters, SDKs, discovery, or network access
+    - Runtime Options, Agent Services, tools, sessions, state ownership, or invocation
+    - Capability registries, model metadata, reasoning controls, Execution Mode matching, or Model Tier revival
+    - Pricing, quota, account access, lifecycle, region, latency, compliance, credentials, or endpoints
+    - Model or Inference Option selection, ranking, routing, fallback, authorization, or Execution Contracts
+    - Actor-to-option relations or changes to Actor, Assignment, Actor Selection, or Execution Mode contracts
+    - Persistence, Project Manifest changes, CLI work, or AIO-029
+dependencies:
+  - AIO-026
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

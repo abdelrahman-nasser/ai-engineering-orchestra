@@ -117,9 +117,10 @@ or invalid data produce FAIL; missing installed resources, I/O problems, and
 internal failures produce ERROR. ERROR takes precedence over FAIL. PASS covers
 only the supported structural rules, without establishing Quality Gate results.
 
-The installed tool packages canonical Actor, Assignment, Role, Task, Workflow,
-and Project Manifest schemas from their single sources in `schemas/`, plus the five
-framework-owned canonical Role YAML instances from `roles/`. Managed projects
+The installed tool packages canonical Actor, Actor Availability Observation,
+Assignment, Role, Task, Workflow, and Project Manifest schemas from their single
+sources in `schemas/`, plus the five framework-owned canonical Role YAML
+instances from `roles/`. Managed projects
 need no schema regression scripts, fixtures, Orchestra Task history, Git,
 Node/npm, or Python tests. Python and the declared tool dependencies run the
 validator; the target project's own language is irrelevant. The API executes no
@@ -166,6 +167,36 @@ explicitly non-matchable. Coverage is evidence only: it does not rank, select,
 assign, authorize, or execute an Actor; inspect availability; or produce a
 Quality Gate result. The semantic contract is defined in
 [`core/actor-specification.md`](core/actor-specification.md).
+
+## Actor Availability Observation
+
+Availability is a separate, ephemeral runtime observation over supplied Actors:
+
+```python
+from engineering_orchestration.actor_availability import (
+    ActorAvailabilityObservation,
+    AvailabilityState,
+    validate_actor_availability,
+)
+
+observations = [
+    ActorAvailabilityObservation("agent-engineer-1", AvailabilityState.AVAILABLE)
+]
+result = validate_actor_availability(observations, actors)
+print(result.valid, result.normalized_observations)
+```
+
+Each observation contains only `actor_id` and `state`, where state is exactly
+`available`, `unavailable`, or `unknown`. A known Actor without an observation
+normalizes to unknown, never unavailable. Duplicate observations and unknown
+Actor references invalidate the snapshot without producing partial normalized
+output. Human and Agent Actors use identical semantics.
+
+Availability does not change Actor identity or competency coverage, affect
+Assignment validity, grant authority, or imply execution. The validator performs
+no selection, persistence, Provider integration, polling, or network access. The
+semantic contract is defined in
+[`core/actor-availability-specification.md`](core/actor-availability-specification.md).
 
 ## Assignment Responsibility Bindings
 

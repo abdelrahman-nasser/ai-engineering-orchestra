@@ -46,6 +46,9 @@ Status: In Development
 - pure individual and sequence Assignment validation with competency reuse,
   duplicate-binding detection, completeness, unassigned-requirement reporting,
   and narrow implementer/Reviewer identity-conflict evidence
+- canonical two-field Actor Availability Observation specification and schema
+- immutable availability values and pure snapshot validation with explicit
+  unknown normalization and deterministic duplicate handling
 - canonical Workflow specification in `core/workflow-specification.md`
 - initial canonical engineering Workflow library in `workflows/` (`standard-change`, `architecture-change`, `security-sensitive-change`)
 - normalized Workflow JSON Schema in `schemas/workflow.schema.json`
@@ -72,6 +75,9 @@ Status: In Development
 - established machine-readable structural validation for normalized Role objects
 - separated Actor eligibility from immutable Assignment responsibility binding,
   authority, availability, execution, Workflow state, and Quality Gate results
+- separated ephemeral Actor availability observations from Actor identity,
+  competency eligibility, Assignment validity, authority, execution, Provider
+  state, persistence, and selection
 - established the Role authority hierarchy from semantic specification to
   structural schema, canonical YAML instances, compatibility Markdown, and
   regression tooling

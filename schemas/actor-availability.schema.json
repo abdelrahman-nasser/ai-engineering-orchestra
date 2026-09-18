@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-engineering-orchestra.dev/schemas/actor-availability.schema.json",
+  "title": "AI Engineering Orchestra Actor Availability Observation",
+  "description": "Structural schema for the AI Engineering Orchestra v0.1 Actor Availability Observation contract defined by core/actor-availability-specification.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "actor_id",
+    "state"
+  ],
+  "properties": {
+    "actor_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact opaque reference to one caller-supplied Actor."
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "available",
+        "unavailable",
+        "unknown"
+      ],
+      "description": "Currently known availability state of the referenced Actor within one caller-supplied evaluation snapshot."
+    }
+  }
+}

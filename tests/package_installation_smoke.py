@@ -117,11 +117,11 @@ def main() -> None:
                 with zipfile.ZipFile(wheel) as archive:
                     names = archive.namelist()
                     modules = {f"engineering_orchestration/{name}" for name in
-                               ("__init__.py", "actor_coverage.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
+                               ("__init__.py", "actor_availability.py", "actor_coverage.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
                                 "verify_repo.py", "workflow_catalog.py", "role_catalog.py", "schema_resources.py",
                                 "project.py", "validation.py", "project_verification.py")}
                     schemas = {f"engineering_orchestration/_schemas/{name}" for name in
-                               ("actor.schema.json", "assignment.schema.json", "role.schema.json", "task.schema.json", "workflow.schema.json",
+                               ("actor-availability.schema.json", "actor.schema.json", "assignment.schema.json", "role.schema.json", "task.schema.json", "workflow.schema.json",
                                 "project-manifest.schema.json")}
                     roles = {f"engineering_orchestration/_roles/{name}" for name in
                              ("architect.yaml", "documentation-specialist.yaml", "reviewer.yaml",
@@ -142,6 +142,7 @@ def main() -> None:
 import json, sys
 from pathlib import Path
 import engineering_orchestration.cli as cli
+import engineering_orchestration.actor_availability as actor_availability
 import engineering_orchestration.actor_coverage as actor_coverage
 import engineering_orchestration.assignment as assignment
 import engineering_orchestration.project_verification as project_verification
@@ -152,7 +153,15 @@ catalog = role_catalog.load_role_catalog()
 software_engineer = catalog.get('software-engineer')
 actor = {'id': 'installed-agent', 'kind': 'agent',
          'competencies': list(software_engineer['required_capabilities'])}
+human_actor = {'id': 'installed-human', 'kind': 'human',
+               'competencies': list(software_engineer['required_capabilities'])}
 coverage = actor_coverage.evaluate_actor_role_coverage(actor, software_engineer)
+availability_result = actor_availability.validate_actor_availability(
+    [actor_availability.ActorAvailabilityObservation(
+         'installed-agent', actor_availability.AvailabilityState.AVAILABLE),
+     actor_availability.ActorAvailabilityObservation(
+         'installed-human', actor_availability.AvailabilityState.UNAVAILABLE)],
+    [actor, human_actor])
 workflow_catalog = load_workflow_catalog(Path.cwd().parents[1] / 'workflows')
 binding = assignment.Assignment('LOCAL-123', 'external-flow', 'external-stage',
                                 'software-engineer', 'installed-agent')
@@ -160,11 +169,19 @@ assignment_result = assignment.validate_assignment_set(
     [binding], {'id': 'LOCAL-123', 'workflow': 'external-flow'},
     workflow_catalog, catalog, [actor])
 role_source = role_catalog.find_default_roles_resource()
-print(json.dumps({'module': cli.__file__, 'actor_module': actor_coverage.__file__,
+print(json.dumps({'module': cli.__file__,
+    'availability_module': actor_availability.__file__,
+    'actor_module': actor_coverage.__file__,
     'assignment_module': assignment.__file__,
     'runner_module': project_verification.__file__,
     'role_module': role_catalog.__file__, 'role_ids': catalog.role_ids,
     'role_valid': catalog.is_valid, 'coverage': coverage.compatible,
+    'availability_valid': availability_result.valid,
+    'availability_states': {observation.actor_id: observation.state for observation
+                            in availability_result.normalized_observations},
+    'availability_storage_absent': not any(
+        (Path.cwd().parents[1] / '.ai' / name).exists() for name in
+        ('actor-availability', 'actor-availability.yaml', 'availability', 'availability.yaml')),
     'assignment_valid': assignment_result.valid,
     'assignment_complete': assignment_result.complete,
     'assignment_storage_absent': not (Path.cwd().parents[1] / '.ai/assignments').exists(),
@@ -172,7 +189,7 @@ print(json.dumps({'module': cli.__file__, 'actor_module': actor_coverage.__file_
     ('architect.yaml', 'documentation-specialist.yaml', 'reviewer.yaml',
      'security-reviewer.yaml', 'software-engineer.yaml')],
     'schemas': [str(schema_resource(n)) for n in
-    ('actor.schema.json', 'assignment.schema.json', 'role.schema.json', 'task.schema.json', 'workflow.schema.json',
+    ('actor-availability.schema.json', 'actor.schema.json', 'assignment.schema.json', 'role.schema.json', 'task.schema.json', 'workflow.schema.json',
      'project-manifest.schema.json')], 'sys_path': sys.path}))
 """
             evidence = json.loads(run([str(python), "-B", "-c", probe], project / "src/nested", run_env))
@@ -182,6 +199,8 @@ print(json.dumps({'module': cli.__file__, 'actor_module': actor_coverage.__file_
                         "Normal install imports leaked to source")
                 require(Path(evidence["runner_module"]).resolve().is_relative_to(environment),
                         "Normal runner import leaked to source")
+                require(Path(evidence["availability_module"]).resolve().is_relative_to(environment),
+                        "Normal Actor Availability validator import leaked to source")
                 require(Path(evidence["actor_module"]).resolve().is_relative_to(environment),
                         "Normal Actor evaluator import leaked to source")
                 require(Path(evidence["assignment_module"]).resolve().is_relative_to(environment),
@@ -200,6 +219,13 @@ print(json.dumps({'module': cli.__file__, 'actor_module': actor_coverage.__file_
                                              "security-reviewer", "software-engineer"],
                     "Installed Role IDs differ from canonical catalog")
             require(evidence["coverage"], "Installed Role-to-Actor coverage failed")
+            require(evidence["availability_valid"],
+                    "Installed Actor Availability validation failed")
+            require(evidence["availability_states"] == {
+                        "installed-agent": "available", "installed-human": "unavailable"},
+                    "Installed Human and Agent availability states differ from observations")
+            require(evidence["availability_storage_absent"],
+                    "Actor Availability validation unexpectedly required project storage")
             require(evidence["assignment_valid"] and evidence["assignment_complete"],
                     "Installed Assignment validation failed")
             require(evidence["assignment_storage_absent"],

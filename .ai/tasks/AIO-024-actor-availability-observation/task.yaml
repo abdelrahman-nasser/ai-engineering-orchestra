@@ -1,0 +1,37 @@
+id: AIO-024
+title: Define Actor Availability Observation Contract
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: medium
+execution:
+  mode: deep
+workflow: architecture-change
+objective: >
+  Define the smallest provider-neutral, ephemeral observation contract and pure
+  validation semantics needed to represent the currently known availability of
+  one supplied Actor without changing Actor identity or performing selection.
+scope:
+  include:
+    - Canonical two-field Actor Availability Observation specification and schema
+    - Exactly available, unavailable, and unknown state semantics
+    - Immutable observation value and pure deterministic snapshot validation
+    - Missing, unknown-Actor, duplicate-Actor, and duplicate-observation handling
+    - Focused tests, package resources, documentation, and Task evidence
+  exclude:
+    - Changes to existing Actor, Assignment, Task, Workflow, Role, or Project Manifest contracts
+    - Actor selection, ranking, recommendations, proposed Assignments, or AIO-025
+    - Actor catalogs, availability persistence or history, reservations, scheduling, load, or capacity
+    - Provider, model, runtime, provenance, timestamp, polling, network, or background services
+    - Authority, permission, approval, execution, Task Assessment, Model Tier, or CLI work
+dependencies:
+  - AIO-023
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

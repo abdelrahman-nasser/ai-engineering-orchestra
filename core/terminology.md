@@ -133,6 +133,21 @@ automatically matchable.
 
 ---
 
+## Actor Availability Observation
+
+An immutable, Provider-neutral, ephemeral value describing the currently known
+availability state of one Actor within one caller-supplied evaluation snapshot.
+
+The state is exactly `available`, `unavailable`, or `unknown`; unknown is not
+unavailable. A missing observation normalizes to unknown. Availability does not
+change Actor identity or competencies and does not establish eligibility,
+Assignment, authority, permission, approval, or execution. The canonical
+contract is defined in:
+
+`core/actor-availability-specification.md`
+
+---
+
 ## Assignment
 
 An immutable, Provider-neutral value binding one concrete Actor identity to one

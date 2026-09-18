@@ -22,6 +22,7 @@ from engineering_orchestration.schema_resources import schema_resource
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGED_SCHEMAS = (
     "actor.schema.json",
+    "actor-availability.schema.json",
     "assignment.schema.json",
     "role.schema.json",
     "task.schema.json",

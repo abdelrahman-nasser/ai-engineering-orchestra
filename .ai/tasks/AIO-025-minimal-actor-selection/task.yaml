@@ -1,0 +1,41 @@
+id: AIO-025
+title: Implement Minimal Deterministic Actor Selection
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: medium
+execution:
+  mode: deep
+workflow: architecture-change
+objective: >
+  Implement the smallest Provider-neutral, deterministic Actor Selection
+  capability that resolves one valid Task, Workflow, Stage, and Role
+  responsibility against caller-supplied Actors, exact competency coverage,
+  and Actor Availability Observations without ranking or assigning Actors.
+scope:
+  include:
+    - Canonical Actor Selection specification and terminology
+    - Pure immutable runtime result with exactly four selection outcomes
+    - Shared internal Task, Workflow, Stage, and Role responsibility resolution
+    - Actor competency coverage and Actor Availability Observation composition
+    - Deterministic candidate evidence, invalid-context findings, and outcome tests
+    - Package-installation evidence, current-state documentation, and Task evidence
+  exclude:
+    - Selection Policy, ranking, scoring, weights, tie-breaking, or preference
+    - Task Assessment or use of Complexity, Risk, or Execution Mode in selection
+    - Actor catalogs, discovery, persistence, history, scheduling, or reservation
+    - Assignment creation, proposed Assignments, reassignment, or reviewer allocation policy
+    - Provider, model, runtime, reasoning, cost, quota, or execution requirements
+    - Authorization, permissions, Human approval, execution, or Quality Gate results
+    - Selection schemas, public responsibility request contracts, CLI work, or AIO-026
+dependencies:
+  - AIO-024
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

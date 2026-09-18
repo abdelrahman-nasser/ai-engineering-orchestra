@@ -52,8 +52,9 @@ Canonical AIO Workflow definitions use kebab-case identifiers by convention. Thi
 - **Role References**: Stages reference framework-owned canonical Role IDs from
   `roles/*.yaml`. Portable validation resolves those IDs through the packaged
   Role catalog. Resolution does not select or assign an Actor. The separate
-  Assignment Contract records and validates a caller-selected Actor binding;
-  automatic Actor selection remains outside the current framework.
+  Actor Selection contract may combine Role competency eligibility with supplied
+  availability evidence, while the Assignment Contract records and validates a
+  caller-chosen Actor binding. Neither changes Workflow semantics.
 - **Quality Gates**: Stages reference Quality Gate IDs from `quality-gates/`. Effective gates are the union of Project required gates, Workflow stage gates, and Task gates (non-weakening principle).
 - **Human Control**: `human_control_checkpoint: true` identifies WHEN Human Control is evaluated. It does not independently require approval; execution pauses only if applicable Human Control rules require approval.
 - **External Runtime**: Workflow execution, state, retries, and actor orchestration belong to an external runtime integration layer.

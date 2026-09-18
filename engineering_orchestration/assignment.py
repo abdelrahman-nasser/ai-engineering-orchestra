@@ -11,14 +11,19 @@ from collections import Counter
 from dataclasses import dataclass
 from typing import Mapping, Sequence, TypeAlias, cast
 
+from engineering_orchestration._responsibility import (
+    _require_valid_role_catalog,
+    _resolve_task_responsibility,
+    _resolve_task_workflow,
+    _task_workflow_id,
+)
 from engineering_orchestration.actor_coverage import (
     ActorRoleCoverage,
     evaluate_actor_role_coverage,
 )
-from engineering_orchestration.role_catalog import RoleCatalog, RoleCatalogError
+from engineering_orchestration.role_catalog import RoleCatalog
 from engineering_orchestration.workflow_catalog import (
     WorkflowCatalog,
-    WorkflowCatalogError,
     WorkflowDefinition,
 )
 
@@ -104,53 +109,6 @@ def _duplicate_actor_finding(
     )
 
 
-def _require_valid_workflow_catalog(catalog: WorkflowCatalog) -> None:
-    if catalog.is_valid:
-        return
-    diagnostics = "; ".join(catalog.load_errors) or "catalog has no definitions"
-    raise WorkflowCatalogError(
-        "Assignment validation requires a valid Workflow catalog: " + diagnostics
-    )
-
-
-def _require_valid_role_catalog(catalog: RoleCatalog) -> None:
-    if catalog.is_valid:
-        return
-    diagnostics = "; ".join(catalog.load_errors) or "catalog has no definitions"
-    raise RoleCatalogError(
-        "Assignment validation requires a valid framework Role catalog: " + diagnostics
-    )
-
-
-def _task_workflow(
-    task: Mapping[str, object],
-) -> tuple[str | None, AssignmentFinding | None]:
-    workflow_id = task.get("workflow")
-    if not isinstance(workflow_id, str) or not workflow_id:
-        return None, AssignmentFinding(
-            code="task_workflow_missing",
-            message="The supplied Task must explicitly declare a Workflow.",
-        )
-    return workflow_id, None
-
-
-def _resolve_task_workflow(
-    task: Mapping[str, object],
-    workflow_catalog: WorkflowCatalog,
-) -> tuple[WorkflowDefinition | None, AssignmentFinding | None]:
-    workflow_id, finding = _task_workflow(task)
-    if finding is not None:
-        return None, finding
-    _require_valid_workflow_catalog(workflow_catalog)
-    workflow = workflow_catalog.get(cast(str, workflow_id))
-    if workflow is None:
-        return None, AssignmentFinding(
-            code="workflow_not_found",
-            message=f"Task Workflow '{workflow_id}' was not found in the supplied catalog.",
-        )
-    return workflow, None
-
-
 def validate_assignment(
     assignment: Assignment,
     task: Mapping[str, object],
@@ -177,9 +135,9 @@ def validate_assignment(
             f"Task ID '{task_id}'.",
         )
 
-    task_workflow_id, workflow_finding = _task_workflow(task)
-    if workflow_finding is not None:
-        return AssignmentValidationResult(False, (workflow_finding,), None)
+    task_workflow_id, workflow_failure = _task_workflow_id(task)
+    if workflow_failure is not None:
+        return _invalid(*workflow_failure)
     task_workflow_id = cast(str, task_workflow_id)
 
     if assignment.workflow_id != task_workflow_id:
@@ -189,39 +147,17 @@ def validate_assignment(
             f"Task Workflow '{task_workflow_id}'.",
         )
 
-    _require_valid_workflow_catalog(workflow_catalog)
-    workflow = workflow_catalog.get(assignment.workflow_id)
-    if workflow is None:
-        return _invalid(
-            "workflow_not_found",
-            f"Workflow '{assignment.workflow_id}' was not found in the supplied catalog.",
-        )
-
-    stage = next(
-        (candidate for candidate in workflow.stages if candidate.id == assignment.stage_id),
-        None,
+    _, role, resolution_failure = _resolve_task_responsibility(
+        task,
+        assignment.stage_id,
+        assignment.role_id,
+        workflow_catalog,
+        role_catalog,
+        catalog_consumer="Assignment validation",
     )
-    if stage is None:
-        return _invalid(
-            "stage_not_found",
-            f"Stage '{assignment.stage_id}' was not found in Workflow "
-            f"'{assignment.workflow_id}'.",
-        )
-
-    _require_valid_role_catalog(role_catalog)
-    role = role_catalog.get(assignment.role_id)
-    if role is None:
-        return _invalid(
-            "role_not_found",
-            f"Role '{assignment.role_id}' was not found in the framework Role catalog.",
-        )
-
-    if assignment.role_id not in stage.required_roles:
-        return _invalid(
-            "role_not_required",
-            f"Stage '{assignment.stage_id}' does not require Role "
-            f"'{assignment.role_id}'.",
-        )
+    if resolution_failure is not None:
+        return _invalid(*resolution_failure)
+    assert role is not None
 
     actors_by_id = {cast(str, actor["id"]): actor for actor in actors}
     actor = actors_by_id.get(assignment.actor_id)
@@ -331,9 +267,18 @@ def validate_assignment_set(
     task_id = cast(str, task["id"])
     duplicate_actor = _duplicate_actor_finding(actors)
 
-    workflow, workflow_finding = _resolve_task_workflow(task, workflow_catalog)
+    workflow, workflow_failure = _resolve_task_workflow(
+        task,
+        workflow_catalog,
+        catalog_consumer="Assignment validation",
+    )
     if workflow is None:
         findings = (duplicate_actor,) if duplicate_actor is not None else ()
+        workflow_finding = (
+            AssignmentFinding(*workflow_failure)
+            if workflow_failure is not None
+            else None
+        )
         if workflow_finding is not None and workflow_finding not in findings:
             findings += (workflow_finding,)
         return AssignmentSetValidationResult(
@@ -344,7 +289,10 @@ def validate_assignment_set(
             separation_findings=(),
         )
 
-    _require_valid_role_catalog(role_catalog)
+    _require_valid_role_catalog(
+        role_catalog,
+        catalog_consumer="Assignment validation",
+    )
     requirements = _requirement_keys(task_id, workflow)
 
     if duplicate_actor is not None:

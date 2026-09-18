@@ -33,6 +33,7 @@ AI Engineering Orchestra enforces a strict separation of concerns across framewo
 | **Quality Gate** | `quality-gates/` | Named validation checkpoints with specific pass/fail criteria. |
 | **Human Control** | `core/human-control.md` | Authority levels, approver identity, approval authority, protected actions, and escalation paths. |
 | **Precedence** | `core/precedence.md` | Conflict resolution and non-weakening rules across authority layers. |
+| **Actor Selection** | `core/actor-selection-specification.md` | Pure deterministic hard-constraint resolution for one required Role responsibility using supplied Actor eligibility and availability evidence. |
 | **Assignment Contract** | `core/assignment-specification.md` | Immutable binding and validation of a caller-selected eligible Actor for one required Role responsibility. |
 | **Execution Contract** | *Future specification* | Provision of runtime context, tools, and permissions to assigned actors. |
 | **External Runtime** | *External execution layer* | Actor execution, graph execution, Agent lifecycle, state, routing, messaging, retries, and pause/resume mechanics. |
@@ -171,8 +172,9 @@ Requirements:
 
 - Optional list of stable Role IDs defined in `roles/`.
 - **References only**: This is NOT actor assignment. It indicates that the governance stage requires the capability and responsibility contract represented by the referenced Role(s).
-- Concrete responsibility binding belongs to the Assignment Contract. Automatic
-  Actor selection remains outside both Workflow and Assignment.
+- Actor Selection is a separate runtime evidence contract. Concrete
+  responsibility binding belongs to the Assignment Contract; neither concern
+  changes Workflow semantics.
 
 Example:
 
@@ -307,9 +309,15 @@ Framework Role Catalog
 Actor-Role Competency Coverage
   └─ compares: supplied Actor -> eligibility evidence
         │
+        + Actor Availability Observation
+        │
+        ▼
+Actor Selection
+  └─ resolves: selected, ambiguous, indeterminate, or no_candidate evidence
+        │
         ▼
 Assignment Contract
-  └─ validates and binds an externally selected eligible Human or Agent actor
+  └─ validates and binds a caller-chosen eligible Human or Agent actor
         │
         ▼
 Future Execution Contract
@@ -322,9 +330,10 @@ Portable validation resolves `required_roles` against the framework-owned Role
 catalog. An unresolved Role ID is semantic cross-resource failure, not a
 Workflow schema rule. If the packaged Role catalog itself is unavailable or
 corrupt, validation reports infrastructure error without per-reference cascades.
-Role resolution and competency coverage alone do not create an Assignment. An
-Assignment additionally records the caller-selected Actor against one concrete
-Task/Workflow/Stage/Role responsibility key.
+Role resolution, competency coverage, availability, and Actor Selection evidence
+do not create an Assignment. Assignment separately records the caller-chosen
+Actor against one concrete Task/Workflow/Stage/Role responsibility key and must
+still pass its own validation.
 
 ### Composition Rules
 

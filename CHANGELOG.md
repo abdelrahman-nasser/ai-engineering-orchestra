@@ -49,6 +49,10 @@ Status: In Development
 - canonical two-field Actor Availability Observation specification and schema
 - immutable availability values and pure snapshot validation with explicit
   unknown normalization and deterministic duplicate handling
+- canonical Actor Selection specification and pure deterministic runtime
+  resolution with selected, ambiguous, indeterminate, and no-candidate outcomes
+- immutable Actor-ID selection evidence composed from existing competency
+  coverage and normalized availability, without ranking or Assignment creation
 - canonical Workflow specification in `core/workflow-specification.md`
 - initial canonical engineering Workflow library in `workflows/` (`standard-change`, `architecture-change`, `security-sensitive-change`)
 - normalized Workflow JSON Schema in `schemas/workflow.schema.json`
@@ -78,6 +82,9 @@ Status: In Development
 - separated ephemeral Actor availability observations from Actor identity,
   competency eligibility, Assignment validity, authority, execution, Provider
   state, persistence, and selection
+- separated deterministic Actor Selection decision evidence from Assignment,
+  authorization, reservation, execution, Quality Gate results, Provider/model
+  routing, persistence, and Selection Policy
 - established the Role authority hierarchy from semantic specification to
   structural schema, canonical YAML instances, compatibility Markdown, and
   regression tooling

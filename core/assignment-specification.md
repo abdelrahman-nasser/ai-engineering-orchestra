@@ -13,9 +13,10 @@ An **Assignment** is an immutable, provider-neutral value binding one concrete
 Actor identity to one Role required at one Stage of the Workflow explicitly
 governing one Task.
 
-Assignment records an externally made responsibility choice. It answers **who
-has been selected for this responsibility?** It does not choose, rank, recommend,
-authorize, execute, or persist an Actor.
+Assignment records a responsibility choice made outside the Assignment contract,
+whether directly by a caller or after considering Actor Selection evidence. It
+answers **who has been selected for this responsibility?** It does not choose,
+rank, recommend, authorize, execute, or persist an Actor.
 
 ```text
 Assignment = responsibility binding
@@ -33,6 +34,9 @@ The following concepts remain separate:
 - **Role** declares a reusable responsibility and required competencies.
 - **Actor** identifies a concrete Human or Agent candidate and its competencies.
 - **Actor-Role competency coverage** establishes eligibility evidence.
+- **Actor Availability Observation** supplies ephemeral availability evidence.
+- **Actor Selection** resolves hard eligibility and availability constraints into
+  decision evidence without creating an Assignment.
 - **Assignment** records which eligible Actor was selected for one responsibility.
 - **Execution Policy** may later define how assigned work should be performed.
 - **Execution Session** is actual execution and is not defined by AIO-023.
@@ -41,12 +45,15 @@ The following concepts remain separate:
 
 ```text
 eligible != assigned
+selected != assigned
 assigned != authorized
 Assignment valid != Quality Gate PASS
 Assignment complete != Workflow complete
 ```
 
 An Assignment never selects a substitute when its named Actor is incompatible.
+A caller constructing an Assignment from a `selected` Actor Selection result must
+still pass this contract's validation.
 
 ---
 

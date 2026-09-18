@@ -57,6 +57,7 @@ Use these locations as authoritative sources:
 - Actor schema: `schemas/actor.schema.json` — machine-readable structural validation of the Actor contract; semantically subordinate to `core/actor-specification.md`.
 - Actor Availability Observation specification: `core/actor-availability-specification.md` — authoritative semantic contract for ephemeral Actor availability observations and snapshot validation; governs semantics if it conflicts with the Actor Availability Observation schema.
 - Actor Availability Observation schema: `schemas/actor-availability.schema.json` — machine-readable structural validation of the Actor Availability Observation contract; semantically subordinate to `core/actor-availability-specification.md`.
+- Actor Selection specification: `core/actor-selection-specification.md` — authoritative semantic contract for pure deterministic Actor candidate resolution; Actor Selection is derived in-memory evidence and has no serialized schema in AIO-025.
 - Assignment specification: `core/assignment-specification.md` — authoritative semantic contract for immutable Actor responsibility bindings and Assignment validation; governs semantics if it conflicts with the Assignment schema.
 - Assignment schema: `schemas/assignment.schema.json` — machine-readable structural validation of the Assignment contract; semantically subordinate to `core/assignment-specification.md`.
 - Workflow specification: `core/workflow-specification.md` — authoritative semantic contract for Workflows; governs semantics if it conflicts with the Workflow schema.

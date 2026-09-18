@@ -148,6 +148,22 @@ contract is defined in:
 
 ---
 
+## Actor Selection
+
+Pure, deterministic, Provider-neutral resolution of one valid
+Task/Workflow/Stage/Role responsibility against a caller-supplied Actor set and
+availability snapshot, using exact competency coverage and availability facts
+only.
+
+Actor Selection produces decision evidence with exactly one of `selected`,
+`ambiguous`, `indeterminate`, or `no_candidate` for valid input. It does not rank,
+assign, authorize, reserve, or execute Actors. The canonical contract is defined
+in:
+
+`core/actor-selection-specification.md`
+
+---
+
 ## Assignment
 
 An immutable, Provider-neutral value binding one concrete Actor identity to one

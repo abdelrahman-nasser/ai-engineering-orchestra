@@ -240,10 +240,12 @@ availability, quotas, credentials, or personal data as canonical Actor data.
 AIO-021 defines no `.ai/actors/` directory, Actor catalog, Actor profile, or Actor
 instance contract.
 
-Future selection may consider both competency compatibility and an ephemeral
-Actor Availability Observation. Availability remains runtime state and is not
-part of Actor identity. Its separate canonical contract is defined in
-`core/actor-availability-specification.md`.
+Actor Selection composes competency compatibility with an ephemeral Actor
+Availability Observation for one caller-supplied candidate set and snapshot.
+Selection remains separate decision evidence and does not change Actor identity.
+The separate canonical contracts are defined in
+`core/actor-availability-specification.md` and
+`core/actor-selection-specification.md`.
 
 ---
 

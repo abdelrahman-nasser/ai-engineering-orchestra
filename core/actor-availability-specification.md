@@ -75,7 +75,7 @@ lifecycle states.
 ### `available`
 
 The current observation positively indicates that the Actor may be considered
-by a future selector from an availability perspective.
+by Actor Selection from an availability perspective.
 
 It does not establish competency eligibility, Assignment, authority,
 permission, approval, or execution.
@@ -83,7 +83,7 @@ permission, approval, or execution.
 ### `unavailable`
 
 The current observation positively indicates that the Actor must not currently
-be treated as available by a future selector.
+be treated as available by Actor Selection.
 
 It does not permanently disable the Actor, change Actor identity or
 competencies, invalidate an Assignment, or describe an execution lifecycle.
@@ -97,7 +97,7 @@ unavailable.
 unknown != unavailable
 ```
 
-A future selector must preserve this distinction.
+Actor Selection must preserve this distinction.
 
 ---
 
@@ -178,8 +178,10 @@ choice. Assignment validity does not depend on current availability, and an
 unavailable or unknown Actor may still appear in an externally supplied
 historical or future Assignment.
 
-This contract performs no selection, ranking, recommendation, or Assignment
-generation.
+Actor Selection may consume the normalized snapshot together with separate
+competency eligibility evidence. Its outcome semantics belong to
+`core/actor-selection-specification.md`; this Availability contract itself
+performs no selection, ranking, recommendation, or Assignment generation.
 
 ---
 
@@ -230,9 +232,9 @@ Actor Availability Observation does not define or contain:
 - reservations, schedules, load, quota, capacity, or concurrency
 - persistence, availability history, Actor catalogs, or background monitoring
 - competency eligibility composition
-- Actor selection, ranking, recommendation, or tie behavior
+- Actor Selection logic, ranking, recommendation, or tie behavior
 - Assignment creation, mutation, or validation changes
-- selected, ambiguous, indeterminate, or no-candidate outcomes
+- selected, ambiguous, indeterminate, or no-candidate outcome definitions
 - Task Assessment, Model Tier, Quality Gate, or CLI behavior
 
 ---

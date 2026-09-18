@@ -198,10 +198,43 @@ no selection, persistence, Provider integration, polling, or network access. The
 semantic contract is defined in
 [`core/actor-availability-specification.md`](core/actor-availability-specification.md).
 
+## Actor Selection
+
+Actor Selection combines one resolved Task/Workflow/Stage/Role responsibility,
+exact Actor competency coverage, and a caller-supplied availability snapshot:
+
+```python
+from engineering_orchestration.actor_selection import select_actor
+
+result = select_actor(
+    task,
+    stage_id="implement",
+    role_id="software-engineer",
+    workflow_catalog=workflow_catalog,
+    role_catalog=role_catalog,
+    actors=actors,
+    availability_observations=observations,
+)
+print(result.valid, result.outcome, result.selected_actor_id)
+```
+
+Valid outcomes are exactly `selected`, `ambiguous`, `indeterminate`, and
+`no_candidate`. One eligible available Actor is selected only when no other
+eligible Actor has unknown availability; available plus unknown is
+`indeterminate`, while two available Actors are `ambiguous` even when another is
+unknown. Actor-ID evidence is sorted for deterministic output, never preference
+or ranking.
+
+Selection is scoped to the supplied Actors and supplied snapshot. It creates no
+Assignment and grants no authority, reservation, execution permission, or
+Quality Gate result. A caller-built Assignment still requires AIO-023
+validation. The semantic contract is
+[`core/actor-selection-specification.md`](core/actor-selection-specification.md).
+
 ## Assignment Responsibility Bindings
 
-An Assignment records one externally selected Actor for one required
-Task/Workflow/Stage/Role responsibility:
+An Assignment records one Actor selected outside the Assignment contract for one
+required Task/Workflow/Stage/Role responsibility:
 
 ```python
 from engineering_orchestration.assignment import (

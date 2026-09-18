@@ -428,16 +428,25 @@ Specifically:
 Execution Mode (`core/task-specification.md`) and Workflow are **orthogonal** concepts in AI Engineering Orchestra v0.1:
 
 - **Workflow**: Defines the sequence of governance stages, required Roles, and Quality Gates for a *class of engineering work* (e.g., standard change, architecture change).
-- **Execution Mode**: Defines the *depth of engineering process and agent autonomy* applied to an individual Task (`lite`, `standard`, `deep`, `critical`).
+- **Execution Mode**: Defines the Provider-neutral, Task-wide minimum depth,
+  rigor, evidence discipline, analysis and decomposition, and bounded
+  self-direction applied inside the already-selected Workflow (`lite`,
+  `standard`, `deep`, `critical`).
 
 In v0.1:
 
 - Workflows do not define mode-specific stage counts.
 - Workflows are not selected by Execution Mode.
 - No mode-to-Workflow mapping matrix exists.
-- Execution Mode does not alter the ordered stages of a Workflow.
+- Execution Mode does not add, remove, or reorder Workflow stages.
+- Execution Mode does not change required Roles, Quality Gates, or Human-control
+  checkpoints, and it does not establish their results.
+- Workflows, Stages, and Roles neither override nor imply a Task mode.
 
-The interaction between Execution Mode and Workflow stages (such as adjusting review depth or resource allocation) remains deferred to future runtime and routing specifications.
+The effective mode governs only how deeply each inherited responsibility is
+performed within unchanged Workflow choreography. Bounded self-direction never
+grants authority, permission, or approval. Detailed order, satisfaction, and
+mode posture semantics are owned by `core/task-specification.md`.
 
 ---
 

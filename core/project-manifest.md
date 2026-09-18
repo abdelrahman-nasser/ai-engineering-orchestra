@@ -311,7 +311,9 @@ Allowed values:
 
 Task-specific Complexity overrides the Project default where permitted.
 
-Complexity remains independent from Risk.
+Complexity describes inherent work demand and remains independent from Risk and
+Execution Mode. The default does not select a Workflow, mode, model, authority,
+or approval policy.
 
 ---
 
@@ -340,13 +342,17 @@ Allowed values:
 
 Task-specific Risk overrides the Project default where permitted.
 
-Risk remains independent from Complexity.
+Risk describes potential impact if execution is wrong and remains independent
+from Complexity and Execution Mode. Explicit Policies may use Risk to require
+stronger validation, review, Human oversight, or safety controls; the default
+does not automatically select a Workflow, mode, model, or Provider option.
 
 ---
 
 ## 12. `execution`
 
-Defines the default Execution Mode.
+Defines the Project default for the Task-wide minimum required
+engineering-execution posture.
 
 Example:
 
@@ -367,9 +373,28 @@ Allowed values:
 - the section is required
 - `default_mode` is required
 
-A Task may select a different Execution Mode when permitted by applicable Policies and Workflows.
+The canonical process-depth order is:
+
+```text
+lite < standard < deep < critical
+```
+
+A mode satisfies itself and every lower minimum. Detailed mode semantics and
+satisfaction rules are defined by `core/task-specification.md`.
+
+When a Task declares `execution.mode`, that explicit value takes precedence over
+this default. Otherwise the Task inherits `execution.default_mode`. There is no
+additional fallback or inference from Complexity, Risk, Workflow, Stage, or Role.
+
+All responsibilities inherit the effective Task mode. The Project Manifest has
+no Stage-, Role-, or responsibility-specific override.
 
 A lower Execution Mode must not silently weaken protected requirements.
+
+Execution Mode changes depth within an already-selected Workflow. It does not
+select or restructure that Workflow, change Roles, Quality Gates, or
+Human-control checkpoints, grant authority, satisfy approval, or map to a
+Provider/model option or Provider reasoning setting.
 
 ---
 

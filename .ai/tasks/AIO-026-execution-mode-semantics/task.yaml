@@ -1,0 +1,43 @@
+id: AIO-026
+title: Clarify Execution Mode Semantics and Reconcile Model Tier
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: medium
+execution:
+  mode: deep
+workflow: architecture-change
+objective: >
+  Define precise Provider-neutral semantics for existing Task Complexity, Risk,
+  and Execution Mode so future option inventory and routing work can consume
+  them without hidden interpretation, while deprecating ambiguous Model Tier
+  terminology.
+scope:
+  include:
+    - Canonical separation of Complexity, Risk, and Execution Mode
+    - Ordered minimum Execution Mode posture and satisfaction semantics
+    - Task-wide inheritance and Workflow, authority, approval, and Gate boundaries
+    - Model Tier deprecation without a replacement enum
+    - Minimal pure ordering helper and focused regression tests
+    - Current-state documentation, packaging checks, and Task evidence
+  exclude:
+    - Responsibility Execution Requirements or Responsibility context contracts
+    - Task Assessment, Complexity inference, Risk inference, or mode inference
+    - Provider or model inventory, mapping, selection, routing, or invocation
+    - Provider reasoning controls, cost, latency, quota, or context mapping
+    - Stage, Role, or responsibility Execution Mode overrides
+    - Workflow schema, YAML instance, runtime, or selection changes
+    - Role, Actor, Availability, Selection, or Assignment contract/runtime changes
+    - Authorization, permissions, Quality Gate results, or Execution Contracts
+    - New schemas, new Quality Gates, Provider Adapters, or AIO-027
+dependencies:
+  - AIO-025
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

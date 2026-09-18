@@ -577,6 +577,134 @@ class TestInspectTask(unittest.TestCase):
         report = format_report(result)
         self.assertIn("Risk: medium (inherited: project)", report)
 
+    def test_metadata_overrides_are_independent(self) -> None:
+        """Verify each explicit Task value overrides only its matching Project default."""
+        with self.project_manifest_path.open("w", encoding="utf-8") as file:
+            yaml.safe_dump(
+                create_minimal_project_manifest(
+                    default_complexity="low",
+                    default_risk="critical",
+                    default_mode="lite",
+                ),
+                file,
+            )
+
+        cases = (
+            ("complexity", "high"),
+            ("risk", "low"),
+            ("execution", "deep"),
+        )
+        for explicit_field, explicit_value in cases:
+            with self.subTest(explicit_field=explicit_field):
+                data = create_minimal_valid_task_yaml()
+                del data["complexity"]
+                del data["risk"]
+                del data["execution"]
+                if explicit_field == "execution":
+                    data[explicit_field] = {"mode": explicit_value}
+                else:
+                    data[explicit_field] = explicit_value
+                self._populate_canonical_artifacts(data)
+
+                result = inspect_task(
+                    self.task_dir, project_manifest_path=self.project_manifest_path
+                )
+                expected = {
+                    "complexity": (
+                        "high" if explicit_field == "complexity" else "low",
+                        "task" if explicit_field == "complexity" else "project",
+                    ),
+                    "risk": (
+                        "low" if explicit_field == "risk" else "critical",
+                        "task" if explicit_field == "risk" else "project",
+                    ),
+                    "execution_mode": (
+                        "deep" if explicit_field == "execution" else "lite",
+                        "task" if explicit_field == "execution" else "project",
+                    ),
+                }
+                self.assertEqual(
+                    (result.complexity, result.complexity_source),
+                    expected["complexity"],
+                )
+                self.assertEqual(
+                    (result.risk, result.risk_source), expected["risk"]
+                )
+                self.assertEqual(
+                    (result.execution_mode, result.execution_mode_source),
+                    expected["execution_mode"],
+                )
+
+    def test_workflow_does_not_determine_inherited_execution_mode(self) -> None:
+        """Verify distinct Workflows inherit the same independent Project mode."""
+        stage_counts = {}
+        for workflow in ("standard-change", "architecture-change"):
+            data = create_minimal_valid_task_yaml(workflow=workflow)
+            del data["execution"]
+            self._populate_canonical_artifacts(data)
+            result = inspect_task(
+                self.task_dir, project_manifest_path=self.project_manifest_path
+            )
+            self.assertTrue(result.is_valid)
+            self.assertEqual(result.execution_mode, "standard")
+            self.assertEqual(result.execution_mode_source, "project")
+            stage_counts[workflow] = result.workflow_stages_count
+
+        self.assertEqual(
+            stage_counts,
+            {"standard-change": 4, "architecture-change": 5},
+        )
+
+    def test_execution_mode_does_not_choose_workflow(self) -> None:
+        """Verify explicit modes do not create a Workflow binding."""
+        for mode in ("lite", "critical"):
+            with self.subTest(mode=mode):
+                data = create_minimal_valid_task_yaml(execution_mode=mode)
+                self._populate_canonical_artifacts(data)
+                result = inspect_task(
+                    self.task_dir, project_manifest_path=self.project_manifest_path
+                )
+                self.assertTrue(result.is_valid)
+                self.assertEqual(result.execution_mode, mode)
+                self.assertIsNone(result.workflow)
+                self.assertIsNone(result.workflow_resolution)
+
+    def test_execution_mode_does_not_change_workflow_governance(self) -> None:
+        """Verify mode changes leave Workflow, Gate, and Human Control facts intact."""
+        snapshots = []
+        for mode in ("lite", "critical"):
+            data = create_minimal_valid_task_yaml(
+                execution_mode=mode,
+                quality_gates=["task_specific_gate"],
+                human_control={"final_review_required": False},
+                workflow="architecture-change",
+            )
+            self._populate_canonical_artifacts(data)
+            result = inspect_task(
+                self.task_dir, project_manifest_path=self.project_manifest_path
+            )
+            self.assertTrue(result.is_valid)
+            self.assertEqual(result.execution_mode, mode)
+            self.assertIn("task_specific_gate", result.effective_quality_gates)
+            self.assertIn(
+                "independent_review", result.effective_quality_gates
+            )
+            self.assertTrue(
+                result.effective_human_control["final_review_required"][0]
+            )
+            snapshots.append(
+                (
+                    result.workflow,
+                    result.workflow_stages_count,
+                    result.workflow_checkpoints,
+                    result.workflow_required_gates,
+                    result.effective_quality_gates,
+                    result.effective_human_control,
+                )
+            )
+
+        self.assertEqual(snapshots[0], snapshots[1])
+
 
 if __name__ == "__main__":
     unittest.main()

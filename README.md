@@ -94,6 +94,43 @@ This is an explicitly authorized local-installability experiment. It does not
 complete the future public distribution milestone. No PyPI publication, public
 name reservation, release automation, or full CLI lifecycle is provided.
 
+## Execution Mode Semantics
+
+Task Execution Mode is a Provider-neutral, Task-wide minimum engineering posture
+inside an already-selected Workflow. The normative process-depth order is:
+
+```text
+lite < standard < deep < critical
+```
+
+A higher posture satisfies a lower minimum. The order controls cumulative rigor,
+analysis and decomposition, evidence discipline, validation depth, and bounded
+self-direction only. It does not choose or restructure a Workflow, change Roles,
+Quality Gates, or Human controls, grant authority, or map directly to a Provider,
+model, runtime, or reasoning setting. Human and Agent responsibilities inherit
+the same effective Task mode.
+
+Every mode description is a cumulative minimum floor, not a ceiling: `standard`
+includes `lite`, `deep` includes `standard`, and `critical` includes `deep`.
+Selecting a lighter minimum never prohibits additional rigor; it means only that
+the extra obligations of higher modes are not required.
+
+The pure relation is available to runtime consumers without a policy or routing
+engine:
+
+```python
+from engineering_orchestration.execution_mode import execution_mode_satisfies
+
+assert execution_mode_satisfies("deep", "standard")
+```
+
+Complexity, Risk, and Execution Mode remain independent values with explicit
+Task values taking precedence over their matching Project defaults. The former
+Model Tier values (`fast`, `standard`, `high`) are deprecated and non-consumable;
+no replacement tier or routing behavior exists pending evidence-backed option
+inventory research. Canonical semantics are defined in
+[`core/task-specification.md`](core/task-specification.md#15-execution).
+
 ## Installed Structural Validation
 
 The programmatic API reads the nearest active project's supported AIO structures:

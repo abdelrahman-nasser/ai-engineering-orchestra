@@ -338,7 +338,9 @@ When present:
 
 ## 13. `complexity`
 
-`complexity` describes the amount of reasoning, coordination, decomposition, or engineering depth expected for the Task.
+`complexity` is a descriptive property of what the work inherently demands. It
+captures expected reasoning difficulty, engineering depth, coordination,
+decomposition, and problem complexity.
 
 Allowed values:
 
@@ -363,13 +365,16 @@ complexity.default
 
 in the Project Manifest (`.ai/project.yaml`).
 
-Complexity remains independent from Risk.
+Complexity remains independent from Risk and Execution Mode. It is not a model
+tier, Provider reasoning setting, authorization level, approval policy, or
+Workflow selector. No Complexity value automatically selects a mode, Workflow,
+model, or authority level.
 
 ---
 
 ## 14. `risk`
 
-`risk` describes the potential impact of incorrect execution.
+`risk` describes the potential impact if Task execution is wrong.
 
 Allowed values:
 
@@ -398,6 +403,11 @@ Risk remains independent from Complexity.
 
 A low-Complexity Task may still be high Risk.
 
+Applicable Policies and other authoritative rules may use Risk to require
+stronger validation, review, Human oversight, or safety controls. Risk alone
+does not automatically select an Execution Mode, Workflow, model, or Provider
+option.
+
 ---
 
 ## 15. `execution`
@@ -413,6 +423,12 @@ execution:
 
 ### `execution.mode`
 
+`execution.mode` is the Provider-neutral, Task-wide **minimum required
+engineering-execution posture** within the already selected Workflow. It covers
+cumulative process depth, rigor, analysis and decomposition, evidence
+discipline, and bounded self-direction. It is not an exact ceiling and is not a
+Task classification.
+
 Allowed values:
 
 - `lite`
@@ -427,6 +443,82 @@ execution.default_mode
 ```
 
 from the Project Manifest (`.ai/project.yaml`).
+
+An explicit Task value takes precedence over the Project default. Complexity,
+Risk, Workflow, Stage, and Role do not infer or automatically determine that
+value.
+
+#### Normative order and satisfaction
+
+The canonical order is exactly:
+
+```text
+lite < standard < deep < critical
+```
+
+The declared or inherited mode is a minimum. A posture satisfies a requirement
+when it is the same mode or a higher mode in this order. Therefore `deep`
+satisfies a `standard` minimum, every mode satisfies itself, and `standard` does
+not satisfy a `deep` minimum. Values outside the closed set are invalid.
+
+This order expresses process depth only. It is not an ordering of authority,
+permission, Human approval, cost, latency, model strength, or guaranteed quality.
+
+#### Mode postures
+
+Each description below is a cumulative minimum obligation, not a maximum. A
+lighter mode identifies which additional obligations are not required; it never
+prohibits an Actor from applying more rigor, analysis, decomposition, evidence,
+validation, or bounded self-direction when useful.
+
+| Mode | Required engineering/process posture |
+| --- | --- |
+| `lite` | The smallest floor for well-bounded work: a coherent direct path, sufficient relevant context and evidence, proportionate validation, and the decomposition needed for coherence. It expects narrowly bounded self-direction and avoids unnecessary ceremony. |
+| `standard` | Includes `lite`, plus the disciplined baseline of explicit planning, execution, validation, and self-checking. It expects routine bounded self-direction and explicit evidence for material claims. |
+| `deep` | Includes `standard`, plus deliberate decomposition, trade-off and edge-case analysis, broader evidence gathering, and probing validation. It expects sustained bounded self-direction in investigating and testing the work. |
+| `critical` | Includes `deep`, plus the strongest scrutiny, assumption challenge, failure and safety analysis, traceability, corroboration, and conservative escalation. It expects the strongest bounded self-direction while escalating unresolved uncertainty. |
+
+Expected autonomy in this table means only bounded self-direction within
+already-established scope, authority, permissions, Policies, and Human controls.
+It does not grant an Actor authority or permission.
+
+#### Task-wide scope
+
+Execution Mode applies to both Human and Agent Actors as an engineering-process
+posture. Every responsibility currently inherits the effective Task mode.
+
+The v0.1 contract has no Stage-, Role-, or responsibility-specific mode field or
+override. A mode must not be inferred from `stage_id`, `role_id`, Role name, or
+Role capabilities. This does not prohibit a future contract from introducing
+more granular requirements; no such contract exists now.
+
+#### Orthogonality and control boundaries
+
+Workflow owns governance choreography. Execution Mode changes the depth with
+which Actors work inside that already-selected choreography. It does not:
+
+- select a Workflow;
+- add, remove, or reorder Workflow Stages;
+- change required Roles, Quality Gate definitions, or Human-control checkpoints;
+- establish a Quality Gate result;
+- satisfy, waive, or weaken a Human approval requirement;
+- grant authorization, permission, tool access, network access, or credentials;
+- map to a Provider, model, runtime, or Provider reasoning control; or
+- change Actor competency coverage, availability, Selection, or Assignment.
+
+For example, this combination is valid:
+
+```yaml
+complexity: high
+risk: critical
+execution:
+  mode: standard
+```
+
+The values need not rise together because Complexity describes inherent work
+demand, Risk describes impact if execution is wrong, and Execution Mode
+prescribes the minimum execution posture. Any stronger safeguards required for
+the critical Risk must come from explicit applicable Policies or requirements.
 
 A lower Task Execution Mode must not weaken:
 

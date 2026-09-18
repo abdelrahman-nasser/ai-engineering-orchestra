@@ -53,6 +53,8 @@ Status: In Development
   resolution with selected, ambiguous, indeterminate, and no-candidate outcomes
 - immutable Actor-ID selection evidence composed from existing competency
   coverage and normalized availability, without ranking or Assignment creation
+- immutable canonical Execution Mode order and pure minimum-satisfaction helper
+  with schema-synchronization, relation, inheritance, and Workflow-invariance tests
 - canonical Workflow specification in `core/workflow-specification.md`
 - initial canonical engineering Workflow library in `workflows/` (`standard-change`, `architecture-change`, `security-sensitive-change`)
 - normalized Workflow JSON Schema in `schemas/workflow.schema.json`
@@ -85,6 +87,15 @@ Status: In Development
 - separated deterministic Actor Selection decision evidence from Assignment,
   authorization, reservation, execution, Quality Gate results, Provider/model
   routing, persistence, and Selection Policy
+- defined Execution Mode as a Provider-neutral, Task-wide minimum engineering
+  posture ordered `lite < standard < deep < critical`, with higher modes
+  satisfying lower minimums
+- separated Complexity, Risk, and Execution Mode from automatic Workflow,
+  Provider/model, authority, approval, and Quality Gate mappings
+- established that mode changes depth inside unchanged Workflow choreography and
+  provides no Stage-, Role-, or responsibility-specific override
+- deprecated the mixed-axis Model Tier values as non-consumable pending
+  evidence-backed Provider/model option inventory research
 - established the Role authority hierarchy from semantic specification to
   structural schema, canonical YAML instances, compatibility Markdown, and
   regression tooling

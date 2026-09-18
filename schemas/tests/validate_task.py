@@ -21,6 +21,7 @@ SCHEMA_PATH = REPO_ROOT / "schemas" / "task.schema.json"
 FIXTURE_DIR = REPO_ROOT / "schemas" / "tests" / "task"
 
 CANONICAL_TASKS = [
+    REPO_ROOT / ".ai" / "tasks" / "AIO-026-execution-mode-semantics" / "task.yaml",
     REPO_ROOT / ".ai" / "tasks" / "AIO-025-minimal-actor-selection" / "task.yaml",
     REPO_ROOT / ".ai" / "tasks" / "AIO-024-actor-availability-observation" / "task.yaml",
     REPO_ROOT / ".ai" / "tasks" / "AIO-023-assignment-foundation" / "task.yaml",
@@ -68,6 +69,9 @@ FIXTURE_CASES: dict[str, ExpectedFailure | None] = {
     ),
     "invalid-empty-scope-include.yaml": ExpectedFailure(
         "minItems", ("scope", "include")
+    ),
+    "invalid-execution-mode.yaml": ExpectedFailure(
+        "enum", ("execution", "mode")
     ),
     "invalid-human-control-field.yaml": ExpectedFailure(
         "additionalProperties", ("human_control",)

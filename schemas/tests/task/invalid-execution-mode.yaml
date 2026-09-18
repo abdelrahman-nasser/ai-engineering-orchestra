@@ -1,0 +1,14 @@
+id: INVALID-EXECUTION-MODE
+title: Invalid Execution Mode
+type: implementation
+status: planned
+
+execution:
+  mode: exhaustive
+
+objective: >
+  Demonstrate rejection of an unsupported Task Execution Mode.
+
+scope:
+  include:
+    - invalid execution mode example

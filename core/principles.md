@@ -70,17 +70,21 @@ Examples include:
 
 ---
 
-## P8 — Risk Controls Process Depth
+## P8 — Risk Drives Explicit Safeguards
 
-Engineering process depth must scale with Risk.
+Risk describes the impact if execution is wrong. Applicable Policies may require
+validation, review, Human oversight, and safety controls to scale with Risk.
 
 Low-risk work should remain lightweight.
 
 High-risk work requires stronger validation, review, and Human control.
 
+Risk alone does not automatically select an Execution Mode, Workflow, Provider,
+or model.
+
 ---
 
-## P9 — Complexity Controls Resource Depth
+## P9 — Complexity Describes Engineering Demand
 
 More complex Tasks may justify:
 
@@ -91,6 +95,10 @@ More complex Tasks may justify:
 - deeper analysis
 
 Simple Tasks should not unnecessarily consume expensive models or many Agents.
+
+Complexity is descriptive. It may inform explicit Human or orchestrator judgment.
+Absent an explicit Policy or contract, it must not create an automatic or
+deterministic mapping to resources, Workflow, Execution Mode, or Human controls.
 
 ---
 
@@ -163,9 +171,9 @@ Loss of a preferred model, Provider, quota, or Capability must not corrupt the e
 
 Future Orchestra versions should support:
 
-- fallback
+- fallback that still satisfies the Task's minimum Execution Mode
 - escalation
-- reduced execution modes
+- explicit Human-controlled replanning when a requirement cannot be satisfied
 - Human handoff
 
 ---

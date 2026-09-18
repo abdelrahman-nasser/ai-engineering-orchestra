@@ -117,7 +117,8 @@ Task:
 
 critical authentication change
 
-The Task may still require a deep or critical Workflow even though the project is in Maintenance mode.
+The Task may still require `deep` or `critical` as its minimum Execution Mode
+even though the Project is in Maintenance mode.
 
 ---
 

@@ -235,7 +235,7 @@ Actor Availability Observation does not define or contain:
 - Actor Selection logic, ranking, recommendation, or tie behavior
 - Assignment creation, mutation, or validation changes
 - selected, ambiguous, indeterminate, or no-candidate outcome definitions
-- Task Assessment, Model Tier, Quality Gate, or CLI behavior
+- Task Assessment, the deprecated Model Tier concept, Quality Gate, or CLI behavior
 
 ---
 

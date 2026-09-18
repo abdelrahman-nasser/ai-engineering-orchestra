@@ -174,10 +174,22 @@ Examples:
 
 - require deeper review
 - require additional tests
-- force a Task into Deep mode
+- raise the Task's minimum Execution Mode to `deep`
 - reduce Agent parallelism
 
 Protected safety or security constraints cannot be silently weakened unless the applicable Policy explicitly allows such an exception.
+
+### Execution Mode Boundary
+
+A Human may raise a Task's minimum Execution Mode, but selecting or satisfying
+any mode does not grant authority or permission and does not create, satisfy,
+waive, or weaken a Human approval requirement. This remains true for `deep` and
+`critical` modes and for both Human and Agent Actors.
+
+Execution Mode governs bounded self-direction and engineering-process depth only.
+File modification, shell or network use, credential access, tool invocation, and
+other protected actions remain governed by applicable authority, permission,
+Policy, and approval rules.
 
 ---
 

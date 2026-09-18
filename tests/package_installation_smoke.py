@@ -118,6 +118,7 @@ def main() -> None:
                     names = archive.namelist()
                     modules = {f"engineering_orchestration/{name}" for name in
                                ("__init__.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_selection.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
+                                "execution_mode.py",
                                 "verify_repo.py", "workflow_catalog.py", "role_catalog.py", "schema_resources.py",
                                 "project.py", "validation.py", "project_verification.py")}
                     schemas = {f"engineering_orchestration/_schemas/{name}" for name in
@@ -146,6 +147,7 @@ import engineering_orchestration.actor_availability as actor_availability
 import engineering_orchestration.actor_coverage as actor_coverage
 import engineering_orchestration.actor_selection as actor_selection
 import engineering_orchestration.assignment as assignment
+import engineering_orchestration.execution_mode as execution_mode
 import engineering_orchestration.project_verification as project_verification
 import engineering_orchestration.role_catalog as role_catalog
 from engineering_orchestration.workflow_catalog import load_workflow_catalog
@@ -178,6 +180,10 @@ assignment_result = assignment.validate_assignment_set(
     workflow_catalog, catalog, [actor])
 role_source = role_catalog.find_default_roles_resource()
 print(json.dumps({'module': cli.__file__,
+    'execution_mode_module': execution_mode.__file__,
+    'execution_mode_order': execution_mode.EXECUTION_MODE_ORDER,
+    'critical_satisfies_deep': execution_mode.execution_mode_satisfies(
+        'critical', 'deep'),
     'availability_module': actor_availability.__file__,
     'actor_module': actor_coverage.__file__,
     'selection_module': actor_selection.__file__,
@@ -216,6 +222,8 @@ print(json.dumps({'module': cli.__file__,
             if mode == "normal":
                 require(Path(evidence["module"]).resolve().is_relative_to(environment),
                         "Normal install imports leaked to source")
+                require(Path(evidence["execution_mode_module"]).resolve().is_relative_to(environment),
+                        "Normal Execution Mode import leaked to source")
                 require(Path(evidence["runner_module"]).resolve().is_relative_to(environment),
                         "Normal runner import leaked to source")
                 require(Path(evidence["availability_module"]).resolve().is_relative_to(environment),
@@ -236,6 +244,9 @@ print(json.dumps({'module': cli.__file__,
                 require(all(not Path(p).resolve().is_relative_to(ROOT) for p in evidence["sys_path"] if p),
                         "Checkout unexpectedly present on sys.path")
             require(evidence["role_valid"], "Installed Role catalog is invalid")
+            require(evidence["execution_mode_order"] == ["lite", "standard", "deep", "critical"]
+                    and evidence["critical_satisfies_deep"],
+                    "Installed Execution Mode semantics are incorrect")
             require(evidence["role_ids"] == ["architect", "documentation-specialist", "reviewer",
                                              "security-reviewer", "software-engineer"],
                     "Installed Role IDs differ from canonical catalog")

@@ -60,15 +60,15 @@ Projects should avoid directly depending on specific model names where possible.
 
 ## Model Tier
 
-An abstract capability or reasoning level.
+**Deprecated.** Model Tier previously described the values `fast`, `standard`,
+and `high` as one supposed capability or reasoning scale. Those values mix
+latency and capability dimensions, so they are withdrawn and non-consumable.
 
-Initial tiers:
-
-- fast
-- standard
-- high
-
-Provider Adapters may map tiers to actual Provider models.
+Model Tier has no active semantics, schema, ordering, runtime behavior, or
+routing behavior. It is not Execution Mode and is not a Provider reasoning
+setting. Consumers must not use the former values for matching or routing until
+evidence-backed Provider/model inventory research establishes stable option-side
+dimensions through a future contract. No replacement enum is defined in v0.1.
 
 ---
 
@@ -598,7 +598,9 @@ The Orchestra must never design a Workflow where AI authority silently exceeds e
 
 ## Complexity
 
-An estimate of how difficult a Task is to understand and implement.
+A descriptive property of what the work inherently demands: expected reasoning
+difficulty, engineering depth, coordination, decomposition, and problem
+complexity.
 
 Initial levels:
 
@@ -607,13 +609,15 @@ Initial levels:
 - high
 - critical
 
-Complexity is independent from Risk.
+Complexity is independent from Risk and Execution Mode. It is not a model tier,
+Provider reasoning setting, authorization level, approval policy, or Workflow
+selector. No Complexity value automatically determines any of those concepts.
 
 ---
 
 ## Risk
 
-The potential impact if a Task is implemented incorrectly.
+The potential impact if Task execution is wrong.
 
 Initial levels:
 
@@ -622,28 +626,67 @@ Initial levels:
 - high
 - critical
 
-A Task may have low Complexity but critical Risk.
+A Task may have low Complexity but critical Risk. Risk may cause stronger
+validation, review, Human oversight, or safety controls only when an applicable
+Policy or other authoritative rule says so. Risk does not automatically select
+an Execution Mode, Workflow, model, or Provider option.
 
 ---
 
 ## Execution Mode
 
-The depth of engineering process applied to a Task.
+A Provider-neutral, Task-wide minimum required engineering-execution posture
+within the already selected Workflow. It governs cumulative process depth,
+rigor, analysis and decomposition, evidence discipline, and bounded
+self-direction. It is neither an exact ceiling nor a Task classification.
 
-Initial modes:
+The modes have this normative process-depth order:
 
-- lite
-- standard
-- deep
-- critical
+    lite < standard < deep < critical
 
-Execution Mode influences:
+A mode satisfies its own minimum and every lower minimum; it does not satisfy a
+higher minimum. The order describes process depth only, not authority, approval,
+cost, latency, model strength, or outcome quality.
 
-- number of Stages
-- review depth
-- model capability
-- Quality Gates
-- Human approval
+Each description is a cumulative minimum obligation, not a maximum. A lighter
+mode does not require the additional obligations named by higher modes, but it
+never prohibits extra rigor, analysis, decomposition, evidence, validation, or
+bounded self-direction.
+
+- `lite`: the smallest floor for well-bounded work, requiring a coherent direct
+  path, sufficient relevant context and evidence, proportionate validation, and
+  the decomposition needed for coherence. Expected bounded self-direction is
+  narrow.
+- `standard`: includes `lite` plus explicit planning, disciplined execution,
+  validation, self-checking, routine bounded self-direction, and explicit
+  evidence for material claims.
+- `deep`: `standard` plus deliberate decomposition, trade-off and edge-case
+  analysis, broader evidence gathering, probing validation, and sustained
+  bounded self-direction.
+- `critical`: `deep` plus the strongest scrutiny, assumption challenge, failure
+  and safety analysis, traceability, corroboration, the strongest bounded
+  self-direction, and conservative escalation of unresolved uncertainty.
+
+Expected autonomy means bounded self-direction within already established
+scope, authority, permissions, Policies, and Human controls. Execution Mode
+applies to both Human and Agent Actors and never grants authority.
+
+All responsibilities inherit the effective Task mode. Stage-, Role-, and
+responsibility-specific overrides are unsupported in v0.1, and mode is not
+inferred from Stage or Role identity, name, or capabilities.
+
+Workflow and Execution Mode are orthogonal. Mode changes only the depth applied
+inside existing choreography. It does not:
+
+- select a Workflow;
+- add, remove, or reorder Workflow Stages;
+- change required Roles, Quality Gates, or Human-control checkpoints;
+- establish a Quality Gate result or satisfy Human approval;
+- grant permission or authorization; or
+- map to a Provider, model, runtime, or Provider reasoning control.
+
+Complexity, Risk, Workflow, Stage, and Role do not automatically determine
+Execution Mode. An explicit Task value takes precedence over the Project default.
 
 ---
 

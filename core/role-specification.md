@@ -36,7 +36,8 @@ The following concepts remain separate:
 - **Provider or Model**: implementation technology behind an Agent.
 - **Quality Gate**: a condition that must pass before work may progress.
 - **Policy and Human Control**: authority, permission, protection, and approval requirements.
-- **Assignment Contract**: a future contract that may select an actor for a required Role.
+- **Assignment Contract**: the responsibility-binding contract that records a
+  caller-selected eligible Actor for a required Role.
 - **Execution Contract**: a future contract that may define how an assigned actor performs work.
 
 A Role may be relevant to a Task without being assigned to it. A Role may be fulfilled by an Agent or Human without identifying which actor is selected.
@@ -140,7 +141,8 @@ Required capabilities describe what the Role requires. They do not describe whic
 
 It is advisory and descriptive. It SHALL NOT by itself assign the Role, authorize execution, prohibit other use, or grant eligibility to an actor.
 
-Actual Task matching and Role assignment belong to the future Assignment Contract.
+Actual responsibility binding belongs to the Assignment Contract. The Assignment
+contract does not automatically match, rank, or select Actors.
 
 A Role may be used for a Task type not listed when the applicable Assignment Contract, Policy, Workflow, and Human control requirements permit it.
 
@@ -222,8 +224,10 @@ Workflows may identify multiple Role requirements for engineering work, such as:
 Workflow stages reference canonical Role IDs through `required_roles`. The
 framework Role catalog resolves those IDs to Role objects, and the pure Actor
 coverage evaluator can compare a caller-supplied Actor with a resolved Role.
-That result is eligibility evidence only. The future Assignment Contract must
-still determine actor selection, binding, availability, and separation of duties.
+That result is eligibility evidence only. The Assignment Contract records a
+caller-selected Actor binding, requires compatible coverage, rejects duplicate
+responsibility bindings, and reports only its established narrow reviewer identity
+conflict. Automatic selection and availability remain outside that contract.
 
 The Task schema is not changed by this specification.
 

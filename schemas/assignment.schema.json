@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-engineering-orchestra.dev/schemas/assignment.schema.json",
+  "title": "AI Engineering Orchestra Assignment",
+  "description": "Structural schema for the AI Engineering Orchestra v0.1 Assignment contract defined by core/assignment-specification.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "workflow_id",
+    "stage_id",
+    "role_id",
+    "actor_id"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "ID of the one Task to which this responsibility binding applies."
+    },
+    "workflow_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "ID of the Workflow explicitly governing the Task."
+    },
+    "stage_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Workflow-scoped Stage ID containing the required responsibility."
+    },
+    "role_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Canonical Role ID required by the selected Stage."
+    },
+    "actor_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "ID of the concrete Actor selected for the responsibility."
+    }
+  }
+}

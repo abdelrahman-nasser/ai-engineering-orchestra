@@ -223,8 +223,9 @@ authority.
 
 Actor identity makes later separation checks possible. In particular, equal
 implementer and reviewer Actor IDs cannot satisfy independent-review separation.
-Unequal IDs alone do not establish that the Quality Gate passed. AIO-021 does not
-evaluate Quality Gates or reviewer independence.
+Unequal IDs alone do not establish that the Quality Gate passed. The Assignment
+validator reports the equal-ID conflict for valid unique responsibility bindings,
+but does not evaluate Quality Gates or prove that independent review occurred.
 
 ---
 

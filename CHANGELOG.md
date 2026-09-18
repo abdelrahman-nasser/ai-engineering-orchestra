@@ -42,6 +42,10 @@ Status: In Development
   compatibility stubs
 - package-safe runtime Role catalog and packaged Role schema/instance resources
 - semantic Workflow-to-Role reference validation using framework-owned Roles
+- canonical five-field Assignment responsibility-binding specification and schema
+- pure individual and sequence Assignment validation with competency reuse,
+  duplicate-binding detection, completeness, unassigned-requirement reporting,
+  and narrow implementer/Reviewer identity-conflict evidence
 - canonical Workflow specification in `core/workflow-specification.md`
 - initial canonical engineering Workflow library in `workflows/` (`standard-change`, `architecture-change`, `security-sensitive-change`)
 - normalized Workflow JSON Schema in `schemas/workflow.schema.json`
@@ -66,6 +70,8 @@ Status: In Development
 - documented the boundary between structural Task validation and repository-level or historical Task semantics
 - defined the canonical Role contract separating abstract engineering responsibilities and competencies from runtime agents, providers, permissions, and authority
 - established machine-readable structural validation for normalized Role objects
+- separated Actor eligibility from immutable Assignment responsibility binding,
+  authority, availability, execution, Workflow state, and Quality Gate results
 - established the Role authority hierarchy from semantic specification to
   structural schema, canonical YAML instances, compatibility Markdown, and
   regression tooling

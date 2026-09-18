@@ -55,6 +55,8 @@ Use these locations as authoritative sources:
   documentation paths; never runtime Role data.
 - Actor specification: `core/actor-specification.md` — authoritative semantic contract for Actors and Actor-to-Role competency coverage; governs semantics if it conflicts with the Actor schema.
 - Actor schema: `schemas/actor.schema.json` — machine-readable structural validation of the Actor contract; semantically subordinate to `core/actor-specification.md`.
+- Assignment specification: `core/assignment-specification.md` — authoritative semantic contract for immutable Actor responsibility bindings and Assignment validation; governs semantics if it conflicts with the Assignment schema.
+- Assignment schema: `schemas/assignment.schema.json` — machine-readable structural validation of the Assignment contract; semantically subordinate to `core/assignment-specification.md`.
 - Workflow specification: `core/workflow-specification.md` — authoritative semantic contract for Workflows; governs semantics if it conflicts with the Workflow schema.
 - Workflow schema: `schemas/workflow.schema.json` — authoritative machine-readable structural validation of normalized Workflow objects; semantically subordinate to `core/workflow-specification.md`.
 - Workflows: `workflows/` — canonical reusable Workflow definitions governed by `core/workflow-specification.md`.

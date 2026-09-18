@@ -1,0 +1,38 @@
+id: AIO-023
+title: Define Assignment Contract and Responsibility Binding Validation
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: medium
+execution:
+  mode: deep
+workflow: architecture-change
+objective: >
+  Define the smallest provider-neutral Assignment value and pure semantic
+  validation needed to bind one concrete Actor to one required Role
+  responsibility at one Stage of the Workflow governing one Task.
+scope:
+  include:
+    - Canonical five-field Assignment specification and structural schema
+    - Immutable Assignment value and individual semantic validation
+    - Assignment sequence duplicate detection and completeness reporting
+    - Deterministic unassigned responsibility keys
+    - Narrow implementer and Reviewer Actor identity-conflict evidence
+    - Focused fixtures, tests, packaging evidence, and documentation
+  exclude:
+    - Actor selection, ranking, recommendation, availability, or reservation
+    - Assignment persistence, lifecycle, history, or multiple-Actor cardinality
+    - Actor catalog, project Actor inventory, or Assignment CLI commands
+    - Provider, model, reasoning, runtime, execution, permission, or authority
+    - Stage state, Workflow execution, Quality Gate results, or AIO-024
+dependencies:
+  - AIO-022
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

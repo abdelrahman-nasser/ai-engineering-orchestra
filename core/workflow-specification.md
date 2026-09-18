@@ -33,7 +33,7 @@ AI Engineering Orchestra enforces a strict separation of concerns across framewo
 | **Quality Gate** | `quality-gates/` | Named validation checkpoints with specific pass/fail criteria. |
 | **Human Control** | `core/human-control.md` | Authority levels, approver identity, approval authority, protected actions, and escalation paths. |
 | **Precedence** | `core/precedence.md` | Conflict resolution and non-weakening rules across authority layers. |
-| **Assignment Contract** | *Future specification* | Selection of eligible Human or Agent actors to fulfill required Roles. |
+| **Assignment Contract** | `core/assignment-specification.md` | Immutable binding and validation of a caller-selected eligible Actor for one required Role responsibility. |
 | **Execution Contract** | *Future specification* | Provision of runtime context, tools, and permissions to assigned actors. |
 | **External Runtime** | *External execution layer* | Actor execution, graph execution, Agent lifecycle, state, routing, messaging, retries, and pause/resume mechanics. |
 
@@ -171,7 +171,8 @@ Requirements:
 
 - Optional list of stable Role IDs defined in `roles/`.
 - **References only**: This is NOT actor assignment. It indicates that the governance stage requires the capability and responsibility contract represented by the referenced Role(s).
-- Actor selection belongs to the future Assignment Contract.
+- Concrete responsibility binding belongs to the Assignment Contract. Automatic
+  Actor selection remains outside both Workflow and Assignment.
 
 Example:
 
@@ -307,8 +308,8 @@ Actor-Role Competency Coverage
   └─ compares: supplied Actor -> eligibility evidence
         │
         ▼
-Future Assignment Contract
-  └─ may select and bind an eligible Human or Agent actor
+Assignment Contract
+  └─ validates and binds an externally selected eligible Human or Agent actor
         │
         ▼
 Future Execution Contract
@@ -321,7 +322,9 @@ Portable validation resolves `required_roles` against the framework-owned Role
 catalog. An unresolved Role ID is semantic cross-resource failure, not a
 Workflow schema rule. If the packaged Role catalog itself is unavailable or
 corrupt, validation reports infrastructure error without per-reference cascades.
-Role resolution and competency coverage do not create an Assignment.
+Role resolution and competency coverage alone do not create an Assignment. An
+Assignment additionally records the caller-selected Actor against one concrete
+Task/Workflow/Stage/Role responsibility key.
 
 ### Composition Rules
 

@@ -133,6 +133,22 @@ automatically matchable.
 
 ---
 
+## Assignment
+
+An immutable, Provider-neutral value binding one concrete Actor identity to one
+Role required at one Stage of the Workflow explicitly governing one Task.
+
+Assignment records an externally made responsibility choice. It does not select
+or rank Actors, inspect availability, grant authority or permission, configure or
+perform execution, establish Workflow state, or produce a Quality Gate result.
+
+The responsibility key is `(task_id, workflow_id, stage_id, role_id)`;
+`actor_id` is the selected value. The canonical contract is defined in:
+
+`core/assignment-specification.md`
+
+---
+
 ## Role
 
 A reusable engineering responsibility and its required competencies.

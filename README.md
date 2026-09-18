@@ -117,8 +117,8 @@ or invalid data produce FAIL; missing installed resources, I/O problems, and
 internal failures produce ERROR. ERROR takes precedence over FAIL. PASS covers
 only the supported structural rules, without establishing Quality Gate results.
 
-The installed tool packages canonical Actor, Role, Task, Workflow, and Project
-Manifest schemas from their single sources in `schemas/`, plus the five
+The installed tool packages canonical Actor, Assignment, Role, Task, Workflow,
+and Project Manifest schemas from their single sources in `schemas/`, plus the five
 framework-owned canonical Role YAML instances from `roles/`. Managed projects
 need no schema regression scripts, fixtures, Orchestra Task history, Git,
 Node/npm, or Python tests. Python and the declared tool dependencies run the
@@ -166,6 +166,39 @@ explicitly non-matchable. Coverage is evidence only: it does not rank, select,
 assign, authorize, or execute an Actor; inspect availability; or produce a
 Quality Gate result. The semantic contract is defined in
 [`core/actor-specification.md`](core/actor-specification.md).
+
+## Assignment Responsibility Bindings
+
+An Assignment records one externally selected Actor for one required
+Task/Workflow/Stage/Role responsibility:
+
+```python
+from engineering_orchestration.assignment import (
+    Assignment,
+    validate_assignment_set,
+)
+
+binding = Assignment(
+    task_id="AIO-023",
+    workflow_id="architecture-change",
+    stage_id="implement",
+    role_id="software-engineer",
+    actor_id="agent-engineer-1",
+)
+result = validate_assignment_set(
+    [binding], task, workflow_catalog, role_catalog, actors
+)
+print(result.valid, result.complete, result.unassigned_requirements)
+```
+
+Validation checks exact Task and Workflow consistency, Stage and Role
+requirements, unique supplied Actor identities, and existing competency coverage.
+Sequence validation separately reports duplicate bindings, completeness,
+unassigned requirements, and definite implementer/Reviewer Actor-ID conflicts.
+It does not select Actors, inspect availability, persist values, grant authority,
+execute work, manage Workflow state, or establish a Quality Gate result. The
+semantic contract is
+[`core/assignment-specification.md`](core/assignment-specification.md).
 
 AIO-018 defines the optional Project Verification Check contract in
 [`core/project-manifest.md`](core/project-manifest.md#33-verification--project-verification-checks),

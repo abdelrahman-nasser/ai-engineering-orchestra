@@ -42,7 +42,10 @@ Role definitions use the canonical fields:
 
 Capability identifiers describe stable engineering competencies. They do not describe runtime tools, commands, provider features, or permissions.
 
-Task assignment, actor selection, execution behavior, Workflow sequencing, authority, approval, and separation of duties remain owned by other Orchestra contracts and policies.
+Concrete responsibility bindings are defined by
+`core/assignment-specification.md`. Actor selection, execution behavior,
+Workflow sequencing, authority, approval, and broader separation-of-duties
+policy remain outside the Role contract.
 
 ## Role Schema Validation
 

@@ -117,13 +117,15 @@ def main() -> None:
                 with zipfile.ZipFile(wheel) as archive:
                     names = archive.namelist()
                     modules = {f"engineering_orchestration/{name}" for name in
-                               ("__init__.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_selection.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
+                               ("__init__.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_selection.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
                                 "execution_mode.py", "inference_option.py",
                                 "inference_option_availability.py",
                                 "verify_repo.py", "workflow_catalog.py", "role_catalog.py", "schema_resources.py",
                                 "project.py", "validation.py", "project_verification.py")}
                     schemas = {f"engineering_orchestration/_schemas/{name}" for name in
-                               ("actor-availability.schema.json", "actor.schema.json", "assignment.schema.json",
+                               ("actor-availability.schema.json", "actor.schema.json",
+                                "agent-runtime-option.schema.json", "agent-runtime-option-availability.schema.json",
+                                "assignment.schema.json",
                                 "inference-option.schema.json", "inference-option-availability.schema.json",
                                 "role.schema.json", "task.schema.json", "workflow.schema.json",
                                 "project-manifest.schema.json")}
@@ -149,6 +151,8 @@ import engineering_orchestration.cli as cli
 import engineering_orchestration.actor_availability as actor_availability
 import engineering_orchestration.actor_coverage as actor_coverage
 import engineering_orchestration.actor_selection as actor_selection
+import engineering_orchestration.agent_runtime_option as agent_runtime_option
+import engineering_orchestration.agent_runtime_option_availability as agent_runtime_option_availability
 import engineering_orchestration.assignment as assignment
 import engineering_orchestration.execution_mode as execution_mode
 import engineering_orchestration.inference_option as inference_option
@@ -173,6 +177,18 @@ observations = [
 availability_result = actor_availability.validate_actor_availability(
     observations,
     [actor, human_actor])
+runtime_options = [
+    agent_runtime_option.AgentRuntimeOptionDefinition('installed-runtime-primary'),
+    agent_runtime_option.AgentRuntimeOptionDefinition('installed-runtime-secondary'),
+]
+runtime_inventory_result = (
+    agent_runtime_option.validate_agent_runtime_option_inventory(runtime_options))
+runtime_availability_result = (
+    agent_runtime_option_availability.validate_agent_runtime_option_availability(
+        [agent_runtime_option_availability.AgentRuntimeOptionAvailabilityObservation(
+            'installed-runtime-primary',
+            agent_runtime_option_availability.AgentRuntimeOptionAvailabilityState.AVAILABLE)],
+        runtime_options))
 inference_options = [
     inference_option.InferenceOptionDefinition(
         'installed-primary', 'provider-a', 'model-x'),
@@ -204,6 +220,8 @@ print(json.dumps({'module': cli.__file__,
     'critical_satisfies_deep': execution_mode.execution_mode_satisfies(
         'critical', 'deep'),
     'availability_module': actor_availability.__file__,
+    'runtime_option_module': agent_runtime_option.__file__,
+    'runtime_option_availability_module': agent_runtime_option_availability.__file__,
     'inference_option_module': inference_option.__file__,
     'inference_option_availability_module': inference_option_availability.__file__,
     'actor_module': actor_coverage.__file__,
@@ -218,6 +236,16 @@ print(json.dumps({'module': cli.__file__,
     'availability_storage_absent': not any(
         (Path.cwd().parents[1] / '.ai' / name).exists() for name in
         ('actor-availability', 'actor-availability.yaml', 'availability', 'availability.yaml')),
+    'runtime_inventory_valid': runtime_inventory_result.valid,
+    'runtime_option_ids': [option.runtime_option_id for option in
+                           runtime_inventory_result.normalized_options],
+    'runtime_availability_valid': runtime_availability_result.valid,
+    'runtime_availability_states': {
+        observation.runtime_option_id: observation.state for observation in
+        runtime_availability_result.normalized_observations},
+    'runtime_inventory_storage_absent': not any(
+        (Path.cwd().parents[1] / '.ai' / name).exists() for name in
+        ('runtimes', 'runtime-options', 'agent-runtimes')),
     'inference_inventory_valid': inference_inventory_result.valid,
     'inference_option_ids': [option.option_id for option in
                              inference_inventory_result.normalized_options],
@@ -245,7 +273,9 @@ print(json.dumps({'module': cli.__file__,
     ('architect.yaml', 'documentation-specialist.yaml', 'reviewer.yaml',
      'security-reviewer.yaml', 'software-engineer.yaml')],
     'schemas': [str(schema_resource(n)) for n in
-    ('actor-availability.schema.json', 'actor.schema.json', 'assignment.schema.json',
+    ('actor-availability.schema.json', 'actor.schema.json',
+     'agent-runtime-option.schema.json', 'agent-runtime-option-availability.schema.json',
+     'assignment.schema.json',
      'inference-option.schema.json', 'inference-option-availability.schema.json',
      'role.schema.json', 'task.schema.json', 'workflow.schema.json',
      'project-manifest.schema.json')], 'sys_path': sys.path}))
@@ -261,6 +291,10 @@ print(json.dumps({'module': cli.__file__,
                         "Normal runner import leaked to source")
                 require(Path(evidence["availability_module"]).resolve().is_relative_to(environment),
                         "Normal Actor Availability validator import leaked to source")
+                require(Path(evidence["runtime_option_module"]).resolve().is_relative_to(environment),
+                        "Normal Agent Runtime Option validator import leaked to source")
+                require(Path(evidence["runtime_option_availability_module"]).resolve().is_relative_to(environment),
+                        "Normal Agent Runtime Option Availability validator import leaked to source")
                 require(Path(evidence["inference_option_module"]).resolve().is_relative_to(environment),
                         "Normal Inference Option validator import leaked to source")
                 require(Path(evidence["inference_option_availability_module"]).resolve().is_relative_to(environment),
@@ -295,6 +329,17 @@ print(json.dumps({'module': cli.__file__,
                     "Installed Human and Agent availability states differ from observations")
             require(evidence["availability_storage_absent"],
                     "Actor Availability validation unexpectedly required project storage")
+            require(evidence["runtime_inventory_valid"]
+                    and evidence["runtime_option_ids"] == [
+                        "installed-runtime-primary", "installed-runtime-secondary"],
+                    "Installed Agent Runtime Option inventory validation failed")
+            require(evidence["runtime_availability_valid"]
+                    and evidence["runtime_availability_states"] == {
+                        "installed-runtime-primary": "available",
+                        "installed-runtime-secondary": "unknown"},
+                    "Installed Agent Runtime Option Availability normalization failed")
+            require(evidence["runtime_inventory_storage_absent"],
+                    "Agent Runtime Option validation unexpectedly required project storage")
             require(evidence["inference_inventory_valid"]
                     and evidence["inference_option_ids"] == [
                         "installed-primary", "installed-secondary"],

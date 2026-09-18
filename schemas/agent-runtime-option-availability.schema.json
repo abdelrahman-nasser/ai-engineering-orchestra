@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-engineering-orchestra.dev/schemas/agent-runtime-option-availability.schema.json",
+  "title": "AI Engineering Orchestra Agent Runtime Option Availability Observation",
+  "description": "Structural schema for the AI Engineering Orchestra v0.1 Agent Runtime Option Availability Observation contract defined by core/agent-runtime-option-availability-specification.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "runtime_option_id",
+    "state"
+  ],
+  "properties": {
+    "runtime_option_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact opaque reference to one caller-supplied Agent Runtime Option."
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "available",
+        "unavailable",
+        "unknown"
+      ],
+      "description": "Currently known availability state of the referenced Agent Runtime Option within one caller-supplied evaluation snapshot."
+    }
+  }
+}

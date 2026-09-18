@@ -21,5 +21,5 @@ include-package-data = false
 "engineering_orchestration._roles" = "roles"
 
 [tool.setuptools.package-data]
-"engineering_orchestration._schemas" = ["actor.schema.json", "actor-availability.schema.json", "assignment.schema.json", "inference-option.schema.json", "inference-option-availability.schema.json", "role.schema.json", "task.schema.json", "workflow.schema.json", "project-manifest.schema.json"]
+"engineering_orchestration._schemas" = ["actor.schema.json", "actor-availability.schema.json", "agent-runtime-option.schema.json", "agent-runtime-option-availability.schema.json", "assignment.schema.json", "inference-option.schema.json", "inference-option-availability.schema.json", "role.schema.json", "task.schema.json", "workflow.schema.json", "project-manifest.schema.json"]
 "engineering_orchestration._roles" = ["*.yaml"]

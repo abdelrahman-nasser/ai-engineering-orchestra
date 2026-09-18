@@ -15,6 +15,8 @@ def schema_resource(name: str) -> Traversable | None:
     if name not in {
         "actor.schema.json",
         "actor-availability.schema.json",
+        "agent-runtime-option.schema.json",
+        "agent-runtime-option-availability.schema.json",
         "assignment.schema.json",
         "inference-option.schema.json",
         "inference-option-availability.schema.json",

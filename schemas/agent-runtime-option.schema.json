@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-engineering-orchestra.dev/schemas/agent-runtime-option.schema.json",
+  "title": "AI Engineering Orchestra Agent Runtime Option Definition",
+  "description": "Structural schema for the AI Engineering Orchestra v0.1 Agent Runtime Option Definition contract defined by core/agent-runtime-option-specification.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "runtime_option_id"
+  ],
+  "properties": {
+    "runtime_option_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Opaque identity for one Agent Runtime Option within a caller-supplied inventory."
+    }
+  }
+}

@@ -20,10 +20,10 @@ It is independent of any specific AI provider, model, programming language, fram
 
 ## Provider
 
-A system or platform forming an operational access boundary through which
-models or Agent execution services may be supplied. For an Inference Option,
-the Provider is the boundary through which its model is addressed. The
-Provider need not be the organization that developed the model.
+A system or platform forming an operational access boundary for inference or
+external service access. For an Inference Option, the Provider is the boundary
+through which its model is addressed. The Provider need not be the organization
+that developed the model.
 
 A Provider is not a Role or Actor and does not fulfil a Role. A Provider may
 expose many models or supply many Agent Actors. A Human Actor has no Provider
@@ -67,8 +67,8 @@ The canonical Definition contains exactly opaque, case-sensitive `option_id`,
 one supplied inventory. It remains the identity even when multiple options use
 the same Provider/model pair.
 
-An Inference Option does not describe a Runtime Option, Agent Service, tool or
-session ownership, credentials, endpoint, capabilities, availability,
+An Inference Option does not describe an Agent Runtime Option, Agent Service,
+tool or session ownership, credentials, endpoint, capabilities, availability,
 selection, authorization, or invocation. The canonical contract is defined in:
 
 `core/inference-option-specification.md`
@@ -84,29 +84,69 @@ snapshot.
 The state is exactly `available`, `unavailable`, or `unknown`; unknown is not
 unavailable. A missing observation normalizes to unknown. Availability does not
 change option identity and does not establish capability fit, selection,
-authorization, execution, quota, price, Execution Mode satisfaction, or Runtime
-Option availability. The canonical contract is defined in:
+authorization, execution, quota, price, Execution Mode satisfaction, or Agent
+Runtime Option availability. The canonical contract is defined in:
 
 `core/inference-option-availability-specification.md`
 
 ---
 
-## Runtime Option
+## Agent Runtime Option
 
-A reserved boundary term for a future option describing where and how an Agent
-loop executes and who owns tools, state, sessions, and lifecycle. No Runtime
-Option contract, schema, inventory, or implementation exists in AIO v0.1.
+An opaque, caller/environment-supplied configured execution surface through
+which an Agent execution can be run or delegated. It identifies the
+execution/Agent-loop boundary for one evaluation context.
 
-Runtime Option is not Inference Option.
+The canonical Definition contains exactly opaque, case-sensitive
+`runtime_option_id`, unique within one supplied sequence. It contains no Actor,
+Provider, model, implementation, framework, managed, capability, tool, state,
+session, endpoint, credential, authorization, or invocation field.
+
+A concrete implementation may own or delegate some combination of execution
+lifecycle, environment, tools, state, sessions, scheduling, and inference
+access. The definition does not claim that every Agent Runtime Option owns all
+of them.
+
+Agent Runtime Option is not Actor, executable Agent definition, execution
+instance, Inference Option, Agent Service, authorization, or credentials. Human
+Actors require no Agent Runtime Option. AIO-029 defines no Actor mapping or
+Runtime-to-Inference compatibility relation. The canonical contract is defined
+in:
+
+`core/agent-runtime-option-specification.md`
+
+After the canonical term is established, **Runtime Option** is acceptable short
+prose. It does not mean a Python runtime or .NET runtime.
+
+---
+
+## Agent Runtime Option Availability Observation
+
+An immutable, ephemeral observation describing the currently known availability
+state of one Agent Runtime Option within one caller-supplied evaluation
+snapshot.
+
+The state is exactly `available`, `unavailable`, or `unknown`; unknown is not
+unavailable. A missing observation normalizes to unknown. Runtime availability
+does not establish Actor compatibility, Inference Option availability,
+Runtime-to-Inference compatibility, selection, authorization, capacity,
+Execution Mode satisfaction, or execution. The canonical contract is defined
+in:
+
+`core/agent-runtime-option-availability-specification.md`
 
 ---
 
 ## Agent Service
 
-A managed service that may own Agent sessions, tools, state, lifecycle,
-scheduling, and model choice. Agent Service is distinct from bare model
-inference and from Inference Option. No Agent Service contract or implementation
-exists in AIO v0.1.
+An external managed implementation that may expose or realize one or more Agent
+Runtime Options. A service may own or delegate Agent sessions, tools, state,
+lifecycle, scheduling, and model choice, but Core does not infer those details
+from the service boundary.
+
+Agent Service is distinct from Agent Runtime Option, bare model inference, and
+Inference Option. No Agent Service subtype, schema, or domain contract exists in
+AIO v0.1.
 
 ---
 
@@ -133,6 +173,11 @@ Agent identity may be supplied as a candidate before assignment or execution.
 Provider, model, runtime, reasoning configuration, availability, and execution
 state are not part of the Actor contract.
 
+An Agent Actor is logical identity, not an executable Agent definition. The
+latter may include instructions, tools, memory, state configuration, model
+policy, runtime binding, environment, sessions, permissions, and credentials;
+AIO v0.1 defines no canonical Agent Definition contract.
+
 When an Agent executes work, it may receive:
 
 - a Task
@@ -154,8 +199,9 @@ A Role is reusable.
 A concrete, identifiable Human or Agent candidate capable of fulfilling a Role.
 
 Actor identity is separate from availability, assignment, authority, permission,
-approval, and execution. Actor answers **who**; Provider identifies a supplying
-system or platform, and runtime describes **where or how** an Agent executes.
+approval, and execution. Actor answers **who**; Provider identifies an
+operational access boundary, and Agent Runtime Option identifies the execution
+surface through which an Agent may run or be delegated.
 
 The canonical contract and matching semantics are defined in:
 

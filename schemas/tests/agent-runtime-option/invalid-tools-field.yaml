@@ -1,0 +1,3 @@
+runtime_option_id: primary-agent-runtime
+tools:
+  - shell

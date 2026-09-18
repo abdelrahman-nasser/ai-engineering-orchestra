@@ -71,7 +71,7 @@ currently be considered by a future option selector or configuration evaluator.
 
 It does not mean authorized, selected, assigned, executable, within quota,
 affordable, compatible with Task Execution Mode, or paired with an available
-Runtime Option.
+Agent Runtime Option.
 
 ### `unavailable`
 
@@ -144,9 +144,12 @@ mean that any option is available or usable.
 Availability never changes `option_id`, `provider_id`, or `model_id` and does
 not select a Provider or model.
 
-Runtime availability is separate: this observation does not define a Runtime
-Option, Agent Service, tool executor, session owner, or state owner. It does not
-inspect Actor identity, Actor Selection, Assignment, or Task Execution Mode.
+Agent Runtime Option availability is separate and is defined by
+`core/agent-runtime-option-availability-specification.md`. This observation does
+not define an Agent Runtime Option, Agent Service, tool executor, session owner,
+or state owner. It does not inspect Actor identity, Actor Selection, Assignment,
+or Task Execution Mode, and no Runtime-to-Inference compatibility relation is
+implied.
 
 Availability grants no credential, permission, approval, Human Control, network,
 or execution authority and creates no Execution Contract or invocation.

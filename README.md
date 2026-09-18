@@ -180,31 +180,100 @@ and unknown-option references invalidate their complete input without partial
 normalized output. Available does not mean selected, authorized, executable,
 within quota, compatible with Execution Mode, or backed by an available runtime.
 
-The current architecture boundary is:
+AIO-028 introduced no option selection, routing, Provider integration, network
+access, persistence, Runtime Option modeling, authorization, or invocation. Its
+semantic authorities are
+[`core/inference-option-specification.md`](core/inference-option-specification.md)
+and
+[`core/inference-option-availability-specification.md`](core/inference-option-availability-specification.md).
+
+## Agent Runtime Option Definition and Availability
+
+An Agent Runtime Option is an opaque, caller/environment-supplied configured
+execution surface through which an Agent execution can run or be delegated. Its
+Definition contains exactly `runtime_option_id`:
+
+```python
+from engineering_orchestration.agent_runtime_option import (
+    AgentRuntimeOptionDefinition,
+    validate_agent_runtime_option_inventory,
+)
+
+runtime_options = [
+    AgentRuntimeOptionDefinition("primary-agent-runtime"),
+    AgentRuntimeOptionDefinition("secondary-agent-runtime"),
+]
+runtime_inventory = validate_agent_runtime_option_inventory(runtime_options)
+```
+
+The ID is opaque, exact, case-sensitive, and unique within one supplied
+sequence. It does not encode an Actor, Provider, model, implementation,
+framework, Runtime Option type, process, session, or invocation.
+
+Availability is separate ephemeral evidence:
+
+```python
+from engineering_orchestration.agent_runtime_option_availability import (
+    AgentRuntimeOptionAvailabilityObservation,
+    AgentRuntimeOptionAvailabilityState,
+    validate_agent_runtime_option_availability,
+)
+
+runtime_availability = validate_agent_runtime_option_availability(
+    [
+        AgentRuntimeOptionAvailabilityObservation(
+            "primary-agent-runtime",
+            AgentRuntimeOptionAvailabilityState.AVAILABLE,
+        )
+    ],
+    runtime_options,
+)
+```
+
+States are exactly `available`, `unavailable`, and `unknown`. Missing
+observations normalize to unknown. Duplicate Runtime Option IDs, duplicate
+observations, and unknown references invalidate their complete input without
+partial normalized output. Available does not mean Actor-compatible,
+Inference-compatible, selected, authorized, capacity-ready, or executing.
+
+The current high-level separation is:
 
 ```text
-Actor responsibility
-  -> Actor Selection / Assignment
+Actor
+  = logical who
 
-Task Execution Mode
+Agent Runtime Option
+  = configured execution surface
+
+Inference Option
+  = configured inference access
 
 Caller/environment
-  -> Inference Option inventory + availability
+  -> caller-scoped Runtime Option inventory + availability
+  -> caller-scoped Inference Option inventory + availability
 
-future:
-Runtime inventory
-  -> policy/configuration assessment
+future only:
+Runtime Option <-> Inference Option compatibility
+  -> execution-configuration viability
   -> authorization
   -> Execution Contract
   -> invocation
 ```
 
-AIO-028 performs no option selection, routing, Provider integration, network
-access, persistence, Runtime Option modeling, authorization, or invocation. The
-semantic authorities are
-[`core/inference-option-specification.md`](core/inference-option-specification.md)
+Actor is not an executable Agent definition, Runtime Option, Inference Option,
+or execution instance. Human Actors require no Runtime Option. A Runtime Option
+may expose zero externally selectable Inference Options because inference may be
+selected internally or hidden by an external Agent definition or managed Agent
+Service. Absence of future compatibility edges therefore does not prove that a
+Runtime Option cannot execute.
+
+AIO-029 introduces no Actor mapping, Runtime-to-Inference compatibility,
+execution configuration, Agent Definition, Agent Service contract, Provider
+adapter, selection, authorization, persistence, network access, or invocation.
+The semantic authorities are
+[`core/agent-runtime-option-specification.md`](core/agent-runtime-option-specification.md)
 and
-[`core/inference-option-availability-specification.md`](core/inference-option-availability-specification.md).
+[`core/agent-runtime-option-availability-specification.md`](core/agent-runtime-option-availability-specification.md).
 
 ## Installed Structural Validation
 
@@ -230,10 +299,11 @@ internal failures produce ERROR. ERROR takes precedence over FAIL. PASS covers
 only the supported structural rules, without establishing Quality Gate results.
 
 The installed tool packages canonical Actor, Actor Availability Observation,
-Assignment, Inference Option, Inference Option Availability Observation, Role,
-Task, Workflow, and Project Manifest schemas from their single sources in
-`schemas/`, plus the five framework-owned canonical Role YAML instances from
-`roles/`. Managed projects
+Agent Runtime Option, Agent Runtime Option Availability Observation, Assignment,
+Inference Option, Inference Option Availability Observation, Role, Task,
+Workflow, and Project Manifest schemas from their single sources in `schemas/`,
+plus the five framework-owned canonical Role YAML instances from `roles/`.
+Managed projects
 need no schema regression scripts, fixtures, Orchestra Task history, Git,
 Node/npm, or Python tests. Python and the declared tool dependencies run the
 validator; the target project's own language is irrelevant. The API executes no

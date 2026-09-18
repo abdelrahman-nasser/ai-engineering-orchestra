@@ -61,6 +61,12 @@ Status: In Development
   and schema with explicit unknown normalization
 - immutable Inference Option values and pure deterministic inventory and
   availability validation, including duplicate and unknown-reference handling
+- canonical one-field Agent Runtime Option Definition specification and schema,
+  with opaque caller/environment-supplied execution-surface identity
+- canonical two-field Agent Runtime Option Availability Observation
+  specification and schema with explicit unknown normalization
+- immutable Agent Runtime Option values and pure deterministic inventory and
+  availability validation, including duplicate and unknown-reference handling
 - canonical Workflow specification in `core/workflow-specification.md`
 - initial canonical engineering Workflow library in `workflows/` (`standard-change`, `architecture-change`, `security-sensitive-change`)
 - normalized Workflow JSON Schema in `schemas/workflow.schema.json`
@@ -108,6 +114,15 @@ Status: In Development
 - separated ephemeral Inference Option availability from static option identity,
   with `unknown != unavailable` and no implication of runtime availability,
   Execution Mode fit, quota, selection, authorization, or execution
+- separated Agent Runtime Option execution-surface identity from Actor,
+  executable Agent definition, execution instance, Inference Option, Agent
+  Service, authorization, credentials, and invocation
+- separated ephemeral Agent Runtime Option availability from static Runtime
+  Option identity, with `unknown != unavailable` and no implication of Actor or
+  Inference compatibility, selection, capacity, authorization, or execution
+- established caller-scoped Runtime Option inventories without Actor mappings,
+  Runtime-to-Inference compatibility, project persistence, runtime type enums,
+  or capability fields
 - established the Role authority hierarchy from semantic specification to
   structural schema, canonical YAML instances, compatibility Markdown, and
   regression tooling

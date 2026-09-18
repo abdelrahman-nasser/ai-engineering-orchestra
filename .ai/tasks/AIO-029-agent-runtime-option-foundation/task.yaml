@@ -1,0 +1,41 @@
+id: AIO-029
+title: Agent Runtime Option Definition and Availability Foundation
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: medium
+execution:
+  mode: deep
+workflow: architecture-change
+objective: >
+  Define the smallest canonical Agent Runtime Option identity and separate
+  ephemeral availability-observation contracts needed to validate a
+  caller-supplied Runtime Option inventory without implementing Actor mapping,
+  Inference Option compatibility, execution configuration, adapters,
+  authorization, or invocation.
+scope:
+  include:
+    - Canonical one-field Agent Runtime Option Definition specification and schema
+    - Canonical two-field Agent Runtime Option Availability Observation specification and schema
+    - Opaque caller-scoped Runtime Option identity and inventory semantics
+    - Pure deterministic inventory and availability validation and normalization
+    - Missing, unknown-Runtime, duplicate-Runtime, and duplicate-observation handling
+    - Focused tests, package resources, documentation, and Task evidence
+  exclude:
+    - Actor-to-Runtime, Actor-to-Inference, or Runtime-to-Inference relations
+    - Changes to Actor, Inference Option, Assignment, Actor Selection, or Execution Mode contracts
+    - Agent Definition, Agent Service contract, execution configuration, selection, dispatch, or invocation
+    - Runtime type, vendor, Provider, model, framework, managed, capability, tool, MCP, state, session, sandbox, or capacity fields
+    - Provider Adapters, SDKs, discovery, network access, credentials, endpoints, authorization, or Execution Contracts
+    - Persistence, Project Manifest changes, CLI work, or AIO-030
+dependencies:
+  - AIO-028
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

@@ -24,7 +24,7 @@ Model
 != Inference Option
 
 Inference Option
-!= Runtime Option
+!= Agent Runtime Option
 != Agent Service
 ```
 
@@ -42,10 +42,17 @@ An **Inference Option** identifies one accessible operational way to address
 that capability. A bare model locator is insufficient because the same logical
 model may be exposed through multiple operational surfaces.
 
-A **Runtime Option** would answer where and how the Agent loop executes and who
-owns tools, state, sessions, and lifecycle. An **Agent Service** may provide a
-managed Runtime Option and may choose models internally. AIO-028 defines neither
-concept and includes no runtime or Agent Service field.
+An **Agent Runtime Option** identifies an opaque configured execution surface
+through which an Agent execution can run or be delegated. A concrete
+implementation may own or delegate some combination of lifecycle, environment,
+tools, state, sessions, scheduling, and inference access, but Core does not
+infer those details from Runtime Option identity.
+
+An **Agent Service** may expose or realize one or more Agent Runtime Options and
+may choose models internally. Inference Option contains neither Runtime Option
+nor Agent Service fields, and AIO-029 adds no relation among them. The separate
+Runtime Option contract is defined in
+`core/agent-runtime-option-specification.md`.
 
 ---
 
@@ -179,7 +186,7 @@ The first contract contains no:
   computer-use capability
 - streaming, background, reasoning-control, price, quota, access, latency, or
   compliance field
-- Runtime Option, Agent Service, session, state-owner, or tool-executor field
+- Agent Runtime Option, Agent Service, session, state-owner, or tool-executor field
 - capability registry or Execution Mode capability
 - Provider/model discovery, adapter, persistence, selection, routing, fallback,
   authorization, execution contract, or invocation behavior

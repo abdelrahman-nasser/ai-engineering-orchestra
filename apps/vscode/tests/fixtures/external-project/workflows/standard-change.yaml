@@ -1,0 +1,21 @@
+id: standard-change
+name: Synthetic Standard Change
+purpose: Exercise declared Workflow rendering in the synthetic external fixture.
+applicable_task_types:
+  - implementation
+stages:
+  - id: understand
+    purpose: Understand the synthetic fixture.
+  - id: implement
+    purpose: Implement the synthetic change.
+    required_roles:
+      - software-engineer
+  - id: validate
+    purpose: Validate the synthetic change.
+  - id: review
+    purpose: Review the synthetic change.
+    required_roles:
+      - reviewer
+    required_quality_gates:
+      - independent_review
+    human_control_checkpoint: true

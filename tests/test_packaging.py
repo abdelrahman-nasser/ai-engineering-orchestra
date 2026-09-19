@@ -11,7 +11,7 @@ import tomllib
 import unittest
 from unittest.mock import patch
 
-from engineering_orchestration import cli
+from engineering_orchestration import cli, ide_bridge
 from engineering_orchestration.role_catalog import (
     find_default_roles_resource,
     load_role_catalog,
@@ -57,6 +57,14 @@ class PackagingTests(unittest.TestCase):
             entry = EntryPoint(name=name, value="engineering_orchestration.cli:main",
                                group="console_scripts")
             self.assertIs(entry.load(), cli.main)
+
+    def test_ide_bridge_is_package_owned_without_expanding_the_cli(self):
+        self.assertEqual(ide_bridge.PROTOCOL, "aio.ide/1")
+        self.assertEqual(ide_bridge._package_meta()["package_version"], "0.1.0")
+        self.assertEqual(
+            set(ide_bridge._package_meta()), {"package_version", "package_origin"}
+        )
+        self.assertEqual(cli.build_parser().parse_args(["tasks"]).command, "tasks")
 
     def test_compatibility_modules_are_single_implementation(self):
         for name in ("cli", "list_tasks", "inspect_task", "verify_repo", "workflow_catalog"):

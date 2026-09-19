@@ -1,0 +1,47 @@
+id: AIO-030
+title: VS Code Control Center and First Codex Session Monitor
+type: implementation
+status: in_progress
+version_target: "0.1.0"
+complexity: high
+risk: high
+execution:
+  mode: deep
+workflow: security-sensitive-change
+objective: >
+  Deliver a local VS Code Control Center that reads real AIO project, Task, and
+  declared Workflow data through a narrow installed-Core bridge and can
+  observe allowlisted lifecycle metadata from an explicitly enabled ordinary
+  Codex session without starting, steering, or controlling that session.
+scope:
+  include:
+    - Temporary development VS Code extension under apps/vscode
+    - Project, Task inventory, Task detail, and declared Workflow views
+    - Narrow versioned read-only installed-Core IDE bridge
+    - One opt-in documented Codex lifecycle-hook observation adapter
+    - Authenticated loopback intake with bounded in-memory retention
+    - Workspace Trust, selected-root containment, and webview security controls
+    - Reversible user-mediated hook setup guidance without real-config mutation
+    - Focused Python, TypeScript, extension-host, boundary, and packaging tests
+    - Local VSIX and wheel content inspection and Task review evidence
+  exclude:
+    - Starting, resuming, steering, stopping, or approving Codex work
+    - Prompts, responses, transcript contents, source code, diffs, or tool arguments
+    - App Server attachment or any private Codex storage or protocol
+    - AIO governance, Task lifecycle, Assignment, availability, or approval mutation
+    - Full project verification execution from the product UI
+    - Remote, WSL, container, web, cloud, SaaS, billing, and second-engine support
+    - Domain schema or default-resolution semantic changes
+    - Notion, knowledge-base, or separate status-repository work
+    - Publishing, Marketplace registration, permanent branding, or license selection
+    - Commit, push, merge, release, or AIO-031
+dependencies:
+  - AIO-029
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

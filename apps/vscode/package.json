@@ -1,0 +1,105 @@
+{
+  "name": "aio-control-center-dev",
+  "displayName": "AIO Control Center (Development)",
+  "description": "Temporary local development extension for inspecting AIO projects and observing allowlisted Codex lifecycle metadata.",
+  "version": "0.0.1",
+  "publisher": "aio-local-dev",
+  "private": true,
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "aio",
+    "engineering",
+    "governance",
+    "local"
+  ],
+  "main": "./out/src/extension.js",
+  "activationEvents": [
+    "onCommand:aioControlCenter.open",
+    "onView:aioControlCenter.sidebar"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "Restricted Mode shows only safe project-marker and explanatory state. Core processes, monitoring, hook guidance, and navigation remain disabled."
+    },
+    "virtualWorkspaces": false
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "aioControlCenter.open",
+        "title": "Open Control Center",
+        "category": "AIO"
+      },
+      {
+        "command": "aioControlCenter.refresh",
+        "title": "Refresh Control Center",
+        "category": "AIO"
+      },
+      {
+        "command": "aioControlCenter.selectProject",
+        "title": "Select Managed Project",
+        "category": "AIO"
+      },
+      {
+        "command": "aioControlCenter.selectPython",
+        "title": "Select Trusted Python Interpreter",
+        "category": "AIO"
+      },
+      {
+        "command": "aioControlCenter.startObserving",
+        "title": "Start Codex Observation",
+        "category": "AIO"
+      },
+      {
+        "command": "aioControlCenter.stopObserving",
+        "title": "Stop Codex Observation",
+        "category": "AIO"
+      },
+      {
+        "command": "aioControlCenter.copyHookSetup",
+        "title": "Copy Codex Hook Setup",
+        "category": "AIO"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "aioControlCenter",
+          "title": "AIO",
+          "icon": "media/activity.svg"
+        }
+      ]
+    },
+    "views": {
+      "aioControlCenter": [
+        {
+          "id": "aioControlCenter.sidebar",
+          "name": "Control Center",
+          "type": "webview"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "clean": "node ./scripts/clean.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "npm run clean && tsc -p tsconfig.json",
+    "test:unit": "npm run build && node --test out/tests/unit/*.test.js",
+    "test:extension": "npm run build && node out/tests/extension/runTest.js",
+    "package:vsix": "npm run build && node ./scripts/ensure-package-dir.mjs && vsce package --no-dependencies --out dist/aio-control-center-dev-0.0.1.vsix",
+    "inspect:vsix": "node ./scripts/inspect-vsix.mjs dist/aio-control-center-dev-0.0.1.vsix"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.2",
+    "@types/vscode": "1.96.0",
+    "@vscode/test-electron": "2.4.1",
+    "@vscode/vsce": "3.2.1",
+    "typescript": "5.7.3"
+  }
+}

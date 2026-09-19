@@ -1,0 +1,21 @@
+id: SYN-001
+title: Synthetic Dashboard Fixture
+type: implementation
+status: in_progress
+complexity: medium
+risk: low
+execution:
+  mode: standard
+workflow: standard-change
+objective: >
+  Provide deterministic synthetic data for AIO Control Center tests.
+scope:
+  include:
+    - Synthetic project rendering
+  exclude:
+    - Live engine activity
+dependencies: []
+quality_gates:
+  - independent_review
+human_control:
+  final_review_required: true

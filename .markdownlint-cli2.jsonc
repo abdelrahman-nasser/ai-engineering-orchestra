@@ -1,0 +1,14 @@
+{
+  "config": {
+    "extends": ".markdownlint.json"
+  },
+  "ignores": [
+    "apps/vscode/node_modules/**",
+    "apps/vscode/out/**",
+    "apps/vscode/.vscode-test/**",
+    "apps/vscode/coverage/**",
+    "apps/vscode/dist/**",
+    "apps/vscode/.test-profile/**",
+    "apps/vscode/.monitor-events/**"
+  ]
+}

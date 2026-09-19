@@ -1,0 +1,16 @@
+.ai/**
+.vscode-test/**
+coverage/**
+dist/**
+node_modules/**
+scripts/**
+src/**
+tests/**
+tsconfig.json
+package-lock.json
+**/*.map
+**/*.log
+**/*.tmp
+**/__pycache__/**
+**/*.pyc
+out/tests/**

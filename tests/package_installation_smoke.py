@@ -21,9 +21,16 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def run(command: list[str], cwd: Path, env: dict[str, str], expected: int = 0) -> str:
+def run(
+    command: list[str],
+    cwd: Path,
+    env: dict[str, str],
+    expected: int = 0,
+    input_text: str | None = None,
+) -> str:
     result = subprocess.run(command, cwd=cwd, env=env, capture_output=True,
-                            text=True, encoding="utf-8", errors="replace", shell=False)
+                            text=True, encoding="utf-8", errors="replace", shell=False,
+                            input=input_text)
     print(f"$ [{cwd}] {' '.join(command)}", flush=True)
     if result.returncode != expected:
         print(result.stdout + result.stderr, flush=True)
@@ -99,6 +106,11 @@ def main() -> None:
         base = Path(temporary).resolve()
         require(not base.is_relative_to(ROOT), "Temporary environments must be outside checkout")
         project = make_project(base)
+        hostile_cwd = base / "hostile cwd"
+        hostile_package = hostile_cwd / "engineering_orchestration"
+        hostile_package.mkdir(parents=True)
+        (hostile_package / "__init__.py").write_text(
+            "raise RuntimeError('hostile CWD package imported')\n", encoding="utf-8")
         for mode in ("editable", "normal"):
             environment = base / mode
             venv.EnvBuilder(with_pip=True).create(environment)
@@ -117,7 +129,7 @@ def main() -> None:
                 with zipfile.ZipFile(wheel) as archive:
                     names = archive.namelist()
                     modules = {f"engineering_orchestration/{name}" for name in
-                               ("__init__.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_selection.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
+                               ("__init__.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_selection.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "ide_bridge.py", "list_tasks.py", "inspect_task.py",
                                 "execution_mode.py", "inference_option.py",
                                 "inference_option_availability.py",
                                 "verify_repo.py", "workflow_catalog.py", "role_catalog.py", "schema_resources.py",
@@ -135,6 +147,8 @@ def main() -> None:
                     payload = {name for name in names if ".dist-info/" not in name}
                     require(payload == modules | schemas | roles,
                             f"Unexpected wheel payload: {payload}")
+                    require(not any(name.startswith("apps/") for name in names),
+                            "Wheel unexpectedly contains VS Code extension files")
                     for name in schemas:
                         require(archive.read(name) == (ROOT / "schemas" / Path(name).name).read_bytes(),
                                 "Installed schema differs from canonical source")
@@ -157,6 +171,7 @@ import engineering_orchestration.assignment as assignment
 import engineering_orchestration.execution_mode as execution_mode
 import engineering_orchestration.inference_option as inference_option
 import engineering_orchestration.inference_option_availability as inference_option_availability
+import engineering_orchestration.ide_bridge as ide_bridge
 import engineering_orchestration.project_verification as project_verification
 import engineering_orchestration.role_catalog as role_catalog
 from engineering_orchestration.workflow_catalog import load_workflow_catalog
@@ -215,6 +230,7 @@ assignment_result = assignment.validate_assignment_set(
     workflow_catalog, catalog, [actor])
 role_source = role_catalog.find_default_roles_resource()
 print(json.dumps({'module': cli.__file__,
+    'bridge_module': ide_bridge.__file__,
     'execution_mode_module': execution_mode.__file__,
     'execution_mode_order': execution_mode.EXECUTION_MODE_ORDER,
     'critical_satisfies_deep': execution_mode.execution_mode_satisfies(
@@ -285,6 +301,8 @@ print(json.dumps({'module': cli.__file__,
             if mode == "normal":
                 require(Path(evidence["module"]).resolve().is_relative_to(environment),
                         "Normal install imports leaked to source")
+                require(Path(evidence["bridge_module"]).resolve().is_relative_to(environment),
+                        "Normal IDE bridge import leaked to source")
                 require(Path(evidence["execution_mode_module"]).resolve().is_relative_to(environment),
                         "Normal Execution Mode import leaked to source")
                 require(Path(evidence["runner_module"]).resolve().is_relative_to(environment),
@@ -365,6 +383,30 @@ print(json.dumps({'module': cli.__file__,
                     "Installed Assignment validation failed")
             require(evidence["assignment_storage_absent"],
                     "Assignment validation unexpectedly required project storage")
+            bridge_request = json.dumps({
+                "protocol": "aio.ide/1", "request_id": f"installed-{mode}",
+                "operation": "project_snapshot", "project_root": str(project),
+                "payload": {"status": None, "workflow": None}})
+            bridge_output = run(
+                [str(python), "-I", "-B", "-X", "utf8", "-m",
+                 "engineering_orchestration.ide_bridge"],
+                hostile_cwd,
+                run_env,
+                input_text=bridge_request,
+            )
+            bridge_evidence = json.loads(bridge_output)
+            require(bridge_evidence["ok"],
+                    f"Installed IDE bridge failed: {bridge_evidence}")
+            require(bridge_evidence["protocol"] == "aio.ide/1"
+                    and bridge_evidence["result"]["project"]["id"] == "external"
+                    and bridge_evidence["result"]["tasks"][0]["id"] == "LOCAL-123",
+                    "Installed IDE bridge returned incorrect external-project data")
+            bridge_origin = Path(bridge_evidence["meta"]["package_origin"]).resolve()
+            require(not bridge_origin.is_relative_to(hostile_cwd),
+                    "Isolated IDE bridge launch imported hostile CWD code")
+            if mode == "normal":
+                require(bridge_origin.is_relative_to(environment),
+                        "Normal installed IDE bridge origin leaked to source")
             for cwd in (ROOT, ROOT / "scripts"):
                 for args, marker in [(["--help"], "{tasks,inspect,verify}"),
                                      (["tasks"], "AIO-016"),

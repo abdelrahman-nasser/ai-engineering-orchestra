@@ -58,3 +58,13 @@ coverage/
 *.zip
 *.nupkg
 *.tgz
+
+# AIO Control Center local development output
+apps/vscode/node_modules/
+apps/vscode/out/
+apps/vscode/.vscode-test/
+apps/vscode/coverage/
+apps/vscode/dist/
+apps/vscode/*.vsix
+apps/vscode/.test-profile/
+apps/vscode/.monitor-events/

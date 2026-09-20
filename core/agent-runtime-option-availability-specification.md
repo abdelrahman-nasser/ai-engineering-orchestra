@@ -194,6 +194,11 @@ availability contract neither consumes nor implies that relation. A Runtime
 Option may expose zero externally selectable Inference Options, so absence of an
 edge must not imply that it cannot execute.
 
+The separate derived composition is defined by
+`core/runtime-inference-pair-availability-specification.md`. It may consume this
+contract's normalized state without changing Runtime availability semantics.
+This standalone availability contract itself performs no pair assessment.
+
 Availability does not inspect or change Actor identity, Actor Availability,
 Actor Selection, Assignment, Inference Option identity or availability, Task
 Execution Mode, Quality Gate state, or Human Control.

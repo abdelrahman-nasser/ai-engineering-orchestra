@@ -1,0 +1,41 @@
+id: AIO-032
+title: Implement Runtime-to-Inference Pair Availability Assessment
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: medium
+risk: medium
+execution:
+  mode: deep
+workflow: architecture-change
+objective: >
+  Define and implement the smallest pure Core assessment of each explicitly
+  supplied positive external Runtime-to-Inference compatibility edge against
+  the normalized availability states of its exact endpoints, without selecting,
+  authorizing, or invoking an execution configuration.
+scope:
+  include:
+    - Canonical Runtime-to-Inference Pair Availability Assessment specification
+    - Immutable per-edge assessment values with a computed three-outcome result
+    - Exact five-input pure API composed from existing compatibility and availability validators
+    - Compatibility-first validation, deterministic finding conversion, and atomic invalid results
+    - Complete nine-row endpoint-availability truth table and missing-observation behavior
+    - Focused tests, installed-package coverage, documentation, and Task evidence
+  exclude:
+    - Complete execution-configuration viability or Runtime-owned inference representation
+    - Actor applicability, Actor Selection, Assignment, Task suitability, or Execution Mode matching
+    - Ranking, routing, fallback, Runtime selection, Inference Option selection, or model selection
+    - Authorization, reservation, dispatch, Execution Contracts, execution, or invocation
+    - Provider Adapters, SDK integrations, discovery, network access, credentials, endpoints, quota, or cost
+    - New schemas, serialized assessment contracts, persistence, registries, Project Manifest fields, or CLI work
+    - AIO-030, AIO-033, and changes to existing domain fields, schemas, APIs, or standalone validation semantics
+dependencies:
+  - AIO-031
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

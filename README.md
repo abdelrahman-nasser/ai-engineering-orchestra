@@ -245,15 +245,12 @@ from engineering_orchestration.runtime_inference_compatibility import (
     validate_runtime_inference_compatibility,
 )
 
+compatibility_evidence = [
+    RuntimeInferenceCompatibilityEvidence("primary-agent-runtime", "primary"),
+    RuntimeInferenceCompatibilityEvidence("primary-agent-runtime", "secondary"),
+]
 compatibility = validate_runtime_inference_compatibility(
-    [
-        RuntimeInferenceCompatibilityEvidence(
-            "primary-agent-runtime", "primary"
-        ),
-        RuntimeInferenceCompatibilityEvidence(
-            "primary-agent-runtime", "secondary"
-        ),
-    ],
+    compatibility_evidence,
     runtime_options,
     options,
 )
@@ -267,6 +264,42 @@ relation is valid, and a missing edge means only that no positive external
 compatibility evidence was supplied; it is not proof of incompatibility or
 non-executability. A Runtime Option may still own or hide inference selection
 and have no external edge.
+
+Runtime-to-Inference Pair Availability Assessment composes that validated
+positive relation with both normalized endpoint-availability snapshots:
+
+```python
+from engineering_orchestration.runtime_inference_pair_availability import (
+    assess_runtime_inference_pair_availability,
+)
+
+pair_availability = assess_runtime_inference_pair_availability(
+    compatibility_evidence,
+    runtime_options,
+    options,
+    [
+        AgentRuntimeOptionAvailabilityObservation(
+            "primary-agent-runtime",
+            AgentRuntimeOptionAvailabilityState.AVAILABLE,
+        )
+    ],
+    [
+        InferenceOptionAvailabilityObservation(
+            "primary", InferenceOptionAvailabilityState.AVAILABLE
+        )
+    ],
+)
+print([(item.runtime_option_id, item.option_id, item.outcome)
+       for item in pair_availability.assessments])
+```
+
+Each supplied edge receives exactly one outcome: `established` only when both
+endpoints are available, `blocked` when either is unavailable, and `unresolved`
+otherwise. Missing observations normalize to unknown. Invalid input produces
+findings and no assessments; an empty valid relation still validates both
+availability inputs and produces an empty assessment tuple. This derived result
+does not add inferred edges or select, authorize, reserve, dispatch, or invoke a
+configuration.
 
 The current high-level separation is:
 
@@ -285,8 +318,12 @@ Caller/environment
   -> caller-scoped Inference Option inventory + availability
   -> supplied positive Runtime-to-Inference compatibility evidence
 
+current derived evidence:
+compatibility evidence + endpoint availability
+  -> Runtime-to-Inference Pair Availability Assessment
+
 future only:
-inventories + availability + compatibility evidence
+pair availability + additional configuration evidence
   -> execution-configuration viability
   -> authorization
   -> Execution Contract
@@ -309,6 +346,8 @@ and
 [`core/agent-runtime-option-availability-specification.md`](core/agent-runtime-option-availability-specification.md).
 The separate positive-relation authority is
 [`core/runtime-inference-compatibility-specification.md`](core/runtime-inference-compatibility-specification.md).
+The derived pair-availability authority is
+[`core/runtime-inference-pair-availability-specification.md`](core/runtime-inference-pair-availability-specification.md).
 
 ## Installed Structural Validation
 

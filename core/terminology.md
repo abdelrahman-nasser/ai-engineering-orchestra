@@ -161,6 +161,28 @@ canonical contract is defined in:
 
 ---
 
+## Runtime-to-Inference Pair Availability Assessment
+
+An immutable, pure, deterministic assessment of one explicitly supplied
+positive external Runtime-to-Inference compatibility edge against the
+normalized availability states of its exact endpoints within one caller-owned
+evaluation context.
+
+The closed outcomes are `established`, `blocked`, and `unresolved`.
+`established` means only that the positive edge validated and both endpoints
+normalized to available. Any unavailable endpoint makes the pair `blocked`;
+otherwise, at least one unknown endpoint makes it `unresolved`.
+
+Only supplied positive edges are assessed. No Cartesian product or synthetic
+edge is created, and a Runtime Option without an external edge receives no
+assessment. The result is not complete configuration viability, selection,
+authorization, reservation, dispatch, execution, or invocation. The canonical
+contract is defined in:
+
+`core/runtime-inference-pair-availability-specification.md`
+
+---
+
 ## Agent Service
 
 An external managed implementation that may expose or realize one or more Agent

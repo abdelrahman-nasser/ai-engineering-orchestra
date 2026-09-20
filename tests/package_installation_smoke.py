@@ -121,6 +121,7 @@ def main() -> None:
                                 "execution_mode.py", "inference_option.py",
                                 "inference_option_availability.py",
                                 "runtime_inference_compatibility.py",
+                                "runtime_inference_pair_availability.py",
                                 "verify_repo.py", "workflow_catalog.py", "role_catalog.py", "schema_resources.py",
                                 "project.py", "validation.py", "project_verification.py")}
                     schemas = {f"engineering_orchestration/_schemas/{name}" for name in
@@ -162,6 +163,7 @@ import engineering_orchestration.inference_option_availability as inference_opti
 import engineering_orchestration.project_verification as project_verification
 import engineering_orchestration.role_catalog as role_catalog
 import engineering_orchestration.runtime_inference_compatibility as runtime_inference_compatibility
+import engineering_orchestration.runtime_inference_pair_availability as runtime_inference_pair_availability
 from engineering_orchestration.workflow_catalog import load_workflow_catalog
 from engineering_orchestration.schema_resources import schema_resource
 catalog = role_catalog.load_role_catalog()
@@ -211,6 +213,8 @@ compatibility_values = [
         'installed-runtime-secondary', 'installed-primary'),
     runtime_inference_compatibility.RuntimeInferenceCompatibilityEvidence(
         'installed-runtime-primary', 'installed-secondary'),
+    runtime_inference_compatibility.RuntimeInferenceCompatibilityEvidence(
+        'installed-runtime-primary', 'installed-primary'),
 ]
 compatibility_result = (
     runtime_inference_compatibility.validate_runtime_inference_compatibility(
@@ -227,6 +231,54 @@ compatibility_duplicate_result = (
 compatibility_empty_result = (
     runtime_inference_compatibility.validate_runtime_inference_compatibility(
         [], runtime_options, inference_options))
+pair_availability_result = (
+    runtime_inference_pair_availability.assess_runtime_inference_pair_availability(
+        compatibility_values,
+        runtime_options,
+        inference_options,
+        [
+            agent_runtime_option_availability.AgentRuntimeOptionAvailabilityObservation(
+                'installed-runtime-primary',
+                agent_runtime_option_availability.AgentRuntimeOptionAvailabilityState.AVAILABLE),
+            agent_runtime_option_availability.AgentRuntimeOptionAvailabilityObservation(
+                'installed-runtime-secondary',
+                agent_runtime_option_availability.AgentRuntimeOptionAvailabilityState.UNAVAILABLE),
+        ],
+        [inference_option_availability.InferenceOptionAvailabilityObservation(
+            'installed-primary',
+            inference_option_availability.InferenceOptionAvailabilityState.AVAILABLE)],
+    ))
+pair_invalid_result = (
+    runtime_inference_pair_availability.assess_runtime_inference_pair_availability(
+        [compatibility_values[2]],
+        runtime_options,
+        inference_options,
+        [
+            agent_runtime_option_availability.AgentRuntimeOptionAvailabilityObservation(
+                'installed-runtime-primary',
+                agent_runtime_option_availability.AgentRuntimeOptionAvailabilityState.AVAILABLE),
+            agent_runtime_option_availability.AgentRuntimeOptionAvailabilityObservation(
+                'installed-runtime-primary',
+                agent_runtime_option_availability.AgentRuntimeOptionAvailabilityState.UNKNOWN),
+        ],
+        [
+            inference_option_availability.InferenceOptionAvailabilityObservation(
+                'installed-primary',
+                inference_option_availability.InferenceOptionAvailabilityState.AVAILABLE),
+            inference_option_availability.InferenceOptionAvailabilityObservation(
+                'installed-primary',
+                inference_option_availability.InferenceOptionAvailabilityState.UNKNOWN),
+        ],
+    ))
+pair_empty_result = (
+    runtime_inference_pair_availability.assess_runtime_inference_pair_availability(
+        [], runtime_options, inference_options, [], []))
+try:
+    schema_resource('runtime-inference-pair-availability.schema.json')
+except ValueError:
+    pair_availability_schema_absent = True
+else:
+    pair_availability_schema_absent = False
 workflow_catalog = load_workflow_catalog(Path.cwd().parents[1] / 'workflows')
 selection_result = actor_selection.select_actor(
     {'id': 'LOCAL-123', 'workflow': 'external-flow'},
@@ -249,6 +301,7 @@ print(json.dumps({'module': cli.__file__,
     'inference_option_module': inference_option.__file__,
     'inference_option_availability_module': inference_option_availability.__file__,
     'runtime_inference_compatibility_module': runtime_inference_compatibility.__file__,
+    'runtime_inference_pair_availability_module': runtime_inference_pair_availability.__file__,
     'actor_module': actor_coverage.__file__,
     'selection_module': actor_selection.__file__,
     'assignment_module': assignment.__file__,
@@ -302,6 +355,23 @@ print(json.dumps({'module': cli.__file__,
         (Path.cwd().parents[1] / '.ai' / name).exists() for name in
         ('compatibility', 'runtime-inference-compatibility',
          'execution-configurations')),
+    'pair_availability_valid': pair_availability_result.valid,
+    'pair_availability_assessments': [
+        [item.runtime_option_id, item.option_id,
+         item.runtime_availability_state, item.inference_availability_state,
+         item.outcome]
+        for item in pair_availability_result.assessments],
+    'pair_availability_invalid_codes': [
+        finding.code for finding in pair_invalid_result.findings],
+    'pair_availability_invalid_atomic': (
+        not pair_invalid_result.valid and not pair_invalid_result.assessments),
+    'pair_availability_empty_valid': (
+        pair_empty_result.valid and not pair_empty_result.assessments),
+    'pair_availability_schema_absent': pair_availability_schema_absent,
+    'pair_availability_storage_absent': not any(
+        (Path.cwd().parents[1] / '.ai' / name).exists() for name in
+        ('pair-availability', 'runtime-inference-pair-availability',
+         'execution-configurations')),
     'selection_valid': selection_result.valid,
     'selection_outcome': selection_result.outcome,
     'selected_actor_id': selection_result.selected_actor_id,
@@ -348,6 +418,8 @@ print(json.dumps({'module': cli.__file__,
                         "Normal Inference Option Availability validator import leaked to source")
                 require(Path(evidence["runtime_inference_compatibility_module"]).resolve().is_relative_to(environment),
                         "Normal Runtime-to-Inference Compatibility validator import leaked to source")
+                require(Path(evidence["runtime_inference_pair_availability_module"]).resolve().is_relative_to(environment),
+                        "Normal Runtime-to-Inference Pair Availability import leaked to source")
                 require(Path(evidence["actor_module"]).resolve().is_relative_to(environment),
                         "Normal Actor evaluator import leaked to source")
                 require(Path(evidence["selection_module"]).resolve().is_relative_to(environment),
@@ -402,6 +474,7 @@ print(json.dumps({'module': cli.__file__,
                     "Inference Option validation unexpectedly required project storage")
             require(evidence["compatibility_valid"]
                     and evidence["compatibility_edges"] == [
+                        ["installed-runtime-primary", "installed-primary"],
                         ["installed-runtime-primary", "installed-secondary"],
                         ["installed-runtime-secondary", "installed-primary"]],
                     "Installed Runtime-to-Inference compatibility validation failed")
@@ -417,6 +490,26 @@ print(json.dumps({'module': cli.__file__,
                     "Installed empty compatibility relation should be valid")
             require(evidence["compatibility_storage_absent"],
                     "Compatibility validation unexpectedly required project storage")
+            require(evidence["pair_availability_valid"]
+                    and evidence["pair_availability_assessments"] == [
+                        ["installed-runtime-primary", "installed-primary",
+                         "available", "available", "established"],
+                        ["installed-runtime-primary", "installed-secondary",
+                         "available", "unknown", "unresolved"],
+                        ["installed-runtime-secondary", "installed-primary",
+                         "unavailable", "available", "blocked"]],
+                    "Installed pair availability outcomes are incorrect")
+            require(evidence["pair_availability_invalid_codes"] == [
+                        "duplicate_agent_runtime_option_availability",
+                        "duplicate_inference_option_availability"]
+                    and evidence["pair_availability_invalid_atomic"],
+                    "Installed pair availability diagnostic composition failed")
+            require(evidence["pair_availability_empty_valid"],
+                    "Installed empty pair availability relation should be valid")
+            require(evidence["pair_availability_schema_absent"],
+                    "Pair Availability Assessment unexpectedly added a schema resource")
+            require(evidence["pair_availability_storage_absent"],
+                    "Pair Availability Assessment unexpectedly required project storage")
             require(evidence["selection_valid"]
                     and evidence["selection_outcome"] == "selected"
                     and evidence["selected_actor_id"] == "installed-agent",

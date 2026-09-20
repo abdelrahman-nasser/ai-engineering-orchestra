@@ -72,6 +72,10 @@ Status: In Development
 - pure deterministic compatibility-relation validation that reuses both
   endpoint inventory validators and rejects duplicate or unknown-reference
   input atomically
+- canonical Runtime-to-Inference Pair Availability Assessment specification
+  and immutable pure API with exhaustive three-state endpoint composition
+- deterministic compatibility-first validation, atomic converted diagnostics,
+  and one pair-sorted assessment per supplied positive compatibility edge
 - canonical Workflow specification in `core/workflow-specification.md`
 - initial canonical engineering Workflow library in `workflows/` (`standard-change`, `architecture-change`, `security-sensitive-change`)
 - normalized Workflow JSON Schema in `schemas/workflow.schema.json`
@@ -133,6 +137,9 @@ Status: In Development
 - established that an absent compatibility edge means no supplied positive
   external evidence, not explicit incompatibility or non-executability, while
   preserving Runtime-owned inference without synthetic edges
+- composed compatibility and normalized endpoint availability into bounded
+  `established`, `blocked`, and `unresolved` per-edge evidence without adding
+  configuration viability, selection, authority, execution, or a new schema
 - established the Role authority hierarchy from semantic specification to
   structural schema, canonical YAML instances, compatibility Markdown, and
   regression tooling

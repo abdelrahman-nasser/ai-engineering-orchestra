@@ -152,6 +152,11 @@ or Task Execution Mode. Runtime-to-Inference Compatibility Evidence is defined
 separately by `core/runtime-inference-compatibility-specification.md`; this
 availability observation neither consumes nor implies that relation.
 
+Runtime-to-Inference Pair Availability Assessment is separately defined by
+`core/runtime-inference-pair-availability-specification.md`. It may consume this
+contract's normalized state without changing Inference Option availability
+semantics. This standalone availability contract performs no pair assessment.
+
 Availability grants no credential, permission, approval, Human Control, network,
 or execution authority and creates no Execution Contract or invocation.
 

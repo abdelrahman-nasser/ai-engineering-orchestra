@@ -286,6 +286,12 @@ intersection, freshness, polling, health, capacity, or quota check.
 Existing availability Definitions, schemas, normalization, and missing-value
 semantics remain unchanged.
 
+The additive Runtime-to-Inference Pair Availability Assessment contract is
+defined separately by
+`core/runtime-inference-pair-availability-specification.md`. It composes a
+validated positive relation with both normalized endpoint-availability results
+without changing this standalone compatibility validator or its evidence.
+
 ---
 
 ## 10. Actor, Selection, Assignment, and Execution Mode Boundaries
@@ -325,18 +331,20 @@ model. It does not create an execution-configuration candidate, Agent
 Definition, Agent Profile, Agent Service contract, Execution Contract,
 permission, session, dispatch, or invocation.
 
-The deferred sequence remains:
+The layered sequence is:
 
 ```text
 Compatibility
+-> Runtime-to-Inference Pair Availability Assessment
 -> configuration viability
 -> authorization
 -> Execution Contract
 -> invocation
 ```
 
-Only the first step is represented by this contract. The sequence does not
-authorize any later step.
+Only the first step is represented by this contract. The separately defined
+pair assessment represents the second step; configuration viability and every
+later step remain future work. No step authorizes a later one.
 
 ---
 
@@ -396,8 +404,9 @@ The first contract contains no:
 - credential, endpoint, native configuration, session, tool, permission, or
   capability field;
 - embedded Runtime Option or Inference Option list on either endpoint;
-- availability composition, freshness, polling, health, capacity, or quota
-  behavior;
+- availability composition inside this compatibility validator, freshness,
+  polling, health, capacity, or quota behavior; the separate pair assessment
+  may consume normalized endpoint availability without changing this contract;
 - Actor mapping, Actor Selection, Assignment, or Execution Mode matching;
 - configuration viability, selection, ranking, routing, fallback,
   authorization, reservation, dispatch, execution, or invocation;

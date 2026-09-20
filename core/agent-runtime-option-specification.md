@@ -217,6 +217,7 @@ Role
 -> caller-scoped Inference Options
 -> Inference availability
 -> supplied positive Runtime-to-Inference Compatibility Evidence
+-> Runtime-to-Inference Pair Availability Assessment
 -> future configuration viability
 ```
 
@@ -235,6 +236,11 @@ A separate positive relation is defined by
 expose zero externally selectable Inference Options because inference may be
 selected internally, bound in an external Agent definition, or hidden behind a
 managed Agent Service.
+
+The separate derived composition is defined by
+`core/runtime-inference-pair-availability-specification.md`. It assesses only
+supplied external edges and does not turn a Runtime without such an edge into a
+blocked or non-executable Runtime.
 
 Therefore, absence of Runtime-to-Inference compatibility edges must not be
 interpreted as proof that a Runtime Option cannot execute. The many-to-many

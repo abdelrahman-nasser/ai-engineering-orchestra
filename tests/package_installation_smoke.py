@@ -117,7 +117,7 @@ def main() -> None:
                 with zipfile.ZipFile(wheel) as archive:
                     names = archive.namelist()
                     modules = {f"engineering_orchestration/{name}" for name in
-                               ("__init__.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
+                               ("__init__.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_execution_candidate_prerequisite.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
                                 "execution_mode.py", "inference_option.py",
                                 "inference_option_availability.py",
                                 "runtime_inference_compatibility.py",
@@ -155,6 +155,7 @@ import engineering_orchestration.actor_availability as actor_availability
 import engineering_orchestration.actor_coverage as actor_coverage
 import engineering_orchestration.actor_runtime_applicability as actor_runtime_applicability
 import engineering_orchestration.actor_selection as actor_selection
+import engineering_orchestration.agent_execution_candidate_prerequisite as agent_execution_candidate_prerequisite
 import engineering_orchestration.agent_runtime_option as agent_runtime_option
 import engineering_orchestration.agent_runtime_option_availability as agent_runtime_option_availability
 import engineering_orchestration.assignment as assignment
@@ -312,15 +313,71 @@ except ValueError:
 else:
     pair_availability_schema_absent = False
 workflow_catalog = load_workflow_catalog(Path.cwd().parents[1] / 'workflows')
+task = {'id': 'LOCAL-123', 'workflow': 'external-flow'}
 selection_result = actor_selection.select_actor(
-    {'id': 'LOCAL-123', 'workflow': 'external-flow'},
+    task,
     'external-stage', 'software-engineer', workflow_catalog, catalog,
     [actor, human_actor], observations)
 binding = assignment.Assignment('LOCAL-123', 'external-flow', 'external-stage',
                                 'software-engineer', 'installed-agent')
 assignment_result = assignment.validate_assignment_set(
-    [binding], {'id': 'LOCAL-123', 'workflow': 'external-flow'},
+    [binding], task,
     workflow_catalog, catalog, [actor])
+candidate_runtime_observations = [
+    agent_runtime_option_availability.AgentRuntimeOptionAvailabilityObservation(
+        'installed-runtime-primary',
+        agent_runtime_option_availability.AgentRuntimeOptionAvailabilityState.AVAILABLE),
+]
+candidate_inference_observations = [
+    inference_option_availability.InferenceOptionAvailabilityObservation(
+        'installed-primary',
+        inference_option_availability.InferenceOptionAvailabilityState.AVAILABLE),
+]
+candidate_satisfied_result = (
+    agent_execution_candidate_prerequisite.
+    assess_agent_execution_candidate_prerequisites(
+        binding, 'installed-runtime-primary', 'installed-primary', task,
+        workflow_catalog, catalog, [actor, human_actor], observations,
+        applicability_values, runtime_options, inference_options,
+        compatibility_values, candidate_runtime_observations,
+        candidate_inference_observations))
+candidate_blocked_result = (
+    agent_execution_candidate_prerequisite.
+    assess_agent_execution_candidate_prerequisites(
+        binding, 'installed-runtime-primary', 'installed-primary', task,
+        workflow_catalog, catalog, [actor, human_actor],
+        [actor_availability.ActorAvailabilityObservation(
+            'installed-agent', actor_availability.AvailabilityState.UNAVAILABLE)],
+        applicability_values, runtime_options, inference_options,
+        compatibility_values, candidate_runtime_observations,
+        candidate_inference_observations))
+candidate_unresolved_result = (
+    agent_execution_candidate_prerequisite.
+    assess_agent_execution_candidate_prerequisites(
+        binding, 'installed-runtime-primary', 'installed-primary', task,
+        workflow_catalog, catalog, [actor, human_actor], observations,
+        applicability_values, runtime_options, inference_options, [],
+        candidate_runtime_observations, candidate_inference_observations))
+candidate_invalid_result = (
+    agent_execution_candidate_prerequisite.
+    assess_agent_execution_candidate_prerequisites(
+        binding, 'installed-runtime-primary', 'installed-primary', task,
+        workflow_catalog, catalog, [actor, human_actor],
+        [
+            actor_availability.ActorAvailabilityObservation(
+                'installed-agent', actor_availability.AvailabilityState.AVAILABLE),
+            actor_availability.ActorAvailabilityObservation(
+                'installed-agent', actor_availability.AvailabilityState.UNKNOWN),
+        ],
+        applicability_values, runtime_options, inference_options,
+        compatibility_values, candidate_runtime_observations,
+        candidate_inference_observations))
+try:
+    schema_resource('agent-execution-candidate-prerequisite.schema.json')
+except ValueError:
+    candidate_prerequisite_schema_absent = True
+else:
+    candidate_prerequisite_schema_absent = False
 role_source = role_catalog.find_default_roles_resource()
 print(json.dumps({'module': cli.__file__,
     'execution_mode_module': execution_mode.__file__,
@@ -335,6 +392,7 @@ print(json.dumps({'module': cli.__file__,
     'inference_option_availability_module': inference_option_availability.__file__,
     'runtime_inference_compatibility_module': runtime_inference_compatibility.__file__,
     'runtime_inference_pair_availability_module': runtime_inference_pair_availability.__file__,
+    'candidate_prerequisite_module': agent_execution_candidate_prerequisite.__file__,
     'actor_module': actor_coverage.__file__,
     'selection_module': actor_selection.__file__,
     'assignment_module': assignment.__file__,
@@ -449,6 +507,37 @@ print(json.dumps({'module': cli.__file__,
     'assignment_valid': assignment_result.valid,
     'assignment_complete': assignment_result.complete,
     'assignment_storage_absent': not (Path.cwd().parents[1] / '.ai/assignments').exists(),
+    'candidate_satisfied': {
+        'valid': candidate_satisfied_result.valid,
+        'identity': [candidate_satisfied_result.responsibility_key,
+                     candidate_satisfied_result.actor_id,
+                     candidate_satisfied_result.runtime_option_id,
+                     candidate_satisfied_result.option_id],
+        'outcome': candidate_satisfied_result.outcome,
+        'reasons': candidate_satisfied_result.reasons},
+    'candidate_blocked': {
+        'valid': candidate_blocked_result.valid,
+        'outcome': candidate_blocked_result.outcome,
+        'reasons': candidate_blocked_result.reasons},
+    'candidate_unresolved': {
+        'valid': candidate_unresolved_result.valid,
+        'outcome': candidate_unresolved_result.outcome,
+        'reasons': candidate_unresolved_result.reasons},
+    'candidate_invalid_codes': [
+        finding.code for finding in candidate_invalid_result.findings],
+    'candidate_invalid_atomic': (
+        not candidate_invalid_result.valid
+        and candidate_invalid_result.responsibility_key is None
+        and candidate_invalid_result.actor_id is None
+        and candidate_invalid_result.runtime_option_id is None
+        and candidate_invalid_result.option_id is None
+        and candidate_invalid_result.outcome is None
+        and not candidate_invalid_result.reasons),
+    'candidate_prerequisite_schema_absent': candidate_prerequisite_schema_absent,
+    'candidate_prerequisite_storage_absent': not any(
+        (Path.cwd().parents[1] / '.ai' / name).exists() for name in
+        ('agent-execution-candidates', 'execution-candidates',
+         'candidate-assessments', 'agent-execution-candidate-prerequisites')),
     'roles': [str(role_source.joinpath(name)) for name in
     ('architect.yaml', 'documentation-specialist.yaml', 'reviewer.yaml',
      'security-reviewer.yaml', 'software-engineer.yaml')],
@@ -487,6 +576,8 @@ print(json.dumps({'module': cli.__file__,
                         "Normal Runtime-to-Inference Compatibility validator import leaked to source")
                 require(Path(evidence["runtime_inference_pair_availability_module"]).resolve().is_relative_to(environment),
                         "Normal Runtime-to-Inference Pair Availability import leaked to source")
+                require(Path(evidence["candidate_prerequisite_module"]).resolve().is_relative_to(environment),
+                        "Normal Agent Execution Candidate Prerequisite import leaked to source")
                 require(Path(evidence["actor_module"]).resolve().is_relative_to(environment),
                         "Normal Actor evaluator import leaked to source")
                 require(Path(evidence["selection_module"]).resolve().is_relative_to(environment),
@@ -616,6 +707,32 @@ print(json.dumps({'module': cli.__file__,
                     "Installed Assignment validation failed")
             require(evidence["assignment_storage_absent"],
                     "Assignment validation unexpectedly required project storage")
+            require(evidence["candidate_satisfied"] == {
+                        "valid": True,
+                        "identity": [["LOCAL-123", "external-flow", "external-stage",
+                                      "software-engineer"], "installed-agent",
+                                     "installed-runtime-primary", "installed-primary"],
+                        "outcome": "satisfied",
+                        "reasons": [
+                            "all_currently_modeled_prerequisites_satisfied"]},
+                    "Installed Agent candidate satisfied assessment failed")
+            require(evidence["candidate_blocked"] == {
+                        "valid": True, "outcome": "blocked",
+                        "reasons": ["actor_unavailable"]},
+                    "Installed Agent candidate blocked assessment failed")
+            require(evidence["candidate_unresolved"] == {
+                        "valid": True, "outcome": "unresolved",
+                        "reasons": [
+                            "runtime_inference_compatibility_not_supplied"]},
+                    "Installed Agent candidate unresolved assessment failed")
+            require(evidence["candidate_invalid_codes"] == [
+                        "duplicate_actor_availability"]
+                    and evidence["candidate_invalid_atomic"],
+                    "Installed Agent candidate invalid assessment was not atomic")
+            require(evidence["candidate_prerequisite_schema_absent"],
+                    "Agent candidate prerequisite assessment unexpectedly added a schema")
+            require(evidence["candidate_prerequisite_storage_absent"],
+                    "Agent candidate prerequisite assessment unexpectedly required storage")
             for cwd in (ROOT, ROOT / "scripts"):
                 for args, marker in [(["--help"], "{tasks,inspect,verify}"),
                                      (["tasks"], "AIO-016"),

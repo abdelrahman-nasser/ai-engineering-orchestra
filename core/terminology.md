@@ -209,6 +209,34 @@ contract is defined in:
 
 ---
 
+## Agent Execution Candidate Prerequisite Assessment
+
+A pure, immutable, deterministic, in-memory assessment of whether one
+caller-designated external-inference Agent candidate satisfies all currently
+modeled hard prerequisites in one caller-owned evaluation context.
+
+Its subject is exactly one valid Assignment plus one exact
+`runtime_option_id` plus one exact `option_id`. The Assignment remains the
+responsibility anchor; no `candidate_id`, Candidate entity, inventory,
+persistence, lifecycle, selection, or reassignment is created.
+
+The assessment reuses current assigned-Actor availability, exact positive
+Actor-to-Runtime applicability, and exact Runtime-to-Inference pair
+availability. Its ordinary outcomes are `satisfied`, `blocked`, and
+`unresolved`. Missing positive evidence is unresolved, explicit current
+unavailability is blocked, and invalid parent input has findings but no
+ordinary outcome.
+
+`satisfied` means only that every hard prerequisite currently modeled by this
+contract is positive. It does not mean selected, permitted, authorized,
+reserved, executable, executing, or guaranteed to succeed. Human Assignments
+and Runtime-owned inference remain outside the Agent external-inference path.
+The canonical contract is defined in:
+
+`core/agent-execution-candidate-prerequisite-specification.md`
+
+---
+
 ## Agent Service
 
 An external managed implementation that may expose or realize one or more Agent

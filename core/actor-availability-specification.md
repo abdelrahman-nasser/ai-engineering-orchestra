@@ -189,6 +189,13 @@ Availability neither consumes nor implies it; an available Agent Actor need not
 have a supplied applicability edge, and an applicability edge does not prove
 that its Actor is available.
 
+Agent Execution Candidate Prerequisite Assessment may reuse this validator's
+normalized state for the Actor named by a valid Assignment. In that separate
+composition, `unavailable` blocks only the candidate and `unknown`, including a
+missing observation, leaves it unresolved. Neither outcome invalidates or
+mutates Assignment. The composition contract is defined in
+`core/agent-execution-candidate-prerequisite-specification.md`.
+
 ---
 
 ## 6. Authority and Execution Boundaries

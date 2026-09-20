@@ -269,6 +269,13 @@ does not change any existing selection or responsibility binding. The separate
 applicability contract is defined in
 `core/actor-runtime-applicability-specification.md`.
 
+Agent Execution Candidate Prerequisite Assessment may invoke this complete
+pair assessor internally and join only the exact caller-designated Runtime and
+Inference IDs after every parent input validates. That separate composition
+does not alter pair outcomes, invent a missing edge, or turn pair evidence into
+selection or authority. Its contract is defined in
+`core/agent-execution-candidate-prerequisite-specification.md`.
+
 The mandatory separation is:
 
 ```text

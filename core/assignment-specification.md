@@ -255,6 +255,13 @@ by `core/actor-runtime-applicability-specification.md`. A valid Assignment does
 not prove Runtime applicability, an applicability edge does not create an
 Assignment, and `runtime_option_id` is not an Assignment field.
 
+Agent Execution Candidate Prerequisite Assessment may consume one valid
+Assignment as its immutable responsibility anchor together with separate
+current availability and topology evidence. That derived assessment neither
+changes Assignment validity nor attaches Runtime or Inference fields to the
+Assignment. Its separate contract is defined in
+`core/agent-execution-candidate-prerequisite-specification.md`.
+
 ---
 
 ## 11. Lifecycle and Persistence Boundaries

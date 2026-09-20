@@ -81,6 +81,12 @@ Status: In Development
   and immutable pure API with exhaustive three-state endpoint composition
 - deterministic compatibility-first validation, atomic converted diagnostics,
   and one pair-sorted assessment per supplied positive compatibility edge
+- canonical Agent Execution Candidate Prerequisite Assessment specification and
+  immutable pure API for one explicit Assignment, Runtime Option, and Inference
+  Option candidate, with `satisfied`, `blocked`, and `unresolved` outcomes
+- capture-once composition of Assignment, Actor availability,
+  Actor-to-Runtime applicability, and pair availability with deterministic
+  reasons, atomic invalid findings, and explicit Human non-applicability
 - canonical Workflow specification in `core/workflow-specification.md`
 - initial canonical engineering Workflow library in `workflows/` (`standard-change`, `architecture-change`, `security-sensitive-change`)
 - normalized Workflow JSON Schema in `schemas/workflow.schema.json`
@@ -151,6 +157,13 @@ Status: In Development
 - composed compatibility and normalized endpoint availability into bounded
   `established`, `blocked`, and `unresolved` per-edge evidence without adding
   configuration viability, selection, authority, execution, or a new schema
+- composed existing responsibility, availability, applicability, and pair
+  evidence for one caller-designated external-inference Agent candidate without
+  adding a Candidate entity, Actor-to-Inference relation, selection,
+  authorization, Execution Contract, invocation, or schema
+- established that assessment `satisfied` means only that currently modeled
+  hard prerequisites are positive, while missing positive evidence remains
+  `unresolved` and explicit unavailability dominates as `blocked`
 - established the Role authority hierarchy from semantic specification to
   structural schema, canonical YAML instances, compatibility Markdown, and
   regression tooling

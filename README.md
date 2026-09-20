@@ -335,6 +335,41 @@ availability inputs and produces an empty assessment tuple. This derived result
 does not add inferred edges or select, authorize, reserve, dispatch, or invoke a
 configuration.
 
+Agent Execution Candidate Prerequisite Assessment composes the existing
+contracts for one explicit external-inference Agent candidate. Its identity is
+one valid Assignment plus exact Runtime and Inference Option IDs:
+
+```python
+from engineering_orchestration.agent_execution_candidate_prerequisite import (
+    assess_agent_execution_candidate_prerequisites,
+)
+
+candidate = assess_agent_execution_candidate_prerequisites(
+    assignment,
+    "primary-agent-runtime",
+    "primary",
+    task,
+    workflow_catalog,
+    role_catalog,
+    actors,
+    actor_availability_observations,
+    applicability_evidence,
+    runtime_options,
+    options,
+    compatibility_evidence,
+    runtime_availability_observations,
+    inference_availability_observations,
+)
+print(candidate.outcome, candidate.reasons)
+```
+
+The ordinary outcomes are `satisfied`, `blocked`, and `unresolved`. Explicit
+unavailability blocks; missing or unknown positive evidence is unresolved; all
+currently modeled positive prerequisites are satisfied. Invalid parent input
+instead returns findings with no outcome or partial identity. A Human
+Assignment is outside this Agent-only path. `satisfied` is not selection,
+permission, authorization, reservation, an Execution Contract, or execution.
+
 The current high-level separation is:
 
 ```text
@@ -360,11 +395,16 @@ Actor-to-Runtime Applicability Evidence
 compatibility evidence + endpoint availability
   -> Runtime-to-Inference Pair Availability Assessment
 
+Assignment + Actor availability
+  + Actor-to-Runtime applicability
+  + Runtime-to-Inference pair availability
+  -> Agent Execution Candidate Prerequisite Assessment
+  -> satisfied | blocked | unresolved
+
 future only:
-Actor-to-Runtime applicability + pair availability
-  + additional configuration evidence
-  -> execution-configuration viability
-  -> authorization
+satisfied prerequisite assessment
+  + separately modeled operational, permission, and policy evidence
+  -> separately defined authorization decision
   -> Execution Contract
   -> invocation
 ```
@@ -392,6 +432,8 @@ The separate positive-relation authority is
 [`core/runtime-inference-compatibility-specification.md`](core/runtime-inference-compatibility-specification.md).
 The derived pair-availability authority is
 [`core/runtime-inference-pair-availability-specification.md`](core/runtime-inference-pair-availability-specification.md).
+The exact-candidate composition authority is
+[`core/agent-execution-candidate-prerequisite-specification.md`](core/agent-execution-candidate-prerequisite-specification.md).
 
 ## Installed Structural Validation
 

@@ -346,7 +346,13 @@ applicable
 != executing
 ```
 
-Candidate viability, selection, ranking, routing, fallback, authorization,
+Agent Execution Candidate Prerequisite Assessment may consume the complete
+validated relation and ask whether its one exact assigned-Actor-to-Runtime edge
+was supplied. A missing edge contributes unresolved evidence and retains the
+meaning defined here. That separate composition is defined in
+`core/agent-execution-candidate-prerequisite-specification.md`.
+
+Broader viability, selection, ranking, routing, fallback, authorization,
 Execution Contract construction, dispatch, and invocation remain future work.
 
 ---

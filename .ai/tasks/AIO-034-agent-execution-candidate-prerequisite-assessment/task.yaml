@@ -1,0 +1,46 @@
+id: AIO-034
+title: Implement Agent Execution Candidate Prerequisite Assessment
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: medium
+execution:
+  mode: deep
+workflow: architecture-change
+objective: >
+  Define and implement the smallest pure, deterministic, in-memory assessment
+  of one caller-designated external-inference Agent execution candidate,
+  anchored by one valid Assignment and composed from current Actor availability,
+  Actor-to-Runtime applicability, and Runtime-to-Inference pair availability
+  evidence, reporting satisfied, blocked, or unresolved without selecting,
+  authorizing, reserving, dispatching, or invoking execution.
+scope:
+  include:
+    - Canonical Agent Execution Candidate Prerequisite Assessment specification
+    - One explicit Assignment plus Runtime Option plus Inference Option candidate identity
+    - Capture-once composition of current Assignment, availability, applicability, compatibility, and pair APIs
+    - Immutable atomic result with satisfied, blocked, and unresolved outcomes
+    - Deterministic outcome reason codes separate from invalid-input findings
+    - Human Assignment non-applicability and external-inference-only boundaries
+    - Focused scenario, regression, package-installation, and documentation evidence
+  exclude:
+    - Candidate IDs, persistence, serialized assessment schemas, or evaluation-context identifiers
+    - Actor-to-Inference applicability and Runtime-owned or hidden inference support
+    - Candidate discovery, enumeration, selection, ranking, routing, scoring, or fallback
+    - Assignment mutation, replacement, refresh, or Runtime and Inference fields
+    - Execution Mode, model-strength, reasoning-tier, tool, capability, or context-window fit
+    - Permissions, credentials, Human approval state, policy state, or execution authorization
+    - Execution Contracts, adapters, reservation, dispatch, invocation, or Agent execution
+    - Filesystem, network, subprocess, clock, polling, discovery, registry, or persistence behavior
+    - Project Manifest changes, CLI work, AIO-030, AIO-035, and historical Task modifications
+dependencies:
+  - AIO-033
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

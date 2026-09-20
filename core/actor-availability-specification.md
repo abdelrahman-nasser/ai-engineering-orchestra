@@ -183,6 +183,12 @@ competency eligibility evidence. Its outcome semantics belong to
 `core/actor-selection-specification.md`; this Availability contract itself
 performs no selection, ranking, recommendation, or Assignment generation.
 
+Actor-to-Runtime Applicability Evidence is a separate positive topology
+relation defined by `core/actor-runtime-applicability-specification.md`.
+Availability neither consumes nor implies it; an available Agent Actor need not
+have a supplied applicability edge, and an applicability edge does not prove
+that its Actor is available.
+
 ---
 
 ## 6. Authority and Execution Boundaries

@@ -21,7 +21,7 @@ Agent Runtime Option Definition
 != Agent Runtime Option Availability Observation
 
 available
-!= Actor compatible
+!= Actor-to-Runtime applicable
 != Inference Option available
 != compatible
 != authorized
@@ -173,7 +173,7 @@ Runtime compatible
 != Runtime available
 
 Runtime available
-!= Actor compatible
+!= Actor-to-Runtime applicable
 != Inference Option available
 != authorized
 != executing
@@ -182,11 +182,16 @@ Runtime available
 Even the following combined evidence is insufficient:
 
 ```text
-Actor compatible
+Actor-to-Runtime applicable
 + Runtime available
 + Inference Option available
 != authorized execution
 ```
+
+Actor-to-Runtime Applicability Evidence is a separate positive relation defined
+by `core/actor-runtime-applicability-specification.md`. This availability
+contract neither consumes nor implies that relation, and an applicability edge
+does not prove Runtime availability.
 
 Runtime-to-Inference Compatibility Evidence is a separate positive relation
 defined by `core/runtime-inference-compatibility-specification.md`. This

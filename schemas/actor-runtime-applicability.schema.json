@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-engineering-orchestra.dev/schemas/actor-runtime-applicability.schema.json",
+  "title": "AI Engineering Orchestra Actor-to-Runtime Applicability Evidence",
+  "description": "Structural schema for one Actor-to-Runtime Applicability Evidence value defined by core/actor-runtime-applicability-specification.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "actor_id",
+    "runtime_option_id"
+  ],
+  "properties": {
+    "actor_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact reference to one known Agent Actor in the supplied Actor context."
+    },
+    "runtime_option_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact reference to one Agent Runtime Option in the supplied inventory."
+    }
+  }
+}

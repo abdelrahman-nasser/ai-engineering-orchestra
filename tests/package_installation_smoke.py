@@ -117,7 +117,7 @@ def main() -> None:
                 with zipfile.ZipFile(wheel) as archive:
                     names = archive.namelist()
                     modules = {f"engineering_orchestration/{name}" for name in
-                               ("__init__.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_selection.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
+                               ("__init__.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
                                 "execution_mode.py", "inference_option.py",
                                 "inference_option_availability.py",
                                 "runtime_inference_compatibility.py",
@@ -125,7 +125,7 @@ def main() -> None:
                                 "verify_repo.py", "workflow_catalog.py", "role_catalog.py", "schema_resources.py",
                                 "project.py", "validation.py", "project_verification.py")}
                     schemas = {f"engineering_orchestration/_schemas/{name}" for name in
-                               ("actor-availability.schema.json", "actor.schema.json",
+                               ("actor-availability.schema.json", "actor-runtime-applicability.schema.json", "actor.schema.json",
                                 "agent-runtime-option.schema.json", "agent-runtime-option-availability.schema.json",
                                 "assignment.schema.json",
                                 "inference-option.schema.json", "inference-option-availability.schema.json",
@@ -153,6 +153,7 @@ from pathlib import Path
 import engineering_orchestration.cli as cli
 import engineering_orchestration.actor_availability as actor_availability
 import engineering_orchestration.actor_coverage as actor_coverage
+import engineering_orchestration.actor_runtime_applicability as actor_runtime_applicability
 import engineering_orchestration.actor_selection as actor_selection
 import engineering_orchestration.agent_runtime_option as agent_runtime_option
 import engineering_orchestration.agent_runtime_option_availability as agent_runtime_option_availability
@@ -188,6 +189,37 @@ runtime_options = [
 ]
 runtime_inventory_result = (
     agent_runtime_option.validate_agent_runtime_option_inventory(runtime_options))
+applicability_values = [
+    actor_runtime_applicability.ActorRuntimeApplicabilityEvidence(
+        'installed-agent', 'installed-runtime-secondary'),
+    actor_runtime_applicability.ActorRuntimeApplicabilityEvidence(
+        'installed-agent', 'installed-runtime-primary'),
+]
+applicability_result = (
+    actor_runtime_applicability.validate_actor_runtime_applicability(
+        applicability_values, [actor, human_actor], runtime_options))
+applicability_duplicate_result = (
+    actor_runtime_applicability.validate_actor_runtime_applicability(
+        [applicability_values[0], applicability_values[0]],
+        [actor, human_actor], runtime_options))
+applicability_human_result = (
+    actor_runtime_applicability.validate_actor_runtime_applicability(
+        [actor_runtime_applicability.ActorRuntimeApplicabilityEvidence(
+            'installed-human', 'installed-runtime-primary')],
+        [actor, human_actor], runtime_options))
+applicability_unknown_actor_result = (
+    actor_runtime_applicability.validate_actor_runtime_applicability(
+        [actor_runtime_applicability.ActorRuntimeApplicabilityEvidence(
+            'missing-agent', 'installed-runtime-primary')],
+        [actor, human_actor], runtime_options))
+applicability_unknown_runtime_result = (
+    actor_runtime_applicability.validate_actor_runtime_applicability(
+        [actor_runtime_applicability.ActorRuntimeApplicabilityEvidence(
+            'installed-agent', 'missing-runtime')],
+        [actor, human_actor], runtime_options))
+applicability_empty_result = (
+    actor_runtime_applicability.validate_actor_runtime_applicability(
+        [], [actor, human_actor], runtime_options))
 runtime_availability_result = (
     agent_runtime_option_availability.validate_agent_runtime_option_availability(
         [agent_runtime_option_availability.AgentRuntimeOptionAvailabilityObservation(
@@ -296,6 +328,7 @@ print(json.dumps({'module': cli.__file__,
     'critical_satisfies_deep': execution_mode.execution_mode_satisfies(
         'critical', 'deep'),
     'availability_module': actor_availability.__file__,
+    'actor_runtime_applicability_module': actor_runtime_applicability.__file__,
     'runtime_option_module': agent_runtime_option.__file__,
     'runtime_option_availability_module': agent_runtime_option_availability.__file__,
     'inference_option_module': inference_option.__file__,
@@ -317,6 +350,37 @@ print(json.dumps({'module': cli.__file__,
     'runtime_inventory_valid': runtime_inventory_result.valid,
     'runtime_option_ids': [option.runtime_option_id for option in
                            runtime_inventory_result.normalized_options],
+    'applicability_valid': applicability_result.valid,
+    'applicability_edges': [
+        [item.actor_id, item.runtime_option_id] for item in
+        applicability_result.normalized_evidence],
+    'applicability_duplicate_codes': [
+        finding.code for finding in applicability_duplicate_result.findings],
+    'applicability_duplicate_atomic': (
+        not applicability_duplicate_result.valid
+        and not applicability_duplicate_result.normalized_evidence),
+    'applicability_human_codes': [
+        finding.code for finding in applicability_human_result.findings],
+    'applicability_human_atomic': (
+        not applicability_human_result.valid
+        and not applicability_human_result.normalized_evidence),
+    'applicability_unknown_actor_codes': [
+        finding.code for finding in applicability_unknown_actor_result.findings],
+    'applicability_unknown_actor_atomic': (
+        not applicability_unknown_actor_result.valid
+        and not applicability_unknown_actor_result.normalized_evidence),
+    'applicability_unknown_runtime_codes': [
+        finding.code for finding in applicability_unknown_runtime_result.findings],
+    'applicability_unknown_runtime_atomic': (
+        not applicability_unknown_runtime_result.valid
+        and not applicability_unknown_runtime_result.normalized_evidence),
+    'applicability_empty_valid': (
+        applicability_empty_result.valid
+        and not applicability_empty_result.normalized_evidence),
+    'applicability_storage_absent': not any(
+        (Path.cwd().parents[1] / '.ai' / name).exists() for name in
+        ('actor-runtime', 'runtime-applicability',
+         'actor-runtime-applicability', 'execution-configurations')),
     'runtime_availability_valid': runtime_availability_result.valid,
     'runtime_availability_states': {
         observation.runtime_option_id: observation.state for observation in
@@ -389,7 +453,8 @@ print(json.dumps({'module': cli.__file__,
     ('architect.yaml', 'documentation-specialist.yaml', 'reviewer.yaml',
      'security-reviewer.yaml', 'software-engineer.yaml')],
     'schemas': [str(schema_resource(n)) for n in
-    ('actor-availability.schema.json', 'actor.schema.json',
+    ('actor-availability.schema.json', 'actor-runtime-applicability.schema.json',
+     'actor.schema.json',
      'agent-runtime-option.schema.json', 'agent-runtime-option-availability.schema.json',
      'assignment.schema.json',
      'inference-option.schema.json', 'inference-option-availability.schema.json',
@@ -408,6 +473,8 @@ print(json.dumps({'module': cli.__file__,
                         "Normal runner import leaked to source")
                 require(Path(evidence["availability_module"]).resolve().is_relative_to(environment),
                         "Normal Actor Availability validator import leaked to source")
+                require(Path(evidence["actor_runtime_applicability_module"]).resolve().is_relative_to(environment),
+                        "Normal Actor-to-Runtime Applicability validator import leaked to source")
                 require(Path(evidence["runtime_option_module"]).resolve().is_relative_to(environment),
                         "Normal Agent Runtime Option validator import leaked to source")
                 require(Path(evidence["runtime_option_availability_module"]).resolve().is_relative_to(environment),
@@ -454,6 +521,31 @@ print(json.dumps({'module': cli.__file__,
                     and evidence["runtime_option_ids"] == [
                         "installed-runtime-primary", "installed-runtime-secondary"],
                     "Installed Agent Runtime Option inventory validation failed")
+            require(evidence["applicability_valid"]
+                    and evidence["applicability_edges"] == [
+                        ["installed-agent", "installed-runtime-primary"],
+                        ["installed-agent", "installed-runtime-secondary"]],
+                    "Installed Actor-to-Runtime applicability validation failed")
+            require(evidence["applicability_duplicate_codes"] == [
+                        "duplicate_actor_runtime_applicability"]
+                    and evidence["applicability_duplicate_atomic"],
+                    "Installed applicability duplicate rejection failed")
+            require(evidence["applicability_human_codes"] == [
+                        "actor_runtime_applicability_requires_agent_actor"]
+                    and evidence["applicability_human_atomic"],
+                    "Installed applicability Human endpoint rejection failed")
+            require(evidence["applicability_unknown_actor_codes"] == [
+                        "actor_not_found"]
+                    and evidence["applicability_unknown_actor_atomic"],
+                    "Installed applicability unknown Actor rejection failed")
+            require(evidence["applicability_unknown_runtime_codes"] == [
+                        "agent_runtime_option_not_found"]
+                    and evidence["applicability_unknown_runtime_atomic"],
+                    "Installed applicability unknown Runtime rejection failed")
+            require(evidence["applicability_empty_valid"],
+                    "Installed empty applicability relation should be valid")
+            require(evidence["applicability_storage_absent"],
+                    "Applicability validation unexpectedly required project storage")
             require(evidence["runtime_availability_valid"]
                     and evidence["runtime_availability_states"] == {
                         "installed-runtime-primary": "available",

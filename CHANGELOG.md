@@ -67,6 +67,11 @@ Status: In Development
   specification and schema with explicit unknown normalization
 - immutable Agent Runtime Option values and pure deterministic inventory and
   availability validation, including duplicate and unknown-reference handling
+- canonical two-field Actor-to-Runtime Applicability Evidence specification and
+  schema for a separate positive Agent-only many-to-many relation
+- pure deterministic applicability validation with captured one-shot inputs,
+  reused Runtime inventory validation, Agent-only Actor endpoints, stable
+  diagnostics, canonical pair ordering, and atomic invalid results
 - canonical two-field Runtime-to-Inference Compatibility Evidence specification
   and schema for separate positive many-to-many support edges
 - pure deterministic compatibility-relation validation that reuses both
@@ -131,6 +136,12 @@ Status: In Development
   Inference compatibility, selection, capacity, authorization, or execution
 - established caller-scoped Runtime Option inventories without Actor mappings,
   project persistence, runtime type enums, or capability fields
+- established a separate positive Actor-to-Runtime applicability relation
+  without changing Actor, Runtime Option, Selection, Assignment, availability,
+  Task, Execution Mode, permission, authority, or invocation contracts
+- established that a missing Actor-to-Runtime edge means no supplied positive
+  applicability evidence, not incompatibility, unavailability, prohibition, or
+  non-executability
 - separated positive Runtime-to-Inference Compatibility Evidence from endpoint
   Definitions, all availability contracts, Actor mapping, configuration
   viability, selection, authority, execution, and invocation

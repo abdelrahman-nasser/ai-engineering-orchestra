@@ -250,6 +250,11 @@ timeout, cost, quota, result, or runtime session ID. Availability is not
 inspected. No Stage becomes current, active, complete, or otherwise stateful
 because an Assignment references it.
 
+Actor-to-Runtime Applicability Evidence is a separate positive relation defined
+by `core/actor-runtime-applicability-specification.md`. A valid Assignment does
+not prove Runtime applicability, an applicability edge does not create an
+Assignment, and `runtime_option_id` is not an Assignment field.
+
 ---
 
 ## 11. Lifecycle and Persistence Boundaries

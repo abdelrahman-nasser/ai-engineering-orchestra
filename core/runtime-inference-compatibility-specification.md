@@ -297,10 +297,13 @@ without changing this standalone compatibility validator or its evidence.
 ## 10. Actor, Selection, Assignment, and Execution Mode Boundaries
 
 Runtime-to-Inference compatibility is not Actor applicability, Actor Selection,
-or Assignment. It adds no Actor-to-Runtime or Actor-to-Inference relation and
-does not change Actor identity, competencies, availability, selection outcomes,
-Assignment fields, completeness, or separation evidence. Human Actors require
-no Runtime Option or Inference Option.
+or Assignment. This contract neither defines nor consumes the separate
+Actor-to-Runtime Applicability Evidence relation, adds no Actor-to-Inference
+relation, and does not change Actor identity, competencies, availability,
+selection outcomes, Assignment fields, completeness, or separation evidence.
+Human Actors require no Runtime Option or Inference Option. Actor-to-Runtime
+semantics are owned by
+`core/actor-runtime-applicability-specification.md`.
 
 Compatibility also does not establish Execution Mode satisfaction, reasoning
 strength, tool or MCP support, filesystem or shell access, safety, quality,
@@ -331,20 +334,27 @@ model. It does not create an execution-configuration candidate, Agent
 Definition, Agent Profile, Agent Service contract, Execution Contract,
 permission, session, dispatch, or invocation.
 
-The layered sequence is:
+The bounded evidence layers are:
 
 ```text
-Compatibility
+Actor-to-Runtime Applicability Evidence (separate)
+
+Runtime-to-Inference Compatibility Evidence
++ endpoint availability
 -> Runtime-to-Inference Pair Availability Assessment
+
+future only:
+Actor-to-Runtime applicability + pair availability
 -> configuration viability
 -> authorization
 -> Execution Contract
 -> invocation
 ```
 
-Only the first step is represented by this contract. The separately defined
-pair assessment represents the second step; configuration viability and every
-later step remain future work. No step authorizes a later one.
+Only Runtime-to-Inference Compatibility Evidence is represented by this
+contract. The Actor-to-Runtime relation and pair assessment are separately
+defined; configuration viability and every later step remain future work. No
+evidence layer authorizes a later one.
 
 ---
 
@@ -407,7 +417,8 @@ The first contract contains no:
 - availability composition inside this compatibility validator, freshness,
   polling, health, capacity, or quota behavior; the separate pair assessment
   may consume normalized endpoint availability without changing this contract;
-- Actor mapping, Actor Selection, Assignment, or Execution Mode matching;
+- Actor applicability input or composition, Actor Selection, Assignment, or
+  Execution Mode matching;
 - configuration viability, selection, ranking, routing, fallback,
   authorization, reservation, dispatch, execution, or invocation;
 - adapter, discovery, network, persistence, registry, graph service, or project

@@ -263,8 +263,11 @@ reservation, or promise about future execution.
 
 Pair availability assessment is separate from Actor applicability, Actor
 Availability, Actor Selection, Assignment, Task suitability, and Execution Mode
-matching. It introduces no Actor-to-Runtime or Actor-to-Inference relation and
-does not change any existing selection or responsibility binding.
+matching. It neither defines nor consumes the separate Actor-to-Runtime
+Applicability Evidence relation, introduces no Actor-to-Inference relation, and
+does not change any existing selection or responsibility binding. The separate
+applicability contract is defined in
+`core/actor-runtime-applicability-specification.md`.
 
 The mandatory separation is:
 
@@ -328,6 +331,8 @@ The first contract contains no:
 - negative compatibility evidence, inferred compatibility, or totality rule;
 - Actor, Task, Assignment, Execution Mode, capability, tool, safety, cost,
   latency, reasoning-strength, or policy input;
+- Actor-to-Runtime applicability input or composition, or any
+  Actor-to-Inference relation;
 - score, preference, ranking, routing, fallback, or selection;
 - complete configuration viability, authorization, reservation, dispatch,
   Execution Contract, execution, or invocation;

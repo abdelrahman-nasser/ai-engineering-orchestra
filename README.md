@@ -233,8 +233,42 @@ runtime_availability = validate_agent_runtime_option_availability(
 States are exactly `available`, `unavailable`, and `unknown`. Missing
 observations normalize to unknown. Duplicate Runtime Option IDs, duplicate
 observations, and unknown references invalidate their complete input without
-partial normalized output. Available does not mean Actor-compatible,
+partial normalized output. Available does not mean Actor-applicable,
 Inference-compatible, selected, authorized, capacity-ready, or executing.
+
+Actor-to-Runtime Applicability Evidence is a separate caller-supplied positive
+many-to-many relation between known Agent Actors and Runtime Options:
+
+```python
+from engineering_orchestration.actor_runtime_applicability import (
+    ActorRuntimeApplicabilityEvidence,
+    validate_actor_runtime_applicability,
+)
+
+actors = [
+    {"id": "agent-engineer", "kind": "agent",
+     "competencies": ["implementation"]},
+]
+applicability_evidence = [
+    ActorRuntimeApplicabilityEvidence(
+        "agent-engineer", "primary-agent-runtime"
+    ),
+]
+applicability = validate_actor_runtime_applicability(
+    applicability_evidence,
+    actors,
+    runtime_options,
+)
+```
+
+Actor values are structurally validated by their existing schema; relation
+validation rejects duplicate Actor IDs, duplicate exact edges, unknown
+references, and known Human Actor endpoints atomically. Runtime inventory
+validation is reused. Valid evidence is ordered by exact
+`(actor_id, runtime_option_id)` only for deterministic representation. An empty
+relation is valid, and a missing edge means only that no positive applicability
+evidence was supplied. It is not proof of incompatibility, unavailability, lack
+of authorization, or inability to execute.
 
 Runtime-to-Inference Compatibility Evidence is a separate caller-supplied
 positive many-to-many relation:
@@ -314,16 +348,21 @@ Inference Option
   = configured inference access
 
 Caller/environment
+  -> caller-scoped Actor context
   -> caller-scoped Runtime Option inventory + availability
   -> caller-scoped Inference Option inventory + availability
+  -> supplied positive Actor-to-Runtime applicability evidence
   -> supplied positive Runtime-to-Inference compatibility evidence
 
-current derived evidence:
+current independent evidence:
+Actor-to-Runtime Applicability Evidence
+
 compatibility evidence + endpoint availability
   -> Runtime-to-Inference Pair Availability Assessment
 
 future only:
-pair availability + additional configuration evidence
+Actor-to-Runtime applicability + pair availability
+  + additional configuration evidence
   -> execution-configuration viability
   -> authorization
   -> Execution Contract
@@ -335,15 +374,20 @@ or execution instance. Human Actors require no Runtime Option. A Runtime Option
 may expose zero externally selectable Inference Options because inference may be
 selected internally or hidden by an external Agent definition or managed Agent
 Service. Absence of compatibility edges therefore does not prove that a
-Runtime Option cannot execute.
+Runtime Option cannot execute. Absence of an Actor-to-Runtime edge likewise
+means only that no positive applicability evidence was supplied.
 
 AIO-029 introduces no Actor mapping, Runtime-to-Inference compatibility,
 execution configuration, Agent Definition, Agent Service contract, Provider
 adapter, selection, authorization, persistence, network access, or invocation.
+The later AIO-033 relation references Actor and Runtime identities without
+embedding a mapping in either endpoint Definition or changing the Human path.
 The semantic authorities are
 [`core/agent-runtime-option-specification.md`](core/agent-runtime-option-specification.md)
 and
 [`core/agent-runtime-option-availability-specification.md`](core/agent-runtime-option-availability-specification.md).
+The separate Actor-to-Runtime relation authority is
+[`core/actor-runtime-applicability-specification.md`](core/actor-runtime-applicability-specification.md).
 The separate positive-relation authority is
 [`core/runtime-inference-compatibility-specification.md`](core/runtime-inference-compatibility-specification.md).
 The derived pair-availability authority is
@@ -373,11 +417,12 @@ internal failures produce ERROR. ERROR takes precedence over FAIL. PASS covers
 only the supported structural rules, without establishing Quality Gate results.
 
 The installed tool packages canonical Actor, Actor Availability Observation,
-Agent Runtime Option, Agent Runtime Option Availability Observation, Assignment,
-Inference Option, Inference Option Availability Observation,
-Runtime-to-Inference Compatibility Evidence, Role, Task, Workflow, and Project
-Manifest schemas from their single sources in `schemas/`, plus the five
-framework-owned canonical Role YAML instances from `roles/`.
+Actor-to-Runtime Applicability Evidence, Agent Runtime Option, Agent Runtime
+Option Availability Observation, Assignment, Inference Option, Inference Option
+Availability Observation, Runtime-to-Inference Compatibility Evidence, Role,
+Task, Workflow, and Project Manifest schemas from their single sources in
+`schemas/`, plus the five framework-owned canonical Role YAML instances from
+`roles/`.
 Managed projects
 need no schema regression scripts, fixtures, Orchestra Task history, Git,
 Node/npm, or Python tests. Python and the declared tool dependencies run the

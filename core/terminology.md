@@ -109,9 +109,9 @@ of them.
 
 Agent Runtime Option is not Actor, executable Agent definition, execution
 instance, Inference Option, Agent Service, authorization, or credentials. Human
-Actors require no Agent Runtime Option. AIO-029 defines no Actor mapping or
-Runtime-to-Inference compatibility relation. The canonical contract is defined
-in:
+Actors require no Agent Runtime Option. The Definition itself contains no Actor
+mapping or Runtime-to-Inference compatibility relation. Separate relations may
+reference its opaque identity. The canonical contract is defined in:
 
 `core/agent-runtime-option-specification.md`
 
@@ -128,12 +128,38 @@ snapshot.
 
 The state is exactly `available`, `unavailable`, or `unknown`; unknown is not
 unavailable. A missing observation normalizes to unknown. Runtime availability
-does not establish Actor compatibility, Inference Option availability,
+does not establish Actor applicability, Inference Option availability,
 Runtime-to-Inference compatibility, selection, authorization, capacity,
 Execution Mode satisfaction, or execution. The canonical contract is defined
 in:
 
 `core/agent-runtime-option-availability-specification.md`
+
+---
+
+## Actor-to-Runtime Applicability Evidence
+
+An immutable, caller-supplied positive evidence value stating that one known
+Agent Actor may use one known Agent Runtime Option within the supplied
+evaluation context.
+
+The value contains exactly opaque, exact, case-sensitive `actor_id` and
+`runtime_option_id`. Their pair is the identity in a caller-supplied
+many-to-many relation. Duplicate pairs, unknown endpoint references, and known
+Human Actor endpoints invalidate the complete relation; valid evidence is
+canonically ordered by the exact pair.
+
+An empty relation is valid. A missing edge means only that no positive
+applicability evidence was supplied; it does not prove incompatibility,
+unavailability, lack of authorization, or inability to execute. Applicability
+does not alter the Human Actor path and grants no authority or preference.
+
+Actor-to-Runtime Applicability Evidence is not Actor or Runtime availability,
+Actor Selection, Assignment, Task/Role fit, Execution Mode fit, tool or
+permission evidence, configuration viability, selection, ranking,
+authorization, or invocation. The canonical contract is defined in:
+
+`core/actor-runtime-applicability-specification.md`
 
 ---
 

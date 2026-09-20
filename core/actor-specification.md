@@ -247,6 +247,12 @@ The separate canonical contracts are defined in
 `core/actor-availability-specification.md` and
 `core/actor-selection-specification.md`.
 
+Actor-to-Runtime Applicability Evidence is another separate positive relation.
+It may reference a schema-valid Actor with exact `kind: agent`, but it does not
+add a Runtime field to Actor, change competency coverage, or make Human Actors
+require a Runtime Option. Its canonical contract is defined in
+`core/actor-runtime-applicability-specification.md`.
+
 ---
 
 ## 8. Exclusions

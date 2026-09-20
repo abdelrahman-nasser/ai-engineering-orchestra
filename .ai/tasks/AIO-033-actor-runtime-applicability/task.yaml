@@ -1,0 +1,42 @@
+id: AIO-033
+title: Actor-to-Runtime Applicability Evidence Foundation
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: medium
+execution:
+  mode: deep
+workflow: architecture-change
+objective: >
+  Define and implement the smallest canonical caller-supplied positive-evidence
+  relation between known Agent Actor and Agent Runtime Option identities, with
+  deterministic atomic validation and without composing availability, selecting
+  or authorizing an execution configuration, or invoking an Agent.
+scope:
+  include:
+    - Canonical Actor-to-Runtime Applicability Evidence specification and schema
+    - Immutable exact two-reference evidence and many-to-many relation semantics
+    - Agent-only Actor endpoints and deterministic Actor-context validation
+    - Reuse of Agent Runtime Option inventory validation
+    - Duplicate-edge, unknown-reference, Human-endpoint, empty-relation, and missing-edge behavior
+    - Focused tests, package resources, installation evidence, documentation, and Task evidence
+  exclude:
+    - Actor-to-Inference or Actor/Runtime/Inference triple relations
+    - Actor Availability, Runtime Availability, or pair-availability composition
+    - Actor Selection, Assignment, Task suitability, or Execution Mode matching
+    - Tool, permission, credential, authorization, reservation, or execution models
+    - Ranking, routing, fallback, Runtime selection, Provider selection, or model selection
+    - Runtime-owned inference representation, Agent Definition, Execution Contract, or invocation
+    - Provider Adapters, SDK integrations, discovery, network access, persistence, registries, or CLI work
+    - Project Manifest changes, AIO-030, AIO-034, and changes to existing domain fields or standalone API semantics
+dependencies:
+  - AIO-032
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

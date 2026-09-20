@@ -172,7 +172,7 @@ Runtime compatible
 != Runtime available
 
 Runtime available
-!= Actor compatible
+!= Actor-to-Runtime applicable
 != Inference Option available
 != authorized
 != executing
@@ -185,14 +185,16 @@ Definition.
 
 ## 6. Actor and Inference Independence
 
-AIO-029 defines no Actor-to-Runtime or Actor-to-Inference relation. Actor remains
-exactly `id`, `kind`, and `competencies`. Human Actors require no Agent Runtime
-Option.
+The Runtime Option Definition itself defines no Actor-to-Runtime or
+Actor-to-Inference relation. Actor remains exactly `id`, `kind`, and
+`competencies`, and Human Actors require no Agent Runtime Option.
 
-The caller may supply only Runtime and Inference Option candidates applicable to
-the Agent Actor or execution context currently being evaluated. Core does not
-yet validate why that caller scope is correct and defines no global Actor
-topology.
+The separate Actor-to-Runtime Applicability Evidence contract lets a caller
+supply validated positive edges between known Agent Actors and Runtime Options.
+It neither embeds Actor IDs in this Definition nor causes Core to independently
+verify why an external applicability claim is true. Core defines no global Actor
+topology. The canonical relation is defined in
+`core/actor-runtime-applicability-specification.md`.
 
 The existing Human path remains unchanged:
 
@@ -212,12 +214,20 @@ Role
 -> Agent Actor eligibility
 -> Actor availability
 -> logical Agent Actor
--> caller-scoped Agent Runtime Options
--> Runtime availability
--> caller-scoped Inference Options
--> Inference availability
--> supplied positive Runtime-to-Inference Compatibility Evidence
+
+logical Agent Actor
++ caller-scoped Agent Runtime Options
+-> supplied positive Actor-to-Runtime Applicability Evidence
+
+caller-scoped Agent Runtime Options
++ Runtime availability
++ caller-scoped Inference Options
++ Inference availability
++ supplied positive Runtime-to-Inference Compatibility Evidence
 -> Runtime-to-Inference Pair Availability Assessment
+
+Actor-to-Runtime Applicability Evidence
++ Runtime-to-Inference Pair Availability Assessment
 -> future configuration viability
 ```
 
@@ -227,9 +237,11 @@ feed back into Actor Selection; a future higher-level planner may reconsider
 Actor candidates when no viable execution path exists.
 
 For Runtime Options exposing external inference selection, future evaluation may
-consider a candidate containing `actor_id`, `runtime_option_id`, and `option_id`.
-For Runtime-owned inference, a future candidate may contain only `actor_id` and
-`runtime_option_id`. Neither structure is canonicalized by AIO-029.
+compose an Actor-to-Runtime edge with separate Runtime-to-Inference and pair
+availability evidence. AIO-033 does not create a canonical
+Actor/Runtime/Inference triple or a viable execution candidate. For
+Runtime-owned inference, the two-endpoint applicability relation remains usable
+without a synthetic Inference Option.
 
 A separate positive relation is defined by
 `core/runtime-inference-compatibility-specification.md`. A Runtime Option may
@@ -275,7 +287,7 @@ An Agent Runtime Option grants no filesystem, shell, network, credential,
 permission, approval, Human Control, or execution authority. Availability does
 not change that boundary.
 
-Even positive Actor compatibility, Runtime availability, and Inference
+Even positive Actor-to-Runtime applicability, Runtime availability, and Inference
 Option availability together would not establish authorized execution.
 
 The Definition does not select a Runtime Option, select an Inference Option,
@@ -297,7 +309,7 @@ The first contract contains no:
 - execution-owner, state-owner, session-owner, or inference-selection-owner field
 - Agent Definition, AgentProfile, ActorProfile, or ActorInstance contract
 - ExecutionTarget or generic inventory/catalog abstraction
-- Actor mapping or Actor-to-Runtime compatibility
+- embedded Actor mapping or Actor-to-Runtime applicability field on the Definition
 - embedded option lists or compatibility state on the Definition
 - discovery, persistence, selection, routing, fallback, authorization, dispatch,
   execution contract, or invocation behavior

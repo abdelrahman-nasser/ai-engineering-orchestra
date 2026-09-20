@@ -87,6 +87,13 @@ Status: In Development
 - capture-once composition of Assignment, Actor availability,
   Actor-to-Runtime applicability, and pair availability with deterministic
   reasons, atomic invalid findings, and explicit Human non-applicability
+- private controlled read-only execution preparation dry run for the single
+  provisional `repository_file_read` operation and one exact canonical
+  repository-relative Markdown resource
+- separate caller-supplied capability, environment-permission/freshness, and
+  Human/policy authorization evidence with exact scope matching,
+  deterministic `potentially_executable`, `blocked`, and `unresolved` results,
+  and lexical resource validation without target access
 - canonical Workflow specification in `core/workflow-specification.md`
 - initial canonical engineering Workflow library in `workflows/` (`standard-change`, `architecture-change`, `security-sensitive-change`)
 - normalized Workflow JSON Schema in `schemas/workflow.schema.json`
@@ -164,6 +171,13 @@ Status: In Development
 - established that assessment `satisfied` means only that currently modeled
   hard prerequisites are positive, while missing positive evidence remains
   `unresolved` and explicit unavailability dominates as `blocked`
+- kept the AIO-035 preparation experiment private and non-invoking: it consumes
+  evidence without discovering or changing permissions, parsing approval prose,
+  touching the target, creating an Execution Contract, dispatching, or adding a
+  public export, CLI, schema, adapter, or stable Core contract
+- preserved capability, environment permission, and Human/policy authorization
+  as independent facts; only exact, current positives in every required
+  dimension produce the cautious `potentially_executable` diagnostic
 - established the Role authority hierarchy from semantic specification to
   structural schema, canonical YAML instances, compatibility Markdown, and
   regression tooling

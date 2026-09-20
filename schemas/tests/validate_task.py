@@ -21,6 +21,7 @@ SCHEMA_PATH = REPO_ROOT / "schemas" / "task.schema.json"
 FIXTURE_DIR = REPO_ROOT / "schemas" / "tests" / "task"
 
 CANONICAL_TASKS = [
+    REPO_ROOT / ".ai" / "tasks" / "AIO-035-controlled-read-only-execution-preparation" / "task.yaml",
     REPO_ROOT / ".ai" / "tasks" / "AIO-034-agent-execution-candidate-prerequisite-assessment" / "task.yaml",
     REPO_ROOT / ".ai" / "tasks" / "AIO-033-actor-runtime-applicability" / "task.yaml",
     REPO_ROOT / ".ai" / "tasks" / "AIO-032-runtime-inference-pair-availability" / "task.yaml",

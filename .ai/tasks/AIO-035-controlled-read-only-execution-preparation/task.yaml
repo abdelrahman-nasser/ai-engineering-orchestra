@@ -1,0 +1,49 @@
+id: AIO-035
+title: Implement Controlled Read-Only Execution Preparation Dry Run
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: high
+execution:
+  mode: deep
+workflow: security-sensitive-change
+objective: >
+  Implement one bounded, deterministic, non-invoking dry-run preparation
+  harness that composes a valid AIO-034 candidate result with separately
+  supplied capability, environment-permission, and Human/policy-authorization
+  evidence for the exact repository_file_read operation and the exact
+  workflows/README.md resource, without accessing the target, discovering or
+  changing permissions, creating an execution request, or invoking anything.
+scope:
+  include:
+    - One internal provisional repository_file_read preparation harness
+    - Exact lexical scope for workflows/README.md
+    - Full seven-part AIO-034 candidate identity preservation
+    - Separate immutable capability, permission, and authorization evidence
+    - Exact Runtime, environment, operation, resource, and candidate scope matching
+    - Explicit permission freshness and default-deny outcome composition
+    - Deterministic invalid findings and ordinary preparation reasons
+    - All twelve authorized scenarios and malformed-input coverage
+    - Static and dynamic proof of no target access, discovery, or invocation
+    - Focused, regression, packaging, documentation, and review evidence
+  exclude:
+    - Target-file open, read, stat, hash, existence check, or filesystem resolution
+    - Filesystem writes or deletes and permission or sandbox discovery or changes
+    - Generic operation, permission, authorization, environment, or policy contracts
+    - Authorization identifiers, tokens, stores, lifecycle, expiry, replay, or revocation
+    - Approval-prose parsing, credentials, signatures, persistence, clocks, or polling
+    - Execution Contracts, requests, adapters, providers, dispatch, or invocation
+    - Task or Project Manifest schema fields, public package exports, or CLI commands
+    - New canonical Core specifications or serialized schemas
+    - AIO-030, AIO-036, historical Task changes, staging, commits, or publication
+dependencies:
+  - AIO-034
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

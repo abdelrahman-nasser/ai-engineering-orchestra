@@ -370,6 +370,24 @@ instead returns findings with no outcome or partial identity. A Human
 Assignment is outside this Agent-only path. `satisfied` is not selection,
 permission, authorization, reservation, an Execution Contract, or execution.
 
+AIO-035 adds a private, experimental dry-run preparation harness for exactly
+one abstract operation: `repository_file_read` on one exact canonical
+repository-relative Markdown path, `workflows/README.md`. It consumes the
+existing candidate result
+plus separate caller-supplied capability, environment-permission/freshness,
+and Human- or policy-provided authorization evidence. Only exact, current,
+positive evidence in every required dimension can produce the cautious
+`potentially_executable` diagnostic; other valid combinations remain `blocked`
+or `unresolved` with deterministic reasons.
+
+The harness validates the resource lexically. It never opens, reads, stats,
+hashes, or filesystem-resolves the target; discovers or changes permissions;
+parses historical approval prose; creates an execution request or Execution
+Contract; dispatches; or invokes anything. It is packaged only as the private
+`engineering_orchestration._read_only_execution_preparation` module, with no
+public package export, CLI, schema, adapter, or stable Core contract. This
+evidence-consuming experiment is not the v0.2 permission-enforcement system.
+
 The current high-level separation is:
 
 ```text
@@ -401,10 +419,17 @@ Assignment + Actor availability
   -> Agent Execution Candidate Prerequisite Assessment
   -> satisfied | blocked | unresolved
 
-future only:
-satisfied prerequisite assessment
-  + separately modeled operational, permission, and policy evidence
-  -> separately defined authorization decision
+current private experiment:
+candidate prerequisite assessment
+  + caller-supplied capability evidence
+  + caller-supplied environment permission + freshness evidence
+  + caller-supplied Human/policy authorization evidence
+  -> read-only execution preparation dry run
+  -> potentially_executable | blocked | unresolved
+  -> no target I/O, permission discovery, request, dispatch, or invocation
+
+future only, through separately designed contracts and adapters:
+potentially_executable diagnostic
   -> Execution Contract
   -> invocation
 ```
@@ -434,6 +459,8 @@ The derived pair-availability authority is
 [`core/runtime-inference-pair-availability-specification.md`](core/runtime-inference-pair-availability-specification.md).
 The exact-candidate composition authority is
 [`core/agent-execution-candidate-prerequisite-specification.md`](core/agent-execution-candidate-prerequisite-specification.md).
+AIO-035 deliberately adds no new Core specification: its provisional semantics
+remain in the AIO-035 Task evidence, private implementation, and focused tests.
 
 ## Installed Structural Validation
 

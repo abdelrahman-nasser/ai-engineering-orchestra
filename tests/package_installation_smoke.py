@@ -117,7 +117,7 @@ def main() -> None:
                 with zipfile.ZipFile(wheel) as archive:
                     names = archive.namelist()
                     modules = {f"engineering_orchestration/{name}" for name in
-                               ("__init__.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_execution_candidate_prerequisite.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
+                               ("__init__.py", "_read_only_execution_preparation.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_execution_candidate_prerequisite.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
                                 "execution_mode.py", "inference_option.py",
                                 "inference_option_availability.py",
                                 "runtime_inference_compatibility.py",
@@ -166,6 +166,7 @@ import engineering_orchestration.project_verification as project_verification
 import engineering_orchestration.role_catalog as role_catalog
 import engineering_orchestration.runtime_inference_compatibility as runtime_inference_compatibility
 import engineering_orchestration.runtime_inference_pair_availability as runtime_inference_pair_availability
+import engineering_orchestration._read_only_execution_preparation as read_only_execution_preparation
 from engineering_orchestration.workflow_catalog import load_workflow_catalog
 from engineering_orchestration.schema_resources import schema_resource
 catalog = role_catalog.load_role_catalog()
@@ -372,6 +373,39 @@ candidate_invalid_result = (
         applicability_values, runtime_options, inference_options,
         compatibility_values, candidate_runtime_observations,
         candidate_inference_observations))
+read_only_preparation_result = (
+    read_only_execution_preparation.assess_read_only_execution_preparation(
+        candidate_satisfied_result,
+        operation_id='repository_file_read',
+        resource='workflows/README.md',
+        environment_id='installed-environment',
+        capability_evidence=(
+            read_only_execution_preparation.
+            ReadOnlyExecutionCapabilityEvidence(
+                'installed-runtime-primary', 'repository_file_read',
+                read_only_execution_preparation.
+                ReadOnlyExecutionCapabilityState.PRESENT)),
+        permission_evidence=(
+            read_only_execution_preparation.
+            ReadOnlyExecutionPermissionEvidence(
+                'installed-runtime-primary', 'installed-environment',
+                'repository_file_read', 'workflows/README.md',
+                read_only_execution_preparation.
+                ReadOnlyExecutionPermissionState.ALLOWED,
+                read_only_execution_preparation.
+                ReadOnlyExecutionPermissionFreshness.CURRENT)),
+        authorization_evidence=(
+            read_only_execution_preparation.
+            ReadOnlyExecutionAuthorizationEvidence(
+                'LOCAL-123', 'external-flow', 'external-stage',
+                'software-engineer', 'installed-agent',
+                'installed-runtime-primary', 'installed-primary',
+                'installed-environment', 'repository_file_read',
+                'workflows/README.md',
+                read_only_execution_preparation.
+                ReadOnlyExecutionAuthorizationSource.HUMAN_PROVIDED,
+                read_only_execution_preparation.
+                ReadOnlyExecutionAuthorizationState.GRANTED))))
 try:
     schema_resource('agent-execution-candidate-prerequisite.schema.json')
 except ValueError:
@@ -393,6 +427,7 @@ print(json.dumps({'module': cli.__file__,
     'runtime_inference_compatibility_module': runtime_inference_compatibility.__file__,
     'runtime_inference_pair_availability_module': runtime_inference_pair_availability.__file__,
     'candidate_prerequisite_module': agent_execution_candidate_prerequisite.__file__,
+    'read_only_execution_preparation_module': read_only_execution_preparation.__file__,
     'actor_module': actor_coverage.__file__,
     'selection_module': actor_selection.__file__,
     'assignment_module': assignment.__file__,
@@ -538,6 +573,19 @@ print(json.dumps({'module': cli.__file__,
         (Path.cwd().parents[1] / '.ai' / name).exists() for name in
         ('agent-execution-candidates', 'execution-candidates',
          'candidate-assessments', 'agent-execution-candidate-prerequisites')),
+    'read_only_preparation': {
+        'valid': read_only_preparation_result.valid,
+        'candidate_preserved': (
+            read_only_preparation_result.candidate_result
+            is candidate_satisfied_result),
+        'operation': read_only_preparation_result.operation_id,
+        'resource': read_only_preparation_result.resource,
+        'environment': read_only_preparation_result.environment_id,
+        'outcome': read_only_preparation_result.outcome,
+        'reasons': read_only_preparation_result.reasons},
+    'read_only_preparation_public_export_absent': not hasattr(
+        sys.modules['engineering_orchestration'],
+        'assess_read_only_execution_preparation'),
     'roles': [str(role_source.joinpath(name)) for name in
     ('architect.yaml', 'documentation-specialist.yaml', 'reviewer.yaml',
      'security-reviewer.yaml', 'software-engineer.yaml')],
@@ -578,6 +626,8 @@ print(json.dumps({'module': cli.__file__,
                         "Normal Runtime-to-Inference Pair Availability import leaked to source")
                 require(Path(evidence["candidate_prerequisite_module"]).resolve().is_relative_to(environment),
                         "Normal Agent Execution Candidate Prerequisite import leaked to source")
+                require(Path(evidence["read_only_execution_preparation_module"]).resolve().is_relative_to(environment),
+                        "Normal read-only execution preparation import leaked to source")
                 require(Path(evidence["actor_module"]).resolve().is_relative_to(environment),
                         "Normal Actor evaluator import leaked to source")
                 require(Path(evidence["selection_module"]).resolve().is_relative_to(environment),
@@ -733,6 +783,17 @@ print(json.dumps({'module': cli.__file__,
                     "Agent candidate prerequisite assessment unexpectedly added a schema")
             require(evidence["candidate_prerequisite_storage_absent"],
                     "Agent candidate prerequisite assessment unexpectedly required storage")
+            require(evidence["read_only_preparation"] == {
+                        "valid": True,
+                        "candidate_preserved": True,
+                        "operation": "repository_file_read",
+                        "resource": "workflows/README.md",
+                        "environment": "installed-environment",
+                        "outcome": "potentially_executable",
+                        "reasons": ["all_preparation_evidence_positive"]},
+                    "Installed read-only execution preparation probe failed")
+            require(evidence["read_only_preparation_public_export_absent"],
+                    "Read-only execution preparation unexpectedly became public")
             for cwd in (ROOT, ROOT / "scripts"):
                 for args, marker in [(["--help"], "{tasks,inspect,verify}"),
                                      (["tasks"], "AIO-016"),

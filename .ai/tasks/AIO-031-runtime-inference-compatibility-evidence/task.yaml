@@ -1,0 +1,42 @@
+id: AIO-031
+title: Runtime-to-Inference Compatibility Evidence Foundation
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: medium
+execution:
+  mode: deep
+workflow: architecture-change
+objective: >
+  Define and implement the smallest canonical positive-evidence relation between
+  caller-supplied Agent Runtime Option and externally selectable Inference Option
+  identities, with deterministic atomic validation and without implementing
+  availability composition, configuration viability, selection, authorization,
+  adapters, execution contracts, or invocation.
+scope:
+  include:
+    - Canonical Runtime-to-Inference Compatibility Evidence specification and schema
+    - Immutable two-reference compatibility evidence and many-to-many relation semantics
+    - Reuse of Agent Runtime Option and Inference Option inventory validation
+    - Deterministic duplicate-edge and unknown-reference validation
+    - Empty-relation, missing-edge, and Runtime-owned inference boundaries
+    - Focused tests, package resources, installation evidence, documentation, and Task evidence
+  exclude:
+    - Availability composition or configuration viability
+    - Actor mapping, Actor Selection, Assignment, or Execution Mode matching
+    - Ranking, routing, fallback, Runtime selection, Inference Option selection, or model selection
+    - Authorization, reservation, dispatch, Execution Contracts, execution, or invocation
+    - Provider Adapters, SDK integrations, discovery, network access, credentials, or endpoints
+    - Persistence, registries, graph services, project-local inventories, Project Manifest changes, or CLI work
+    - AIO-030, AIO-032, and changes to existing endpoint identity or validation semantics
+dependencies:
+  - AIO-029
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

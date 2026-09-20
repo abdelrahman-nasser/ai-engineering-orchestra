@@ -188,9 +188,11 @@ Actor compatible
 != authorized execution
 ```
 
-AIO-029 defines no Runtime-to-Inference compatibility edge. A Runtime Option may
-expose zero externally selectable Inference Options, so absence of such future
-edges must not imply that it cannot execute.
+Runtime-to-Inference Compatibility Evidence is a separate positive relation
+defined by `core/runtime-inference-compatibility-specification.md`. This
+availability contract neither consumes nor implies that relation. A Runtime
+Option may expose zero externally selectable Inference Options, so absence of an
+edge must not imply that it cannot execute.
 
 Availability does not inspect or change Actor identity, Actor Availability,
 Actor Selection, Assignment, Inference Option identity or availability, Task

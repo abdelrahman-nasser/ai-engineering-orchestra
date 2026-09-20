@@ -137,6 +137,30 @@ in:
 
 ---
 
+## Runtime-to-Inference Compatibility Evidence
+
+An immutable, caller-supplied positive evidence value reporting that one Agent
+Runtime Option supports invoking one externally selectable Inference Option
+within the supplied evaluation context.
+
+The value contains exactly opaque, exact, case-sensitive `runtime_option_id`
+and `option_id`. Their pair is the edge identity in a caller-supplied
+many-to-many relation. Duplicate pairs or unknown endpoint references invalidate
+the complete relation; valid evidence is canonically ordered by the pair.
+
+An empty relation is valid. A missing edge means only that no positive external
+compatibility evidence was supplied; it does not prove incompatibility,
+unavailability, or inability to execute. Runtime-owned inference remains
+possible without an external edge.
+
+Compatibility Evidence is not live integration verification, availability,
+configuration viability, selection, authorization, or invocation. The
+canonical contract is defined in:
+
+`core/runtime-inference-compatibility-specification.md`
+
+---
+
 ## Agent Service
 
 An external managed implementation that may expose or realize one or more Agent

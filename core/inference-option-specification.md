@@ -50,9 +50,9 @@ infer those details from Runtime Option identity.
 
 An **Agent Service** may expose or realize one or more Agent Runtime Options and
 may choose models internally. Inference Option contains neither Runtime Option
-nor Agent Service fields, and AIO-029 adds no relation among them. The separate
-Runtime Option contract is defined in
-`core/agent-runtime-option-specification.md`.
+nor Agent Service fields. The separate Runtime Option contract is defined in
+`core/agent-runtime-option-specification.md`, and the separate positive relation
+is defined in `core/runtime-inference-compatibility-specification.md`.
 
 ---
 
@@ -125,6 +125,10 @@ preference, or selection. An empty supplied inventory is valid.
 Structural schema validation establishes the three required nonempty fields.
 The pure inventory validator consumes normalized values and establishes
 cross-definition uniqueness.
+
+Runtime-to-Inference Compatibility Evidence may reference `option_id` only
+through its separate relation. That relation does not add Runtime,
+compatibility, or embedded-list fields to the Inference Option Definition.
 
 ---
 

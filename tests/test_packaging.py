@@ -28,6 +28,7 @@ PACKAGED_SCHEMAS = (
     "assignment.schema.json",
     "inference-option.schema.json",
     "inference-option-availability.schema.json",
+    "runtime-inference-compatibility.schema.json",
     "role.schema.json",
     "task.schema.json",
     "workflow.schema.json",

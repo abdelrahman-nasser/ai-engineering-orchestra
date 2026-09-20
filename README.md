@@ -236,6 +236,38 @@ observations, and unknown references invalidate their complete input without
 partial normalized output. Available does not mean Actor-compatible,
 Inference-compatible, selected, authorized, capacity-ready, or executing.
 
+Runtime-to-Inference Compatibility Evidence is a separate caller-supplied
+positive many-to-many relation:
+
+```python
+from engineering_orchestration.runtime_inference_compatibility import (
+    RuntimeInferenceCompatibilityEvidence,
+    validate_runtime_inference_compatibility,
+)
+
+compatibility = validate_runtime_inference_compatibility(
+    [
+        RuntimeInferenceCompatibilityEvidence(
+            "primary-agent-runtime", "primary"
+        ),
+        RuntimeInferenceCompatibilityEvidence(
+            "primary-agent-runtime", "secondary"
+        ),
+    ],
+    runtime_options,
+    options,
+)
+```
+
+Both endpoint inventories are validated first. Duplicate exact edges and
+unknown endpoint references invalidate the complete relation without partial
+normalized evidence. Valid evidence is ordered by exact
+`(runtime_option_id, option_id)` only for deterministic representation. An empty
+relation is valid, and a missing edge means only that no positive external
+compatibility evidence was supplied; it is not proof of incompatibility or
+non-executability. A Runtime Option may still own or hide inference selection
+and have no external edge.
+
 The current high-level separation is:
 
 ```text
@@ -251,9 +283,10 @@ Inference Option
 Caller/environment
   -> caller-scoped Runtime Option inventory + availability
   -> caller-scoped Inference Option inventory + availability
+  -> supplied positive Runtime-to-Inference compatibility evidence
 
 future only:
-Runtime Option <-> Inference Option compatibility
+inventories + availability + compatibility evidence
   -> execution-configuration viability
   -> authorization
   -> Execution Contract
@@ -264,7 +297,7 @@ Actor is not an executable Agent definition, Runtime Option, Inference Option,
 or execution instance. Human Actors require no Runtime Option. A Runtime Option
 may expose zero externally selectable Inference Options because inference may be
 selected internally or hidden by an external Agent definition or managed Agent
-Service. Absence of future compatibility edges therefore does not prove that a
+Service. Absence of compatibility edges therefore does not prove that a
 Runtime Option cannot execute.
 
 AIO-029 introduces no Actor mapping, Runtime-to-Inference compatibility,
@@ -274,6 +307,8 @@ The semantic authorities are
 [`core/agent-runtime-option-specification.md`](core/agent-runtime-option-specification.md)
 and
 [`core/agent-runtime-option-availability-specification.md`](core/agent-runtime-option-availability-specification.md).
+The separate positive-relation authority is
+[`core/runtime-inference-compatibility-specification.md`](core/runtime-inference-compatibility-specification.md).
 
 ## Installed Structural Validation
 
@@ -300,9 +335,10 @@ only the supported structural rules, without establishing Quality Gate results.
 
 The installed tool packages canonical Actor, Actor Availability Observation,
 Agent Runtime Option, Agent Runtime Option Availability Observation, Assignment,
-Inference Option, Inference Option Availability Observation, Role, Task,
-Workflow, and Project Manifest schemas from their single sources in `schemas/`,
-plus the five framework-owned canonical Role YAML instances from `roles/`.
+Inference Option, Inference Option Availability Observation,
+Runtime-to-Inference Compatibility Evidence, Role, Task, Workflow, and Project
+Manifest schemas from their single sources in `schemas/`, plus the five
+framework-owned canonical Role YAML instances from `roles/`.
 Managed projects
 need no schema regression scripts, fixtures, Orchestra Task history, Git,
 Node/npm, or Python tests. Python and the declared tool dependencies run the

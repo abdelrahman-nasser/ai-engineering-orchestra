@@ -1,0 +1,2 @@
+runtime_option_id: Runtime/Vendor:A@2026?surface=managed
+option_id: Inference/Provider:B@2026?model=opaque

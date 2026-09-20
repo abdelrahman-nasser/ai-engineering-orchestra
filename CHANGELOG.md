@@ -67,6 +67,11 @@ Status: In Development
   specification and schema with explicit unknown normalization
 - immutable Agent Runtime Option values and pure deterministic inventory and
   availability validation, including duplicate and unknown-reference handling
+- canonical two-field Runtime-to-Inference Compatibility Evidence specification
+  and schema for separate positive many-to-many support edges
+- pure deterministic compatibility-relation validation that reuses both
+  endpoint inventory validators and rejects duplicate or unknown-reference
+  input atomically
 - canonical Workflow specification in `core/workflow-specification.md`
 - initial canonical engineering Workflow library in `workflows/` (`standard-change`, `architecture-change`, `security-sensitive-change`)
 - normalized Workflow JSON Schema in `schemas/workflow.schema.json`
@@ -121,8 +126,13 @@ Status: In Development
   Option identity, with `unknown != unavailable` and no implication of Actor or
   Inference compatibility, selection, capacity, authorization, or execution
 - established caller-scoped Runtime Option inventories without Actor mappings,
-  Runtime-to-Inference compatibility, project persistence, runtime type enums,
-  or capability fields
+  project persistence, runtime type enums, or capability fields
+- separated positive Runtime-to-Inference Compatibility Evidence from endpoint
+  Definitions, all availability contracts, Actor mapping, configuration
+  viability, selection, authority, execution, and invocation
+- established that an absent compatibility edge means no supplied positive
+  external evidence, not explicit incompatibility or non-executability, while
+  preserving Runtime-owned inference without synthetic edges
 - established the Role authority hierarchy from semantic specification to
   structural schema, canonical YAML instances, compatibility Markdown, and
   regression tooling

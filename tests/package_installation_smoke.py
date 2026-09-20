@@ -120,6 +120,7 @@ def main() -> None:
                                ("__init__.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_selection.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
                                 "execution_mode.py", "inference_option.py",
                                 "inference_option_availability.py",
+                                "runtime_inference_compatibility.py",
                                 "verify_repo.py", "workflow_catalog.py", "role_catalog.py", "schema_resources.py",
                                 "project.py", "validation.py", "project_verification.py")}
                     schemas = {f"engineering_orchestration/_schemas/{name}" for name in
@@ -127,6 +128,7 @@ def main() -> None:
                                 "agent-runtime-option.schema.json", "agent-runtime-option-availability.schema.json",
                                 "assignment.schema.json",
                                 "inference-option.schema.json", "inference-option-availability.schema.json",
+                                "runtime-inference-compatibility.schema.json",
                                 "role.schema.json", "task.schema.json", "workflow.schema.json",
                                 "project-manifest.schema.json")}
                     roles = {f"engineering_orchestration/_roles/{name}" for name in
@@ -159,6 +161,7 @@ import engineering_orchestration.inference_option as inference_option
 import engineering_orchestration.inference_option_availability as inference_option_availability
 import engineering_orchestration.project_verification as project_verification
 import engineering_orchestration.role_catalog as role_catalog
+import engineering_orchestration.runtime_inference_compatibility as runtime_inference_compatibility
 from engineering_orchestration.workflow_catalog import load_workflow_catalog
 from engineering_orchestration.schema_resources import schema_resource
 catalog = role_catalog.load_role_catalog()
@@ -203,6 +206,27 @@ inference_availability_result = (
             'installed-primary',
             inference_option_availability.InferenceOptionAvailabilityState.AVAILABLE)],
         inference_options))
+compatibility_values = [
+    runtime_inference_compatibility.RuntimeInferenceCompatibilityEvidence(
+        'installed-runtime-secondary', 'installed-primary'),
+    runtime_inference_compatibility.RuntimeInferenceCompatibilityEvidence(
+        'installed-runtime-primary', 'installed-secondary'),
+]
+compatibility_result = (
+    runtime_inference_compatibility.validate_runtime_inference_compatibility(
+        compatibility_values, runtime_options, inference_options))
+compatibility_unknown_result = (
+    runtime_inference_compatibility.validate_runtime_inference_compatibility(
+        [runtime_inference_compatibility.RuntimeInferenceCompatibilityEvidence(
+            'installed-runtime-primary', 'missing-option')],
+        runtime_options, inference_options))
+compatibility_duplicate_result = (
+    runtime_inference_compatibility.validate_runtime_inference_compatibility(
+        [compatibility_values[0], compatibility_values[0]],
+        runtime_options, inference_options))
+compatibility_empty_result = (
+    runtime_inference_compatibility.validate_runtime_inference_compatibility(
+        [], runtime_options, inference_options))
 workflow_catalog = load_workflow_catalog(Path.cwd().parents[1] / 'workflows')
 selection_result = actor_selection.select_actor(
     {'id': 'LOCAL-123', 'workflow': 'external-flow'},
@@ -224,6 +248,7 @@ print(json.dumps({'module': cli.__file__,
     'runtime_option_availability_module': agent_runtime_option_availability.__file__,
     'inference_option_module': inference_option.__file__,
     'inference_option_availability_module': inference_option_availability.__file__,
+    'runtime_inference_compatibility_module': runtime_inference_compatibility.__file__,
     'actor_module': actor_coverage.__file__,
     'selection_module': actor_selection.__file__,
     'assignment_module': assignment.__file__,
@@ -256,6 +281,27 @@ print(json.dumps({'module': cli.__file__,
     'inference_inventory_storage_absent': not any(
         (Path.cwd().parents[1] / '.ai' / name).exists() for name in
         ('providers', 'models', 'inference-options', 'inventory')),
+    'compatibility_valid': compatibility_result.valid,
+    'compatibility_edges': [
+        [item.runtime_option_id, item.option_id] for item in
+        compatibility_result.normalized_evidence],
+    'compatibility_unknown_codes': [
+        finding.code for finding in compatibility_unknown_result.findings],
+    'compatibility_unknown_atomic': (
+        not compatibility_unknown_result.valid
+        and not compatibility_unknown_result.normalized_evidence),
+    'compatibility_duplicate_codes': [
+        finding.code for finding in compatibility_duplicate_result.findings],
+    'compatibility_duplicate_atomic': (
+        not compatibility_duplicate_result.valid
+        and not compatibility_duplicate_result.normalized_evidence),
+    'compatibility_empty_valid': (
+        compatibility_empty_result.valid
+        and not compatibility_empty_result.normalized_evidence),
+    'compatibility_storage_absent': not any(
+        (Path.cwd().parents[1] / '.ai' / name).exists() for name in
+        ('compatibility', 'runtime-inference-compatibility',
+         'execution-configurations')),
     'selection_valid': selection_result.valid,
     'selection_outcome': selection_result.outcome,
     'selected_actor_id': selection_result.selected_actor_id,
@@ -277,6 +323,7 @@ print(json.dumps({'module': cli.__file__,
      'agent-runtime-option.schema.json', 'agent-runtime-option-availability.schema.json',
      'assignment.schema.json',
      'inference-option.schema.json', 'inference-option-availability.schema.json',
+     'runtime-inference-compatibility.schema.json',
      'role.schema.json', 'task.schema.json', 'workflow.schema.json',
      'project-manifest.schema.json')], 'sys_path': sys.path}))
 """
@@ -299,6 +346,8 @@ print(json.dumps({'module': cli.__file__,
                         "Normal Inference Option validator import leaked to source")
                 require(Path(evidence["inference_option_availability_module"]).resolve().is_relative_to(environment),
                         "Normal Inference Option Availability validator import leaked to source")
+                require(Path(evidence["runtime_inference_compatibility_module"]).resolve().is_relative_to(environment),
+                        "Normal Runtime-to-Inference Compatibility validator import leaked to source")
                 require(Path(evidence["actor_module"]).resolve().is_relative_to(environment),
                         "Normal Actor evaluator import leaked to source")
                 require(Path(evidence["selection_module"]).resolve().is_relative_to(environment),
@@ -351,6 +400,23 @@ print(json.dumps({'module': cli.__file__,
                     "Installed Inference Option Availability normalization failed")
             require(evidence["inference_inventory_storage_absent"],
                     "Inference Option validation unexpectedly required project storage")
+            require(evidence["compatibility_valid"]
+                    and evidence["compatibility_edges"] == [
+                        ["installed-runtime-primary", "installed-secondary"],
+                        ["installed-runtime-secondary", "installed-primary"]],
+                    "Installed Runtime-to-Inference compatibility validation failed")
+            require(evidence["compatibility_unknown_codes"] == [
+                        "inference_option_not_found"]
+                    and evidence["compatibility_unknown_atomic"],
+                    "Installed compatibility unknown-reference rejection failed")
+            require(evidence["compatibility_duplicate_codes"] == [
+                        "duplicate_runtime_inference_compatibility"]
+                    and evidence["compatibility_duplicate_atomic"],
+                    "Installed compatibility duplicate rejection failed")
+            require(evidence["compatibility_empty_valid"],
+                    "Installed empty compatibility relation should be valid")
+            require(evidence["compatibility_storage_absent"],
+                    "Compatibility validation unexpectedly required project storage")
             require(evidence["selection_valid"]
                     and evidence["selection_outcome"] == "selected"
                     and evidence["selected_actor_id"] == "installed-agent",

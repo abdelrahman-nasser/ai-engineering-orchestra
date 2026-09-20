@@ -118,7 +118,7 @@ The identity-only contract is useful because it provides:
 
 1. a distinct typed identity for configured Agent execution surfaces;
 2. an anchor for Agent Runtime Option availability;
-3. a future endpoint for separate Runtime-to-Inference compatibility evidence;
+3. an endpoint for separate Runtime-to-Inference Compatibility Evidence;
 4. a future reference for execution-configuration evaluation or dispatch.
 
 The identity itself claims no vendor, implementation, capabilities, tools,
@@ -205,7 +205,7 @@ Role
 -> Human execution
 ```
 
-The future Agent direction is layered rather than a direct mapping:
+The Agent direction is layered rather than a direct mapping:
 
 ```text
 Role
@@ -216,7 +216,8 @@ Role
 -> Runtime availability
 -> caller-scoped Inference Options
 -> Inference availability
--> future compatibility or configuration viability
+-> supplied positive Runtime-to-Inference Compatibility Evidence
+-> future configuration viability
 ```
 
 Actor Selection remains a pure logical selector. A selected Agent may have zero
@@ -229,15 +230,16 @@ consider a candidate containing `actor_id`, `runtime_option_id`, and `option_id`
 For Runtime-owned inference, a future candidate may contain only `actor_id` and
 `runtime_option_id`. Neither structure is canonicalized by AIO-029.
 
-AIO-029 also defines no Runtime-to-Inference compatibility relation. A Runtime
-Option may expose zero externally selectable Inference Options because inference
-may be selected internally, bound in an external Agent definition, or hidden
-behind a managed Agent Service.
+A separate positive relation is defined by
+`core/runtime-inference-compatibility-specification.md`. A Runtime Option may
+expose zero externally selectable Inference Options because inference may be
+selected internally, bound in an external Agent definition, or hidden behind a
+managed Agent Service.
 
 Therefore, absence of Runtime-to-Inference compatibility edges must not be
-interpreted as proof that a Runtime Option cannot execute. Any future
-many-to-many compatibility evidence must remain a separate relation rather than
-an embedded list on either Definition.
+interpreted as proof that a Runtime Option cannot execute. The many-to-many
+compatibility evidence remains a separate relation rather than an embedded list
+on either Definition.
 
 ---
 
@@ -267,7 +269,7 @@ An Agent Runtime Option grants no filesystem, shell, network, credential,
 permission, approval, Human Control, or execution authority. Availability does
 not change that boundary.
 
-Even future positive Actor compatibility, Runtime availability, and Inference
+Even positive Actor compatibility, Runtime availability, and Inference
 Option availability together would not establish authorized execution.
 
 The Definition does not select a Runtime Option, select an Inference Option,
@@ -290,7 +292,7 @@ The first contract contains no:
 - Agent Definition, AgentProfile, ActorProfile, or ActorInstance contract
 - ExecutionTarget or generic inventory/catalog abstraction
 - Actor mapping or Actor-to-Runtime compatibility
-- Runtime-to-Inference compatibility or embedded option lists
+- embedded option lists or compatibility state on the Definition
 - discovery, persistence, selection, routing, fallback, authorization, dispatch,
   execution contract, or invocation behavior
 

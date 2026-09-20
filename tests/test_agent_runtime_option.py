@@ -278,14 +278,12 @@ class AgentRuntimeOptionBoundaryTests(unittest.TestCase):
         self.assertFalse(hasattr(definition, "provider_id"))
         self.assertFalse(hasattr(definition, "model_id"))
 
-    def test_no_agent_definition_or_compatibility_contract_was_created(self) -> None:
+    def test_no_agent_definition_or_actor_runtime_compatibility_was_created(self) -> None:
         for relative in (
             "engineering_orchestration/agent_definition.py",
             "engineering_orchestration/actor_runtime_compatibility.py",
-            "engineering_orchestration/runtime_inference_compatibility.py",
             "schemas/agent-definition.schema.json",
             "schemas/actor-runtime-compatibility.schema.json",
-            "schemas/runtime-inference-compatibility.schema.json",
         ):
             self.assertFalse((ROOT / relative).exists())
 

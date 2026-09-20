@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-engineering-orchestra.dev/schemas/runtime-inference-compatibility.schema.json",
+  "title": "AI Engineering Orchestra Runtime-to-Inference Compatibility Evidence",
+  "description": "Structural schema for the AI Engineering Orchestra v0.1 Runtime-to-Inference Compatibility Evidence contract defined by core/runtime-inference-compatibility-specification.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "runtime_option_id",
+    "option_id"
+  ],
+  "properties": {
+    "runtime_option_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact opaque reference to one supplied Agent Runtime Option Definition."
+    },
+    "option_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact opaque reference to one supplied Inference Option Definition."
+    }
+  }
+}

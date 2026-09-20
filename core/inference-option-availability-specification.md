@@ -148,8 +148,9 @@ Agent Runtime Option availability is separate and is defined by
 `core/agent-runtime-option-availability-specification.md`. This observation does
 not define an Agent Runtime Option, Agent Service, tool executor, session owner,
 or state owner. It does not inspect Actor identity, Actor Selection, Assignment,
-or Task Execution Mode, and no Runtime-to-Inference compatibility relation is
-implied.
+or Task Execution Mode. Runtime-to-Inference Compatibility Evidence is defined
+separately by `core/runtime-inference-compatibility-specification.md`; this
+availability observation neither consumes nor implies that relation.
 
 Availability grants no credential, permission, approval, Human Control, network,
 or execution authority and creates no Execution Contract or invocation.

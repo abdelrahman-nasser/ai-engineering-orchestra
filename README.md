@@ -490,6 +490,17 @@ caller/authority producer
   -> caller-attested evidence only; no authenticated authority, lifecycle,
      enforcement, dispatch, or execution
 
+current canonical exact-action prerequisite composition:
+candidate prerequisite result + Operation Requirement
+  + Runtime operation capability result
+  + environment operation permission result
+  + Agent execution authorization result
+  + exact environment identifier
+  -> Agent Action Prerequisite Assessment
+  -> satisfied | blocked | unresolved
+  -> diagnostic prerequisite evidence only; no Core authority, Execution
+     Contract, tool binding, dispatch, or invocation
+
 current private experiment:
 candidate prerequisite assessment
   + its existing provisional capability evidence
@@ -536,9 +547,11 @@ The environment-operation permission-observation authority is
 [`core/environment-operation-permission-specification.md`](core/environment-operation-permission-specification.md).
 The exact-action authorization-evidence authority is
 [`core/agent-execution-authorization-evidence-specification.md`](core/agent-execution-authorization-evidence-specification.md).
+The exact-action prerequisite-composition authority is
+[`core/agent-action-prerequisite-specification.md`](core/agent-action-prerequisite-specification.md).
 AIO-035 deliberately adds no new Core specification: its provisional semantics
 remain in the AIO-035 Task evidence, private implementation, and focused tests.
-AIO-037 through AIO-039 do not retrofit that private experiment or compose
+AIO-037 through AIO-040 do not retrofit that private experiment or compose
 capability, permission, candidate, and authorization evidence into execution.
 
 ## Operation Requirement
@@ -726,6 +739,46 @@ The closed fourteen-field schema owns structure only. Exact semantics,
 deterministic findings, canonical supplied-only output, and atomic invalid
 results are defined by
 [`core/agent-execution-authorization-evidence-specification.md`](core/agent-execution-authorization-evidence-specification.md).
+
+## Agent Action Prerequisite Assessment
+
+Agent Action Prerequisite Assessment is the pure, derived, deterministic,
+immutable, ephemeral, in-memory diagnostic composition for one exact assigned
+external-inference Agent action:
+
+```python
+from engineering_orchestration.agent_action_prerequisite import (
+    assess_agent_action_prerequisites,
+)
+
+assessment = assess_agent_action_prerequisites(
+    candidate_result,
+    requirement,
+    capability_result,
+    permission_result,
+    authorization_result,
+    environment_id="synthetic-evaluation-environment",
+)
+print(assessment.outcome, assessment.reasons)
+```
+
+The exact subject is the AIO-039 ten-part action subject. The assessment
+consumes the coherent AIO-034 result rather than recomputing candidate
+prerequisites, validates exactly one Operation Requirement, and performs exact
+private capability, permission, and authorization lookups. Its outcomes are
+`satisfied`, `blocked`, and `unresolved`; explicit negatives block, valid
+unknown or missing facts remain unresolved, blockers dominate uncertainty,
+and all applicable reasons remain visible.
+
+Invalid or incoherent input has findings and no ordinary outcome. Missing
+authorization is unproven, not denied or granted. Even `satisfied` means only
+that all currently modeled caller-supplied prerequisites are positive; it is
+not execution readiness, authenticated authority, authorization issued by
+Core, an Execution Contract, tool binding, dispatchability, invocation
+permission, or execution success. The assessment performs no I/O, enforcement,
+dispatch, or invocation and has no schema or persistence. Exact semantics are
+defined by
+[`core/agent-action-prerequisite-specification.md`](core/agent-action-prerequisite-specification.md).
 
 ## Installed Structural Validation
 

@@ -234,6 +234,38 @@ semantics. The canonical contract is defined in:
 
 ---
 
+## Agent Action Prerequisite Assessment
+
+A pure, derived, immutable, deterministic, ephemeral, in-memory diagnostic
+assessment of one exact assigned external-inference Agent action.
+
+Its subject is the existing ten-part Agent Execution Authorization Evidence
+subject: the complete Assignment identity, exact Runtime and external Inference
+Option identifiers, exact opaque environment identifier, Core operation, and
+lexical repository-relative resource. It introduces no assessment, action,
+candidate, execution, or run identifier.
+
+The assessment consumes one coherent Agent Execution Candidate Prerequisite
+result, validates one Operation Requirement, and consumes coherent Runtime
+Operation Capability, Environment Operation Permission, and Agent Execution
+Authorization results. Exact positive evidence in every category produces
+`satisfied`; any explicit candidate, capability, permission, or authorization
+negative produces `blocked`; otherwise valid unknown or missing evidence
+produces `unresolved`. Blockers dominate uncertainties, but all applicable
+reasons remain visible in canonical order. Invalid input has findings and no
+ordinary outcome.
+
+`satisfied` means only that all currently modeled caller-supplied prerequisites
+are positive. It is not execution readiness, authenticated authority, Core
+authorization, an Execution Contract, tool binding, dispatchability,
+invocation permission, or execution success. The assessment performs no I/O,
+policy composition, enforcement, authorization consumption, dispatch, or
+invocation. The canonical contract is defined in:
+
+`core/agent-action-prerequisite-specification.md`
+
+---
+
 ## Actor-to-Runtime Applicability Evidence
 
 An immutable, caller-supplied positive evidence value stating that one known

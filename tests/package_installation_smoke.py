@@ -137,7 +137,7 @@ def main() -> None:
                 with zipfile.ZipFile(wheel) as archive:
                     names = archive.namelist()
                     modules = {f"engineering_orchestration/{name}" for name in
-                               ("__init__.py", "_operation_vocabulary.py", "_read_only_execution_preparation.py", "_repository_resource.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_execution_authorization_evidence.py", "agent_execution_candidate_prerequisite.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
+                               ("__init__.py", "_operation_vocabulary.py", "_read_only_execution_preparation.py", "_repository_resource.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_action_prerequisite.py", "agent_execution_authorization_evidence.py", "agent_execution_candidate_prerequisite.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
                                 "environment_operation_permission.py",
                                 "execution_mode.py", "inference_option.py",
                                 "inference_option_availability.py",
@@ -996,6 +996,110 @@ print(json.dumps({
                 project / "src/nested",
                 run_env,
             )))
+            action_prerequisite_probe = """
+import json, os, socket, subprocess, time, urllib.request
+from contextlib import ExitStack
+from pathlib import Path
+from unittest.mock import patch
+import engineering_orchestration
+import engineering_orchestration.agent_action_prerequisite as action
+from engineering_orchestration.agent_execution_authorization_evidence import AgentExecutionAuthorizationAuthorityKind as AuthorityKind, AgentExecutionAuthorizationEvidence as AuthorizationEvidence, AgentExecutionAuthorizationState as AuthorizationState, AgentExecutionAuthorizationValidationResult as AuthorizationResult
+from engineering_orchestration.agent_execution_candidate_prerequisite import AgentExecutionCandidatePrerequisiteOutcome as CandidateOutcome, AgentExecutionCandidatePrerequisiteReason as CandidateReason, AgentExecutionCandidatePrerequisiteResult as CandidateResult
+from engineering_orchestration.environment_operation_permission import EnvironmentOperationPermissionObservation as PermissionObservation, EnvironmentOperationPermissionState as PermissionState, EnvironmentOperationPermissionValidationResult as PermissionResult
+from engineering_orchestration.operation_requirement import OperationRequirement
+from engineering_orchestration.runtime_operation_capability import RuntimeOperationCapabilityObservation as CapabilityObservation, RuntimeOperationCapabilityState as CapabilityState, RuntimeOperationCapabilityValidationResult as CapabilityResult
+candidate = CandidateResult(
+    True, (), ('LOCAL-123', 'external-flow', 'external-stage',
+               'software-engineer'), 'installed-agent',
+    'installed-runtime-primary', 'installed-primary',
+    CandidateOutcome.SATISFIED,
+    (CandidateReason.ALL_CURRENTLY_MODELED_PREREQUISITES_SATISFIED,))
+requirement = OperationRequirement(
+    'repository_file_read', 'synthetic/install-action.txt')
+capability = CapabilityResult(True, (), (
+    CapabilityObservation('installed-runtime-primary',
+                          'repository_file_read', CapabilityState.PRESENT),))
+permission = PermissionResult(True, (), (
+    PermissionObservation('installed-runtime-primary',
+                          'installed-environment', 'repository_file_read',
+                          'synthetic/install-action.txt',
+                          PermissionState.ALLOWED),))
+def authorization(state):
+    return AuthorizationResult(True, (), (
+        AuthorizationEvidence(
+            'LOCAL-123', 'external-flow', 'external-stage',
+            'software-engineer', 'installed-agent',
+            'installed-runtime-primary', 'installed-primary',
+            'installed-environment', 'repository_file_read',
+            'synthetic/install-action.txt', AuthorityKind.HUMAN,
+            'human::installed-reviewer', 'approval::installed', state),))
+blocked = AssertionError('action prerequisite assessment must remain pure')
+guards = (
+    patch('builtins.open', side_effect=blocked),
+    patch.object(Path, 'open', side_effect=blocked),
+    patch.object(Path, 'read_text', side_effect=blocked),
+    patch.object(Path, 'read_bytes', side_effect=blocked),
+    patch.object(Path, 'stat', side_effect=blocked),
+    patch.object(Path, 'resolve', side_effect=blocked),
+    patch.object(Path, 'iterdir', side_effect=blocked),
+    patch.object(Path, 'glob', side_effect=blocked),
+    patch.object(Path, 'rglob', side_effect=blocked),
+    patch.object(os, 'stat', side_effect=blocked),
+    patch.object(os, 'access', side_effect=blocked),
+    patch.object(os, 'listdir', side_effect=blocked),
+    patch.object(os, 'scandir', side_effect=blocked),
+    patch.object(os, 'getenv', side_effect=blocked),
+    patch.object(subprocess, 'run', side_effect=blocked),
+    patch.object(subprocess, 'Popen', side_effect=blocked),
+    patch.object(socket, 'create_connection', side_effect=blocked),
+    patch.object(socket, 'getaddrinfo', side_effect=blocked),
+    patch.object(urllib.request, 'urlopen', side_effect=blocked),
+    patch.object(time, 'time', side_effect=blocked),
+    patch.object(time, 'monotonic', side_effect=blocked),
+)
+with ExitStack() as stack:
+    for guard in guards:
+        stack.enter_context(guard)
+    satisfied = action.assess_agent_action_prerequisites(
+        candidate, requirement, capability, permission,
+        authorization(AuthorizationState.GRANTED),
+        environment_id='installed-environment')
+    denied = action.assess_agent_action_prerequisites(
+        candidate, requirement, capability, permission,
+        authorization(AuthorizationState.DENIED),
+        environment_id='installed-environment')
+    missing = action.assess_agent_action_prerequisites(
+        candidate, requirement, capability, permission,
+        AuthorizationResult(True, (), ()),
+        environment_id='installed-environment')
+def compact(result):
+    return {
+        'valid': result.valid,
+        'identity': [list(result.responsibility_key), result.actor_id,
+                     result.runtime_option_id, result.option_id,
+                     result.environment_id, result.operation_id,
+                     result.resource],
+        'outcome': result.outcome,
+        'reasons': list(result.reasons),
+    }
+print(json.dumps({
+    'agent_action_prerequisite_module': action.__file__,
+    'agent_action_prerequisite_outcomes': [item.value for item in
+                                           action.AgentActionPrerequisiteOutcome],
+    'agent_action_prerequisite_reasons': [item.value for item in
+                                          action.AgentActionPrerequisiteReason],
+    'agent_action_prerequisite_satisfied': compact(satisfied),
+    'agent_action_prerequisite_denied': compact(denied),
+    'agent_action_prerequisite_missing': compact(missing),
+    'agent_action_prerequisite_public_export_absent': not hasattr(
+        engineering_orchestration, 'assess_agent_action_prerequisites'),
+}))
+"""
+            evidence.update(json.loads(run(
+                [str(python), "-B", "-c", action_prerequisite_probe],
+                project / "src/nested",
+                run_env,
+            )))
             print(f"{mode.upper()} IMPORT/RESOURCE EVIDENCE: {json.dumps(evidence)}", flush=True)
             if mode == "normal":
                 require(Path(evidence["module"]).resolve().is_relative_to(environment),
@@ -1024,6 +1128,8 @@ print(json.dumps({
                         "Normal Agent Execution Candidate Prerequisite import leaked to source")
                 require(Path(evidence["agent_execution_authorization_evidence_module"]).resolve().is_relative_to(environment),
                         "Normal Agent Execution Authorization Evidence import leaked to source")
+                require(Path(evidence["agent_action_prerequisite_module"]).resolve().is_relative_to(environment),
+                        "Normal Agent Action Prerequisite import leaked to source")
                 require(Path(evidence["read_only_execution_preparation_module"]).resolve().is_relative_to(environment),
                         "Normal read-only execution preparation import leaked to source")
                 require(Path(evidence["operation_requirement_module"]).resolve().is_relative_to(environment),
@@ -1253,6 +1359,46 @@ print(json.dumps({
                     "Installed authorization Human Actor boundary failed")
             require(evidence["agent_execution_authorization_public_export_absent"],
                     "Authorization Evidence unexpectedly gained a root export")
+            require(evidence["agent_action_prerequisite_outcomes"] == [
+                        "satisfied", "blocked", "unresolved"],
+                    "Installed action prerequisite outcomes differ")
+            require(evidence["agent_action_prerequisite_reasons"] == [
+                        "candidate_prerequisites_blocked",
+                        "candidate_prerequisites_unresolved",
+                        "runtime_operation_capability_absent",
+                        "runtime_operation_capability_unknown",
+                        "environment_operation_permission_denied",
+                        "environment_operation_permission_unknown",
+                        "agent_execution_authorization_denied",
+                        "agent_execution_authorization_missing",
+                        "all_currently_modeled_action_prerequisites_satisfied"],
+                    "Installed action prerequisite reasons differ")
+            require(evidence["agent_action_prerequisite_satisfied"] == {
+                        "valid": True,
+                        "identity": [["LOCAL-123", "external-flow",
+                                      "external-stage", "software-engineer"],
+                                     "installed-agent",
+                                     "installed-runtime-primary",
+                                     "installed-primary",
+                                     "installed-environment",
+                                     "repository_file_read",
+                                     "synthetic/install-action.txt"],
+                        "outcome": "satisfied",
+                        "reasons": [
+                            "all_currently_modeled_action_prerequisites_satisfied"]},
+                    "Installed action prerequisite satisfied probe failed")
+            require(evidence["agent_action_prerequisite_denied"]["outcome"]
+                    == "blocked"
+                    and evidence["agent_action_prerequisite_denied"]["reasons"]
+                    == ["agent_execution_authorization_denied"],
+                    "Installed action prerequisite denied probe failed")
+            require(evidence["agent_action_prerequisite_missing"]["outcome"]
+                    == "unresolved"
+                    and evidence["agent_action_prerequisite_missing"]["reasons"]
+                    == ["agent_execution_authorization_missing"],
+                    "Installed action prerequisite missing probe failed")
+            require(evidence["agent_action_prerequisite_public_export_absent"],
+                    "Agent Action Prerequisite unexpectedly gained a root export")
             require(evidence["operation_requirement_valid"] == {
                         "valid": True,
                         "same_value": True,

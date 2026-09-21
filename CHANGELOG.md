@@ -124,6 +124,14 @@ Status: In Development
 - explicit separation of authorization evidence from authenticated authority,
   Task approval, Assignment, candidate satisfaction, capability, environment
   permission, Permission Decision, lifecycle, enforcement, and execution
+- canonical Agent Action Prerequisite Assessment specification and immutable
+  pure API for one exact assigned external-inference Agent action, composing
+  coherent AIO-034, AIO-037, AIO-038, and AIO-039 results with one validated
+  Operation Requirement and exact environment identifier
+- deterministic `satisfied`, `blocked`, and `unresolved` composition with
+  blocker-over-uncertainty precedence, all applicable reasons retained,
+  exact private lookups, atomic invalid findings, and explicit non-authority
+  and non-execution boundaries
 - private controlled read-only execution preparation dry run for the single
   provisional `repository_file_read` operation and one exact canonical
   repository-relative Markdown resource

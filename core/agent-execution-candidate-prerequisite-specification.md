@@ -458,6 +458,13 @@ authorization evidence does not satisfy missing candidate prerequisites. Its
 contract is defined in
 `core/agent-execution-authorization-evidence-specification.md`.
 
+Agent Action Prerequisite Assessment may consume one exact coherent AIO-034
+result as its candidate layer without recomputing Actor availability,
+applicability, compatibility, or endpoint availability. Its action-level
+diagnostic composition is defined in
+`core/agent-action-prerequisite-specification.md` and does not change AIO-034
+outcomes or authority boundaries.
+
 Execution Mode is Task/process governance depth. It is not an assessment input
 and creates no Runtime support, model-strength, reasoning-tier, permission, or
 authority inference.

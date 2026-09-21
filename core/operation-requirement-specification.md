@@ -290,6 +290,12 @@ its presence. Authorization evidence is caller-attested and does not create or
 satisfy an Operation Requirement. Its separate contract is defined in
 `core/agent-execution-authorization-evidence-specification.md`.
 
+Agent Action Prerequisite Assessment may validate exactly one Operation
+Requirement and join its exact operation/resource identity with independently
+validated candidate, capability, permission, and authorization results. That
+derived diagnostic composition does not change this demand-only contract and
+is defined in `core/agent-action-prerequisite-specification.md`.
+
 ---
 
 ## 11. Runtime and Package API

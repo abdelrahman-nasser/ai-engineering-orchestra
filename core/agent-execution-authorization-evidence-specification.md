@@ -512,9 +512,11 @@ operation x resource Cartesian product is synthesized. An empty evidence
 iterable produces a valid empty normalized tuple after foundational context
 validation.
 
-The API intentionally provides no lookup helper. A future composition may
-compare one exact subject with the normalized supplied values. Failure to find
-that subject means missing or unproven authorization, not denial.
+The API intentionally provides no lookup helper. Agent Action Prerequisite
+Assessment privately compares one exact subject with the normalized supplied
+values. Failure to find that subject means missing or unproven authorization,
+not denial. Its separate derived contract is defined in
+`core/agent-action-prerequisite-specification.md`.
 
 ---
 
@@ -612,9 +614,11 @@ permission allowed + authorization denied
 capability present + authorization missing
 ```
 
-A future execution boundary must block on any required negative or missing fact
-under its separately authorized composition. AIO-039 performs no such
-composition.
+Agent Action Prerequisite Assessment provides a non-executing diagnostic
+composition over coherent parent results. It treats explicit denial as
+blocking and missing evidence as unresolved, while `satisfied` remains
+non-authoritative. AIO-039 itself performs no such composition, and neither
+contract creates an execution boundary.
 
 ### Permission Decision and Human Control
 

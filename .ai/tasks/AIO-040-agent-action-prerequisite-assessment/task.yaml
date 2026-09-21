@@ -1,0 +1,50 @@
+id: AIO-040
+title: Agent Action Prerequisite Assessment
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: high
+execution:
+  mode: deep
+workflow: architecture-change
+objective: >
+  Define and implement the canonical pure Agent Action Prerequisite Assessment
+  for one exact assigned external-inference Agent action by composing the
+  existing candidate, requirement, Runtime capability, environment permission,
+  and execution-authorization layers without execution, enforcement, authority
+  issuance, persistence, or invocation.
+scope:
+  include:
+    - Canonical Agent Action Prerequisite Assessment specification and terminology
+    - Exact ten-part AIO-039 action subject without a synthetic identifier
+    - Consumption of one coherent AIO-034 candidate prerequisite result
+    - Validation of exactly one AIO-036 Operation Requirement
+    - Consumption of valid AIO-037, AIO-038, and AIO-039 validation results
+    - Exact private capability, permission, and authorization lookup
+    - Satisfied, blocked, and unresolved diagnostic composition
+    - Nine-code deterministic reason taxonomy and atomic invalid-input behavior
+    - Target-safe focused tests, packaging/install evidence, and documentation
+    - Architect and Security design locks, final specialist reviews, independent review, Gate evidence, Human approval, and Task closure
+  exclude:
+    - Push, merge, tag, release, or publication
+    - Schema, schema fixtures, persistence, caches, registries, or stored assessment records
+    - Execution Contract, Execution Run, execution identity, lifecycle, dispatch, invocation, result capture, or telemetry
+    - Authority authentication or issuance, authorization consumption, replay protection, revocation, expiry, or token semantics
+    - Permission Decision evaluation, policy composition, permission enforcement, permission mutation, or Human approval parsing
+    - Concrete tool binding, Provider or Runtime adapters, Runtime-owned inference, or Human execution assessment
+    - Protected-target access, AIO-030, AIO-041, the VS Code track, the Full Control Center or UI track, and historical Task edits
+dependencies:
+  - AIO-034
+  - AIO-036
+  - AIO-037
+  - AIO-038
+  - AIO-039
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

@@ -549,6 +549,13 @@ authorization evidence, and either evidence category may be missing while the
 other is present. The authorization-evidence contract is defined in
 `core/agent-execution-authorization-evidence-specification.md`.
 
+Agent Action Prerequisite Assessment may privately look up one exact
+Runtime/environment/operation/resource identity from a coherent AIO-038
+result. Missing exact permission remains unknown, and an invalid permission
+result remains invalid rather than becoming denied or blocked. The separate
+derived contract is defined in
+`core/agent-action-prerequisite-specification.md`.
+
 The separate Permission Decision vocabulary remains exactly:
 
 ```text

@@ -411,6 +411,10 @@ capability present
 No permission or authorization composition occurs in AIO-037. The separately
 defined Environment Operation Permission Observation consumes the same Core
 operation vocabulary without changing or composing this capability contract.
+Agent Action Prerequisite Assessment may privately look up one exact normalized
+Runtime/operation pair from a coherent AIO-037 result; it does not change,
+revalidate, or extend this observation contract. Its separate derived contract
+is defined in `core/agent-action-prerequisite-specification.md`.
 
 ---
 

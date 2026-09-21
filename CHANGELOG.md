@@ -87,6 +87,12 @@ Status: In Development
 - capture-once composition of Assignment, Actor availability,
   Actor-to-Runtime applicability, and pair availability with deterministic
   reasons, atomic invalid findings, and explicit Human non-applicability
+- canonical two-field Operation Requirement specification and schema for one
+  Core-defined abstract operation against one exact lexical
+  repository-relative resource
+- immutable Operation Requirement values and pure deterministic semantic
+  validation for operation syntax/support and extension-neutral resource
+  grammar, with atomic findings and no filesystem access or normalization
 - private controlled read-only execution preparation dry run for the single
   provisional `repository_file_read` operation and one exact canonical
   repository-relative Markdown resource

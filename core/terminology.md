@@ -237,6 +237,38 @@ The canonical contract is defined in:
 
 ---
 
+## Operation Requirement
+
+An immutable, caller-supplied declaration that one Core-defined abstract
+operation is required against one exact lexical repository-relative resource
+within the caller-owned evaluation context.
+
+The value contains exactly `operation_id` and `resource`. Its identity is the
+exact case-sensitive pair `(operation_id, resource)`. AIO-036 supports exactly
+the abstract `repository_file_read` operation; the vocabulary may expand only
+through future explicit Core definitions. Resources use forward-slash lexical
+segments, remain extension-neutral, and are never normalized or accessed by
+validation.
+
+Operation Requirement states need only:
+
+```text
+requirement
+!= capability
+!= permission
+!= authorization
+!= execution
+```
+
+Presence means the caller supplied the declaration in this evaluation context.
+Absence means only that no requirement was supplied; it is not a negative
+requirement or evidence of support, prohibition, permission, or authorization.
+The canonical contract is defined in:
+
+`core/operation-requirement-specification.md`
+
+---
+
 ## Agent Service
 
 An external managed implementation that may expose or realize one or more Agent

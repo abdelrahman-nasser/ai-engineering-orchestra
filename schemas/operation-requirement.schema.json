@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-engineering-orchestra.dev/schemas/operation-requirement.schema.json",
+  "title": "AI Engineering Orchestra Operation Requirement",
+  "description": "Structural schema for one Operation Requirement value defined by core/operation-requirement-specification.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "operation_id",
+    "resource"
+  ],
+  "properties": {
+    "operation_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact identifier of one Core-defined abstract operation."
+    },
+    "resource": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact lexical repository-relative resource path."
+    }
+  }
+}

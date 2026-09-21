@@ -3,6 +3,8 @@
 Creates and removes two temporary venvs. Requires Python 3.12+, package/build
 dependency access, Git, and Node/npm for Manifest-driven repository verification.
 Run: python -B tests/package_installation_smoke.py
+Use ``--target-safe`` to skip only this repository's declared full verification
+when an external protected-target boundary requires focused checks instead.
 """
 
 from __future__ import annotations
@@ -11,6 +13,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -89,6 +92,9 @@ def make_project(base: Path) -> Path:
 
 def main() -> None:
     require(sys.version_info[:2] == (3, 12), "Validate the adopted baseline on Python 3.12")
+    target_safe = "--target-safe" in sys.argv[1:]
+    unknown_arguments = set(sys.argv[1:]) - {"--target-safe"}
+    require(not unknown_arguments, f"Unknown arguments: {sorted(unknown_arguments)}")
     env = dict(os.environ)
     for key in ("PYTHONPATH", "PYTHONHOME"):
         env.pop(key, None)
@@ -99,6 +105,19 @@ def main() -> None:
         base = Path(temporary).resolve()
         require(not base.is_relative_to(ROOT), "Temporary environments must be outside checkout")
         project = make_project(base)
+        package_source = base / "package-source"
+        package_source.mkdir()
+        shutil.copy2(ROOT / "pyproject.toml", package_source / "pyproject.toml")
+        shutil.copy2(ROOT / "aio.py", package_source / "aio.py")
+        for relative, pattern in (
+            ("engineering_orchestration", "*.py"),
+            ("schemas", "*.json"),
+            ("roles", "*.yaml"),
+        ):
+            destination = package_source / relative
+            destination.mkdir()
+            for source in (ROOT / relative).glob(pattern):
+                shutil.copy2(source, destination / source.name)
         for mode in ("editable", "normal"):
             environment = base / mode
             venv.EnvBuilder(with_pip=True).create(environment)
@@ -112,7 +131,7 @@ def main() -> None:
             else:
                 wheel_dir = base / "wheels"
                 run([str(python), "-m", "pip", "wheel", "--no-deps", "--wheel-dir",
-                     str(wheel_dir), str(ROOT)], base, run_env)
+                     str(wheel_dir), str(package_source)], base, run_env)
                 wheel = next(wheel_dir.glob("ai_engineering_orchestra-*.whl"))
                 with zipfile.ZipFile(wheel) as archive:
                     names = archive.namelist()
@@ -120,6 +139,7 @@ def main() -> None:
                                ("__init__.py", "_read_only_execution_preparation.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_execution_candidate_prerequisite.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
                                 "execution_mode.py", "inference_option.py",
                                 "inference_option_availability.py",
+                                "operation_requirement.py",
                                 "runtime_inference_compatibility.py",
                                 "runtime_inference_pair_availability.py",
                                 "verify_repo.py", "workflow_catalog.py", "role_catalog.py", "schema_resources.py",
@@ -129,6 +149,7 @@ def main() -> None:
                                 "agent-runtime-option.schema.json", "agent-runtime-option-availability.schema.json",
                                 "assignment.schema.json",
                                 "inference-option.schema.json", "inference-option-availability.schema.json",
+                                "operation-requirement.schema.json",
                                 "runtime-inference-compatibility.schema.json",
                                 "role.schema.json", "task.schema.json", "workflow.schema.json",
                                 "project-manifest.schema.json")}
@@ -148,8 +169,9 @@ def main() -> None:
                 run([str(python), "-m", "pip", "install", str(wheel)], base, run_env)
             run([str(python), "-m", "pip", "check"], base, run_env)
             probe = """
-import json, sys
+import json, os, socket, subprocess, sys, time, urllib.request
 from pathlib import Path
+from unittest.mock import patch
 import engineering_orchestration.cli as cli
 import engineering_orchestration.actor_availability as actor_availability
 import engineering_orchestration.actor_coverage as actor_coverage
@@ -162,6 +184,7 @@ import engineering_orchestration.assignment as assignment
 import engineering_orchestration.execution_mode as execution_mode
 import engineering_orchestration.inference_option as inference_option
 import engineering_orchestration.inference_option_availability as inference_option_availability
+import engineering_orchestration.operation_requirement as operation_requirement
 import engineering_orchestration.project_verification as project_verification
 import engineering_orchestration.role_catalog as role_catalog
 import engineering_orchestration.runtime_inference_compatibility as runtime_inference_compatibility
@@ -412,6 +435,31 @@ except ValueError:
     candidate_prerequisite_schema_absent = True
 else:
     candidate_prerequisite_schema_absent = False
+with (
+    patch('builtins.open', side_effect=AssertionError('no resource I/O')),
+    patch.object(Path, 'open', side_effect=AssertionError('no resource I/O')),
+    patch.object(Path, 'read_text', side_effect=AssertionError('no resource I/O')),
+    patch.object(Path, 'read_bytes', side_effect=AssertionError('no resource I/O')),
+    patch.object(Path, 'resolve', side_effect=AssertionError('no path resolution')),
+    patch.object(os, 'stat', side_effect=AssertionError('no metadata access')),
+    patch.object(subprocess, 'run', side_effect=AssertionError('no process')),
+    patch.object(socket, 'create_connection', side_effect=AssertionError('no network')),
+    patch.object(urllib.request, 'urlopen', side_effect=AssertionError('no network')),
+    patch.object(time, 'time', side_effect=AssertionError('no clock')),
+):
+    operation_requirement_value = operation_requirement.OperationRequirement(
+        'repository_file_read', 'synthetic/install-probe.txt')
+    operation_requirement_valid = (
+        operation_requirement.validate_operation_requirement(
+            operation_requirement_value))
+    operation_requirement_unsupported = (
+        operation_requirement.validate_operation_requirement(
+            operation_requirement.OperationRequirement(
+                'repository_file_write', 'synthetic/install-probe.txt')))
+    operation_requirement_invalid_resource = (
+        operation_requirement.validate_operation_requirement(
+            operation_requirement.OperationRequirement(
+                'repository_file_read', 'synthetic/../install-probe.txt')))
 role_source = role_catalog.find_default_roles_resource()
 print(json.dumps({'module': cli.__file__,
     'execution_mode_module': execution_mode.__file__,
@@ -428,6 +476,7 @@ print(json.dumps({'module': cli.__file__,
     'runtime_inference_pair_availability_module': runtime_inference_pair_availability.__file__,
     'candidate_prerequisite_module': agent_execution_candidate_prerequisite.__file__,
     'read_only_execution_preparation_module': read_only_execution_preparation.__file__,
+    'operation_requirement_module': operation_requirement.__file__,
     'actor_module': actor_coverage.__file__,
     'selection_module': actor_selection.__file__,
     'assignment_module': assignment.__file__,
@@ -586,6 +635,24 @@ print(json.dumps({'module': cli.__file__,
     'read_only_preparation_public_export_absent': not hasattr(
         sys.modules['engineering_orchestration'],
         'assess_read_only_execution_preparation'),
+    'operation_requirement_valid': {
+        'valid': operation_requirement_valid.valid,
+        'same_value': operation_requirement_valid.requirement
+                      is operation_requirement_value,
+        'identity': operation_requirement_valid.requirement.identity},
+    'operation_requirement_unsupported': {
+        'valid': operation_requirement_unsupported.valid,
+        'codes': [finding.code for finding in
+                  operation_requirement_unsupported.findings],
+        'atomic': operation_requirement_unsupported.requirement is None},
+    'operation_requirement_invalid_resource': {
+        'valid': operation_requirement_invalid_resource.valid,
+        'codes': [finding.code for finding in
+                  operation_requirement_invalid_resource.findings],
+        'atomic': operation_requirement_invalid_resource.requirement is None},
+    'operation_requirement_public_export_absent': not hasattr(
+        sys.modules['engineering_orchestration'],
+        'validate_operation_requirement'),
     'roles': [str(role_source.joinpath(name)) for name in
     ('architect.yaml', 'documentation-specialist.yaml', 'reviewer.yaml',
      'security-reviewer.yaml', 'software-engineer.yaml')],
@@ -595,6 +662,7 @@ print(json.dumps({'module': cli.__file__,
      'agent-runtime-option.schema.json', 'agent-runtime-option-availability.schema.json',
      'assignment.schema.json',
      'inference-option.schema.json', 'inference-option-availability.schema.json',
+     'operation-requirement.schema.json',
      'runtime-inference-compatibility.schema.json',
      'role.schema.json', 'task.schema.json', 'workflow.schema.json',
      'project-manifest.schema.json')], 'sys_path': sys.path}))
@@ -628,6 +696,8 @@ print(json.dumps({'module': cli.__file__,
                         "Normal Agent Execution Candidate Prerequisite import leaked to source")
                 require(Path(evidence["read_only_execution_preparation_module"]).resolve().is_relative_to(environment),
                         "Normal read-only execution preparation import leaked to source")
+                require(Path(evidence["operation_requirement_module"]).resolve().is_relative_to(environment),
+                        "Normal Operation Requirement import leaked to source")
                 require(Path(evidence["actor_module"]).resolve().is_relative_to(environment),
                         "Normal Actor evaluator import leaked to source")
                 require(Path(evidence["selection_module"]).resolve().is_relative_to(environment),
@@ -794,6 +864,24 @@ print(json.dumps({'module': cli.__file__,
                     "Installed read-only execution preparation probe failed")
             require(evidence["read_only_preparation_public_export_absent"],
                     "Read-only execution preparation unexpectedly became public")
+            require(evidence["operation_requirement_valid"] == {
+                        "valid": True,
+                        "same_value": True,
+                        "identity": ["repository_file_read",
+                                     "synthetic/install-probe.txt"]},
+                    "Installed Operation Requirement valid probe failed")
+            require(evidence["operation_requirement_unsupported"] == {
+                        "valid": False,
+                        "codes": ["operation_id_not_supported"],
+                        "atomic": True},
+                    "Installed Operation Requirement support probe failed")
+            require(evidence["operation_requirement_invalid_resource"] == {
+                        "valid": False,
+                        "codes": ["resource_parent_segment"],
+                        "atomic": True},
+                    "Installed Operation Requirement resource probe failed")
+            require(evidence["operation_requirement_public_export_absent"],
+                    "Operation Requirement unexpectedly gained a package-root export")
             for cwd in (ROOT, ROOT / "scripts"):
                 for args, marker in [(["--help"], "{tasks,inspect,verify}"),
                                      (["tasks"], "AIO-016"),
@@ -802,9 +890,16 @@ print(json.dumps({'module': cli.__file__,
                     require(marker in output, f"Missing expected output: {marker}")
             output = run([str(aio), "verify", "--structure"], ROOT / "scripts", run_env)
             require("Supported AIO Structure" in output, "Installed structure mode failed")
-            output = run([str(aio), "verify"], ROOT, run_env)
-            require("Verification passed." in output and "unit-tests" in output,
-                    "Installed Orchestra verification did not use Manifest checks")
+            if target_safe:
+                print(
+                    "SKIP repository-declared full verification: target-safe "
+                    "mode; run focused checks separately",
+                    flush=True,
+                )
+            else:
+                output = run([str(aio), "verify"], ROOT, run_env)
+                require("Verification passed." in output and "unit-tests" in output,
+                        "Installed Orchestra verification did not use Manifest checks")
             for args in (["tasks"], ["inspect", "LOCAL-123"]):
                 output = run([str(aio), *args], project / "src/nested", run_env)
                 require("LOCAL-123" in output and "AIO-015" not in output, "Wrong active project")

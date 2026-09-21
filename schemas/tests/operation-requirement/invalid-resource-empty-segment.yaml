@@ -1,0 +1,2 @@
+operation_id: repository_file_read
+resource: synthetic//input.txt

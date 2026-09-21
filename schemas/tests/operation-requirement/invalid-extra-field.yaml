@@ -1,0 +1,3 @@
+operation_id: repository_file_read
+resource: synthetic.txt
+metadata: excluded

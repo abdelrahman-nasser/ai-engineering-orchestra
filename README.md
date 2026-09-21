@@ -419,6 +419,11 @@ Assignment + Actor availability
   -> Agent Execution Candidate Prerequisite Assessment
   -> satisfied | blocked | unresolved
 
+current canonical action-layer declaration:
+caller/planner
+  -> Operation Requirement(operation_id, resource)
+  -> declared need only; no capability, permission, authorization, or execution
+
 current private experiment:
 candidate prerequisite assessment
   + caller-supplied capability evidence
@@ -461,6 +466,53 @@ The exact-candidate composition authority is
 [`core/agent-execution-candidate-prerequisite-specification.md`](core/agent-execution-candidate-prerequisite-specification.md).
 AIO-035 deliberately adds no new Core specification: its provisional semantics
 remain in the AIO-035 Task evidence, private implementation, and focused tests.
+
+## Operation Requirement
+
+Operation Requirement is the canonical, immutable caller-supplied declaration
+that one Core-defined abstract operation is needed against one exact lexical
+repository-relative resource in the caller-owned evaluation context. It
+contains exactly `operation_id` and `resource`:
+
+```python
+from engineering_orchestration.operation_requirement import (
+    OperationRequirement,
+    validate_operation_requirement,
+)
+
+requirement = OperationRequirement(
+    operation_id="repository_file_read",
+    resource="synthetic/input.txt",
+)
+result = validate_operation_requirement(requirement)
+```
+
+Identity is exact case-sensitive `(operation_id, resource)`. AIO-036 supports
+only `repository_file_read`; future operation identifiers require explicit Core
+definitions. The operation remains abstract and is not inferred from a tool or
+Provider.
+
+The resource is validated as an extension-neutral lexical string with `/`
+separators. Absolute, drive-qualified, UNC, URI, tilde-rooted, backslash,
+control-character, empty-segment, dot-segment, parent-segment, trailing-slash,
+and glob/meta forms are rejected. Validation does not normalize, resolve,
+existence-check, open, read, stat, hash, list, or otherwise access the resource
+or repository.
+
+Presence states need only; absence means only that no requirement was supplied
+in that evaluation context. Operation Requirement proves no Runtime capability,
+environment permission, Human or policy authorization, or execution:
+
+```text
+requirement != capability != permission != authorization != execution
+```
+
+The structural schema owns only the exact two required nonempty string fields.
+The semantic authority and deterministic runtime behavior are defined in
+[`core/operation-requirement-specification.md`](core/operation-requirement-specification.md).
+The earlier AIO-035 preparation harness remains a private bounded experiment;
+AIO-036 does not retrofit it, access its protected target, or canonicalize its
+provisional capability, permission, or authorization evidence.
 
 ## Installed Structural Validation
 

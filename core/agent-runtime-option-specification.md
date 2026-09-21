@@ -118,8 +118,9 @@ The identity-only contract is useful because it provides:
 
 1. a distinct typed identity for configured Agent execution surfaces;
 2. an anchor for Agent Runtime Option availability;
-3. an endpoint for separate Runtime-to-Inference Compatibility Evidence;
-4. a future reference for execution-configuration evaluation or dispatch.
+3. an anchor for separate Runtime Operation Capability Observations;
+4. an endpoint for separate Runtime-to-Inference Compatibility Evidence; and
+5. a future reference for execution-configuration evaluation or dispatch.
 
 The identity itself claims no vendor, implementation, capabilities, tools,
 model access, availability, authorization, or execution readiness.
@@ -157,7 +158,7 @@ persistence, selection, authorization, dispatch, or execution.
 
 ---
 
-## 5. Identity and Availability
+## 5. Identity, Availability, and Capability
 
 Agent Runtime Option identity is relatively stable input. Current availability
 is separate ephemeral evidence defined by:
@@ -179,6 +180,26 @@ Runtime available
 ```
 
 Availability never changes `runtime_option_id` and is never embedded in the
+Definition.
+
+Technical support for a Core-defined abstract operation is separate
+caller/environment-supplied evidence defined by:
+
+`core/runtime-operation-capability-specification.md`
+
+```text
+Agent Runtime Option Definition
+!= Runtime Operation Capability Observation
+
+capability present
+!= Runtime available
+!= permitted
+!= authorized
+!= executing
+```
+
+Capability observations reference the opaque `runtime_option_id`; they do not
+add `supported_operations`, capabilities, or tools to this identity-only
 Definition.
 
 ---
@@ -284,8 +305,8 @@ environment or adapter concerns.
 ## 8. Security, Authorization, and Execution Boundaries
 
 An Agent Runtime Option grants no filesystem, shell, network, credential,
-permission, approval, Human Control, or execution authority. Availability does
-not change that boundary.
+permission, approval, Human Control, or execution authority. Availability and
+Runtime Operation Capability Observations do not change that boundary.
 
 Even positive Actor-to-Runtime applicability, Runtime availability, and Inference
 Option availability together would not establish authorized execution.

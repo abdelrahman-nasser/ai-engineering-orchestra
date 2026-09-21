@@ -11,17 +11,16 @@ from __future__ import annotations
 from dataclasses import dataclass
 import re
 
-
-_OPERATION_ID_PATTERN = re.compile(
-    r"[a-z][a-z0-9]*(?:_[a-z0-9]+)*",
-    flags=re.ASCII,
+from engineering_orchestration._operation_vocabulary import (
+    validate_core_operation_id,
 )
+
+
 _DRIVE_QUALIFIED_PATTERN = re.compile(r"[A-Za-z]:", flags=re.ASCII)
 _URI_SCHEME_PATTERN = re.compile(
     r"[A-Za-z][A-Za-z0-9+.-]*:",
     flags=re.ASCII,
 )
-_SUPPORTED_OPERATION_IDS = frozenset({"repository_file_read"})
 _GLOB_META = frozenset("*?[]{}")
 
 
@@ -180,14 +179,15 @@ def validate_operation_requirement(
     if findings:
         return _invalid(findings)
 
-    if _OPERATION_ID_PATTERN.fullmatch(operation_id) is None:
+    operation_issue = validate_core_operation_id(operation_id)
+    if operation_issue == "operation_id_invalid_syntax":
         findings.append(
             _finding(
                 "operation_id_invalid_syntax",
                 "Operation Requirement operation_id must use ASCII lower_snake_case syntax.",
             )
         )
-    elif operation_id not in _SUPPORTED_OPERATION_IDS:
+    elif operation_issue == "operation_id_not_supported":
         findings.append(
             _finding(
                 "operation_id_not_supported",

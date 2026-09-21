@@ -1,0 +1,41 @@
+id: AIO-037
+title: Runtime Operation Capability Observation Foundation
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: medium
+execution:
+  mode: deep
+workflow: architecture-change
+objective: >
+  Define and implement the canonical Runtime Operation Capability Observation
+  contract and deterministic snapshot validation for the currently known
+  technical support of Core-defined abstract operations by known Agent Runtime
+  Options, without granting permission, authorization, execution readiness, or
+  invocation.
+scope:
+  include:
+    - Canonical Runtime Operation Capability Observation specification and terminology
+    - Exact three-field tri-state observation schema and immutable runtime values
+    - Runtime inventory validation and shared Core operation-vocabulary validation
+    - Deterministic duplicate, reference, normalization, ordering, and atomicity semantics
+    - Target-safe tests, schema resources, packaging, installation evidence, and documentation
+    - Architect design lock and final review, independent review, Gate evidence, and Human-checkpoint preparation
+  exclude:
+    - Environment Permission or Execution Authorization formalization
+    - Resource, environment, tool, Provider, model, timestamp, freshness, source, reason, metadata, or extension fields
+    - Runtime Option, Operation Requirement, Runtime Availability, Assignment, or candidate semantic changes
+    - Tool binding, Execution Contract, adapter, Provider integration, discovery, polling, execution, or invocation
+    - Persistence, registry, Project Manifest, CLI, credential, network, subprocess, permission, or sandbox changes
+    - Protected-target access, AIO-030, AIO-038, historical Task edits, staging, commit, push, merge, tag, release, or publication
+dependencies:
+  - AIO-036
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

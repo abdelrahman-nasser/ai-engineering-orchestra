@@ -22,6 +22,7 @@ Agent Runtime Option Definition
 
 available
 != Actor-to-Runtime applicable
+!= operation capability present
 != Inference Option available
 != compatible
 != authorized
@@ -174,6 +175,7 @@ Runtime compatible
 
 Runtime available
 != Actor-to-Runtime applicable
+!= operation capability present
 != Inference Option available
 != authorized
 != executing
@@ -198,6 +200,12 @@ defined by `core/runtime-inference-compatibility-specification.md`. This
 availability contract neither consumes nor implies that relation. A Runtime
 Option may expose zero externally selectable Inference Options, so absence of an
 edge must not imply that it cannot execute.
+
+Runtime Operation Capability Observation is separate technical-support
+evidence defined by
+`core/runtime-operation-capability-specification.md`. This availability
+contract neither consumes nor implies capability. A Runtime may support an
+operation while unavailable, or be available while lacking that operation.
 
 The separate derived composition is defined by
 `core/runtime-inference-pair-availability-specification.md`. It may consume this

@@ -90,6 +90,13 @@ explicit Core definition. An unknown well-formed identifier is unsupported;
 it is not inferred from a tool or Provider and has no alias. This contract does
 not create a generic registry service.
 
+Operation Requirement and Runtime Operation Capability Observation consume one
+package-internal Core source of truth for this syntax and supported vocabulary.
+The capability contract is defined separately in
+`core/runtime-operation-capability-specification.md`. Sharing the vocabulary
+does not change this contract's demand-only meaning, public findings, messages,
+validation order, or result semantics.
+
 ---
 
 ## 4. Resource Contract
@@ -260,7 +267,9 @@ Caller/planner
 
 Operation Requirement is standalone caller-supplied evidence. It is not a
 field on Task, Assignment, Runtime Option, or Agent Execution Candidate. A
-requirement may exist before any candidate.
+requirement may exist before any candidate. A separate Runtime Operation
+Capability Observation may exist for an operation that is not currently
+required, and a requirement may exist when Runtime capability is unknown.
 
 ---
 
@@ -280,6 +289,11 @@ The submodule exposes:
 The result fields are exactly `valid`, `findings`, and `requirement`. The package
 root does not re-export these names. The structural schema is a packaged schema
 resource.
+
+Operation syntax and support are implemented through the package-internal
+`engineering_orchestration._operation_vocabulary` helper shared with Runtime
+Operation Capability validation. This internal refactor does not change the
+public Operation Requirement API or behavior.
 
 ---
 

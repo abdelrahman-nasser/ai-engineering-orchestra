@@ -390,7 +390,15 @@ class OperationRequirementPurityTests(unittest.TestCase):
                 imports.update(alias.name for alias in node.names)
             elif isinstance(node, ast.ImportFrom) and node.module is not None:
                 imports.add(node.module)
-        self.assertEqual(imports, {"__future__", "dataclasses", "re"})
+        self.assertEqual(
+            imports,
+            {
+                "__future__",
+                "dataclasses",
+                "re",
+                "engineering_orchestration._operation_vocabulary",
+            },
+        )
 
     def test_static_ast_contains_no_target_access_or_effectful_calls(self) -> None:
         tree = ast.parse(MODULE_PATH.read_text(encoding="utf-8"))

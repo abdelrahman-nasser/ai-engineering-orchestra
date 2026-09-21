@@ -3,8 +3,9 @@
 Creates and removes two temporary venvs. Requires Python 3.12+, package/build
 dependency access, Git, and Node/npm for Manifest-driven repository verification.
 Run: python -B tests/package_installation_smoke.py
-Use ``--target-safe`` to skip only this repository's declared full verification
-when an external protected-target boundary requires focused checks instead.
+Use ``--target-safe`` to skip checkout CLI probes that enumerate the repository
+Workflow catalog when an external protected-target boundary requires focused
+checks instead. Installed behavior is still exercised against synthetic data.
 """
 
 from __future__ import annotations
@@ -136,10 +137,11 @@ def main() -> None:
                 with zipfile.ZipFile(wheel) as archive:
                     names = archive.namelist()
                     modules = {f"engineering_orchestration/{name}" for name in
-                               ("__init__.py", "_read_only_execution_preparation.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_execution_candidate_prerequisite.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
+                               ("__init__.py", "_operation_vocabulary.py", "_read_only_execution_preparation.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_execution_candidate_prerequisite.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
                                 "execution_mode.py", "inference_option.py",
                                 "inference_option_availability.py",
                                 "operation_requirement.py",
+                                "runtime_operation_capability.py",
                                 "runtime_inference_compatibility.py",
                                 "runtime_inference_pair_availability.py",
                                 "verify_repo.py", "workflow_catalog.py", "role_catalog.py", "schema_resources.py",
@@ -150,6 +152,7 @@ def main() -> None:
                                 "assignment.schema.json",
                                 "inference-option.schema.json", "inference-option-availability.schema.json",
                                 "operation-requirement.schema.json",
+                                "runtime-operation-capability.schema.json",
                                 "runtime-inference-compatibility.schema.json",
                                 "role.schema.json", "task.schema.json", "workflow.schema.json",
                                 "project-manifest.schema.json")}
@@ -185,10 +188,12 @@ import engineering_orchestration.execution_mode as execution_mode
 import engineering_orchestration.inference_option as inference_option
 import engineering_orchestration.inference_option_availability as inference_option_availability
 import engineering_orchestration.operation_requirement as operation_requirement
+import engineering_orchestration.runtime_operation_capability as runtime_operation_capability
 import engineering_orchestration.project_verification as project_verification
 import engineering_orchestration.role_catalog as role_catalog
 import engineering_orchestration.runtime_inference_compatibility as runtime_inference_compatibility
 import engineering_orchestration.runtime_inference_pair_availability as runtime_inference_pair_availability
+import engineering_orchestration._operation_vocabulary as operation_vocabulary
 import engineering_orchestration._read_only_execution_preparation as read_only_execution_preparation
 from engineering_orchestration.workflow_catalog import load_workflow_catalog
 from engineering_orchestration.schema_resources import schema_resource
@@ -460,6 +465,60 @@ with (
         operation_requirement.validate_operation_requirement(
             operation_requirement.OperationRequirement(
                 'repository_file_read', 'synthetic/../install-probe.txt')))
+    capability_present_absent = (
+        runtime_operation_capability.validate_runtime_operation_capability(
+            [
+                runtime_operation_capability.
+                RuntimeOperationCapabilityObservation(
+                    'installed-runtime-primary', 'repository_file_read',
+                    runtime_operation_capability.
+                    RuntimeOperationCapabilityState.PRESENT),
+                runtime_operation_capability.
+                RuntimeOperationCapabilityObservation(
+                    'installed-runtime-secondary', 'repository_file_read',
+                    runtime_operation_capability.
+                    RuntimeOperationCapabilityState.ABSENT),
+            ],
+            runtime_options))
+    capability_unknown_missing = (
+        runtime_operation_capability.validate_runtime_operation_capability(
+            [runtime_operation_capability.
+             RuntimeOperationCapabilityObservation(
+                 'installed-runtime-primary', 'repository_file_read',
+                 runtime_operation_capability.
+                 RuntimeOperationCapabilityState.UNKNOWN)],
+            runtime_options))
+    capability_duplicate = (
+        runtime_operation_capability.validate_runtime_operation_capability(
+            [
+                runtime_operation_capability.
+                RuntimeOperationCapabilityObservation(
+                    'installed-runtime-primary', 'repository_file_read',
+                    runtime_operation_capability.
+                    RuntimeOperationCapabilityState.PRESENT),
+                runtime_operation_capability.
+                RuntimeOperationCapabilityObservation(
+                    'installed-runtime-primary', 'repository_file_read',
+                    runtime_operation_capability.
+                    RuntimeOperationCapabilityState.ABSENT),
+            ],
+            runtime_options))
+    capability_unknown_runtime = (
+        runtime_operation_capability.validate_runtime_operation_capability(
+            [runtime_operation_capability.
+             RuntimeOperationCapabilityObservation(
+                 'missing-runtime', 'repository_file_read',
+                 runtime_operation_capability.
+                 RuntimeOperationCapabilityState.PRESENT)],
+            runtime_options))
+    capability_unsupported_operation = (
+        runtime_operation_capability.validate_runtime_operation_capability(
+            [runtime_operation_capability.
+             RuntimeOperationCapabilityObservation(
+                 'installed-runtime-primary', 'repository_file_write',
+                 runtime_operation_capability.
+                 RuntimeOperationCapabilityState.PRESENT)],
+            runtime_options))
 role_source = role_catalog.find_default_roles_resource()
 print(json.dumps({'module': cli.__file__,
     'execution_mode_module': execution_mode.__file__,
@@ -477,6 +536,8 @@ print(json.dumps({'module': cli.__file__,
     'candidate_prerequisite_module': agent_execution_candidate_prerequisite.__file__,
     'read_only_execution_preparation_module': read_only_execution_preparation.__file__,
     'operation_requirement_module': operation_requirement.__file__,
+    'operation_vocabulary_module': operation_vocabulary.__file__,
+    'runtime_operation_capability_module': runtime_operation_capability.__file__,
     'actor_module': actor_coverage.__file__,
     'selection_module': actor_selection.__file__,
     'assignment_module': assignment.__file__,
@@ -653,6 +714,39 @@ print(json.dumps({'module': cli.__file__,
     'operation_requirement_public_export_absent': not hasattr(
         sys.modules['engineering_orchestration'],
         'validate_operation_requirement'),
+    'operation_vocabulary': operation_vocabulary.supported_core_operation_ids(),
+    'runtime_operation_capability_present_absent': {
+        'valid': capability_present_absent.valid,
+        'observations': [
+            [observation.runtime_option_id, observation.operation_id,
+             observation.state]
+            for observation in
+            capability_present_absent.normalized_observations]},
+    'runtime_operation_capability_unknown_missing': {
+        'valid': capability_unknown_missing.valid,
+        'observations': [
+            [observation.runtime_option_id, observation.operation_id,
+             observation.state]
+            for observation in
+            capability_unknown_missing.normalized_observations]},
+    'runtime_operation_capability_duplicate': {
+        'codes': [finding.code for finding in capability_duplicate.findings],
+        'atomic': (not capability_duplicate.valid
+                   and not capability_duplicate.normalized_observations)},
+    'runtime_operation_capability_unknown_runtime': {
+        'codes': [finding.code for finding in
+                  capability_unknown_runtime.findings],
+        'atomic': (not capability_unknown_runtime.valid
+                   and not capability_unknown_runtime.normalized_observations)},
+    'runtime_operation_capability_unsupported_operation': {
+        'codes': [finding.code for finding in
+                  capability_unsupported_operation.findings],
+        'atomic': (not capability_unsupported_operation.valid
+                   and not capability_unsupported_operation.
+                   normalized_observations)},
+    'runtime_operation_capability_public_export_absent': not hasattr(
+        sys.modules['engineering_orchestration'],
+        'validate_runtime_operation_capability'),
     'roles': [str(role_source.joinpath(name)) for name in
     ('architect.yaml', 'documentation-specialist.yaml', 'reviewer.yaml',
      'security-reviewer.yaml', 'software-engineer.yaml')],
@@ -663,6 +757,7 @@ print(json.dumps({'module': cli.__file__,
      'assignment.schema.json',
      'inference-option.schema.json', 'inference-option-availability.schema.json',
      'operation-requirement.schema.json',
+     'runtime-operation-capability.schema.json',
      'runtime-inference-compatibility.schema.json',
      'role.schema.json', 'task.schema.json', 'workflow.schema.json',
      'project-manifest.schema.json')], 'sys_path': sys.path}))
@@ -698,6 +793,10 @@ print(json.dumps({'module': cli.__file__,
                         "Normal read-only execution preparation import leaked to source")
                 require(Path(evidence["operation_requirement_module"]).resolve().is_relative_to(environment),
                         "Normal Operation Requirement import leaked to source")
+                require(Path(evidence["operation_vocabulary_module"]).resolve().is_relative_to(environment),
+                        "Normal Core operation vocabulary import leaked to source")
+                require(Path(evidence["runtime_operation_capability_module"]).resolve().is_relative_to(environment),
+                        "Normal Runtime Operation Capability import leaked to source")
                 require(Path(evidence["actor_module"]).resolve().is_relative_to(environment),
                         "Normal Actor evaluator import leaked to source")
                 require(Path(evidence["selection_module"]).resolve().is_relative_to(environment),
@@ -882,21 +981,67 @@ print(json.dumps({'module': cli.__file__,
                     "Installed Operation Requirement resource probe failed")
             require(evidence["operation_requirement_public_export_absent"],
                     "Operation Requirement unexpectedly gained a package-root export")
-            for cwd in (ROOT, ROOT / "scripts"):
-                for args, marker in [(["--help"], "{tasks,inspect,verify}"),
-                                     (["tasks"], "AIO-016"),
-                                     (["inspect", "AIO-015"], "Schema: VALID")]:
-                    output = run([str(aio), *args], cwd, run_env)
-                    require(marker in output, f"Missing expected output: {marker}")
-            output = run([str(aio), "verify", "--structure"], ROOT / "scripts", run_env)
-            require("Supported AIO Structure" in output, "Installed structure mode failed")
+            require(evidence["operation_vocabulary"] == ["repository_file_read"],
+                    "Installed Core operation vocabulary differs from canonical source")
+            require(evidence["runtime_operation_capability_present_absent"] == {
+                        "valid": True,
+                        "observations": [
+                            ["installed-runtime-primary", "repository_file_read",
+                             "present"],
+                            ["installed-runtime-secondary", "repository_file_read",
+                             "absent"]]},
+                    "Installed Runtime capability present/absent probe failed")
+            require(evidence["runtime_operation_capability_unknown_missing"] == {
+                        "valid": True,
+                        "observations": [
+                            ["installed-runtime-primary", "repository_file_read",
+                             "unknown"],
+                            ["installed-runtime-secondary", "repository_file_read",
+                             "unknown"]]},
+                    "Installed Runtime capability unknown normalization failed")
+            require(evidence["runtime_operation_capability_duplicate"] == {
+                        "codes": ["duplicate_runtime_operation_capability"],
+                        "atomic": True},
+                    "Installed Runtime capability duplicate rejection failed")
+            require(evidence["runtime_operation_capability_unknown_runtime"] == {
+                        "codes": ["agent_runtime_option_not_found"],
+                        "atomic": True},
+                    "Installed Runtime capability unknown Runtime rejection failed")
+            require(
+                evidence["runtime_operation_capability_unsupported_operation"] == {
+                    "codes": ["operation_id_not_supported"],
+                    "atomic": True},
+                "Installed Runtime capability unsupported operation rejection failed")
+            require(evidence["runtime_operation_capability_public_export_absent"],
+                    "Runtime Operation Capability unexpectedly gained a package-root export")
             if target_safe:
                 print(
-                    "SKIP repository-declared full verification: target-safe "
-                    "mode; run focused checks separately",
+                    "SKIP checkout tasks/inspect/structural/full verification: "
+                    "target-safe mode avoids repository Workflow enumeration; "
+                    "run focused checks separately",
                     flush=True,
                 )
             else:
+                for cwd in (ROOT, ROOT / "scripts"):
+                    for args, marker in [
+                        (["--help"], "{tasks,inspect,verify}"),
+                        (["tasks"], "AIO-016"),
+                        (["inspect", "AIO-015"], "Schema: VALID"),
+                    ]:
+                        output = run([str(aio), *args], cwd, run_env)
+                        require(
+                            marker in output,
+                            f"Missing expected output: {marker}",
+                        )
+                output = run(
+                    [str(aio), "verify", "--structure"],
+                    ROOT / "scripts",
+                    run_env,
+                )
+                require(
+                    "Supported AIO Structure" in output,
+                    "Installed structure mode failed",
+                )
                 output = run([str(aio), "verify"], ROOT, run_env)
                 require("Verification passed." in output and "unit-tests" in output,
                         "Installed Orchestra verification did not use Manifest checks")

@@ -187,7 +187,7 @@ semantic authorities are
 and
 [`core/inference-option-availability-specification.md`](core/inference-option-availability-specification.md).
 
-## Agent Runtime Option Definition and Availability
+## Agent Runtime Option Definition, Availability, and Capability
 
 An Agent Runtime Option is an opaque, caller/environment-supplied configured
 execution surface through which an Agent execution can run or be delegated. Its
@@ -235,6 +235,42 @@ observations normalize to unknown. Duplicate Runtime Option IDs, duplicate
 observations, and unknown references invalidate their complete input without
 partial normalized output. Available does not mean Actor-applicable,
 Inference-compatible, selected, authorized, capacity-ready, or executing.
+
+Runtime Operation Capability Observation is separate caller/environment-supplied
+technical-support evidence for one known Runtime Option and one Core-defined
+abstract operation:
+
+```python
+from engineering_orchestration.runtime_operation_capability import (
+    RuntimeOperationCapabilityObservation,
+    RuntimeOperationCapabilityState,
+    validate_runtime_operation_capability,
+)
+
+runtime_capability = validate_runtime_operation_capability(
+    [
+        RuntimeOperationCapabilityObservation(
+            "primary-agent-runtime",
+            "repository_file_read",
+            RuntimeOperationCapabilityState.PRESENT,
+        )
+    ],
+    runtime_options,
+)
+```
+
+The observation contains exactly `runtime_option_id`, `operation_id`, and
+`state`; its exact pair identity excludes state. States are exactly `present`,
+`absent`, and `unknown`. Every missing known Runtime/Core-operation pair
+normalizes to unknown, never absent. Duplicate pairs, unknown Runtime
+references, malformed operation IDs, and well-formed unsupported operations
+invalidate the complete snapshot without partial normalized output.
+
+Capability means technical support for the abstract operation in principle. It
+contains no resource, tool identity, environment, timestamp, or freshness, and
+does not establish requirement, availability, permission, authorization,
+dispatchability, execution, or success. Core validates supplied observations;
+it performs no capability discovery or Runtime probing.
 
 Actor-to-Runtime Applicability Evidence is a separate caller-supplied positive
 many-to-many relation between known Agent Actors and Runtime Options:
@@ -403,6 +439,7 @@ Inference Option
 Caller/environment
   -> caller-scoped Actor context
   -> caller-scoped Runtime Option inventory + availability
+  -> caller-scoped Runtime operation capability observations
   -> caller-scoped Inference Option inventory + availability
   -> supplied positive Actor-to-Runtime applicability evidence
   -> supplied positive Runtime-to-Inference compatibility evidence
@@ -424,9 +461,17 @@ caller/planner
   -> Operation Requirement(operation_id, resource)
   -> declared need only; no capability, permission, authorization, or execution
 
+current canonical Runtime technical-support evidence:
+caller/environment
+  -> Runtime Operation Capability Observation(runtime_option_id,
+                                                operation_id, state)
+  -> present | absent | unknown
+  -> no resource, tool binding, availability, permission, authorization,
+     or execution
+
 current private experiment:
 candidate prerequisite assessment
-  + caller-supplied capability evidence
+  + its existing provisional capability evidence
   + caller-supplied environment permission + freshness evidence
   + caller-supplied Human/policy authorization evidence
   -> read-only execution preparation dry run
@@ -464,8 +509,12 @@ The derived pair-availability authority is
 [`core/runtime-inference-pair-availability-specification.md`](core/runtime-inference-pair-availability-specification.md).
 The exact-candidate composition authority is
 [`core/agent-execution-candidate-prerequisite-specification.md`](core/agent-execution-candidate-prerequisite-specification.md).
+The Runtime-operation capability authority is
+[`core/runtime-operation-capability-specification.md`](core/runtime-operation-capability-specification.md).
 AIO-035 deliberately adds no new Core specification: its provisional semantics
 remain in the AIO-035 Task evidence, private implementation, and focused tests.
+AIO-037 does not retrofit that private experiment or compose capability with
+permission, authorization, candidate evidence, or execution.
 
 ## Operation Requirement
 
@@ -489,8 +538,9 @@ result = validate_operation_requirement(requirement)
 
 Identity is exact case-sensitive `(operation_id, resource)`. AIO-036 supports
 only `repository_file_read`; future operation identifiers require explicit Core
-definitions. The operation remains abstract and is not inferred from a tool or
-Provider.
+definitions. Operation Requirement and Runtime Operation Capability validation
+consume one shared package-internal Core operation vocabulary. The operation
+remains abstract and is not inferred from a tool or Provider.
 
 The resource is validated as an extension-neutral lexical string with `/`
 separators. Absolute, drive-qualified, UNC, URI, tilde-rooted, backslash,
@@ -510,6 +560,8 @@ requirement != capability != permission != authorization != execution
 The structural schema owns only the exact two required nonempty string fields.
 The semantic authority and deterministic runtime behavior are defined in
 [`core/operation-requirement-specification.md`](core/operation-requirement-specification.md).
+The separate technical-support contract is defined in
+[`core/runtime-operation-capability-specification.md`](core/runtime-operation-capability-specification.md).
 The earlier AIO-035 preparation harness remains a private bounded experiment;
 AIO-036 does not retrofit it, access its protected target, or canonicalize its
 provisional capability, permission, or authorization evidence.
@@ -539,11 +591,11 @@ only the supported structural rules, without establishing Quality Gate results.
 
 The installed tool packages canonical Actor, Actor Availability Observation,
 Actor-to-Runtime Applicability Evidence, Agent Runtime Option, Agent Runtime
-Option Availability Observation, Assignment, Inference Option, Inference Option
-Availability Observation, Runtime-to-Inference Compatibility Evidence, Role,
-Task, Workflow, and Project Manifest schemas from their single sources in
-`schemas/`, plus the five framework-owned canonical Role YAML instances from
-`roles/`.
+Option Availability Observation, Runtime Operation Capability Observation,
+Assignment, Inference Option, Inference Option Availability Observation,
+Runtime-to-Inference Compatibility Evidence, Role, Task, Workflow, and Project
+Manifest schemas from their single sources in `schemas/`, plus the five
+framework-owned canonical Role YAML instances from `roles/`.
 Managed projects
 need no schema regression scripts, fixtures, Orchestra Task history, Git,
 Node/npm, or Python tests. Python and the declared tool dependencies run the

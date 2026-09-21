@@ -137,6 +137,36 @@ in:
 
 ---
 
+## Runtime Operation Capability Observation
+
+An immutable, caller/environment-supplied observation describing the currently
+known technical-support state of one known Agent Runtime Option for one
+Core-defined abstract operation within one caller-owned evaluation snapshot.
+
+The value contains exactly `runtime_option_id`, `operation_id`, and `state`.
+Its identity is the exact case-sensitive pair
+`(runtime_option_id, operation_id)`; state is not identity. The state is exactly
+`present`, `absent`, or `unknown`. Present is positive supplied technical-support
+evidence, absent is positive supplied non-support evidence, and unknown means no
+reliable determination. Absent is not unknown.
+
+A missing observation for a known Runtime/Core-operation pair normalizes to
+unknown. Explicit and synthesized unknown observations are semantically
+indistinguishable in normalized output. Duplicate pairs, unknown Runtime
+references, malformed operation IDs, and well-formed unsupported operation IDs
+invalidate the complete snapshot without partial normalization.
+
+Capability reports technical support for an operation class in principle. It
+does not include a resource, tool identity, environment, freshness, permission,
+authorization, availability, discovery, or execution semantics. It neither
+changes Runtime Option identity nor creates an Operation Requirement. The
+qualified term does not mean Role `required_capabilities`, Actor competency, or
+Provider/model capability. The canonical contract is defined in:
+
+`core/runtime-operation-capability-specification.md`
+
+---
+
 ## Actor-to-Runtime Applicability Evidence
 
 An immutable, caller-supplied positive evidence value stating that one known

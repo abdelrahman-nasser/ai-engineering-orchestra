@@ -93,6 +93,15 @@ Status: In Development
 - immutable Operation Requirement values and pure deterministic semantic
   validation for operation syntax/support and extension-neutral resource
   grammar, with atomic findings and no filesystem access or normalization
+- canonical three-field Runtime Operation Capability Observation specification
+  and schema for Runtime/Core-operation technical-support states
+- immutable capability observations and pure deterministic snapshot validation
+  with `present`, `absent`, and `unknown`, full missing-pair unknown
+  normalization, duplicate/reference rejection, pair ordering, and atomic
+  invalid results
+- one package-internal Core operation vocabulary shared by Operation Requirement
+  and Runtime Operation Capability validation without changing AIO-036 public
+  behavior
 - private controlled read-only execution preparation dry run for the single
   provisional `repository_file_read` operation and one exact canonical
   repository-relative Markdown resource
@@ -184,6 +193,12 @@ Status: In Development
 - preserved capability, environment permission, and Human/policy authorization
   as independent facts; only exact, current positives in every required
   dimension produce the cautious `potentially_executable` diagnostic
+- separated Runtime operation capability from Runtime identity, Operation
+  Requirement, Runtime availability, resource permission, Human/policy
+  authorization, tool binding, discovery, dispatch, and execution
+- established that missing Runtime/Core-operation observations normalize to
+  unknown while explicit non-support remains absent, with both states remaining
+  distinct for future composition
 - established the Role authority hierarchy from semantic specification to
   structural schema, canonical YAML instances, compatibility Markdown, and
   regression tooling

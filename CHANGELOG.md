@@ -114,6 +114,16 @@ Status: In Development
   Operation Requirement and Environment Operation Permission Observation
   validation while preserving AIO-036 public codes, messages, precedence, API,
   and behavior
+- canonical fourteen-field Agent Execution Authorization Evidence specification
+  and schema for caller-attested `human` or `policy` assertions about one exact
+  assigned external-inference Agent action
+- immutable authorization evidence and pure deterministic validation with exact
+  Assignment, Runtime, Inference, environment, operation, and lexical-resource
+  checks; mutually exclusive conflict, multi-authority, and duplicate handling;
+  canonical supplied-only output; and atomic invalid results
+- explicit separation of authorization evidence from authenticated authority,
+  Task approval, Assignment, candidate satisfaction, capability, environment
+  permission, Permission Decision, lifecycle, enforcement, and execution
 - private controlled read-only execution preparation dry run for the single
   provisional `repository_file_read` operation and one exact canonical
   repository-relative Markdown resource

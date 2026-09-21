@@ -16,6 +16,7 @@ def schema_resource(name: str) -> Traversable | None:
         "actor.schema.json",
         "actor-availability.schema.json",
         "actor-runtime-applicability.schema.json",
+        "agent-execution-authorization-evidence.schema.json",
         "agent-runtime-option.schema.json",
         "agent-runtime-option-availability.schema.json",
         "assignment.schema.json",

@@ -283,6 +283,13 @@ independently; it supplies an environment-scoped permission fact for one exact
 Runtime, operation, and resource and neither creates nor satisfies a
 requirement.
 
+Agent Execution Authorization Evidence may independently refer to the same
+exact operation and lexical resource as part of a larger assigned-action
+subject. A requirement neither creates that evidence nor becomes authorized by
+its presence. Authorization evidence is caller-attested and does not create or
+satisfy an Operation Requirement. Its separate contract is defined in
+`core/agent-execution-authorization-evidence-specification.md`.
+
 ---
 
 ## 11. Runtime and Package API

@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-engineering-orchestra.dev/schemas/agent-execution-authorization-evidence.schema.json",
+  "title": "AI Engineering Orchestra Agent Execution Authorization Evidence",
+  "description": "Structural schema for one Agent Execution Authorization Evidence value defined by core/agent-execution-authorization-evidence-specification.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "workflow_id",
+    "stage_id",
+    "role_id",
+    "actor_id",
+    "runtime_option_id",
+    "option_id",
+    "environment_id",
+    "operation_id",
+    "resource",
+    "authority_kind",
+    "authority_id",
+    "provenance_reference",
+    "state"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact Task identity from the bound Assignment."
+    },
+    "workflow_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact Workflow identity from the bound Assignment."
+    },
+    "stage_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact Workflow Stage identity from the bound Assignment."
+    },
+    "role_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact Role identity from the bound Assignment."
+    },
+    "actor_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact selected Actor identity from the bound Assignment."
+    },
+    "runtime_option_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact opaque reference to one caller-supplied Agent Runtime Option."
+    },
+    "option_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact opaque reference to one caller-supplied external Inference Option."
+    },
+    "environment_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact opaque caller-owned evaluation environment identity."
+    },
+    "operation_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact identifier of one Core-defined abstract operation."
+    },
+    "resource": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact lexical repository-relative resource path."
+    },
+    "authority_kind": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "human",
+        "policy"
+      ],
+      "description": "Caller-attested kind of authority that made the decision elsewhere."
+    },
+    "authority_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact opaque caller-scoped authority identity; Core does not authenticate it."
+    },
+    "provenance_reference": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact opaque caller-supplied provenance reference; Core does not dereference or verify it."
+    },
+    "state": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "granted",
+        "denied"
+      ],
+      "description": "Caller-attested authorization decision state for the exact action subject."
+    }
+  }
+}

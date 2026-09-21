@@ -205,6 +205,35 @@ canonical contract is defined in:
 
 ---
 
+## Agent Execution Authorization Evidence
+
+An immutable, caller-supplied, evaluation-scoped evidence value asserting that
+one identified Human or policy authority granted or denied one exact assigned
+external-inference Agent action.
+
+Its exact subject is the ten-part tuple of `task_id`, `workflow_id`, `stage_id`,
+`role_id`, `actor_id`, `runtime_option_id`, `option_id`, `environment_id`,
+`operation_id`, and lexical `resource`. The first five fields reproduce one
+complete valid Assignment. `authority_kind`, `authority_id`,
+`provenance_reference`, and `state` describe the supplied assertion and are not
+subject identity. Authority kind is exactly `human` or `policy`; state is
+exactly `granted` or `denied`.
+
+The value is evidence only. The authority identity and provenance are opaque
+and caller-attested; Core does not authenticate the authority, verify
+entitlement, dereference provenance, or issue a grant. Missing exact-subject
+evidence means authorization is unproven, not denied. Assignment, Task approval,
+candidate-prerequisite satisfaction, capability, environment permission, and a
+Permission Decision do not manufacture this evidence.
+
+The contract has no authorization lifecycle, freshness, expiry, persistence,
+consumption, replay protection, revocation, enforcement, dispatch, or execution
+semantics. The canonical contract is defined in:
+
+`core/agent-execution-authorization-evidence-specification.md`
+
+---
+
 ## Actor-to-Runtime Applicability Evidence
 
 An immutable, caller-supplied positive evidence value stating that one known
@@ -471,6 +500,9 @@ Role required at one Stage of the Workflow explicitly governing one Task.
 Assignment records an externally made responsibility choice. It does not select
 or rank Actors, inspect availability, grant authority or permission, configure or
 perform execution, establish Workflow state, or produce a Quality Gate result.
+
+Agent Execution Authorization Evidence may refer to one complete Assignment as
+part of an exact action subject, but an Assignment never creates that evidence.
 
 The responsibility key is `(task_id, workflow_id, stage_id, role_id)`;
 `actor_id` is the selected value. The canonical contract is defined in:
@@ -877,6 +909,11 @@ Permission Decision is defined conceptually in v0.1.
 Permission Decision is distinct from Environment Operation Permission
 Observation. The latter uses `allowed`, `denied`, and `unknown` only as supplied
 environment facts; none is a Permission Decision or authorization result.
+
+Permission Decision is also distinct from Agent Execution Authorization
+Evidence. Core does not map `allow`, `ask`, `always-ask`, or `deny` to the
+evidence states `granted` or `denied`; any authority producer remains outside
+the AIO-039 evidence-validation contract.
 
 Full command permission enforcement is planned for Orchestra v0.2.
 

@@ -149,6 +149,22 @@ Where relevant, approval should identify:
 
 Broad or ambiguous approval should not be silently interpreted as unlimited permission.
 
+### Relationship to Agent Execution Authorization Evidence
+
+A Human Control checkpoint or Task-level Human approval is governance evidence;
+it is not automatically Agent Execution Authorization Evidence for a concrete
+action. The authorization-evidence contract requires a caller-supplied assertion
+for one exact Assignment, Runtime Option, external Inference Option,
+environment, operation, and lexical resource subject.
+
+An evidence value with `authority_kind: human` remains caller-attested. Core
+does not authenticate the Human, verify entitlement or provenance, or parse
+approval prose to manufacture evidence. Missing exact-subject evidence means
+authorization is unproven, not denied. Evidence production, authentication,
+expiry, replay protection, revocation, enforcement, and execution remain
+outside AIO-039 and require separately authorized contracts. See
+`core/agent-execution-authorization-evidence-specification.md`.
+
 ---
 
 ## 11. Approval Expiration

@@ -534,13 +534,20 @@ These combinations are coherent:
 ```text
 capability present + permission denied
 permission allowed + Runtime unavailable
-permission allowed + Human authorization absent
-Human authorization granted + permission denied
+permission allowed + authorization evidence missing
+authorization evidence granted + permission denied
 ```
 
 None authorizes execution. AIO-038 changes no AIO-036 Operation Requirement,
 AIO-037 Runtime Operation Capability Observation, Agent Runtime Option
 Availability Observation, Permission Decision, or Human Control semantics.
+
+Agent Execution Authorization Evidence is a separate caller-attested assertion
+for one exact assigned external-inference Agent action. `allowed` does not
+create `granted` evidence, `denied` permission does not create `denied`
+authorization evidence, and either evidence category may be missing while the
+other is present. The authorization-evidence contract is defined in
+`core/agent-execution-authorization-evidence-specification.md`.
 
 The separate Permission Decision vocabulary remains exactly:
 
@@ -649,6 +656,6 @@ The first contract contains no:
   integration, CLI, or Project Manifest field; or
 - Execution Contract, request, dispatch, session, execution, or invocation.
 
-Future Permission Decision, authorization, lookup, composition, enforcement, or
-execution-layer contracts require separately authorized design. They must
-preserve this observation contract's exact evidence-only meaning.
+Future Permission Decision, authorization production, lookup, composition,
+enforcement, or execution-layer contracts require separately authorized design.
+They must preserve this observation contract's exact evidence-only meaning.

@@ -451,6 +451,13 @@ Human Control, platform and sandbox permissions, credentials, policy, tool
 access, runtime capabilities, context windows, quota, cost, and execution
 authorization remain separate facts.
 
+Agent Execution Authorization Evidence is a separate caller-attested assertion
+about one exact assigned external-inference Agent action. A `satisfied`
+assessment neither creates nor implies `granted` evidence, and supplied
+authorization evidence does not satisfy missing candidate prerequisites. Its
+contract is defined in
+`core/agent-execution-authorization-evidence-specification.md`.
+
 Execution Mode is Task/process governance depth. It is not an assessment input
 and creates no Runtime support, model-strength, reasoning-tier, permission, or
 authority inference.

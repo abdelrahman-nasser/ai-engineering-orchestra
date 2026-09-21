@@ -137,7 +137,7 @@ def main() -> None:
                 with zipfile.ZipFile(wheel) as archive:
                     names = archive.namelist()
                     modules = {f"engineering_orchestration/{name}" for name in
-                               ("__init__.py", "_operation_vocabulary.py", "_read_only_execution_preparation.py", "_repository_resource.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_execution_candidate_prerequisite.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
+                               ("__init__.py", "_operation_vocabulary.py", "_read_only_execution_preparation.py", "_repository_resource.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_execution_authorization_evidence.py", "agent_execution_candidate_prerequisite.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
                                 "environment_operation_permission.py",
                                 "execution_mode.py", "inference_option.py",
                                 "inference_option_availability.py",
@@ -149,6 +149,7 @@ def main() -> None:
                                 "project.py", "validation.py", "project_verification.py")}
                     schemas = {f"engineering_orchestration/_schemas/{name}" for name in
                                ("actor-availability.schema.json", "actor-runtime-applicability.schema.json", "actor.schema.json",
+                                "agent-execution-authorization-evidence.schema.json",
                                 "agent-runtime-option.schema.json", "agent-runtime-option-availability.schema.json",
                                 "assignment.schema.json",
                                 "environment-operation-permission.schema.json",
@@ -766,6 +767,130 @@ print(json.dumps({'module': cli.__file__,
      'project-manifest.schema.json')], 'sys_path': sys.path}))
 """
             evidence = json.loads(run([str(python), "-B", "-c", probe], project / "src/nested", run_env))
+            authorization_probe = """
+import json, os, socket, subprocess, time, urllib.request
+from contextlib import ExitStack
+from pathlib import Path
+from unittest.mock import patch
+import engineering_orchestration
+import engineering_orchestration.agent_execution_authorization_evidence as auth
+from engineering_orchestration.agent_runtime_option import AgentRuntimeOptionDefinition
+from engineering_orchestration.assignment import Assignment
+from engineering_orchestration.inference_option import InferenceOptionDefinition
+from engineering_orchestration.role_catalog import RoleCatalog
+from engineering_orchestration.schema_resources import schema_resource
+from engineering_orchestration.workflow_catalog import WorkflowCatalog, WorkflowDefinition, WorkflowStage
+K = auth.AgentExecutionAuthorizationAuthorityKind
+S = auth.AgentExecutionAuthorizationState
+E = auth.AgentExecutionAuthorizationEvidence
+task = {'id': 'LOCAL-123', 'workflow': 'external-flow'}
+workflows = WorkflowCatalog(Path('unused'), {'external-flow': WorkflowDefinition(
+    'external-flow', 'External', 'Synthetic installed probe',
+    [WorkflowStage('external-stage', 'Synthetic stage', ['software-engineer'])])})
+roles = RoleCatalog(None, {'software-engineer': {
+    'id': 'software-engineer', 'required_capabilities': ['implementation']}})
+agent = {'id': 'installed-agent', 'kind': 'agent',
+         'competencies': ['implementation']}
+human = {'id': 'installed-human', 'kind': 'human',
+         'competencies': ['implementation']}
+binding = Assignment('LOCAL-123', 'external-flow', 'external-stage',
+                     'software-engineer', 'installed-agent')
+human_binding = Assignment('LOCAL-123', 'external-flow', 'external-stage',
+                           'software-engineer', 'installed-human')
+runtimes = [AgentRuntimeOptionDefinition('installed-runtime-primary')]
+options = [InferenceOptionDefinition(
+    'installed-primary', 'provider::installed', 'model::installed')]
+authorization_schema = str(schema_resource(
+    'agent-execution-authorization-evidence.schema.json'))
+def item(state=S.GRANTED, kind=K.HUMAN, actor_id='installed-agent',
+         authority_id='human::installed-reviewer',
+         provenance='approval::installed'):
+    return E('LOCAL-123', 'external-flow', 'external-stage',
+             'software-engineer', actor_id, 'installed-runtime-primary',
+             'installed-primary', 'installed-environment',
+             'repository_file_read', 'synthetic/install-authorization.txt',
+             kind, authority_id, provenance, state)
+def validate(values, assignments=None, actors=None):
+    return auth.validate_agent_execution_authorization_evidence(
+        values, assignments or [binding], task, workflows, roles,
+        actors or [agent], runtimes, options, 'installed-environment')
+blocked = AssertionError('authorization validation must remain pure')
+guards = (
+    patch('builtins.open', side_effect=blocked),
+    patch.object(Path, 'open', side_effect=blocked),
+    patch.object(Path, 'read_text', side_effect=blocked),
+    patch.object(Path, 'read_bytes', side_effect=blocked),
+    patch.object(Path, 'stat', side_effect=blocked),
+    patch.object(Path, 'resolve', side_effect=blocked),
+    patch.object(Path, 'iterdir', side_effect=blocked),
+    patch.object(Path, 'glob', side_effect=blocked),
+    patch.object(Path, 'rglob', side_effect=blocked),
+    patch.object(os, 'stat', side_effect=blocked),
+    patch.object(os, 'access', side_effect=blocked),
+    patch.object(os, 'listdir', side_effect=blocked),
+    patch.object(os, 'scandir', side_effect=blocked),
+    patch.object(os, 'getenv', side_effect=blocked),
+    patch.object(subprocess, 'run', side_effect=blocked),
+    patch.object(subprocess, 'Popen', side_effect=blocked),
+    patch.object(socket, 'create_connection', side_effect=blocked),
+    patch.object(socket, 'getaddrinfo', side_effect=blocked),
+    patch.object(urllib.request, 'urlopen', side_effect=blocked),
+    patch.object(time, 'time', side_effect=blocked),
+    patch.object(time, 'monotonic', side_effect=blocked),
+)
+with ExitStack() as stack:
+    for guard in guards:
+        stack.enter_context(guard)
+    value = item()
+    valid = validate([value])
+    empty = validate([])
+    duplicate = validate([value, value])
+    conflict = validate([value, item(state=S.DENIED)])
+    multi = validate([value, item(
+        kind=K.POLICY, authority_id='policy::installed',
+        provenance='policy-evaluation::installed')])
+    human_result = validate(
+        [item(actor_id='installed-human')], [human_binding], [human])
+print(json.dumps({
+    'agent_execution_authorization_evidence_module': auth.__file__,
+    'agent_execution_authorization_schema': authorization_schema,
+    'agent_execution_authorization_authority_kinds': [x.value for x in K],
+    'agent_execution_authorization_states': [x.value for x in S],
+    'agent_execution_authorization_valid': {
+        'valid': valid.valid,
+        'evidence': [[x.task_id, x.workflow_id, x.stage_id, x.role_id,
+                      x.actor_id, x.runtime_option_id, x.option_id,
+                      x.environment_id, x.operation_id, x.resource,
+                      x.authority_kind, x.authority_id,
+                      x.provenance_reference, x.state]
+                     for x in valid.normalized_evidence]},
+    'agent_execution_authorization_empty': {
+        'valid': empty.valid, 'evidence': list(empty.normalized_evidence)},
+    'agent_execution_authorization_duplicate': {
+        'codes': [x.code for x in duplicate.findings],
+        'atomic': not duplicate.valid and not duplicate.normalized_evidence},
+    'agent_execution_authorization_conflict': {
+        'codes': [x.code for x in conflict.findings],
+        'atomic': not conflict.valid and not conflict.normalized_evidence},
+    'agent_execution_authorization_multi_authority': {
+        'codes': [x.code for x in multi.findings],
+        'atomic': not multi.valid and not multi.normalized_evidence},
+    'agent_execution_authorization_human_actor': {
+        'codes': [x.code for x in human_result.findings],
+        'atomic': not human_result.valid and not human_result.normalized_evidence},
+    'agent_execution_authorization_public_export_absent': not hasattr(
+        engineering_orchestration,
+        'validate_agent_execution_authorization_evidence'),
+}))
+"""
+            evidence.update(json.loads(run(
+                [str(python), "-B", "-c", authorization_probe],
+                project / "src/nested",
+                run_env,
+            )))
+            evidence["schemas"].append(
+                evidence["agent_execution_authorization_schema"]
+            )
             permission_probe = """
 import json, os, socket, subprocess, sys, time, urllib.request
 from contextlib import ExitStack
@@ -897,6 +1022,8 @@ print(json.dumps({
                         "Normal Runtime-to-Inference Pair Availability import leaked to source")
                 require(Path(evidence["candidate_prerequisite_module"]).resolve().is_relative_to(environment),
                         "Normal Agent Execution Candidate Prerequisite import leaked to source")
+                require(Path(evidence["agent_execution_authorization_evidence_module"]).resolve().is_relative_to(environment),
+                        "Normal Agent Execution Authorization Evidence import leaked to source")
                 require(Path(evidence["read_only_execution_preparation_module"]).resolve().is_relative_to(environment),
                         "Normal read-only execution preparation import leaked to source")
                 require(Path(evidence["operation_requirement_module"]).resolve().is_relative_to(environment),
@@ -1075,6 +1202,57 @@ print(json.dumps({
                     "Installed read-only execution preparation probe failed")
             require(evidence["read_only_preparation_public_export_absent"],
                     "Read-only execution preparation unexpectedly became public")
+            require(evidence["agent_execution_authorization_authority_kinds"] == [
+                        "human", "policy"],
+                    "Installed authorization authority kinds differ")
+            require(evidence["agent_execution_authorization_states"] == [
+                        "granted", "denied"],
+                    "Installed authorization states differ")
+            require(evidence["agent_execution_authorization_valid"] == {
+                        "valid": True,
+                        "evidence": [[
+                            "LOCAL-123", "external-flow", "external-stage",
+                            "software-engineer", "installed-agent",
+                            "installed-runtime-primary", "installed-primary",
+                            "installed-environment", "repository_file_read",
+                            "synthetic/install-authorization.txt", "human",
+                            "human::installed-reviewer", "approval::installed",
+                            "granted"]]},
+                    "Installed authorization valid probe failed")
+            require(evidence["agent_execution_authorization_empty"] == {
+                        "valid": True, "evidence": []},
+                    "Installed authorization absence probe failed")
+            require(evidence["agent_execution_authorization_duplicate"] == {
+                        "codes": [
+                            "duplicate_agent_execution_authorization_evidence"
+                        ],
+                        "atomic": True},
+                    "Installed authorization duplicate rejection failed")
+            require(evidence["agent_execution_authorization_conflict"] == {
+                        "codes": [
+                            "conflicting_agent_execution_authorization_evidence"
+                        ],
+                        "atomic": True},
+                    "Installed authorization conflict rejection failed")
+            require(
+                evidence["agent_execution_authorization_multi_authority"] == {
+                    "codes": [
+                        "unsupported_multi_authority_"
+                        "agent_execution_authorization_evidence"
+                    ],
+                    "atomic": True,
+                },
+                "Installed authorization multi-authority rejection failed",
+            )
+            require(evidence["agent_execution_authorization_human_actor"] == {
+                        "codes": [
+                            "agent_execution_authorization_not_applicable_to_"
+                            "human_actor"
+                        ],
+                        "atomic": True},
+                    "Installed authorization Human Actor boundary failed")
+            require(evidence["agent_execution_authorization_public_export_absent"],
+                    "Authorization Evidence unexpectedly gained a root export")
             require(evidence["operation_requirement_valid"] == {
                         "valid": True,
                         "same_value": True,

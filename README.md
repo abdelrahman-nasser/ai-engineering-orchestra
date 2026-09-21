@@ -480,6 +480,16 @@ caller/environment
   -> exact supplied evidence only; no Permission Decision, Human/policy
      authorization, enforcement, or execution
 
+current canonical exact-action authorization evidence:
+caller/authority producer
+  -> Agent Execution Authorization Evidence(Assignment subject,
+                                             runtime_option_id, option_id,
+                                             environment_id, operation_id,
+                                             resource, authority, state)
+  -> granted | denied
+  -> caller-attested evidence only; no authenticated authority, lifecycle,
+     enforcement, dispatch, or execution
+
 current private experiment:
 candidate prerequisite assessment
   + its existing provisional capability evidence
@@ -524,11 +534,12 @@ The Runtime-operation capability authority is
 [`core/runtime-operation-capability-specification.md`](core/runtime-operation-capability-specification.md).
 The environment-operation permission-observation authority is
 [`core/environment-operation-permission-specification.md`](core/environment-operation-permission-specification.md).
+The exact-action authorization-evidence authority is
+[`core/agent-execution-authorization-evidence-specification.md`](core/agent-execution-authorization-evidence-specification.md).
 AIO-035 deliberately adds no new Core specification: its provisional semantics
 remain in the AIO-035 Task evidence, private implementation, and focused tests.
-AIO-037 and AIO-038 do not retrofit that private experiment or compose
-capability and canonical permission observations with authorization, candidate
-evidence, or execution.
+AIO-037 through AIO-039 do not retrofit that private experiment or compose
+capability, permission, candidate, and authorization evidence into execution.
 
 ## Operation Requirement
 
@@ -652,6 +663,70 @@ invalid results are defined by
 The earlier AIO-035 preparation harness retains separate provisional evidence
 and freshness semantics; AIO-038 does not retrofit or canonicalize it.
 
+## Agent Execution Authorization Evidence
+
+Agent Execution Authorization Evidence is an immutable, caller-supplied
+assertion that one identified Human or policy authority granted or denied one
+exact assigned external-inference Agent action:
+
+```python
+from engineering_orchestration.agent_execution_authorization_evidence import (
+    AgentExecutionAuthorizationAuthorityKind,
+    AgentExecutionAuthorizationEvidence,
+    AgentExecutionAuthorizationState,
+    validate_agent_execution_authorization_evidence,
+)
+
+evidence = AgentExecutionAuthorizationEvidence(
+    task_id="AIO-SYNTHETIC",
+    workflow_id="architecture-change",
+    stage_id="implement",
+    role_id="software-engineer",
+    actor_id="agent-engineer-1",
+    runtime_option_id="primary-agent-runtime",
+    option_id="primary-inference-option",
+    environment_id="synthetic-evaluation-environment",
+    operation_id="repository_file_read",
+    resource="synthetic/input.txt",
+    authority_kind=AgentExecutionAuthorizationAuthorityKind.HUMAN,
+    authority_id="human-reviewer-1",
+    provenance_reference="approval-record-1",
+    state=AgentExecutionAuthorizationState.GRANTED,
+)
+
+authorization_snapshot = validate_agent_execution_authorization_evidence(
+    [evidence],
+    assignments,
+    task,
+    workflow_catalog,
+    role_catalog,
+    actors,
+    runtime_options,
+    inference_options,
+    "synthetic-evaluation-environment",
+)
+```
+
+The first ten fields form the exact action subject; the remaining fields state
+the caller-attested authority, opaque provenance, and `granted` or `denied`
+assertion. Evidence applies only to an exact valid Agent Assignment and known
+Runtime and external Inference Options in the supplied context. Repeated
+subjects are rejected deterministically as a state conflict, unsupported
+multi-authority assertion, or exact duplicate; Core chooses no winner.
+
+The value is evidence, not authenticated authority or a usable grant. Core does
+not verify identity, entitlement, provenance, freshness, expiry, or revocation.
+Missing exact-subject evidence means authorization is unproven, not denied.
+Task approval, Assignment, candidate satisfaction, capability, environment
+permission, and Permission Decision do not create it. Validation performs no
+target I/O and provides no lifecycle, persistence, replay protection,
+enforcement, dispatch, or execution.
+
+The closed fourteen-field schema owns structure only. Exact semantics,
+deterministic findings, canonical supplied-only output, and atomic invalid
+results are defined by
+[`core/agent-execution-authorization-evidence-specification.md`](core/agent-execution-authorization-evidence-specification.md).
+
 ## Installed Structural Validation
 
 The programmatic API reads the nearest active project's supported AIO structures:
@@ -678,11 +753,11 @@ only the supported structural rules, without establishing Quality Gate results.
 The installed tool packages canonical Actor, Actor Availability Observation,
 Actor-to-Runtime Applicability Evidence, Agent Runtime Option, Agent Runtime
 Option Availability Observation, Runtime Operation Capability Observation,
-Environment Operation Permission Observation, Assignment, Inference Option,
-Inference Option Availability Observation, Runtime-to-Inference Compatibility
-Evidence, Role, Task, Workflow, and Project Manifest schemas from their single
-sources in `schemas/`, plus the five framework-owned canonical Role YAML
-instances from `roles/`.
+Environment Operation Permission Observation, Agent Execution Authorization
+Evidence, Assignment, Inference Option, Inference Option Availability
+Observation, Runtime-to-Inference Compatibility Evidence, Role, Task, Workflow,
+and Project Manifest schemas from their single sources in `schemas/`, plus the
+five framework-owned canonical Role YAML instances from `roles/`.
 Managed projects
 need no schema regression scripts, fixtures, Orchestra Task history, Git,
 Node/npm, or Python tests. Python and the declared tool dependencies run the

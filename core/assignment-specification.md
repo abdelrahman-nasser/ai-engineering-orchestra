@@ -262,6 +262,14 @@ changes Assignment validity nor attaches Runtime or Inference fields to the
 Assignment. Its separate contract is defined in
 `core/agent-execution-candidate-prerequisite-specification.md`.
 
+Agent Execution Authorization Evidence may reproduce one complete valid
+Assignment as the first five fields of an exact action subject. That separate
+caller-attested evidence does not change the Assignment or make responsibility
+authorization-bearing. Conversely, Task approval, Assignment validity, or
+Assignment completeness does not create authorization evidence. The evidence
+contract is defined in
+`core/agent-execution-authorization-evidence-specification.md`.
+
 ---
 
 ## 11. Lifecycle and Persistence Boundaries

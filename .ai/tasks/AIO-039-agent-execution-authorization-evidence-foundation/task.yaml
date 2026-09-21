@@ -1,0 +1,46 @@
+id: AIO-039
+title: Agent Execution Authorization Evidence Foundation
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: high
+execution:
+  mode: deep
+workflow: architecture-change
+objective: >
+  Define and implement the canonical Agent Execution Authorization Evidence
+  contract and deterministic validation for caller-attested Human- or
+  policy-originated evidence about one exact assigned external-inference Agent
+  action, without authority issuance, authentication, policy resolution,
+  lifecycle enforcement, execution, or invocation.
+scope:
+  include:
+    - Canonical Agent Execution Authorization Evidence specification and terminology
+    - Exact fourteen-field structural schema and immutable runtime values
+    - Complete Assignment, Runtime Option, Inference Option, environment, operation, and resource binding
+    - Human or policy authority origin, opaque identity, and opaque provenance semantics
+    - Deterministic duplicate, state-conflict, and unsupported-multi-authority rejection
+    - Canonical supplied-evidence ordering and atomic invalid results
+    - Target-safe tests, schema resources, packaging, installation evidence, and documentation
+    - Architect and Security design locks, final specialist reviews, independent review, Gate evidence, and Human-checkpoint preparation
+  exclude:
+    - Final Human approval, final acceptance, Task closure, staging, commit, push, merge, tag, release, or publication
+    - Real authority issuance, real authorization grants, authority authentication, entitlement verification, signatures, or authority registries
+    - Permission Decision evaluation, policy composition, approval-prose parsing, or multi-authority resolution
+    - Authorization IDs, timestamps, expiry, clocks, persistence, consumption, replay protection, revocation registries, or single-use tokens
+    - Permission discovery or enforcement, permission mutation, tool binding, Execution Contract, Execution Run, dispatch, or invocation
+    - Runtime-owned inference authorization, Human-execution authorization, provider/runtime adapters, result capture, or telemetry
+    - Protected-target access, AIO-030, the Full Control Center or UI track, AIO-040, and historical Task edits
+dependencies:
+  - AIO-034
+  - AIO-036
+  - AIO-038
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

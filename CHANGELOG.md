@@ -132,6 +132,16 @@ Status: In Development
   blocker-over-uncertainty precedence, all applicable reasons retained,
   exact private lookups, atomic invalid findings, and explicit non-authority
   and non-execution boundaries
+- canonical eleven-field Agent Execution Contract specification and closed
+  schema for immutable declarative intent binding the exact AIO-040 action
+  subject to one explicitly supplied effective Task Execution Mode
+- pure intrinsic contract validation and canonical preparation from only an
+  observably coherent valid `satisfied` AIO-040 result, with atomic rejection
+  of blocked, unresolved, invalid, wrong-type, and incoherent inputs
+- target-safe source, editable-install, and normal-wheel coverage for the
+  direct contract submodule and packaged schema, including all four modes,
+  AIO-036 operation/resource parity, serialization round-trip, purity, and no
+  package-root export or source fallback
 - private controlled read-only execution preparation dry run for the single
   provisional `repository_file_read` operation and one exact canonical
   repository-relative Markdown resource
@@ -216,6 +226,14 @@ Status: In Development
 - established that assessment `satisfied` means only that currently modeled
   hard prerequisites are positive, while missing positive evidence remains
   `unresolved` and explicit unavailability dominates as `blocked`
+- separated Agent Execution Contract intent from authorization, permission,
+  durable readiness, Execution Run identity or lifecycle, payload and tool
+  binding, dispatch, invocation, result capture, telemetry, and persistence
+- established that canonical preparation checks only observable AIO-040
+  coherence and cannot authenticate assessor provenance or caller truth, while
+  future Run or dispatch work must freshly resolve effective mode, obtain a
+  fresh prerequisite assessment, freshly prepare and compare intent where
+  appropriate, and separately obtain authenticated run-bound authority
 - kept the AIO-035 preparation experiment private and non-invoking: it consumes
   evidence without discovering or changing permissions, parsing approval prose,
   touching the target, creating an Execution Contract, dispatching, or adding a

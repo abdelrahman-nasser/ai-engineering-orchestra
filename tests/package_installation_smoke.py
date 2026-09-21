@@ -137,7 +137,7 @@ def main() -> None:
                 with zipfile.ZipFile(wheel) as archive:
                     names = archive.namelist()
                     modules = {f"engineering_orchestration/{name}" for name in
-                               ("__init__.py", "_operation_vocabulary.py", "_read_only_execution_preparation.py", "_repository_resource.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_action_prerequisite.py", "agent_execution_authorization_evidence.py", "agent_execution_candidate_prerequisite.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
+                               ("__init__.py", "_operation_vocabulary.py", "_read_only_execution_preparation.py", "_repository_resource.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_action_prerequisite.py", "agent_execution_authorization_evidence.py", "agent_execution_candidate_prerequisite.py", "agent_execution_contract.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
                                 "environment_operation_permission.py",
                                 "execution_mode.py", "inference_option.py",
                                 "inference_option_availability.py",
@@ -150,6 +150,7 @@ def main() -> None:
                     schemas = {f"engineering_orchestration/_schemas/{name}" for name in
                                ("actor-availability.schema.json", "actor-runtime-applicability.schema.json", "actor.schema.json",
                                 "agent-execution-authorization-evidence.schema.json",
+                                "agent-execution-contract.schema.json",
                                 "agent-runtime-option.schema.json", "agent-runtime-option-availability.schema.json",
                                 "assignment.schema.json",
                                 "environment-operation-permission.schema.json",
@@ -1100,6 +1101,165 @@ print(json.dumps({
                 project / "src/nested",
                 run_env,
             )))
+            contract_probe = """
+import json, os, socket, subprocess, time, urllib.request
+from contextlib import ExitStack
+from dataclasses import asdict, fields, replace
+from pathlib import Path
+from unittest.mock import patch
+import engineering_orchestration
+import engineering_orchestration.agent_action_prerequisite as action
+import engineering_orchestration.agent_execution_contract as contract
+from engineering_orchestration.agent_action_prerequisite import AgentActionPrerequisiteOutcome as Outcome, AgentActionPrerequisiteReason as Reason, AgentActionPrerequisiteResult as PrerequisiteResult
+from engineering_orchestration.operation_requirement import OperationRequirement, validate_operation_requirement
+from engineering_orchestration.schema_resources import load_validator, schema_resource
+def prerequisite(outcome, reasons):
+    return PrerequisiteResult(
+        True, (), ('LOCAL-123', 'external-flow', 'external-stage',
+                   'software-engineer'), 'installed-agent',
+        'installed-runtime-primary', 'installed-primary',
+        'installed-environment', 'repository_file_read',
+        'synthetic/install-contract.txt', outcome, reasons)
+satisfied = prerequisite(
+    Outcome.SATISFIED,
+    (Reason.ALL_CURRENTLY_MODELED_ACTION_PREREQUISITES_SATISFIED,))
+blocked_result = prerequisite(
+    Outcome.BLOCKED, (Reason.AGENT_EXECUTION_AUTHORIZATION_DENIED,))
+unresolved_result = prerequisite(
+    Outcome.UNRESOLVED, (Reason.AGENT_EXECUTION_AUTHORIZATION_MISSING,))
+contract_schema_resource = schema_resource('agent-execution-contract.schema.json')
+contract_schema_path = str(contract_schema_resource)
+contract_validator = load_validator('agent-execution-contract.schema.json')
+blocked_io = AssertionError('contract preparation and validation must remain pure')
+blocked_invocation = AssertionError('contract preparation must not reassess or invoke')
+guards = (
+    patch('builtins.open', side_effect=blocked_io),
+    patch.object(Path, 'open', side_effect=blocked_io),
+    patch.object(Path, 'read_text', side_effect=blocked_io),
+    patch.object(Path, 'read_bytes', side_effect=blocked_io),
+    patch.object(Path, 'stat', side_effect=blocked_io),
+    patch.object(Path, 'resolve', side_effect=blocked_io),
+    patch.object(Path, 'iterdir', side_effect=blocked_io),
+    patch.object(Path, 'glob', side_effect=blocked_io),
+    patch.object(Path, 'rglob', side_effect=blocked_io),
+    patch.object(os, 'stat', side_effect=blocked_io),
+    patch.object(os, 'access', side_effect=blocked_io),
+    patch.object(os, 'listdir', side_effect=blocked_io),
+    patch.object(os, 'scandir', side_effect=blocked_io),
+    patch.object(os, 'getenv', side_effect=blocked_io),
+    patch.object(subprocess, 'run', side_effect=blocked_io),
+    patch.object(subprocess, 'Popen', side_effect=blocked_io),
+    patch.object(socket, 'create_connection', side_effect=blocked_io),
+    patch.object(socket, 'getaddrinfo', side_effect=blocked_io),
+    patch.object(urllib.request, 'urlopen', side_effect=blocked_io),
+    patch.object(time, 'time', side_effect=blocked_io),
+    patch.object(time, 'monotonic', side_effect=blocked_io),
+    patch.object(action, 'assess_agent_action_prerequisites',
+                 side_effect=blocked_invocation),
+)
+with ExitStack() as stack:
+    for guard in guards:
+        stack.enter_context(guard)
+    prepared_by_mode = {
+        mode: contract.prepare_agent_execution_contract(
+            satisfied, execution_mode=mode)
+        for mode in ('lite', 'standard', 'deep', 'critical')
+    }
+    repeated = contract.prepare_agent_execution_contract(
+        satisfied, execution_mode='deep')
+    direct_value = contract.AgentExecutionContract(
+        'LOCAL-123', 'external-flow', 'external-stage',
+        'software-engineer', 'installed-agent',
+        'installed-runtime-primary', 'installed-primary',
+        'installed-environment', 'repository_file_read',
+        'synthetic/install-contract.txt', 'deep')
+    intrinsic = contract.validate_agent_execution_contract(direct_value)
+    invalid_identity = contract.validate_agent_execution_contract(
+        replace(direct_value, stage_id=''))
+    unsupported_operation = contract.validate_agent_execution_contract(
+        replace(direct_value, operation_id='repository_file_write'))
+    invalid_resource = contract.validate_agent_execution_contract(
+        replace(direct_value, resource='synthetic/../install-contract.txt'))
+    operation_reference = validate_operation_requirement(OperationRequirement(
+        'repository_file_write', 'synthetic/install-contract.txt'))
+    resource_reference = validate_operation_requirement(OperationRequirement(
+        'repository_file_read', 'synthetic/../install-contract.txt'))
+    blocked = contract.prepare_agent_execution_contract(
+        blocked_result, execution_mode='deep')
+    unresolved = contract.prepare_agent_execution_contract(
+        unresolved_result, execution_mode='deep')
+    schema_accepts_modes = True
+    for result in prepared_by_mode.values():
+        contract_validator.validate(asdict(result.contract))
+    roundtrip_value = contract.AgentExecutionContract(**json.loads(
+        json.dumps(asdict(prepared_by_mode['deep'].contract))))
+    roundtrip = contract.validate_agent_execution_contract(roundtrip_value)
+print(json.dumps({
+    'agent_execution_contract_module': contract.__file__,
+    'agent_execution_contract_schema': contract_schema_path,
+    'agent_execution_contract_fields': [
+        item.name for item in fields(contract.AgentExecutionContract)],
+    'agent_execution_contract_prepared_modes': {
+        mode: {
+            'valid': result.valid,
+            'findings': [item.code for item in result.findings],
+            'value': asdict(result.contract) if result.contract else None,
+        }
+        for mode, result in prepared_by_mode.items()
+    },
+    'agent_execution_contract_repeat_equal': (
+        repeated == prepared_by_mode['deep']),
+    'agent_execution_contract_intrinsic': {
+        'valid': intrinsic.valid,
+        'same_value': intrinsic.contract is direct_value,
+        'findings': [item.code for item in intrinsic.findings],
+    },
+    'agent_execution_contract_invalid_identity': {
+        'codes': [item.code for item in invalid_identity.findings],
+        'atomic': (not invalid_identity.valid
+                   and invalid_identity.contract is None),
+    },
+    'agent_execution_contract_blocked': {
+        'codes': [item.code for item in blocked.findings],
+        'atomic': not blocked.valid and blocked.contract is None,
+    },
+    'agent_execution_contract_unresolved': {
+        'codes': [item.code for item in unresolved.findings],
+        'atomic': not unresolved.valid and unresolved.contract is None,
+    },
+    'agent_execution_contract_operation_parity': {
+        'contract_codes': [item.code for item in unsupported_operation.findings],
+        'requirement_codes': [item.code for item in operation_reference.findings],
+        'atomic': (not unsupported_operation.valid
+                   and unsupported_operation.contract is None),
+    },
+    'agent_execution_contract_resource_parity': {
+        'contract_codes': [item.code for item in invalid_resource.findings],
+        'requirement_codes': [item.code for item in resource_reference.findings],
+        'atomic': (not invalid_resource.valid
+                   and invalid_resource.contract is None),
+    },
+    'agent_execution_contract_schema_accepts_modes': schema_accepts_modes,
+    'agent_execution_contract_roundtrip': {
+        'valid': roundtrip.valid,
+        'equal': roundtrip.contract == prepared_by_mode['deep'].contract,
+    },
+    'agent_execution_contract_pure_noninvoking_probe': True,
+    'agent_execution_contract_public_export_absent': all(
+        not hasattr(engineering_orchestration, name) for name in (
+            'AgentExecutionContract',
+            'prepare_agent_execution_contract',
+            'validate_agent_execution_contract')),
+}))
+"""
+            evidence.update(json.loads(run(
+                [str(python), "-B", "-c", contract_probe],
+                project / "src/nested",
+                run_env,
+            )))
+            evidence["schemas"].append(
+                evidence["agent_execution_contract_schema"]
+            )
             print(f"{mode.upper()} IMPORT/RESOURCE EVIDENCE: {json.dumps(evidence)}", flush=True)
             if mode == "normal":
                 require(Path(evidence["module"]).resolve().is_relative_to(environment),
@@ -1130,6 +1290,8 @@ print(json.dumps({
                         "Normal Agent Execution Authorization Evidence import leaked to source")
                 require(Path(evidence["agent_action_prerequisite_module"]).resolve().is_relative_to(environment),
                         "Normal Agent Action Prerequisite import leaked to source")
+                require(Path(evidence["agent_execution_contract_module"]).resolve().is_relative_to(environment),
+                        "Normal Agent Execution Contract import leaked to source")
                 require(Path(evidence["read_only_execution_preparation_module"]).resolve().is_relative_to(environment),
                         "Normal read-only execution preparation import leaked to source")
                 require(Path(evidence["operation_requirement_module"]).resolve().is_relative_to(environment),
@@ -1399,6 +1561,92 @@ print(json.dumps({
                     "Installed action prerequisite missing probe failed")
             require(evidence["agent_action_prerequisite_public_export_absent"],
                     "Agent Action Prerequisite unexpectedly gained a root export")
+            contract_field_names = [
+                "task_id", "workflow_id", "stage_id", "role_id", "actor_id",
+                "runtime_option_id", "option_id", "environment_id",
+                "operation_id", "resource", "execution_mode",
+            ]
+            require(
+                evidence["agent_execution_contract_fields"]
+                == contract_field_names,
+                "Installed Agent Execution Contract fields differ",
+            )
+            prepared_modes = evidence[
+                "agent_execution_contract_prepared_modes"
+            ]
+            require(
+                list(prepared_modes) == ["lite", "standard", "deep", "critical"]
+                and all(
+                    item["valid"]
+                    and item["findings"] == []
+                    and item["value"]["execution_mode"] == mode_name
+                    and list(item["value"]) == contract_field_names
+                    for mode_name, item in prepared_modes.items()
+                ),
+                "Installed Agent Execution Contract mode preparation failed",
+            )
+            require(
+                evidence["agent_execution_contract_repeat_equal"],
+                "Repeated Agent Execution Contract preparation differed",
+            )
+            require(
+                evidence["agent_execution_contract_intrinsic"] == {
+                    "valid": True, "same_value": True, "findings": []},
+                "Installed Agent Execution Contract intrinsic validation failed",
+            )
+            require(
+                evidence["agent_execution_contract_invalid_identity"] == {
+                    "codes": ["agent_execution_contract_stage_id_invalid"],
+                    "atomic": True,
+                },
+                "Installed Agent Execution Contract identity rejection failed",
+            )
+            require(
+                evidence["agent_execution_contract_blocked"] == {
+                    "codes": ["agent_execution_contract_prerequisites_blocked"],
+                    "atomic": True,
+                },
+                "Installed Agent Execution Contract blocked rejection failed",
+            )
+            require(
+                evidence["agent_execution_contract_unresolved"] == {
+                    "codes": [
+                        "agent_execution_contract_prerequisites_unresolved"
+                    ],
+                    "atomic": True,
+                },
+                "Installed Agent Execution Contract unresolved rejection failed",
+            )
+            require(
+                evidence["agent_execution_contract_operation_parity"] == {
+                    "contract_codes": ["operation_id_not_supported"],
+                    "requirement_codes": ["operation_id_not_supported"],
+                    "atomic": True,
+                },
+                "Agent Execution Contract operation semantics diverged from AIO-036",
+            )
+            require(
+                evidence["agent_execution_contract_resource_parity"] == {
+                    "contract_codes": ["resource_parent_segment"],
+                    "requirement_codes": ["resource_parent_segment"],
+                    "atomic": True,
+                },
+                "Agent Execution Contract resource semantics diverged from AIO-036",
+            )
+            require(
+                evidence["agent_execution_contract_schema_accepts_modes"]
+                and evidence["agent_execution_contract_roundtrip"] == {
+                    "valid": True, "equal": True},
+                "Installed Agent Execution Contract schema/round-trip failed",
+            )
+            require(
+                evidence["agent_execution_contract_pure_noninvoking_probe"],
+                "Agent Execution Contract probe did not establish purity",
+            )
+            require(
+                evidence["agent_execution_contract_public_export_absent"],
+                "Agent Execution Contract unexpectedly gained a root export",
+            )
             require(evidence["operation_requirement_valid"] == {
                         "valid": True,
                         "same_value": True,

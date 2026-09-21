@@ -25,6 +25,7 @@ PACKAGED_SCHEMAS = (
     "actor-availability.schema.json",
     "actor-runtime-applicability.schema.json",
     "agent-execution-authorization-evidence.schema.json",
+    "agent-execution-contract.schema.json",
     "agent-runtime-option.schema.json",
     "agent-runtime-option-availability.schema.json",
     "assignment.schema.json",

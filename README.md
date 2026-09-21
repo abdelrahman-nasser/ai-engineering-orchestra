@@ -501,6 +501,14 @@ candidate prerequisite result + Operation Requirement
   -> diagnostic prerequisite evidence only; no Core authority, Execution
      Contract, tool binding, dispatch, or invocation
 
+current canonical exact-action declarative intent:
+one coherent satisfied Agent Action Prerequisite Assessment
+  + explicitly supplied already-resolved effective Task Execution Mode
+  -> Agent Execution Contract
+  -> exact ten-part action subject + execution_mode
+  -> immutable serializable intent only; no authorization, durable readiness,
+     Execution Run, payload, tool binding, dispatch, or invocation
+
 current private experiment:
 candidate prerequisite assessment
   + its existing provisional capability evidence
@@ -510,10 +518,11 @@ candidate prerequisite assessment
   -> potentially_executable | blocked | unresolved
   -> no target I/O, permission discovery, request, dispatch, or invocation
 
-future only, through separately designed contracts and adapters:
-potentially_executable diagnostic
-  -> Execution Contract
-  -> invocation
+future only, through separately authorized contracts and adapters:
+fresh effective-mode resolution + fresh exact prerequisite assessment
+  -> freshly prepared contract and value comparison where appropriate
+  + separately authenticated run-bound authority
+  -> Execution Run / adapter binding / invocation
 ```
 
 Actor is not an executable Agent definition, Runtime Option, Inference Option,
@@ -549,10 +558,12 @@ The exact-action authorization-evidence authority is
 [`core/agent-execution-authorization-evidence-specification.md`](core/agent-execution-authorization-evidence-specification.md).
 The exact-action prerequisite-composition authority is
 [`core/agent-action-prerequisite-specification.md`](core/agent-action-prerequisite-specification.md).
+The exact-action declarative-intent authority is
+[`core/agent-execution-contract-specification.md`](core/agent-execution-contract-specification.md).
 AIO-035 deliberately adds no new Core specification: its provisional semantics
 remain in the AIO-035 Task evidence, private implementation, and focused tests.
-AIO-037 through AIO-040 do not retrofit that private experiment or compose
-capability, permission, candidate, and authorization evidence into execution.
+AIO-037 through AIO-041 do not retrofit that private experiment or compose
+capability, permission, candidate, authorization, and intent into execution.
 
 ## Operation Requirement
 
@@ -780,6 +791,55 @@ dispatch, or invocation and has no schema or persistence. Exact semantics are
 defined by
 [`core/agent-action-prerequisite-specification.md`](core/agent-action-prerequisite-specification.md).
 
+## Agent Execution Contract
+
+Agent Execution Contract is the immutable, provider-neutral and tool-neutral
+declarative intent for one exact assigned external-inference Agent action and
+one explicitly supplied, already-resolved effective Task Execution Mode:
+
+```python
+from engineering_orchestration.agent_execution_contract import (
+    prepare_agent_execution_contract,
+    validate_agent_execution_contract,
+)
+
+prepared = prepare_agent_execution_contract(
+    assessment,
+    execution_mode="deep",
+)
+assert prepared.valid
+assert validate_agent_execution_contract(prepared.contract).valid
+```
+
+The value has exactly the ten AIO-039/AIO-040 subject fields in canonical order
+followed by `execution_mode`. Mode is required context outside the action
+subject; it is never inferred from Complexity, Risk, Workflow, Stage, Role,
+Actor, Runtime, or Inference Option. Full eleven-field equality is only value
+equality and creates no contract-instance, attempt, Run, or lifecycle identity.
+
+Canonical preparation accepts only an exact observably coherent, valid
+`satisfied` AIO-040 result with its canonical singleton positive reason plus one
+of `lite`, `standard`, `deep`, or `critical`. Blocked, unresolved, invalid,
+wrong-type, and incoherent inputs return an atomic no-contract result.
+Preparation checks observable invariants without rerunning AIO-040; because the
+input result and contract are publicly constructible, neither preparation nor
+intrinsic validation authenticates assessor provenance, caller truth,
+authorization, or freshness.
+
+The contract is durable intent, not durable readiness. It is not permission,
+authorization, an Execution Run, a generic payload, tool or adapter binding,
+dispatch permission, or invocation permission. It consumes no authorization,
+stores no prerequisite state or authority, and performs no resource I/O or
+execution. Future Run or dispatch work must freshly resolve the effective Task
+mode, collect fresh evidence, produce a fresh exact AIO-040 assessment, freshly
+prepare and compare the contract where appropriate, and separately obtain
+authenticated run-bound authority.
+
+The closed eleven-field schema is structural; runtime validation owns exact
+identity types plus the AIO-036 operation and lexical-resource semantics. The
+semantic authority is
+[`core/agent-execution-contract-specification.md`](core/agent-execution-contract-specification.md).
+
 ## Installed Structural Validation
 
 The programmatic API reads the nearest active project's supported AIO structures:
@@ -807,10 +867,11 @@ The installed tool packages canonical Actor, Actor Availability Observation,
 Actor-to-Runtime Applicability Evidence, Agent Runtime Option, Agent Runtime
 Option Availability Observation, Runtime Operation Capability Observation,
 Environment Operation Permission Observation, Agent Execution Authorization
-Evidence, Assignment, Inference Option, Inference Option Availability
-Observation, Runtime-to-Inference Compatibility Evidence, Role, Task, Workflow,
-and Project Manifest schemas from their single sources in `schemas/`, plus the
-five framework-owned canonical Role YAML instances from `roles/`.
+Evidence, Agent Execution Contract, Assignment, Inference Option, Inference
+Option Availability Observation, Runtime-to-Inference Compatibility Evidence,
+Role, Task, Workflow, and Project Manifest schemas from their single sources in
+`schemas/`, plus the five framework-owned canonical Role YAML instances from
+`roles/`.
 Managed projects
 need no schema regression scripts, fixtures, Orchestra Task history, Git,
 Node/npm, or Python tests. Python and the declared tool dependencies run the

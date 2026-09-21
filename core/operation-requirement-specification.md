@@ -296,6 +296,15 @@ validated candidate, capability, permission, and authorization results. That
 derived diagnostic composition does not change this demand-only contract and
 is defined in `core/agent-action-prerequisite-specification.md`.
 
+Agent Execution Contract intrinsic validation projects its `operation_id` and
+`resource` through this validator, and canonical preparation copies the same
+exact pair from one coherent satisfied Agent Action Prerequisite Assessment.
+Embedding the pair in declarative intent does not create or consume a
+requirement, access the resource, bind a tool, preserve prerequisite freshness,
+or establish capability, permission, authorization, readiness, or execution.
+That separate contract is defined in
+`core/agent-execution-contract-specification.md`.
+
 ---
 
 ## 11. Runtime and Package API
@@ -341,6 +350,6 @@ The first contract contains no:
 - registry, discovery, persistence, cache, database, CLI, Execution Contract,
   request, dispatch, execution, or invocation.
 
-Future action-layer contracts may refer to an Operation Requirement only
-through separately authorized Core work. They must preserve its need-only and
+The Agent Execution Contract and any future action-layer contract may refer to
+this exact operation/resource pair only while preserving its need-only and
 lexical-only meaning.

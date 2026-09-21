@@ -568,6 +568,15 @@ Inference availability. Invalid capability, permission, and authorization
 results remain invalid; AIO-040 does not reinterpret conflicts or malformed
 snapshots as blocked, denied, missing, or unknown.
 
+The separate AIO-041 Agent Execution Contract preparation API may consume one
+exact observably coherent AIO-040 result. It accepts only a valid `satisfied`
+result with the canonical singleton positive reason; blocked, unresolved,
+invalid, wrong-type, and incoherent results produce no contract. That downstream
+coherence check neither reruns this assessment nor authenticates assessor
+provenance, caller truth, authorization, or freshness, and it does not change
+any AIO-040 result semantics. A future Run or dispatch decision must obtain a
+fresh assessment and separately authenticated run-bound authority.
+
 ---
 
 ## 14. Exclusions
@@ -589,7 +598,7 @@ AIO-040 adds no:
   capture, or telemetry;
 - protected-target, VS Code, Control Center, dashboard, frontend, or Full UI
   behavior; or
-- AIO-030 or AIO-041 work.
+- AIO-030 work or Agent Execution Contract creation inside the AIO-040 API.
 
 Any future trusted authorization, execution, run-binding, consumption,
 revocation, enforcement, or invocation contract requires separate explicit

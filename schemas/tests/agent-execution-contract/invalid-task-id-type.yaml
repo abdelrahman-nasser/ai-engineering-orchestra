@@ -1,0 +1,11 @@
+task_id: 7
+workflow_id: architecture-change
+stage_id: implement
+role_id: software-engineer
+actor_id: agent::assigned
+runtime_option_id: runtime::one
+option_id: option::one
+environment_id: environment::synthetic
+operation_id: repository_file_read
+resource: synthetic/input.txt
+execution_mode: standard

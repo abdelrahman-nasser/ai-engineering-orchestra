@@ -266,6 +266,40 @@ invocation. The canonical contract is defined in:
 
 ---
 
+## Agent Execution Contract
+
+An immutable, provider-neutral, tool-neutral, serializable declarative intent
+value for one exact assigned external-inference Agent action and its explicitly
+supplied, already-resolved effective Task-wide Execution Mode.
+
+The value contains the exact ten-part Agent Action Prerequisite Assessment
+subject, in canonical order, followed only by `execution_mode`. Mode is required
+contract context outside the action subject and grants no authority. Equality
+over all eleven fields is value equality, not contract-instance, attempt, Run,
+correlation, or lifecycle identity.
+
+Canonical preparation accepts only one observably coherent valid `satisfied`
+AIO-040 result with the canonical singleton positive reason plus one explicit
+mode from `lite`, `standard`, `deep`, or `critical`. Blocked, unresolved,
+invalid, wrong-type, and incoherent prerequisite results produce no contract.
+Preparation does not rerun prerequisite assessment, consume authorization, or
+authenticate assessor provenance or caller truth. Public construction and
+intrinsic validation likewise prove only value semantics, not that canonical
+preparation occurred.
+
+The contract is not authorization, permission, durable readiness, an Execution
+Run, a tool or adapter binding, dispatch permission, or invocation permission.
+It stores no prerequisite result, authority, provenance, freshness, payload,
+status, timestamp, result, or telemetry and performs no resource I/O or
+execution. Any future Run or dispatch work must freshly resolve the effective
+Task mode, obtain a fresh exact prerequisite assessment, freshly prepare and
+compare the value where appropriate, and separately obtain authenticated
+run-bound authority. The canonical contract is defined in:
+
+`core/agent-execution-contract-specification.md`
+
+---
+
 ## Actor-to-Runtime Applicability Evidence
 
 An immutable, caller-supplied positive evidence value stating that one known

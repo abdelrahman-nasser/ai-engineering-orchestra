@@ -448,6 +448,12 @@ An explicit Task value takes precedence over the Project default. Complexity,
 Risk, Workflow, Stage, and Role do not infer or automatically determine that
 value.
 
+An Agent Execution Contract binds this already-resolved effective Task mode as
+explicit caller-supplied context. Contract preparation does not read a Task or
+Project Manifest, perform inheritance, or infer mode from any other field. A
+future Run or dispatch decision must resolve the then-effective Task mode again;
+the mode stored in durable intent is not durable readiness or authority.
+
 #### Normative order and satisfaction
 
 The canonical order is exactly:

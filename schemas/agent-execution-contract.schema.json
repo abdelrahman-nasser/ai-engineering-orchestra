@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-engineering-orchestra.dev/schemas/agent-execution-contract.schema.json",
+  "title": "AI Engineering Orchestra Agent Execution Contract",
+  "description": "Structural schema for one Agent Execution Contract value defined by core/agent-execution-contract-specification.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "workflow_id",
+    "stage_id",
+    "role_id",
+    "actor_id",
+    "runtime_option_id",
+    "option_id",
+    "environment_id",
+    "operation_id",
+    "resource",
+    "execution_mode"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact Task identity from the bound Assignment."
+    },
+    "workflow_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact Workflow identity from the bound Assignment."
+    },
+    "stage_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact Workflow Stage identity from the bound Assignment."
+    },
+    "role_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact Role identity from the bound Assignment."
+    },
+    "actor_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact assigned Agent Actor identity."
+    },
+    "runtime_option_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact opaque Agent Runtime Option identity."
+    },
+    "option_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact opaque external Inference Option identity."
+    },
+    "environment_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact opaque caller-owned environment identity."
+    },
+    "operation_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact identifier of one Core-defined abstract operation."
+    },
+    "resource": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact lexical repository-relative resource path."
+    },
+    "execution_mode": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "lite",
+        "standard",
+        "deep",
+        "critical"
+      ],
+      "description": "Already-resolved effective Task-wide minimum Execution Mode."
+    }
+  }
+}

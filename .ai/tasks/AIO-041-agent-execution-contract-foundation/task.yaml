@@ -1,0 +1,48 @@
+id: AIO-041
+title: Agent Execution Contract Foundation
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: high
+execution:
+  mode: deep
+workflow: architecture-change
+objective: >
+  Define and implement the smallest canonical immutable, serializable,
+  provider-neutral, tool-neutral Agent Execution Contract for one exact
+  assigned external-inference Agent action and its already-resolved effective
+  Task-wide Execution Mode, without creating authority, execution lifecycle,
+  tool binding, dispatch, or invocation behavior.
+scope:
+  include:
+    - Canonical Agent Execution Contract specification and terminology
+    - Exact embedded ten-part AIO-039 and AIO-040 action subject
+    - Required already-resolved effective Task-wide execution_mode binding
+    - Pure canonical preparation from one observably coherent valid and satisfied AIO-040 result
+    - Pure intrinsic contract validation independent of preparation provenance
+    - Reuse of the AIO-036 Core operation vocabulary and lexical resource grammar
+    - Closed eleven-field Draft 2020-12 JSON Schema and registered schema resource
+    - Structural fixtures, semantic validation, serialization round-trip, and focused scenario tests
+    - Target-safe source, editable-install, and normal-wheel validation evidence
+    - Architect and Security design locks, final specialist reviews, independent review, Gate evidence, recorded Human approvals, and Task closure
+  exclude:
+    - Push, merge, tag, release, publication, or AIO-042
+    - Execution Run, attempt identity, lifecycle, status, result, error, telemetry, or persistence
+    - Authorization consumption, replay protection, revocation, authentication, or authority issuance
+    - Permission Decision evaluation, policy composition, enforcement, or mutation
+    - Generic operation payload, tool, adapter, Provider, model, endpoint, or credential binding
+    - Dispatch, Agent invocation, protected-target access, or resource I/O
+    - AIO-030, the VS Code track, the Full Control Center, read models, APIs, dashboards, or frontend work
+dependencies:
+  - AIO-026
+  - AIO-036
+  - AIO-040
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

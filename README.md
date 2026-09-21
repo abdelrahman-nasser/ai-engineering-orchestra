@@ -519,6 +519,16 @@ intended Agent Execution Contract
   -> immutable serializable occurrence identity only; no lifecycle, authority
      consumption, replay protection, tool binding, dispatch, or invocation
 
+current canonical Run-bound positive authority artifact:
+Agent Execution Run
+  + issuer-allocated Grant identity
+  + exact authorization domain and issuer identity
+  + canonical issued_at / expires_at interval
+  -> Agent Execution Authorization Grant
+  -> positive, immutable, serializable, and intended for at most one future
+     atomic consumption; no Core issuance/authentication, currentness,
+     consumption, replay protection, persistence, dispatch, or invocation
+
 current private experiment:
 candidate prerequisite assessment
   + its existing provisional capability evidence
@@ -529,8 +539,9 @@ candidate prerequisite assessment
   -> no target I/O, permission discovery, request, dispatch, or invocation
 
 future only, through separately authorized contracts and adapters:
-Agent Execution Run
-  + separately authenticated run-bound authority and consumption
+operationally trusted Agent Execution Authorization Grant
+  + current prerequisites, revocation/currentness, Tool Binding, and durable
+    atomic consumption
   + future adapter/tool binding and dispatch admission
   -> invocation / result / lifecycle evidence
 ```
@@ -572,9 +583,11 @@ The exact-action declarative-intent authority is
 [`core/agent-execution-contract-specification.md`](core/agent-execution-contract-specification.md).
 The execution-occurrence identity authority is
 [`core/agent-execution-run-specification.md`](core/agent-execution-run-specification.md).
+The Run-bound positive-authority artifact is
+[`core/agent-execution-authorization-grant-specification.md`](core/agent-execution-authorization-grant-specification.md).
 AIO-035 deliberately adds no new Core specification: its provisional semantics
 remain in the AIO-035 Task evidence, private implementation, and focused tests.
-AIO-037 through AIO-042 do not retrofit that private experiment or compose
+AIO-037 through AIO-043 do not retrofit that private experiment or compose
 capability, permission, candidate, authorization, intent, and Run identity into
 execution.
 
@@ -845,8 +858,8 @@ dispatch permission, or invocation permission. It consumes no authorization,
 stores no prerequisite state or authority, and performs no resource I/O or
 execution. Future Run or dispatch work must freshly resolve the effective Task
 mode, collect fresh evidence, produce a fresh exact AIO-040 assessment, freshly
-prepare and compare the contract where appropriate, and separately obtain
-authenticated run-bound authority.
+prepare and compare the contract where appropriate, and separately obtain an
+operationally trusted AIO-043 Run-bound Grant.
 
 The closed eleven-field schema is structural; runtime validation owns exact
 identity types plus the AIO-036 operation and lexical-resource semantics. The
@@ -895,6 +908,59 @@ two-field schema references the packaged Contract schema through fail-closed
 offline resolution. Exact semantics are defined by
 [`core/agent-execution-run-specification.md`](core/agent-execution-run-specification.md).
 
+## Agent Execution Authorization Grant
+
+Agent Execution Authorization Grant is the immutable positive authority
+artifact for one exact Agent Execution Run inside one exact authorization
+domain:
+
+```python
+from engineering_orchestration.agent_execution_authorization_grant import (
+    AgentExecutionAuthorizationGrant,
+    validate_agent_execution_authorization_grant,
+    validate_agent_execution_authorization_grant_collection,
+)
+
+grant = AgentExecutionAuthorizationGrant(
+    grant_id="grant::synthetic",
+    run=prepared_run.run,
+    authorization_domain_id="domain::synthetic",
+    issuer_kind="human",
+    issuer_id="issuer::synthetic",
+    provenance_reference="provenance::synthetic",
+    issued_at="2026-09-22T00:00:00Z",
+    expires_at="2026-09-22T00:05:00Z",
+)
+assert validate_agent_execution_authorization_grant(grant).valid
+assert validate_agent_execution_authorization_grant_collection(
+    [grant],
+    authorization_domain_id="domain::synthetic",
+).valid
+```
+
+The value contains exactly `grant_id`, the complete nested `run`,
+`authorization_domain_id`, `issuer_kind`, `issuer_id`,
+`provenance_reference`, `issued_at`, and `expires_at`. Grant identity is the
+exact domain/issuer-kind/issuer-ID/Grant-ID tuple. `grant_id` is opaque and
+issuer-allocated; Core neither generates it nor proves global uniqueness.
+
+The Grant is positive-only and has fixed at-most-one-use intent without a
+state, reusable flag, or counter. Pure validation checks value semantics,
+strict UTC timestamp syntax, static issuance-before-expiry ordering, explicit
+domain scope, identity collisions, Run-ID rebinding, and at most one Grant per
+Run/domain. It does not read current time, consume a Grant, provide replay
+protection, or persist a ledger.
+
+Operational trust requires a separate authenticated and integrity-protected
+producer boundary that binds the issuer, exact domain, complete Run, and all
+eight fields. Direct construction, schema/runtime validity, provenance, and
+serialization do not establish that trust. The Grant is not AIO-039 evidence,
+a Permission Decision, currentness, revocation, Tool Binding, dispatch
+admission, invocation, or success. Its closed schema references the packaged
+Run and transitive Contract schemas through fail-closed offline resolution.
+Exact semantics are defined by
+[`core/agent-execution-authorization-grant-specification.md`](core/agent-execution-authorization-grant-specification.md).
+
 ## Installed Structural Validation
 
 The programmatic API reads the nearest active project's supported AIO structures:
@@ -922,7 +988,8 @@ The installed tool packages canonical Actor, Actor Availability Observation,
 Actor-to-Runtime Applicability Evidence, Agent Runtime Option, Agent Runtime
 Option Availability Observation, Runtime Operation Capability Observation,
 Environment Operation Permission Observation, Agent Execution Authorization
-Evidence, Agent Execution Contract, Agent Execution Run, Assignment, Inference
+Evidence, Agent Execution Contract, Agent Execution Run, Agent Execution
+Authorization Grant, Assignment, Inference
 Option, Inference Option Availability Observation, Runtime-to-Inference
 Compatibility Evidence, Role, Task, Workflow, and Project Manifest schemas from
 their single sources in `schemas/`, plus the five framework-owned canonical Role

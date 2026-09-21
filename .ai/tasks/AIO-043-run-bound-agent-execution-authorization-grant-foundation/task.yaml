@@ -1,0 +1,53 @@
+id: AIO-043
+title: Run-bound Agent Execution Authorization Grant Foundation
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: critical
+execution:
+  mode: critical
+workflow: architecture-change
+objective: >
+  Define and implement the smallest canonical immutable, serializable,
+  positive-only Agent Execution Authorization Grant issued through an external
+  authenticated authority-producer boundary, bound to one exact Agent Execution
+  Run and one authorization domain, time-bounded, and intended for at most one
+  future atomic consumption without implementing authentication, consumption,
+  persistence, dispatch admission, or invocation.
+scope:
+  include:
+    - Canonical Agent Execution Authorization Grant specification and terminology
+    - Exact eight-field immutable Grant with a complete nested Agent Execution Run
+    - Issuer/domain-scoped Grant identity and opaque issuer-allocated grant_id
+    - Strict canonical UTC timestamp syntax and static issued_at-before-expires_at validation
+    - Positive-only and fixed single-use semantic intent without state or counters
+    - Pure intrinsic validation and domain-scoped deterministic collection validation
+    - Fail-closed duplicate, identity-binding, Run-binding, cardinality, and multi-authority handling
+    - Closed Draft 2020-12 schema with packaged offline Run and Contract references
+    - Structural, semantic, time, collision, serialization, purity, packaging, and installation tests
+    - Architect and Security design locks, final specialist reviews, independent review, Gate evidence, and Human checkpoint preparation
+  exclude:
+    - Final Human approval, Task closure, staging, commit, push, merge, tag, release, or publication
+    - AIO-044, AIO-030, Full Control Center, read models, dashboards, APIs, or frontend work
+    - Real Grant issuance, issuer authentication, authority registry, entitlement resolution, or policy-service integration
+    - Signatures, keys, algorithms, certificates, bearer tokens, introspection, or network authority services
+    - Grant consumption, replay protection, revocation, current-time evaluation, clock access, or skew policy
+    - Grant registry, persistence, database, cache, queue, store, ledger, or transaction handling
+    - Tool, adapter, Provider, endpoint, credential, command, parameter, or payload binding
+    - Dispatch admission, dispatch, Agent invocation, Run lifecycle, result, error, event, or telemetry
+    - Permission Decision evaluation, permission enforcement, or mutation of AIO-039 through AIO-042
+    - Protected-target access or unsafe broad validation
+dependencies:
+  - AIO-039
+  - AIO-040
+  - AIO-041
+  - AIO-042
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

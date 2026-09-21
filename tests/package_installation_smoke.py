@@ -137,7 +137,7 @@ def main() -> None:
                 with zipfile.ZipFile(wheel) as archive:
                     names = archive.namelist()
                     modules = {f"engineering_orchestration/{name}" for name in
-                               ("__init__.py", "_operation_vocabulary.py", "_read_only_execution_preparation.py", "_repository_resource.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_action_prerequisite.py", "agent_execution_authorization_evidence.py", "agent_execution_candidate_prerequisite.py", "agent_execution_contract.py", "agent_execution_run.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
+                               ("__init__.py", "_operation_vocabulary.py", "_read_only_execution_preparation.py", "_repository_resource.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_action_prerequisite.py", "agent_execution_authorization_evidence.py", "agent_execution_authorization_grant.py", "agent_execution_candidate_prerequisite.py", "agent_execution_contract.py", "agent_execution_run.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
                                 "environment_operation_permission.py",
                                 "execution_mode.py", "inference_option.py",
                                 "inference_option_availability.py",
@@ -150,6 +150,7 @@ def main() -> None:
                     schemas = {f"engineering_orchestration/_schemas/{name}" for name in
                                ("actor-availability.schema.json", "actor-runtime-applicability.schema.json", "actor.schema.json",
                                 "agent-execution-authorization-evidence.schema.json",
+                                "agent-execution-authorization-grant.schema.json",
                                 "agent-execution-contract.schema.json",
                                 "agent-execution-run.schema.json",
                                 "agent-runtime-option.schema.json", "agent-runtime-option-availability.schema.json",
@@ -1328,6 +1329,141 @@ print(json.dumps({
             evidence["schemas"].append(
                 evidence["agent_execution_run_schema"]
             )
+            grant_probe = """
+import json, os, random, secrets, socket, sqlite3, subprocess, time, urllib.request, uuid
+from contextlib import ExitStack
+from dataclasses import asdict, fields
+from pathlib import Path
+from unittest.mock import patch
+import engineering_orchestration
+import engineering_orchestration.agent_execution_authorization_grant as grant
+import engineering_orchestration.agent_execution_contract as contract
+import engineering_orchestration.agent_execution_run as execution_run
+from engineering_orchestration.schema_resources import load_validator, schema_resource
+bound_contract = contract.AgentExecutionContract(
+    'LOCAL-123', 'external-flow', 'external-stage', 'software-engineer',
+    'installed-agent', 'installed-runtime-primary', 'installed-primary',
+    'installed-environment', 'repository_file_read',
+    'synthetic/install-grant.txt', 'critical')
+bound_run = execution_run.AgentExecutionRun(
+    'run::installed-grant', bound_contract)
+value = grant.AgentExecutionAuthorizationGrant(
+    'grant::installed', bound_run, 'authorization-domain::installed',
+    'human', 'human::installed-reviewer', 'approval::installed-grant',
+    '2026-09-22T10:00:00.123Z', '2026-09-22T10:05:00.123456Z')
+grant_schema_resource = schema_resource(
+    'agent-execution-authorization-grant.schema.json')
+grant_schema_path = str(grant_schema_resource)
+blocked_schema = AssertionError('Grant schema resolution must remain offline')
+with patch('pathlib.Path.cwd', side_effect=blocked_schema), patch.object(
+        socket, 'create_connection', side_effect=blocked_schema), patch.object(
+        socket, 'getaddrinfo', side_effect=blocked_schema), patch.object(
+        urllib.request, 'urlopen', side_effect=blocked_schema):
+    validator = load_validator(
+        'agent-execution-authorization-grant.schema.json')
+    validator.validate(asdict(value))
+blocked = AssertionError('Grant validation must remain pure and noninvoking')
+guards = (
+    patch('builtins.open', side_effect=blocked),
+    patch.object(Path, 'open', side_effect=blocked),
+    patch.object(Path, 'read_text', side_effect=blocked),
+    patch.object(Path, 'read_bytes', side_effect=blocked),
+    patch.object(Path, 'stat', side_effect=blocked),
+    patch.object(Path, 'resolve', side_effect=blocked),
+    patch.object(Path, 'iterdir', side_effect=blocked),
+    patch.object(os, 'stat', side_effect=blocked),
+    patch.object(os, 'access', side_effect=blocked),
+    patch.object(os, 'listdir', side_effect=blocked),
+    patch.object(os, 'scandir', side_effect=blocked),
+    patch.object(os, 'getenv', side_effect=blocked),
+    patch.object(socket, 'socket', side_effect=blocked),
+    patch.object(socket, 'create_connection', side_effect=blocked),
+    patch.object(sqlite3, 'connect', side_effect=blocked),
+    patch.object(subprocess, 'run', side_effect=blocked),
+    patch.object(subprocess, 'Popen', side_effect=blocked),
+    patch.object(urllib.request, 'urlopen', side_effect=blocked),
+    patch.object(urllib.request, 'urlretrieve', side_effect=blocked),
+    patch.object(time, 'time', side_effect=blocked),
+    patch.object(time, 'monotonic', side_effect=blocked),
+    patch.object(time, 'perf_counter', side_effect=blocked),
+    patch.object(random, 'random', side_effect=blocked),
+    patch.object(random, 'getrandbits', side_effect=blocked),
+    patch.object(secrets, 'token_hex', side_effect=blocked),
+    patch.object(secrets, 'token_urlsafe', side_effect=blocked),
+    patch.object(uuid, 'uuid4', side_effect=blocked),
+)
+with ExitStack() as stack:
+    for guard in guards:
+        stack.enter_context(guard)
+    for name in ('authenticate', 'issue', 'consume', 'replay', 'revoke',
+                 'persist', 'dispatch', 'execute', 'invoke'):
+        stack.enter_context(patch.object(
+            grant, name, create=True, side_effect=blocked))
+    intrinsic = grant.validate_agent_execution_authorization_grant(value)
+    collection = grant.validate_agent_execution_authorization_grant_collection(
+        [value], authorization_domain_id='authorization-domain::installed')
+    duplicate = grant.validate_agent_execution_authorization_grant_collection(
+        [value, value],
+        authorization_domain_id='authorization-domain::installed')
+document = json.loads(json.dumps(asdict(value)))
+roundtrip_contract = contract.AgentExecutionContract(**document['run']['contract'])
+roundtrip_run = execution_run.AgentExecutionRun(
+    document['run']['run_id'], roundtrip_contract)
+roundtrip_value = grant.AgentExecutionAuthorizationGrant(
+    document['grant_id'], roundtrip_run,
+    document['authorization_domain_id'], document['issuer_kind'],
+    document['issuer_id'], document['provenance_reference'],
+    document['issued_at'], document['expires_at'])
+roundtrip = grant.validate_agent_execution_authorization_grant(roundtrip_value)
+field_names = [item.name for item in fields(
+    grant.AgentExecutionAuthorizationGrant)]
+print(json.dumps({
+    'agent_execution_authorization_grant_module': grant.__file__,
+    'agent_execution_authorization_grant_schema': grant_schema_path,
+    'agent_execution_authorization_grant_fields': field_names,
+    'agent_execution_authorization_grant_intrinsic': {
+        'valid': intrinsic.valid,
+        'same_value': intrinsic.grant is value,
+        'codes': [item.code for item in intrinsic.findings],
+    },
+    'agent_execution_authorization_grant_collection': {
+        'valid': collection.valid,
+        'codes': [item.code for item in collection.findings],
+        'same_value': (
+            len(collection.normalized_grants) == 1
+            and collection.normalized_grants[0] is value),
+    },
+    'agent_execution_authorization_grant_duplicate': {
+        'codes': [item.code for item in duplicate.findings],
+        'atomic': (not duplicate.valid and duplicate.normalized_grants == ()),
+    },
+    'agent_execution_authorization_grant_schema_roundtrip': {
+        'valid': roundtrip.valid,
+        'equal': roundtrip.grant == value,
+    },
+    'agent_execution_authorization_grant_pure_noninvoking_probe': True,
+    'agent_execution_authorization_grant_forbidden_fields_absent': all(
+        name not in field_names for name in (
+            'state', 'authenticated', 'consumed', 'reusable', 'signature',
+            'key', 'tool_id', 'status')),
+    'agent_execution_authorization_grant_public_export_absent': all(
+        not hasattr(engineering_orchestration, name) for name in (
+            'AgentExecutionAuthorizationGrant',
+            'AgentExecutionAuthorizationGrantFinding',
+            'AgentExecutionAuthorizationGrantValidationResult',
+            'AgentExecutionAuthorizationGrantCollectionValidationResult',
+            'validate_agent_execution_authorization_grant',
+            'validate_agent_execution_authorization_grant_collection')),
+}))
+"""
+            evidence.update(json.loads(run(
+                [str(python), "-B", "-c", grant_probe],
+                project / "src/nested",
+                run_env,
+            )))
+            evidence["schemas"].append(
+                evidence["agent_execution_authorization_grant_schema"]
+            )
             print(f"{mode.upper()} IMPORT/RESOURCE EVIDENCE: {json.dumps(evidence)}", flush=True)
             if mode == "normal":
                 require(Path(evidence["module"]).resolve().is_relative_to(environment),
@@ -1362,6 +1498,8 @@ print(json.dumps({
                         "Normal Agent Execution Contract import leaked to source")
                 require(Path(evidence["agent_execution_run_module"]).resolve().is_relative_to(environment),
                         "Normal Agent Execution Run import leaked to source")
+                require(Path(evidence["agent_execution_authorization_grant_module"]).resolve().is_relative_to(environment),
+                        "Normal Agent Execution Authorization Grant import leaked to source")
                 require(Path(evidence["read_only_execution_preparation_module"]).resolve().is_relative_to(environment),
                         "Normal read-only execution preparation import leaked to source")
                 require(Path(evidence["operation_requirement_module"]).resolve().is_relative_to(environment),
@@ -1761,6 +1899,74 @@ print(json.dumps({
             require(
                 evidence["agent_execution_run_public_export_absent"],
                 "Agent Execution Run unexpectedly gained a root export",
+            )
+            grant_field_names = [
+                "grant_id",
+                "run",
+                "authorization_domain_id",
+                "issuer_kind",
+                "issuer_id",
+                "provenance_reference",
+                "issued_at",
+                "expires_at",
+            ]
+            require(
+                evidence["agent_execution_authorization_grant_fields"]
+                == grant_field_names,
+                "Installed Agent Execution Authorization Grant fields differ",
+            )
+            require(
+                evidence["agent_execution_authorization_grant_intrinsic"]
+                == {"valid": True, "same_value": True, "codes": []},
+                "Installed Agent Execution Authorization Grant intrinsic "
+                "validation failed",
+            )
+            require(
+                evidence["agent_execution_authorization_grant_collection"]
+                == {"valid": True, "codes": [], "same_value": True},
+                "Installed Agent Execution Authorization Grant collection "
+                "validation failed",
+            )
+            require(
+                evidence["agent_execution_authorization_grant_duplicate"]
+                == {
+                    "codes": [
+                        "duplicate_agent_execution_authorization_grant"
+                    ],
+                    "atomic": True,
+                },
+                "Installed Agent Execution Authorization Grant duplicate "
+                "rejection failed",
+            )
+            require(
+                evidence[
+                    "agent_execution_authorization_grant_schema_roundtrip"
+                ] == {"valid": True, "equal": True},
+                "Installed Agent Execution Authorization Grant offline "
+                "schema/round-trip failed",
+            )
+            require(
+                evidence[
+                    "agent_execution_authorization_grant_"
+                    "pure_noninvoking_probe"
+                ],
+                "Agent Execution Authorization Grant probe did not establish "
+                "purity",
+            )
+            require(
+                evidence[
+                    "agent_execution_authorization_grant_"
+                    "forbidden_fields_absent"
+                ],
+                "Agent Execution Authorization Grant gained forbidden state",
+            )
+            require(
+                evidence[
+                    "agent_execution_authorization_grant_"
+                    "public_export_absent"
+                ],
+                "Agent Execution Authorization Grant unexpectedly gained a "
+                "root export",
             )
             require(evidence["operation_requirement_valid"] == {
                         "valid": True,

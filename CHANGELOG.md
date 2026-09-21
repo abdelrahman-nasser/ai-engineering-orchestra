@@ -153,6 +153,14 @@ Status: In Development
 - explicit separation of Run identity from lifecycle, status, persistence,
   authorization consumption, replay protection, tool binding, dispatch,
   invocation, results, events, and telemetry
+- canonical eight-field Agent Execution Authorization Grant specification and
+  closed schema for positive issuer/domain-scoped authority bound to one exact
+  nested Agent Execution Run with a static UTC validity interval
+- pure intrinsic and domain-scoped collection validation with deterministic
+  atomic duplicate, Grant-identity, Run-identity, one-Grant-per-Run, and
+  unsupported multi-authority rejection
+- packaged fail-closed offline Grant-to-Run-to-Contract schema resolution and
+  target-safe source, editable-install, and normal-wheel coverage
 - private controlled read-only execution preparation dry run for the single
   provisional `repository_file_read` operation and one exact canonical
   repository-relative Markdown resource
@@ -244,10 +252,18 @@ Status: In Development
   coherence and cannot authenticate assessor provenance or caller truth, while
   future Run or dispatch work must freshly resolve effective mode, obtain a
   fresh prerequisite assessment, freshly prepare and compare intent where
-  appropriate, and separately obtain authenticated run-bound authority
+  appropriate, and separately obtain an operationally trusted AIO-043
+  Run-bound Grant
 - established one Run as one semantic attempt, with full `(run_id, contract)`
   representation equality, caller-owned operational ID non-reuse, no global
   uniqueness claim, and no separate attempt identity or retry mechanism
+- separated positive Run-bound Grant semantics from AIO-039 evidence,
+  Permission Decisions, issuer authentication, currentness, revocation,
+  consumption, replay protection, persistence, Tool Binding, dispatch, and
+  invocation
+- established fixed at-most-one-use intent and one-Grant-per-Run/domain
+  cardinality without adding a use counter, conflict winner, authority
+  composition, ledger, or consumption API
 - kept the AIO-035 preparation experiment private and non-invoking: it consumes
   evidence without discovering or changing permissions, parsing approval prose,
   touching the target, creating an Execution Contract, dispatching, or adding a

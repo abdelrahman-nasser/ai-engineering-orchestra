@@ -1,0 +1,7 @@
+grant_id: "grant::human-one"
+authorization_domain_id: "authorization-domain::synthetic"
+issuer_kind: "human"
+issuer_id: "human::reviewer-one"
+provenance_reference: "approval::synthetic-one"
+issued_at: "2026-09-22T10:00:00Z"
+expires_at: "2026-09-22T10:05:00Z"

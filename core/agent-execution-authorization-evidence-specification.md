@@ -754,3 +754,11 @@ Every future authentication, authorization-production, run-binding,
 consumption, revocation, composition, enforcement, or execution contract
 requires separate explicit authorization and must preserve this evidence-only
 meaning.
+
+AIO-043 supplies one separately authorized contract without changing this
+evidence value: Agent Execution Authorization Grant is a positive, time-bounded,
+issuer/domain-scoped artifact bound to one exact nested Agent Execution Run and
+intended for at most one future atomic consumption. Its `issuer_kind` and
+`issuer_id` do not alias this contract's caller-attested `authority_kind` and
+`authority_id`, and this contract's `granted` state does not create a Grant.
+See `core/agent-execution-authorization-grant-specification.md`.

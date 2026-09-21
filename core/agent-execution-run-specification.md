@@ -297,11 +297,13 @@ provenance into the Run. AIO-039 `granted` remains a caller-attested,
 unauthenticated assertion. Its `provenance_reference` remains opaque provenance;
 it is not a grant, authorization, token, consumption, or replay identity.
 
-Run identity is necessary for future Run-bound authority but is not sufficient
-for replay safety. A future design would require authenticated grant identity,
-exact Run and Contract binding, reuse and expiry rules, durable atomic
-consumption, and crash or ambiguous-dispatch semantics. AIO-042 adds none of
-those contracts.
+Run identity is necessary for Run-bound authority but is not sufficient for
+replay safety. AIO-043 adds a separate immutable Agent Execution Authorization
+Grant containing the complete nested Run, issuer/domain-scoped Grant identity,
+static lifetime, and fixed single-use intent. It does not change this Run value
+and does not implement producer authentication, currentness, durable atomic
+consumption, or crash and ambiguous-dispatch semantics. See
+`core/agent-execution-authorization-grant-specification.md`.
 
 Both Run APIs are non-executing. They do not bind a concrete tool, adapter,
 Provider, model, endpoint, credential, command, parameter, or payload. They do
@@ -416,11 +418,12 @@ AIO-042 contains no:
   parameter binding;
 - cancellation, failure, result, error, output, event, cost, token usage,
   duration, or telemetry; or
-- dispatch, execution, invocation, protected-target access, AIO-030, AIO-043,
-  or Full Control Center behavior.
+- dispatch, execution, invocation, protected-target access, AIO-030, or Full
+  Control Center behavior.
 
 AIO-042 consumes but does not modify AIO-040 diagnostic assessment semantics or
-AIO-041 Contract meaning and public behavior. Any future lifecycle,
-authorization-consumption, replay, binding, dispatch, invocation, result,
-event, telemetry, or persistence contract requires separate explicit
-authorization.
+AIO-041 Contract meaning and public behavior. AIO-043 nests this exact Run in a
+separate Grant without adding Grant, consumed, or authorization state to the
+Run. Any future lifecycle, authorization-consumption, replay, binding,
+dispatch, invocation, result, event, telemetry, or persistence contract
+requires separate explicit authorization.

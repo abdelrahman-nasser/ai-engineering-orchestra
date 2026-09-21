@@ -24,6 +24,7 @@ PACKAGED_SCHEMAS = (
     "actor.schema.json",
     "actor-availability.schema.json",
     "actor-runtime-applicability.schema.json",
+    "agent-execution-authorization-grant.schema.json",
     "agent-execution-authorization-evidence.schema.json",
     "agent-execution-contract.schema.json",
     "agent-execution-run.schema.json",
@@ -184,6 +185,126 @@ class PackagingTests(unittest.TestCase):
             ):
                 with self.assertRaisesRegex(ValueError, "canonical ID mismatch"):
                     load_validator("agent-execution-run.schema.json")
+
+    def test_grant_schema_resolves_packaged_run_and_contract_offline(self):
+        document = {
+            "grant_id": "grant::packaging-test",
+            "run": {
+                "run_id": "run::packaging-test",
+                "contract": {
+                    "task_id": "synthetic-task",
+                    "workflow_id": "architecture-change",
+                    "stage_id": "implement",
+                    "role_id": "software-engineer",
+                    "actor_id": "actor::synthetic",
+                    "runtime_option_id": "runtime::synthetic",
+                    "option_id": "option::synthetic",
+                    "environment_id": "environment::synthetic",
+                    "operation_id": "repository_file_read",
+                    "resource": "synthetic/input.txt",
+                    "execution_mode": "critical",
+                },
+            },
+            "authorization_domain_id": "authorization-domain::synthetic",
+            "issuer_kind": "human",
+            "issuer_id": "human::synthetic-reviewer",
+            "provenance_reference": "approval::synthetic",
+            "issued_at": "2026-09-22T10:00:00Z",
+            "expires_at": "2026-09-22T10:05:00Z",
+        }
+        blocked = AssertionError("schema resolution attempted external access")
+        with patch("pathlib.Path.cwd", side_effect=blocked), \
+                patch("socket.create_connection", side_effect=blocked), \
+                patch("socket.getaddrinfo", side_effect=blocked), \
+                patch("urllib.request.urlopen", side_effect=blocked):
+            validator = load_validator(
+                "agent-execution-authorization-grant.schema.json"
+            )
+            validator.validate(document)
+            invalid = json.loads(json.dumps(document))
+            invalid["run"]["contract"]["actor_id"] = ""
+            errors = list(validator.iter_errors(invalid))
+        self.assertEqual(
+            [(error.validator, tuple(error.absolute_path)) for error in errors],
+            [("minLength", ("run", "contract", "actor_id"))],
+        )
+
+    def test_grant_schema_unregistered_reference_fails_closed(self):
+        blocked = AssertionError("schema resolution attempted network access")
+        with patch("socket.create_connection", side_effect=blocked), \
+                patch("socket.getaddrinfo", side_effect=blocked), \
+                patch("urllib.request.urlopen", side_effect=blocked):
+            validator = load_validator(
+                "agent-execution-authorization-grant.schema.json"
+            )
+            unknown = validator.evolve(schema={
+                "$ref": "https://example.invalid/unregistered.schema.json",
+            })
+            with self.assertRaises(Exception) as caught:
+                unknown.validate({})
+        self.assertNotIsInstance(caught.exception, AssertionError)
+        self.assertIn("unregistered.schema.json", str(caught.exception))
+
+    def test_grant_schema_missing_packaged_references_fail_without_fallback(self):
+        dependencies = (
+            "agent-execution-run.schema.json",
+            "agent-execution-contract.schema.json",
+        )
+        for missing_name in dependencies:
+            with self.subTest(missing=missing_name), tempfile.TemporaryDirectory() as folder:
+                resources = Path(folder)
+                for name in (
+                    "agent-execution-authorization-grant.schema.json",
+                    *dependencies,
+                ):
+                    if name != missing_name:
+                        (resources / name).write_bytes(
+                            (ROOT / "schemas" / name).read_bytes()
+                        )
+                with patch(
+                    "engineering_orchestration.schema_resources.files",
+                    return_value=resources,
+                ):
+                    with self.assertRaisesRegex(FileNotFoundError, missing_name):
+                        load_validator(
+                            "agent-execution-authorization-grant.schema.json"
+                        )
+
+    def test_grant_schema_rejects_mismatched_packaged_reference_ids(self):
+        dependencies = (
+            "agent-execution-run.schema.json",
+            "agent-execution-contract.schema.json",
+        )
+        for mismatched_name in dependencies:
+            with self.subTest(reference=mismatched_name), tempfile.TemporaryDirectory() as folder:
+                resources = Path(folder)
+                (resources / "agent-execution-authorization-grant.schema.json").write_bytes(
+                    (
+                        ROOT
+                        / "schemas"
+                        / "agent-execution-authorization-grant.schema.json"
+                    ).read_bytes()
+                )
+                for name in dependencies:
+                    document = json.loads(
+                        (ROOT / "schemas" / name).read_text(encoding="utf-8")
+                    )
+                    if name == mismatched_name:
+                        document["$id"] = (
+                            "https://example.invalid/substitute.schema.json"
+                        )
+                    (resources / name).write_text(
+                        json.dumps(document),
+                        encoding="utf-8",
+                    )
+                with patch(
+                    "engineering_orchestration.schema_resources.files",
+                    return_value=resources,
+                ):
+                    with self.assertRaisesRegex(ValueError, "canonical ID mismatch"):
+                        load_validator(
+                            "agent-execution-authorization-grant.schema.json"
+                        )
 
     def test_role_lookup_does_not_consult_cwd(self):
         with patch("pathlib.Path.cwd", side_effect=AssertionError("CWD is project data")):

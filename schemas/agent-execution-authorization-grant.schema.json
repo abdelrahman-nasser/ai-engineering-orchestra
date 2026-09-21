@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-engineering-orchestra.dev/schemas/agent-execution-authorization-grant.schema.json",
+  "title": "AI Engineering Orchestra Agent Execution Authorization Grant",
+  "description": "Structural schema for one positive, Run-bound Agent Execution Authorization Grant defined by core/agent-execution-authorization-grant-specification.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "grant_id",
+    "run",
+    "authorization_domain_id",
+    "issuer_kind",
+    "issuer_id",
+    "provenance_reference",
+    "issued_at",
+    "expires_at"
+  ],
+  "properties": {
+    "grant_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact opaque issuer-allocated Grant identity within one authorization-domain and issuer namespace."
+    },
+    "run": {
+      "$ref": "https://ai-engineering-orchestra.dev/schemas/agent-execution-run.schema.json",
+      "description": "Exact complete Agent Execution Run bound to this Grant."
+    },
+    "authorization_domain_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact opaque authorization-consumer and future shared-consumption-ledger domain identity."
+    },
+    "issuer_kind": {
+      "type": "string",
+      "enum": [
+        "human",
+        "policy"
+      ],
+      "description": "Closed declared issuer category; structural validity does not authenticate the issuer."
+    },
+    "issuer_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact opaque issuer identity asserted by the external authority producer."
+    },
+    "provenance_reference": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact opaque audit-only provenance reference; not identity or authentication proof."
+    },
+    "issued_at": {
+      "type": "string",
+      "pattern": "^(?!0000)[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])T(?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](?:\\.[0-9]{1,6})?Z(?![\\s\\S])",
+      "description": "Canonical UTC issuance timestamp; currentness is not evaluated."
+    },
+    "expires_at": {
+      "type": "string",
+      "pattern": "^(?!0000)[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])T(?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](?:\\.[0-9]{1,6})?Z(?![\\s\\S])",
+      "description": "Canonical UTC expiry timestamp; currentness is not evaluated."
+    }
+  }
+}

@@ -330,6 +330,43 @@ in:
 
 ---
 
+## Agent Execution Authorization Grant
+
+An immutable, serializable, positive authority artifact issued through an
+external authenticated and integrity-protected authority-producer boundary,
+bound to one exact nested Agent Execution Run and one exact authorization
+domain, time-bounded, and intended for at most one future atomic consumption
+toward dispatch admission.
+
+The value contains exactly `grant_id`, `run`, `authorization_domain_id`,
+`issuer_kind`, `issuer_id`, `provenance_reference`, `issued_at`, and
+`expires_at`. Effective Grant identity is the exact tuple
+`(authorization_domain_id, issuer_kind, issuer_id, grant_id)`. The issuer owns
+Grant-ID allocation and namespace non-reuse; Core neither generates IDs nor
+proves global uniqueness.
+
+The complete nested Run, not `run_id` alone, is the authorized subject.
+`authorization_domain_id` identifies the future acceptance and shared-ledger
+domain and is not `environment_id`. `issuer_kind` is exactly `human` or
+`policy`; `issuer_id` is distinct from AIO-039's caller-attested
+`authority_id`; and provenance is audit-only.
+
+The Grant is positive-only and has no state or reusable-use counter. Its fixed
+single-use intent does not implement consumption. Pure validation checks exact
+value semantics, canonical UTC timestamp syntax, `issued_at < expires_at`,
+domain scope, collisions, and one-Grant-per-Run/domain cardinality using only
+supplied data. It never reads a clock and cannot prove currentness.
+
+Direct construction, structural or intrinsic validity, and serialization do
+not authenticate an issuer or integrity-protect a payload. The Grant itself is
+not AIO-039 evidence, Permission, a Permission Decision, consumption, replay
+protection, revocation, persistence, dispatch admission, invocation, or
+success. The canonical contract is defined in:
+
+`core/agent-execution-authorization-grant-specification.md`
+
+---
+
 ## Actor-to-Runtime Applicability Evidence
 
 An immutable, caller-supplied positive evidence value stating that one known

@@ -7,7 +7,7 @@ name = "ai-engineering-orchestra"
 version = "0.1.0"
 description = "Local CLI for AIO project inspection and declared verification"
 requires-python = ">=3.12"
-dependencies = ["PyYAML>=6,<7", "jsonschema>=4,<5"]
+dependencies = ["PyYAML>=6,<7", "jsonschema>=4.18,<5", "referencing>=0.28.4,<1"]
 
 [project.scripts]
 aio = "engineering_orchestration.cli:main"
@@ -21,5 +21,5 @@ include-package-data = false
 "engineering_orchestration._roles" = "roles"
 
 [tool.setuptools.package-data]
-"engineering_orchestration._schemas" = ["actor.schema.json", "actor-availability.schema.json", "actor-runtime-applicability.schema.json", "agent-execution-authorization-evidence.schema.json", "agent-execution-contract.schema.json", "agent-runtime-option.schema.json", "agent-runtime-option-availability.schema.json", "assignment.schema.json", "environment-operation-permission.schema.json", "inference-option.schema.json", "inference-option-availability.schema.json", "operation-requirement.schema.json", "runtime-operation-capability.schema.json", "runtime-inference-compatibility.schema.json", "role.schema.json", "task.schema.json", "workflow.schema.json", "project-manifest.schema.json"]
+"engineering_orchestration._schemas" = ["actor.schema.json", "actor-availability.schema.json", "actor-runtime-applicability.schema.json", "agent-execution-authorization-evidence.schema.json", "agent-execution-contract.schema.json", "agent-execution-run.schema.json", "agent-runtime-option.schema.json", "agent-runtime-option-availability.schema.json", "assignment.schema.json", "environment-operation-permission.schema.json", "inference-option.schema.json", "inference-option-availability.schema.json", "operation-requirement.schema.json", "runtime-operation-capability.schema.json", "runtime-inference-compatibility.schema.json", "role.schema.json", "task.schema.json", "workflow.schema.json", "project-manifest.schema.json"]
 "engineering_orchestration._roles" = ["*.yaml"]

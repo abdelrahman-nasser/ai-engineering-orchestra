@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-engineering-orchestra.dev/schemas/agent-execution-run.schema.json",
+  "title": "AI Engineering Orchestra Agent Execution Run",
+  "description": "Structural schema for one Agent Execution Run occurrence-identity value defined by core/agent-execution-run-specification.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_id",
+    "contract"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact opaque caller-supplied identity of one concrete execution attempt."
+    },
+    "contract": {
+      "$ref": "https://ai-engineering-orchestra.dev/schemas/agent-execution-contract.schema.json",
+      "description": "Exact nested Agent Execution Contract value bound to this Run."
+    }
+  }
+}

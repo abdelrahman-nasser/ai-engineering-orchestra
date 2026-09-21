@@ -16,7 +16,7 @@ from engineering_orchestration.role_catalog import (
     find_default_roles_resource,
     load_role_catalog,
 )
-from engineering_orchestration.schema_resources import schema_resource
+from engineering_orchestration.schema_resources import load_validator, schema_resource
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,6 +26,7 @@ PACKAGED_SCHEMAS = (
     "actor-runtime-applicability.schema.json",
     "agent-execution-authorization-evidence.schema.json",
     "agent-execution-contract.schema.json",
+    "agent-execution-run.schema.json",
     "agent-runtime-option.schema.json",
     "agent-runtime-option-availability.schema.json",
     "assignment.schema.json",
@@ -54,7 +55,8 @@ class PackagingTests(unittest.TestCase):
         data = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
         self.assertEqual(data["project"]["requires-python"], ">=3.12")
         self.assertEqual(set(data["project"]["dependencies"]),
-                         {"PyYAML>=6,<7", "jsonschema>=4,<5"})
+                         {"PyYAML>=6,<7", "jsonschema>=4.18,<5",
+                          "referencing>=0.28.4,<1"})
         self.assertEqual(data["project"]["scripts"],
                          {"aio": "engineering_orchestration.cli:main"})
         self.assertEqual(data["build-system"]["build-backend"], "setuptools.build_meta")
@@ -98,6 +100,90 @@ class PackagingTests(unittest.TestCase):
         with patch("pathlib.Path.cwd", side_effect=AssertionError("CWD is project data")):
             for name in PACKAGED_SCHEMAS:
                 self.assertIsInstance(json.loads(schema_resource(name).read_text()), dict)
+
+    def test_run_schema_resolves_packaged_contract_offline(self):
+        document = {
+            "run_id": "run::packaging-test",
+            "contract": {
+                "task_id": "synthetic-task",
+                "workflow_id": "architecture-change",
+                "stage_id": "implement",
+                "role_id": "software-engineer",
+                "actor_id": "actor::synthetic",
+                "runtime_option_id": "runtime::synthetic",
+                "option_id": "option::synthetic",
+                "environment_id": "environment::synthetic",
+                "operation_id": "repository_file_read",
+                "resource": "synthetic/input.txt",
+                "execution_mode": "standard",
+            },
+        }
+        blocked = AssertionError("schema resolution attempted external access")
+        with patch("pathlib.Path.cwd", side_effect=blocked), \
+                patch("socket.create_connection", side_effect=blocked), \
+                patch("socket.getaddrinfo", side_effect=blocked), \
+                patch("urllib.request.urlopen", side_effect=blocked):
+            validator = load_validator("agent-execution-run.schema.json")
+            validator.validate(document)
+            invalid = json.loads(json.dumps(document))
+            invalid["contract"]["actor_id"] = ""
+            errors = list(validator.iter_errors(invalid))
+        self.assertEqual(
+            [(error.validator, tuple(error.absolute_path)) for error in errors],
+            [("minLength", ("contract", "actor_id"))],
+        )
+
+    def test_run_schema_unregistered_reference_fails_closed(self):
+        blocked = AssertionError("schema resolution attempted network access")
+        with patch("socket.create_connection", side_effect=blocked), \
+                patch("socket.getaddrinfo", side_effect=blocked), \
+                patch("urllib.request.urlopen", side_effect=blocked):
+            validator = load_validator("agent-execution-run.schema.json")
+            unknown = validator.evolve(schema={
+                "$ref": "https://example.invalid/unregistered.schema.json",
+            })
+            with self.assertRaises(Exception) as caught:
+                unknown.validate({})
+        self.assertNotIsInstance(caught.exception, AssertionError)
+        self.assertIn("unregistered.schema.json", str(caught.exception))
+
+    def test_run_schema_missing_packaged_contract_fails_without_fallback(self):
+        with tempfile.TemporaryDirectory() as folder:
+            resources = Path(folder)
+            (resources / "agent-execution-run.schema.json").write_bytes(
+                (ROOT / "schemas" / "agent-execution-run.schema.json").read_bytes()
+            )
+            with patch(
+                "engineering_orchestration.schema_resources.files",
+                return_value=resources,
+            ):
+                with self.assertRaisesRegex(
+                    FileNotFoundError,
+                    "agent-execution-contract.schema.json",
+                ):
+                    load_validator("agent-execution-run.schema.json")
+
+    def test_run_schema_rejects_mismatched_packaged_contract_id(self):
+        with tempfile.TemporaryDirectory() as folder:
+            resources = Path(folder)
+            (resources / "agent-execution-run.schema.json").write_bytes(
+                (ROOT / "schemas" / "agent-execution-run.schema.json").read_bytes()
+            )
+            contract = json.loads(
+                (ROOT / "schemas" / "agent-execution-contract.schema.json")
+                .read_text(encoding="utf-8")
+            )
+            contract["$id"] = "https://example.invalid/substitute.schema.json"
+            (resources / "agent-execution-contract.schema.json").write_text(
+                json.dumps(contract),
+                encoding="utf-8",
+            )
+            with patch(
+                "engineering_orchestration.schema_resources.files",
+                return_value=resources,
+            ):
+                with self.assertRaisesRegex(ValueError, "canonical ID mismatch"):
+                    load_validator("agent-execution-run.schema.json")
 
     def test_role_lookup_does_not_consult_cwd(self):
         with patch("pathlib.Path.cwd", side_effect=AssertionError("CWD is project data")):

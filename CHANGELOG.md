@@ -142,6 +142,17 @@ Status: In Development
   direct contract submodule and packaged schema, including all four modes,
   AIO-036 operation/resource parity, serialization round-trip, purity, and no
   package-root export or source fallback
+- canonical two-field Agent Execution Run specification and closed schema for
+  immutable occurrence identity binding one caller-supplied opaque Run ID to
+  one exact nested Agent Execution Contract
+- pure intrinsic Run validation and canonical preparation through fresh AIO-041
+  preparation plus exact intended/fresh Contract equality, with deterministic
+  atomic findings and explicit caller-owned freshness and uniqueness limits
+- packaged fail-closed offline nested-schema resolution with source, editable-
+  install, and normal-wheel coverage and no network or CWD fallback
+- explicit separation of Run identity from lifecycle, status, persistence,
+  authorization consumption, replay protection, tool binding, dispatch,
+  invocation, results, events, and telemetry
 - private controlled read-only execution preparation dry run for the single
   provisional `repository_file_read` operation and one exact canonical
   repository-relative Markdown resource
@@ -234,6 +245,9 @@ Status: In Development
   future Run or dispatch work must freshly resolve effective mode, obtain a
   fresh prerequisite assessment, freshly prepare and compare intent where
   appropriate, and separately obtain authenticated run-bound authority
+- established one Run as one semantic attempt, with full `(run_id, contract)`
+  representation equality, caller-owned operational ID non-reuse, no global
+  uniqueness claim, and no separate attempt identity or retry mechanism
 - kept the AIO-035 preparation experiment private and non-invoking: it consumes
   evidence without discovering or changing permissions, parsing approval prose,
   touching the target, creating an Execution Contract, dispatching, or adding a

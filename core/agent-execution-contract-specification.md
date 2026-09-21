@@ -482,6 +482,14 @@ typed operation-specific contracts when justified. Tool binding, Run identity,
 retry behavior, authorization consumption, replay protection, and execution
 lifecycle require separately authorized future contracts.
 
+AIO-042 supplies the first of those contracts without changing this value: an
+immutable Agent Execution Run occurrence identity containing one caller-
+supplied opaque `run_id` and this exact nested Contract. Canonical Run
+preparation freshly reuses this specification's preparation API and requires
+exact fresh/intended Contract equality. Run existence still creates no
+authority, durable readiness, lifecycle, consumption, binding, dispatch, or
+invocation semantics. See `core/agent-execution-run-specification.md`.
+
 ---
 
 ## 13. Adjacent Contract Preservation

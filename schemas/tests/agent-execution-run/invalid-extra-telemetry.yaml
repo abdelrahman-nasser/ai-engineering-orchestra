@@ -1,0 +1,14 @@
+run_id: run::extra-telemetry
+tokens: 1
+contract:
+  task_id: synthetic-task
+  workflow_id: architecture-change
+  stage_id: implement
+  role_id: software-engineer
+  actor_id: actor::synthetic
+  runtime_option_id: runtime::synthetic
+  option_id: option::synthetic
+  environment_id: environment::synthetic
+  operation_id: repository_file_read
+  resource: synthetic/input.txt
+  execution_mode: standard

@@ -1,0 +1,50 @@
+id: AIO-042
+title: Agent Execution Run Identity Foundation
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: high
+execution:
+  mode: deep
+workflow: architecture-change
+objective: >
+  Define and implement the smallest canonical immutable, serializable,
+  provider-neutral, tool-neutral Agent Execution Run occurrence identity for
+  one concrete attempt involving one exact Agent Execution Contract, with
+  canonical fresh preparation and without lifecycle, persistence,
+  authorization consumption, tool binding, dispatch, or invocation.
+scope:
+  include:
+    - Canonical Agent Execution Run specification and terminology
+    - Exact two-field run_id and nested AgentExecutionContract value
+    - Caller-owned opaque Run-ID validation and documented uniqueness limits
+    - One-Run-equals-one-attempt identity semantics
+    - Pure intrinsic Run validation
+    - Pure canonical preparation from a fresh AIO-040 result and effective mode
+    - Fresh AIO-041 preparation and exact intended-contract equality
+    - Closed Draft 2020-12 schema with packaged offline Contract-schema reference
+    - Structural, semantic, serialization, scenario, purity, packaging, and installation tests
+    - Architect and Security design locks, final specialist reviews, independent review, Gate evidence, and Human checkpoint preparation
+  exclude:
+    - Final Human approval, Task closure, staging, commit, push, merge, tag, release, or publication
+    - AIO-043, AIO-030, Full Control Center, read models, dashboards, APIs, or frontend work
+    - Run lifecycle, status, transition model, mutable record, state snapshot, or event sourcing
+    - Attempt ID, retry mechanism or lineage, cancellation, failure, timestamps, clock, or duration
+    - Run registry, persistence, database, cache, queue, repository, or history store
+    - Core-generated Run IDs, UUID generation, randomness, hashes, or Contract IDs
+    - Authorization authentication, grant issuance, consumption, replay protection, revocation, or expiry
+    - Permission Decision evaluation, policy composition, permission enforcement, or mutation
+    - Tool, adapter, Provider, model, endpoint, credential, or payload binding
+    - Dispatch, Agent invocation, result, error, event, telemetry, or protected-target access
+dependencies:
+  - AIO-040
+  - AIO-041
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

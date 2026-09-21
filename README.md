@@ -509,6 +509,16 @@ one coherent satisfied Agent Action Prerequisite Assessment
   -> immutable serializable intent only; no authorization, durable readiness,
      Execution Run, payload, tool binding, dispatch, or invocation
 
+current canonical execution-occurrence identity:
+intended Agent Execution Contract
+  + caller-supplied current satisfied prerequisite assessment
+  + freshly resolved effective Task Execution Mode
+  -> freshly prepared exact-equal Agent Execution Contract
+  + caller-supplied opaque run_id
+  -> Agent Execution Run(run_id, contract)
+  -> immutable serializable occurrence identity only; no lifecycle, authority
+     consumption, replay protection, tool binding, dispatch, or invocation
+
 current private experiment:
 candidate prerequisite assessment
   + its existing provisional capability evidence
@@ -519,10 +529,10 @@ candidate prerequisite assessment
   -> no target I/O, permission discovery, request, dispatch, or invocation
 
 future only, through separately authorized contracts and adapters:
-fresh effective-mode resolution + fresh exact prerequisite assessment
-  -> freshly prepared contract and value comparison where appropriate
-  + separately authenticated run-bound authority
-  -> Execution Run / adapter binding / invocation
+Agent Execution Run
+  + separately authenticated run-bound authority and consumption
+  + future adapter/tool binding and dispatch admission
+  -> invocation / result / lifecycle evidence
 ```
 
 Actor is not an executable Agent definition, Runtime Option, Inference Option,
@@ -560,10 +570,13 @@ The exact-action prerequisite-composition authority is
 [`core/agent-action-prerequisite-specification.md`](core/agent-action-prerequisite-specification.md).
 The exact-action declarative-intent authority is
 [`core/agent-execution-contract-specification.md`](core/agent-execution-contract-specification.md).
+The execution-occurrence identity authority is
+[`core/agent-execution-run-specification.md`](core/agent-execution-run-specification.md).
 AIO-035 deliberately adds no new Core specification: its provisional semantics
 remain in the AIO-035 Task evidence, private implementation, and focused tests.
-AIO-037 through AIO-041 do not retrofit that private experiment or compose
-capability, permission, candidate, authorization, and intent into execution.
+AIO-037 through AIO-042 do not retrofit that private experiment or compose
+capability, permission, candidate, authorization, intent, and Run identity into
+execution.
 
 ## Operation Requirement
 
@@ -840,6 +853,48 @@ identity types plus the AIO-036 operation and lexical-resource semantics. The
 semantic authority is
 [`core/agent-execution-contract-specification.md`](core/agent-execution-contract-specification.md).
 
+## Agent Execution Run
+
+Agent Execution Run is the immutable, provider-neutral and tool-neutral
+occurrence identity for one concrete attempt involving one exact Agent
+Execution Contract:
+
+```python
+from engineering_orchestration.agent_execution_run import (
+    prepare_agent_execution_run,
+    validate_agent_execution_run,
+)
+
+prepared_run = prepare_agent_execution_run(
+    intended_contract,
+    fresh_assessment,
+    execution_mode="deep",
+    run_id="run::synthetic",
+)
+assert prepared_run.valid
+assert validate_agent_execution_run(prepared_run.run).valid
+```
+
+The value contains exactly `run_id` followed by the exact nested Contract. The
+caller or execution coordinator owns opaque Run-ID allocation and operational
+non-reuse; Core neither generates IDs nor proves authenticity or global
+uniqueness. Representation equality is `(run_id, contract)`, while `run_id` is
+logical occurrence identity. One Run equals one semantic attempt, so a semantic
+retry requires a new ID and fresh preparation.
+
+Canonical preparation reuses AIO-041 with caller-supplied current AIO-040
+evidence and a freshly resolved effective mode, then requires exact
+fresh/intended Contract equality. The API cannot authenticate freshness,
+provenance, or caller truth. Direct construction and intrinsic validation prove
+only value semantics.
+
+Run existence is not lifecycle, authorization consumption, replay protection,
+current permission, tool binding, dispatch, invocation, or success. The value
+has no status, timestamp, persistence, result, event, or telemetry. Its closed
+two-field schema references the packaged Contract schema through fail-closed
+offline resolution. Exact semantics are defined by
+[`core/agent-execution-run-specification.md`](core/agent-execution-run-specification.md).
+
 ## Installed Structural Validation
 
 The programmatic API reads the nearest active project's supported AIO structures:
@@ -867,11 +922,11 @@ The installed tool packages canonical Actor, Actor Availability Observation,
 Actor-to-Runtime Applicability Evidence, Agent Runtime Option, Agent Runtime
 Option Availability Observation, Runtime Operation Capability Observation,
 Environment Operation Permission Observation, Agent Execution Authorization
-Evidence, Agent Execution Contract, Assignment, Inference Option, Inference
-Option Availability Observation, Runtime-to-Inference Compatibility Evidence,
-Role, Task, Workflow, and Project Manifest schemas from their single sources in
-`schemas/`, plus the five framework-owned canonical Role YAML instances from
-`roles/`.
+Evidence, Agent Execution Contract, Agent Execution Run, Assignment, Inference
+Option, Inference Option Availability Observation, Runtime-to-Inference
+Compatibility Evidence, Role, Task, Workflow, and Project Manifest schemas from
+their single sources in `schemas/`, plus the five framework-owned canonical Role
+YAML instances from `roles/`.
 Managed projects
 need no schema regression scripts, fixtures, Orchestra Task history, Git,
 Node/npm, or Python tests. Python and the declared tool dependencies run the

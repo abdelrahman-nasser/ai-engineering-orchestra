@@ -5,6 +5,20 @@ from importlib.resources.abc import Traversable
 from pathlib import Path
 
 
+_AGENT_EXECUTION_CONTRACT_SCHEMA_ID = (
+    "https://ai-engineering-orchestra.dev/schemas/"
+    "agent-execution-contract.schema.json"
+)
+_OFFLINE_SCHEMA_REFERENCES = {
+    "agent-execution-run.schema.json": (
+        (
+            _AGENT_EXECUTION_CONTRACT_SCHEMA_ID,
+            "agent-execution-contract.schema.json",
+        ),
+    ),
+}
+
+
 def schema_resource(name: str) -> Traversable | None:
     """Return a bundled schema, never a schema from the active project.
 
@@ -18,6 +32,7 @@ def schema_resource(name: str) -> Traversable | None:
         "actor-runtime-applicability.schema.json",
         "agent-execution-authorization-evidence.schema.json",
         "agent-execution-contract.schema.json",
+        "agent-execution-run.schema.json",
         "agent-runtime-option.schema.json",
         "agent-runtime-option-availability.schema.json",
         "assignment.schema.json",
@@ -50,12 +65,43 @@ def load_validator(name: str):
     import json
     from jsonschema import Draft202012Validator
 
-    resource = schema_resource(name)
-    if resource is None:
-        raise FileNotFoundError(f"Required tool schema missing: {name}")
-    schema = json.loads(resource.read_text(encoding="utf-8"))
-    Draft202012Validator.check_schema(schema)
-    return Draft202012Validator(schema)
+    def load_checked_schema(resource_name: str):
+        resource = schema_resource(resource_name)
+        if resource is None:
+            raise FileNotFoundError(
+                f"Required tool schema missing: {resource_name}"
+            )
+        document = json.loads(resource.read_text(encoding="utf-8"))
+        Draft202012Validator.check_schema(document)
+        return document
+
+    schema = load_checked_schema(name)
+    references = _OFFLINE_SCHEMA_REFERENCES.get(name)
+    if references is None:
+        return Draft202012Validator(schema)
+
+    from referencing import Registry, Resource
+    from referencing.exceptions import NoSuchResource
+
+    def reject_unregistered_reference(uri: str):
+        raise NoSuchResource(ref=uri)
+
+    registry = Registry(retrieve=reject_unregistered_reference)
+    for canonical_id, referenced_name in references:
+        referenced_schema = load_checked_schema(referenced_name)
+        if (
+            not isinstance(referenced_schema, dict)
+            or referenced_schema.get("$id") != canonical_id
+        ):
+            raise ValueError(
+                "Bundled schema canonical ID mismatch: "
+                f"{referenced_name} must declare {canonical_id}"
+            )
+        registry = registry.with_resource(
+            canonical_id,
+            Resource.from_contents(referenced_schema),
+        )
+    return Draft202012Validator(schema, registry=registry)
 
 
 def schema_errors(validator, document):

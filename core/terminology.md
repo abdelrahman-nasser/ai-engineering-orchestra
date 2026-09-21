@@ -300,6 +300,36 @@ run-bound authority. The canonical contract is defined in:
 
 ---
 
+## Agent Execution Run
+
+An immutable, provider-neutral, tool-neutral, serializable occurrence-identity
+value for one concrete attempt involving one exact Agent Execution Contract.
+It contains exactly a caller-supplied opaque `run_id` followed by the exact
+nested immutable Contract.
+
+Representation equality covers `(run_id, contract)` while logical occurrence
+identity is `run_id`. Equal IDs and Contracts represent the same Run again;
+equal IDs with different Contracts conflict in an authoritative namespace but
+cannot be discovered by single-value validation; equal Contracts with different
+IDs are distinct Runs. One Run equals one semantic attempt, so a semantic retry
+uses a new Run ID and fresh preparation. No separate attempt identity exists.
+
+Canonical preparation requires caller-supplied current prerequisite evidence,
+an observably coherent valid `satisfied` AIO-040 result, a freshly resolved
+effective Task-wide Execution Mode, fresh AIO-041 preparation, and exact
+fresh/intended Contract equality. Core cannot authenticate temporal freshness,
+provenance, Run-ID uniqueness, or caller truth.
+
+The Run is not lifecycle state, authorization, authorization consumption,
+replay protection, current permission, tool binding, dispatch, invocation, or
+success. It has no status, timestamp, persistence, result, event, or telemetry
+and performs no execution or resource I/O. The canonical contract is defined
+in:
+
+`core/agent-execution-run-specification.md`
+
+---
+
 ## Actor-to-Runtime Applicability Evidence
 
 An immutable, caller-supplied positive evidence value stating that one known

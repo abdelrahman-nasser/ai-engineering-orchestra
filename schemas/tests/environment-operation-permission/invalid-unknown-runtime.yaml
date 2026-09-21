@@ -1,0 +1,5 @@
+runtime_option_id: runtime-missing
+environment_id: environment-primary
+operation_id: repository_file_read
+resource: synthetic/input.txt
+state: allowed

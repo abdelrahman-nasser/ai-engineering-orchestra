@@ -167,6 +167,44 @@ Provider/model capability. The canonical contract is defined in:
 
 ---
 
+## Environment Operation Permission Observation
+
+An immutable, caller/environment-supplied observation describing the currently
+known effective environment-permission state for one known Agent Runtime Option
+to perform one Core-defined abstract operation against one exact lexical
+repository-relative resource in one opaque caller-identified environment,
+within one caller-owned evaluation snapshot.
+
+The value contains exactly `runtime_option_id`, `environment_id`,
+`operation_id`, `resource`, and `state`, in that order. Its identity is the exact
+case-sensitive four-part tuple
+`(runtime_option_id, environment_id, operation_id, resource)`; state is not
+identity. The state is exactly `allowed`, `denied`, or `unknown`. Denied is
+positive supplied negative evidence and is not unknown.
+
+The environment identifier is opaque caller-owned snapshot scope, not an
+Environment entity or registry. A missing exact observation semantically means
+unknown, never denied, but validation preserves and canonically orders only
+supplied observations because the resource domain is open-ended. It synthesizes
+no Cartesian permission snapshot. The value has no freshness field; the caller
+owns snapshot currency, and Core cannot independently verify it.
+
+Identical repeated identities and differing-state conflicts are mutually
+exclusive invalid-input categories. Conflicting permission observations
+invalidate the complete snapshot; no first-, last-, latest-, allowed-, deny-,
+or stricter-wins resolution applies, and a conflict is not converted to denied,
+unknown, a Permission Decision, or a Human approval question. Reconciliation is
+owned by the caller/environment evidence producer.
+
+Environment Operation Permission Observation is evidence only. `allowed` does
+not establish a Permission Decision, Human or policy authorization, Runtime
+availability, capability, enforcement, dispatchability, or execution. The
+canonical contract is defined in:
+
+`core/environment-operation-permission-specification.md`
+
+---
+
 ## Actor-to-Runtime Applicability Evidence
 
 An immutable, caller-supplied positive evidence value stating that one known
@@ -835,6 +873,10 @@ ask
 allow
 
 Permission Decision is defined conceptually in v0.1.
+
+Permission Decision is distinct from Environment Operation Permission
+Observation. The latter uses `allowed`, `denied`, and `unknown` only as supplied
+environment facts; none is a Permission Decision or authorization result.
 
 Full command permission enforcement is planned for Orchestra v0.2.
 

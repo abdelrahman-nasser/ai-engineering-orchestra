@@ -440,6 +440,7 @@ Caller/environment
   -> caller-scoped Actor context
   -> caller-scoped Runtime Option inventory + availability
   -> caller-scoped Runtime operation capability observations
+  -> caller-scoped environment operation permission observations
   -> caller-scoped Inference Option inventory + availability
   -> supplied positive Actor-to-Runtime applicability evidence
   -> supplied positive Runtime-to-Inference compatibility evidence
@@ -469,10 +470,20 @@ caller/environment
   -> no resource, tool binding, availability, permission, authorization,
      or execution
 
+current canonical environment-permission evidence:
+caller/environment
+  -> Environment Operation Permission Observation(runtime_option_id,
+                                                    environment_id,
+                                                    operation_id,
+                                                    resource, state)
+  -> allowed | denied | unknown
+  -> exact supplied evidence only; no Permission Decision, Human/policy
+     authorization, enforcement, or execution
+
 current private experiment:
 candidate prerequisite assessment
   + its existing provisional capability evidence
-  + caller-supplied environment permission + freshness evidence
+  + its existing provisional environment permission + freshness evidence
   + caller-supplied Human/policy authorization evidence
   -> read-only execution preparation dry run
   -> potentially_executable | blocked | unresolved
@@ -511,10 +522,13 @@ The exact-candidate composition authority is
 [`core/agent-execution-candidate-prerequisite-specification.md`](core/agent-execution-candidate-prerequisite-specification.md).
 The Runtime-operation capability authority is
 [`core/runtime-operation-capability-specification.md`](core/runtime-operation-capability-specification.md).
+The environment-operation permission-observation authority is
+[`core/environment-operation-permission-specification.md`](core/environment-operation-permission-specification.md).
 AIO-035 deliberately adds no new Core specification: its provisional semantics
 remain in the AIO-035 Task evidence, private implementation, and focused tests.
-AIO-037 does not retrofit that private experiment or compose capability with
-permission, authorization, candidate evidence, or execution.
+AIO-037 and AIO-038 do not retrofit that private experiment or compose
+capability and canonical permission observations with authorization, candidate
+evidence, or execution.
 
 ## Operation Requirement
 
@@ -547,7 +561,9 @@ separators. Absolute, drive-qualified, UNC, URI, tilde-rooted, backslash,
 control-character, empty-segment, dot-segment, parent-segment, trailing-slash,
 and glob/meta forms are rejected. Validation does not normalize, resolve,
 existence-check, open, read, stat, hash, list, or otherwise access the resource
-or repository.
+or repository. Operation Requirement and Environment Operation Permission
+Observation reuse one package-internal repository-resource validator without
+changing AIO-036 codes, messages, precedence, public API, or atomicity.
 
 Presence states need only; absence means only that no requirement was supplied
 in that evaluation context. Operation Requirement proves no Runtime capability,
@@ -562,9 +578,79 @@ The semantic authority and deterministic runtime behavior are defined in
 [`core/operation-requirement-specification.md`](core/operation-requirement-specification.md).
 The separate technical-support contract is defined in
 [`core/runtime-operation-capability-specification.md`](core/runtime-operation-capability-specification.md).
+The separate environment-permission evidence contract is defined in
+[`core/environment-operation-permission-specification.md`](core/environment-operation-permission-specification.md).
 The earlier AIO-035 preparation harness remains a private bounded experiment;
 AIO-036 does not retrofit it, access its protected target, or canonicalize its
 provisional capability, permission, or authorization evidence.
+
+## Environment Operation Permission Observation
+
+Environment Operation Permission Observation is immutable,
+caller/environment-supplied evidence about whether one opaque environment
+currently permits one known Runtime Option to perform one Core operation
+against one exact lexical repository-relative resource:
+
+```python
+from engineering_orchestration.environment_operation_permission import (
+    EnvironmentOperationPermissionObservation,
+    EnvironmentOperationPermissionState,
+    validate_environment_operation_permission,
+)
+
+permission_snapshot = validate_environment_operation_permission(
+    [
+        EnvironmentOperationPermissionObservation(
+            runtime_option_id="primary-agent-runtime",
+            environment_id="synthetic-evaluation-environment",
+            operation_id="repository_file_read",
+            resource="synthetic/input.txt",
+            state=EnvironmentOperationPermissionState.ALLOWED,
+        )
+    ],
+    runtime_options,
+    "synthetic-evaluation-environment",
+)
+```
+
+The observation contains exactly `runtime_option_id`, `environment_id`,
+`operation_id`, `resource`, and `state`, in that order. Its exact case-sensitive
+identity excludes state. States are exactly `allowed`, `denied`, and `unknown`;
+they remain distinct from the Permission Decision vocabulary `allow`, `ask`,
+`always-ask`, and `deny`.
+
+The Runtime inventory, snapshot environment, operation vocabulary, and lexical
+resource grammar are validated without discovery or I/O. An environment
+mismatch, unknown Runtime, malformed or unsupported operation, or invalid
+resource invalidates the complete snapshot. Valid output contains only supplied
+observations sorted by exact Runtime, environment, operation, and resource
+identity. A missing exact observation semantically means unknown, never denied,
+but no open-ended Cartesian permission snapshot is synthesized.
+
+Repeated exact identities are invalid. Identical-state repetitions produce a
+duplicate finding; any repeated identity with differing states produces a
+conflict finding. The categories are mutually exclusive and deterministic.
+Conflicting permission observations are invalid evidence: there is no first-,
+last-, latest-, allowed-, deny-, or stricter-wins rule, no declaration-order
+precedence, and no conversion to unknown, denied, a Permission Decision, or a
+Human approval question. The caller/environment evidence producer owns
+reconciliation and must resupply one coherent observation.
+
+`allowed` is only an environment fact. It does not establish Runtime capability
+or availability, a Permission Decision, Human or policy authorization,
+enforcement, dispatchability, execution, or success. The contract contains no
+freshness field; snapshot currency is caller-owned, and stale or unreliable
+evidence must be omitted or supplied as unknown. Core does not discover,
+verify, poll, enforce, or mutate permissions and creates no Execution Contract
+or invocation.
+
+The schema owns only the exact five-field object shape, required nonempty
+strings, the closed state enum, and rejection of extra properties. Semantic
+validation, deterministic finding order, exact canonical ordering, and atomic
+invalid results are defined by
+[`core/environment-operation-permission-specification.md`](core/environment-operation-permission-specification.md).
+The earlier AIO-035 preparation harness retains separate provisional evidence
+and freshness semantics; AIO-038 does not retrofit or canonicalize it.
 
 ## Installed Structural Validation
 
@@ -592,10 +678,11 @@ only the supported structural rules, without establishing Quality Gate results.
 The installed tool packages canonical Actor, Actor Availability Observation,
 Actor-to-Runtime Applicability Evidence, Agent Runtime Option, Agent Runtime
 Option Availability Observation, Runtime Operation Capability Observation,
-Assignment, Inference Option, Inference Option Availability Observation,
-Runtime-to-Inference Compatibility Evidence, Role, Task, Workflow, and Project
-Manifest schemas from their single sources in `schemas/`, plus the five
-framework-owned canonical Role YAML instances from `roles/`.
+Environment Operation Permission Observation, Assignment, Inference Option,
+Inference Option Availability Observation, Runtime-to-Inference Compatibility
+Evidence, Role, Task, Workflow, and Project Manifest schemas from their single
+sources in `schemas/`, plus the five framework-owned canonical Role YAML
+instances from `roles/`.
 Managed projects
 need no schema regression scripts, fixtures, Orchestra Task history, Git,
 Node/npm, or Python tests. Python and the declared tool dependencies run the

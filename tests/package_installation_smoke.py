@@ -137,7 +137,8 @@ def main() -> None:
                 with zipfile.ZipFile(wheel) as archive:
                     names = archive.namelist()
                     modules = {f"engineering_orchestration/{name}" for name in
-                               ("__init__.py", "_operation_vocabulary.py", "_read_only_execution_preparation.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_execution_candidate_prerequisite.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
+                               ("__init__.py", "_operation_vocabulary.py", "_read_only_execution_preparation.py", "_repository_resource.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_execution_candidate_prerequisite.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
+                                "environment_operation_permission.py",
                                 "execution_mode.py", "inference_option.py",
                                 "inference_option_availability.py",
                                 "operation_requirement.py",
@@ -150,6 +151,7 @@ def main() -> None:
                                ("actor-availability.schema.json", "actor-runtime-applicability.schema.json", "actor.schema.json",
                                 "agent-runtime-option.schema.json", "agent-runtime-option-availability.schema.json",
                                 "assignment.schema.json",
+                                "environment-operation-permission.schema.json",
                                 "inference-option.schema.json", "inference-option-availability.schema.json",
                                 "operation-requirement.schema.json",
                                 "runtime-operation-capability.schema.json",
@@ -755,6 +757,7 @@ print(json.dumps({'module': cli.__file__,
      'actor.schema.json',
      'agent-runtime-option.schema.json', 'agent-runtime-option-availability.schema.json',
      'assignment.schema.json',
+     'environment-operation-permission.schema.json',
      'inference-option.schema.json', 'inference-option-availability.schema.json',
      'operation-requirement.schema.json',
      'runtime-operation-capability.schema.json',
@@ -763,6 +766,111 @@ print(json.dumps({'module': cli.__file__,
      'project-manifest.schema.json')], 'sys_path': sys.path}))
 """
             evidence = json.loads(run([str(python), "-B", "-c", probe], project / "src/nested", run_env))
+            permission_probe = """
+import json, os, socket, subprocess, sys, time, urllib.request
+from contextlib import ExitStack
+from pathlib import Path
+from unittest.mock import patch
+import engineering_orchestration
+import engineering_orchestration._repository_resource as repository_resource
+import engineering_orchestration.environment_operation_permission as permission
+from engineering_orchestration.agent_runtime_option import AgentRuntimeOptionDefinition
+P = permission.EnvironmentOperationPermissionObservation
+S = permission.EnvironmentOperationPermissionState
+options = [AgentRuntimeOptionDefinition('installed-runtime-primary'),
+           AgentRuntimeOptionDefinition('installed-runtime-secondary')]
+def validate(observations):
+    return permission.validate_environment_operation_permission(
+        observations, options, 'installed-environment')
+blocked = AssertionError('permission validation must remain pure')
+guards = (
+    patch('builtins.open', side_effect=blocked),
+    patch.object(Path, 'open', side_effect=blocked),
+    patch.object(Path, 'read_text', side_effect=blocked),
+    patch.object(Path, 'read_bytes', side_effect=blocked),
+    patch.object(Path, 'stat', side_effect=blocked),
+    patch.object(Path, 'resolve', side_effect=blocked),
+    patch.object(Path, 'iterdir', side_effect=blocked),
+    patch.object(Path, 'glob', side_effect=blocked),
+    patch.object(Path, 'rglob', side_effect=blocked),
+    patch.object(os, 'stat', side_effect=blocked),
+    patch.object(os, 'access', side_effect=blocked),
+    patch.object(os, 'listdir', side_effect=blocked),
+    patch.object(os, 'scandir', side_effect=blocked),
+    patch.object(os, 'getenv', side_effect=blocked),
+    patch.object(os, 'chmod', side_effect=blocked),
+    patch.object(subprocess, 'run', side_effect=blocked),
+    patch.object(subprocess, 'Popen', side_effect=blocked),
+    patch.object(socket, 'create_connection', side_effect=blocked),
+    patch.object(socket, 'getaddrinfo', side_effect=blocked),
+    patch.object(urllib.request, 'urlopen', side_effect=blocked),
+    patch.object(time, 'time', side_effect=blocked),
+    patch.object(time, 'monotonic', side_effect=blocked),
+)
+with ExitStack() as stack:
+    for guard in guards:
+        stack.enter_context(guard)
+    valid = validate([
+        P('installed-runtime-secondary', 'installed-environment',
+          'repository_file_read', 'synthetic/unknown.txt', S.UNKNOWN),
+        P('installed-runtime-primary', 'installed-environment',
+          'repository_file_read', 'synthetic/denied.txt', S.DENIED),
+        P('installed-runtime-primary', 'installed-environment',
+          'repository_file_read', 'synthetic/allowed.txt', S.ALLOWED),
+    ])
+    mismatch = validate([
+        P('installed-runtime-primary', 'different-environment',
+          'repository_file_read', 'synthetic/mismatch.txt', S.ALLOWED)])
+    duplicate_value = P(
+        'installed-runtime-primary', 'installed-environment',
+        'repository_file_read', 'synthetic/duplicate.txt', S.DENIED)
+    duplicate = validate([duplicate_value, duplicate_value])
+    pairs = ((S.ALLOWED, S.DENIED), (S.DENIED, S.ALLOWED),
+             (S.ALLOWED, S.UNKNOWN), (S.UNKNOWN, S.ALLOWED),
+             (S.DENIED, S.UNKNOWN), (S.UNKNOWN, S.DENIED))
+    conflicts = [validate([
+        P('installed-runtime-primary', 'installed-environment',
+          'repository_file_read', 'synthetic/conflict.txt', left),
+        P('installed-runtime-primary', 'installed-environment',
+          'repository_file_read', 'synthetic/conflict.txt', right),
+    ]) for left, right in pairs]
+    invalid_resource = validate([
+        P('installed-runtime-primary', 'installed-environment',
+          'repository_file_read', 'synthetic/../invalid.txt', S.ALLOWED)])
+print(json.dumps({
+    'repository_resource_module': repository_resource.__file__,
+    'environment_operation_permission_module': permission.__file__,
+    'environment_operation_permission_states': [state.value for state in S],
+    'environment_operation_permission_allowed_denied_unknown': {
+        'valid': valid.valid,
+        'observations': [[item.runtime_option_id, item.environment_id,
+                          item.operation_id, item.resource, item.state]
+                         for item in valid.normalized_observations]},
+    'environment_operation_permission_environment_mismatch': {
+        'codes': [item.code for item in mismatch.findings],
+        'atomic': not mismatch.valid and not mismatch.normalized_observations},
+    'environment_operation_permission_identical_duplicate': {
+        'codes': [item.code for item in duplicate.findings],
+        'atomic': not duplicate.valid and not duplicate.normalized_observations},
+    'environment_operation_permission_conflicts': [
+        {'codes': [item.code for item in result.findings],
+         'atomic': not result.valid and not result.normalized_observations}
+        for result in conflicts],
+    'environment_operation_permission_conflicts_deterministic': all(
+        result == conflicts[0] for result in conflicts),
+    'environment_operation_permission_invalid_resource': {
+        'codes': [item.code for item in invalid_resource.findings],
+        'atomic': (not invalid_resource.valid
+                   and not invalid_resource.normalized_observations)},
+    'environment_operation_permission_public_export_absent': not hasattr(
+        engineering_orchestration, 'validate_environment_operation_permission'),
+}))
+"""
+            evidence.update(json.loads(run(
+                [str(python), "-B", "-c", permission_probe],
+                project / "src/nested",
+                run_env,
+            )))
             print(f"{mode.upper()} IMPORT/RESOURCE EVIDENCE: {json.dumps(evidence)}", flush=True)
             if mode == "normal":
                 require(Path(evidence["module"]).resolve().is_relative_to(environment),
@@ -795,6 +903,10 @@ print(json.dumps({'module': cli.__file__,
                         "Normal Operation Requirement import leaked to source")
                 require(Path(evidence["operation_vocabulary_module"]).resolve().is_relative_to(environment),
                         "Normal Core operation vocabulary import leaked to source")
+                require(Path(evidence["repository_resource_module"]).resolve().is_relative_to(environment),
+                        "Normal repository-resource helper import leaked to source")
+                require(Path(evidence["environment_operation_permission_module"]).resolve().is_relative_to(environment),
+                        "Normal Environment Operation Permission import leaked to source")
                 require(Path(evidence["runtime_operation_capability_module"]).resolve().is_relative_to(environment),
                         "Normal Runtime Operation Capability import leaked to source")
                 require(Path(evidence["actor_module"]).resolve().is_relative_to(environment),
@@ -1014,6 +1126,79 @@ print(json.dumps({'module': cli.__file__,
                 "Installed Runtime capability unsupported operation rejection failed")
             require(evidence["runtime_operation_capability_public_export_absent"],
                     "Runtime Operation Capability unexpectedly gained a package-root export")
+            require(evidence["environment_operation_permission_states"] == [
+                        "allowed", "denied", "unknown"],
+                    "Installed Environment Operation Permission states differ")
+            require(
+                evidence[
+                    "environment_operation_permission_allowed_denied_unknown"
+                ] == {
+                    "valid": True,
+                    "observations": [
+                        ["installed-runtime-primary", "installed-environment",
+                         "repository_file_read", "synthetic/allowed.txt",
+                         "allowed"],
+                        ["installed-runtime-primary", "installed-environment",
+                         "repository_file_read", "synthetic/denied.txt",
+                         "denied"],
+                        ["installed-runtime-secondary", "installed-environment",
+                         "repository_file_read", "synthetic/unknown.txt",
+                         "unknown"],
+                    ],
+                },
+                "Installed Environment Operation Permission valid states failed",
+            )
+            require(
+                evidence[
+                    "environment_operation_permission_environment_mismatch"
+                ] == {
+                    "codes": [
+                        "environment_operation_permission_environment_mismatch"
+                    ],
+                    "atomic": True,
+                },
+                "Installed Environment Operation Permission mismatch failed",
+            )
+            require(
+                evidence[
+                    "environment_operation_permission_identical_duplicate"
+                ] == {
+                    "codes": ["duplicate_environment_operation_permission"],
+                    "atomic": True,
+                },
+                "Installed Environment Operation Permission duplicate failed",
+            )
+            require(
+                evidence["environment_operation_permission_conflicts"]
+                == [
+                    {
+                        "codes": [
+                            "conflicting_environment_operation_permission"
+                        ],
+                        "atomic": True,
+                    }
+                ]
+                * 6
+                and evidence[
+                    "environment_operation_permission_conflicts_deterministic"
+                ],
+                "Installed Environment Operation Permission conflicts failed",
+            )
+            require(
+                evidence[
+                    "environment_operation_permission_invalid_resource"
+                ] == {
+                    "codes": ["resource_parent_segment"],
+                    "atomic": True,
+                },
+                "Installed Environment Operation Permission resource failure failed",
+            )
+            require(
+                evidence[
+                    "environment_operation_permission_public_export_absent"
+                ],
+                "Environment Operation Permission unexpectedly gained a package-root export",
+            )
             if target_safe:
                 print(
                     "SKIP checkout tasks/inspect/structural/full verification: "

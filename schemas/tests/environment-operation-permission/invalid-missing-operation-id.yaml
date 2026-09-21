@@ -1,0 +1,4 @@
+runtime_option_id: runtime-known
+environment_id: environment-primary
+resource: synthetic/input.txt
+state: allowed

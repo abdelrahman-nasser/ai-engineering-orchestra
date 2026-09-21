@@ -3,7 +3,9 @@
 This internal experiment composes caller-supplied evidence for one abstract
 operation and one exact resource. It never opens the resource, discovers or
 changes permissions, creates an execution request, dispatches work, or invokes
-an Agent.
+an Agent. Its provisional permission evidence and freshness field remain
+harness-specific and are not the canonical AIO-038 Environment Operation
+Permission Observation contract.
 """
 
 from __future__ import annotations
@@ -98,7 +100,7 @@ class ReadOnlyExecutionCapabilityEvidence:
 
 @dataclass(frozen=True)
 class ReadOnlyExecutionPermissionEvidence:
-    """Environment permission evidence for one exact operation and resource."""
+    """Provisional harness evidence, not the canonical AIO-038 observation."""
 
     runtime_option_id: str
     environment_id: str

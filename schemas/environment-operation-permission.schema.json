@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-engineering-orchestra.dev/schemas/environment-operation-permission.schema.json",
+  "title": "AI Engineering Orchestra Environment Operation Permission Observation",
+  "description": "Structural schema for one Environment Operation Permission Observation value defined by core/environment-operation-permission-specification.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "runtime_option_id",
+    "environment_id",
+    "operation_id",
+    "resource",
+    "state"
+  ],
+  "properties": {
+    "runtime_option_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact opaque reference to one caller-supplied Agent Runtime Option."
+    },
+    "environment_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact opaque caller-owned environment identity for the evaluation snapshot."
+    },
+    "operation_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact identifier of one Core-defined abstract operation."
+    },
+    "resource": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact lexical repository-relative resource path."
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "allowed",
+        "denied",
+        "unknown"
+      ],
+      "description": "Currently known effective environment-permission state for the exact Runtime, environment, operation, and resource subject."
+    }
+  }
+}

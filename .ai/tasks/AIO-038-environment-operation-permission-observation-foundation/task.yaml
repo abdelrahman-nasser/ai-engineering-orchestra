@@ -1,0 +1,42 @@
+id: AIO-038
+title: Environment Operation Permission Observation Foundation
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: high
+execution:
+  mode: deep
+workflow: architecture-change
+objective: >
+  Define and implement the canonical Environment Operation Permission
+  Observation contract and deterministic snapshot validation for supplied
+  Runtime-, environment-, operation-, and resource-scoped permission evidence,
+  without policy resolution, authorization, enforcement, discovery, permission
+  mutation, execution, or invocation.
+scope:
+  include:
+    - Canonical Environment Operation Permission Observation specification and terminology
+    - Exact five-field tri-state structural schema and immutable runtime values
+    - Runtime inventory, environment scope, shared operation, and shared resource validation
+    - Deterministic identical-duplicate and conflicting-evidence rejection
+    - Canonical supplied-observation ordering and atomic invalid results
+    - Target-safe tests, schema resources, packaging, installation evidence, and documentation
+    - Architect and Security design locks, final specialist reviews, independent review, Gate evidence, and Human-checkpoint preparation
+  exclude:
+    - Permission Decision, permission policy, conflict-resolution policy, or Execution Authorization formalization
+    - Environment Definition, environment registry, permission discovery, polling, enforcement, or mutation
+    - Timestamp, freshness, expiry, source, provenance, reason, policy, authorization, metadata, or extension fields
+    - Runtime capability, Runtime availability, Operation Requirement, Assignment, candidate, or Human Control semantic changes
+    - Tool binding, Execution Contract, adapter, Provider integration, dispatch, execution, or invocation
+    - Protected-target access, AIO-030, AIO-039, historical Task edits, push, merge, tag, release, or publication
+dependencies:
+  - AIO-037
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

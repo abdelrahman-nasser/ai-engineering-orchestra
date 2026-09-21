@@ -23,6 +23,9 @@ import urllib.request
 
 import engineering_orchestration
 import engineering_orchestration.operation_requirement as operation_requirement
+from engineering_orchestration._repository_resource import (
+    validate_repository_resource,
+)
 from engineering_orchestration.agent_execution_candidate_prerequisite import (
     AgentExecutionCandidatePrerequisiteResult,
 )
@@ -307,6 +310,79 @@ class OperationRequirementValidationTests(unittest.TestCase):
                     [code],
                 )
 
+    def test_shared_resource_helper_preserves_locked_messages(self) -> None:
+        cases = {
+            "": ("resource_empty", "must not be empty."),
+            "synthetic/\x00name": (
+                "resource_control_character",
+                "must not contain control characters.",
+            ),
+            "//server/share/input.txt": (
+                "resource_unc_path",
+                "must not use a UNC path.",
+            ),
+            "/synthetic/input.txt": (
+                "resource_absolute_path",
+                "must be repository-relative.",
+            ),
+            "C:/synthetic/input.txt": (
+                "resource_drive_qualified_path",
+                "must not be drive-qualified.",
+            ),
+            "https://example.invalid/input.txt": (
+                "resource_uri_scheme",
+                "must not use a URI scheme.",
+            ),
+            "~/synthetic/input.txt": (
+                "resource_leading_tilde",
+                "must not start with a tilde.",
+            ),
+            "synthetic\\input.txt": (
+                "resource_backslash",
+                "must use forward-slash separators.",
+            ),
+            "synthetic/input/": (
+                "resource_trailing_slash",
+                "must not end with a slash.",
+            ),
+            "synthetic//input.txt": (
+                "resource_empty_segment",
+                "must not contain an empty segment.",
+            ),
+            "synthetic/./input.txt": (
+                "resource_dot_segment",
+                "must not contain a dot segment.",
+            ),
+            "synthetic/../input.txt": (
+                "resource_parent_segment",
+                "must not contain a parent segment.",
+            ),
+            "synthetic/*.txt": (
+                "resource_glob_meta",
+                "must not contain glob meta characters.",
+            ),
+        }
+        for resource, (code, suffix) in cases.items():
+            with self.subTest(resource=resource):
+                issue = validate_repository_resource(resource)
+                self.assertIsNotNone(issue)
+                self.assertEqual(
+                    (issue.code, issue.message_suffix),
+                    (code, suffix),
+                )
+                result = validate_operation_requirement(
+                    requirement(resource=resource)
+                )
+                self.assertEqual(
+                    result.findings,
+                    (
+                        OperationRequirementFinding(
+                            code,
+                            f"Operation Requirement resource {suffix}",
+                        ),
+                    ),
+                )
+
     def test_operation_finding_precedes_resource_finding(self) -> None:
         result = validate_operation_requirement(
             requirement("repository_file_write", "synthetic/../*.txt")
@@ -395,10 +471,17 @@ class OperationRequirementPurityTests(unittest.TestCase):
             {
                 "__future__",
                 "dataclasses",
-                "re",
                 "engineering_orchestration._operation_vocabulary",
+                "engineering_orchestration._repository_resource",
             },
         )
+
+    def test_resource_grammar_is_owned_by_shared_helper(self) -> None:
+        source = MODULE_PATH.read_text(encoding="utf-8")
+        self.assertIn("validate_repository_resource", source)
+        self.assertNotIn("_DRIVE_QUALIFIED_PATTERN", source)
+        self.assertNotIn("_URI_SCHEME_PATTERN", source)
+        self.assertNotIn("_GLOB_META", source)
 
     def test_static_ast_contains_no_target_access_or_effectful_calls(self) -> None:
         tree = ast.parse(MODULE_PATH.read_text(encoding="utf-8"))

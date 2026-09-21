@@ -93,10 +93,10 @@ The current Core vocabulary contains exactly:
 repository_file_read
 ```
 
-The operation vocabulary is shared with Operation Requirement through one
-package-internal Core source of truth. A capability observation does not
-contain or synthesize an Operation Requirement and does not refer to one
-particular resource.
+The operation vocabulary is shared with Operation Requirement and Environment
+Operation Permission Observation through one package-internal Core source of
+truth. A capability observation does not contain or synthesize either adjacent
+value and does not refer to one particular resource or environment.
 
 ### `state`
 
@@ -360,7 +360,11 @@ adapter behavior are outside AIO-037.
 
 Operation Requirement describes demand against one exact resource. Runtime
 Operation Capability Observation describes supplied technical support for an
-operation class. Neither implies the other, and either may exist independently.
+operation class. Environment Operation Permission Observation separately
+describes an environment-scoped permission fact for one exact Runtime,
+operation, and resource. None implies another, and each may exist
+independently. The permission-observation contract is defined in
+`core/environment-operation-permission-specification.md`.
 
 Resource is deliberately absent from capability. These later facts can be
 coherent together:
@@ -404,7 +408,9 @@ capability present
 != execution succeeded
 ```
 
-No permission or authorization composition occurs in AIO-037.
+No permission or authorization composition occurs in AIO-037. The separately
+defined Environment Operation Permission Observation consumes the same Core
+operation vocabulary without changing or composing this capability contract.
 
 ---
 
@@ -491,8 +497,9 @@ The former returns `None`, `operation_id_invalid_syntax`, or
 ("repository_file_read",)
 ```
 
-Both Operation Requirement and Runtime Operation Capability validation consume
-this source of truth without changing AIO-036 public behavior.
+Operation Requirement, Runtime Operation Capability, and Environment Operation
+Permission Observation validation consume this source of truth without
+changing AIO-036 or AIO-037 public behavior.
 
 The validators perform no filesystem or environment inspection, Provider call,
 network access, subprocess, clock read, persistence, discovery, polling,
@@ -517,6 +524,7 @@ The first contract contains no:
 - permission change, target access, request, dispatch, execution, or
   invocation.
 
-Future environment-permission, authorization, or execution-layer contracts
-require separately authorized design. They must preserve this contract's
-technical-support-only meaning.
+The separately authorized Environment Operation Permission Observation contract
+preserves this contract's technical-support-only meaning and performs no
+capability composition. Future authorization or execution-layer contracts
+require separately authorized design and must preserve the same boundary.

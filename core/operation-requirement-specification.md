@@ -90,12 +90,14 @@ explicit Core definition. An unknown well-formed identifier is unsupported;
 it is not inferred from a tool or Provider and has no alias. This contract does
 not create a generic registry service.
 
-Operation Requirement and Runtime Operation Capability Observation consume one
-package-internal Core source of truth for this syntax and supported vocabulary.
-The capability contract is defined separately in
-`core/runtime-operation-capability-specification.md`. Sharing the vocabulary
-does not change this contract's demand-only meaning, public findings, messages,
-validation order, or result semantics.
+Operation Requirement, Runtime Operation Capability Observation, and
+Environment Operation Permission Observation consume one package-internal Core
+source of truth for this syntax and supported vocabulary. The capability and
+permission-observation contracts are defined separately in
+`core/runtime-operation-capability-specification.md` and
+`core/environment-operation-permission-specification.md`. Sharing the
+vocabulary does not change this contract's demand-only meaning, public
+findings, messages, validation order, or result semantics.
 
 ---
 
@@ -132,6 +134,12 @@ prefix.
 The contract is extension-neutral. In particular, it has no Markdown-only
 restriction. One requirement identifies one resource; callers represent
 multiple resources with multiple values.
+
+The canonical first-issue resource validation is implemented once in the
+package-internal `engineering_orchestration._repository_resource` helper and is
+also consumed by Environment Operation Permission Observation validation. The
+helper extraction preserves every Operation Requirement resource code, message,
+precedence rule, public API, and atomic result exactly.
 
 ---
 
@@ -269,7 +277,11 @@ Operation Requirement is standalone caller-supplied evidence. It is not a
 field on Task, Assignment, Runtime Option, or Agent Execution Candidate. A
 requirement may exist before any candidate. A separate Runtime Operation
 Capability Observation may exist for an operation that is not currently
-required, and a requirement may exist when Runtime capability is unknown.
+required, and a requirement may exist when Runtime capability is unknown. A
+separate Environment Operation Permission Observation may likewise exist
+independently; it supplies an environment-scoped permission fact for one exact
+Runtime, operation, and resource and neither creates nor satisfies a
+requirement.
 
 ---
 
@@ -292,8 +304,11 @@ resource.
 
 Operation syntax and support are implemented through the package-internal
 `engineering_orchestration._operation_vocabulary` helper shared with Runtime
-Operation Capability validation. This internal refactor does not change the
-public Operation Requirement API or behavior.
+Operation Capability and Environment Operation Permission Observation
+validation. Resource grammar is implemented through the package-internal
+`engineering_orchestration._repository_resource` helper shared with Environment
+Operation Permission Observation validation. These internal helpers do not
+change the public Operation Requirement API or behavior.
 
 ---
 

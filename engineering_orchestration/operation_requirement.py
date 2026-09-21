@@ -9,19 +9,13 @@ performs no discovery, I/O, path resolution, or persistence.
 from __future__ import annotations
 
 from dataclasses import dataclass
-import re
 
 from engineering_orchestration._operation_vocabulary import (
     validate_core_operation_id,
 )
-
-
-_DRIVE_QUALIFIED_PATTERN = re.compile(r"[A-Za-z]:", flags=re.ASCII)
-_URI_SCHEME_PATTERN = re.compile(
-    r"[A-Za-z][A-Za-z0-9+.-]*:",
-    flags=re.ASCII,
+from engineering_orchestration._repository_resource import (
+    validate_repository_resource,
 )
-_GLOB_META = frozenset("*?[]{}")
 
 
 @dataclass(frozen=True)
@@ -67,80 +61,6 @@ def _invalid(
         findings=tuple(findings),
         requirement=None,
     )
-
-
-def _resource_finding(resource: str) -> OperationRequirementFinding | None:
-    if not resource:
-        return _finding(
-            "resource_empty",
-            "Operation Requirement resource must not be empty.",
-        )
-    if any(
-        ord(character) <= 0x1F or 0x7F <= ord(character) <= 0x9F
-        for character in resource
-    ):
-        return _finding(
-            "resource_control_character",
-            "Operation Requirement resource must not contain control characters.",
-        )
-    if resource.startswith(("//", "\\\\")):
-        return _finding(
-            "resource_unc_path",
-            "Operation Requirement resource must not use a UNC path.",
-        )
-    if resource.startswith("/"):
-        return _finding(
-            "resource_absolute_path",
-            "Operation Requirement resource must be repository-relative.",
-        )
-    if _DRIVE_QUALIFIED_PATTERN.match(resource) is not None:
-        return _finding(
-            "resource_drive_qualified_path",
-            "Operation Requirement resource must not be drive-qualified.",
-        )
-    if _URI_SCHEME_PATTERN.match(resource) is not None:
-        return _finding(
-            "resource_uri_scheme",
-            "Operation Requirement resource must not use a URI scheme.",
-        )
-    if resource.startswith("~"):
-        return _finding(
-            "resource_leading_tilde",
-            "Operation Requirement resource must not start with a tilde.",
-        )
-    if "\\" in resource:
-        return _finding(
-            "resource_backslash",
-            "Operation Requirement resource must use forward-slash separators.",
-        )
-    if resource.endswith("/"):
-        return _finding(
-            "resource_trailing_slash",
-            "Operation Requirement resource must not end with a slash.",
-        )
-
-    segments = resource.split("/")
-    if "" in segments:
-        return _finding(
-            "resource_empty_segment",
-            "Operation Requirement resource must not contain an empty segment.",
-        )
-    if "." in segments:
-        return _finding(
-            "resource_dot_segment",
-            "Operation Requirement resource must not contain a dot segment.",
-        )
-    if ".." in segments:
-        return _finding(
-            "resource_parent_segment",
-            "Operation Requirement resource must not contain a parent segment.",
-        )
-    if any(character in _GLOB_META for character in resource):
-        return _finding(
-            "resource_glob_meta",
-            "Operation Requirement resource must not contain glob meta characters.",
-        )
-    return None
 
 
 def validate_operation_requirement(
@@ -195,9 +115,15 @@ def validate_operation_requirement(
             )
         )
 
-    resource_finding = _resource_finding(resource)
-    if resource_finding is not None:
-        findings.append(resource_finding)
+    resource_issue = validate_repository_resource(resource)
+    if resource_issue is not None:
+        findings.append(
+            _finding(
+                resource_issue.code,
+                "Operation Requirement resource "
+                f"{resource_issue.message_suffix}",
+            )
+        )
 
     if findings:
         return _invalid(findings)

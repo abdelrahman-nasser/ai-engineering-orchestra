@@ -99,9 +99,21 @@ Status: In Development
   with `present`, `absent`, and `unknown`, full missing-pair unknown
   normalization, duplicate/reference rejection, pair ordering, and atomic
   invalid results
-- one package-internal Core operation vocabulary shared by Operation Requirement
-  and Runtime Operation Capability validation without changing AIO-036 public
+- one package-internal Core operation vocabulary shared by Operation
+  Requirement, Runtime Operation Capability, and Environment Operation
+  Permission Observation validation without changing AIO-036 or AIO-037 public
   behavior
+- canonical five-field Environment Operation Permission Observation
+  specification and schema for exact Runtime-, environment-, operation-, and
+  lexical-resource-scoped `allowed`, `denied`, and `unknown` evidence
+- immutable permission observations and pure deterministic snapshot validation
+  with Runtime inventory and environment-scope checks, canonical supplied-only
+  ordering, mutually exclusive duplicate/conflict findings, and atomic invalid
+  results
+- one package-internal lexical repository-resource validator shared by
+  Operation Requirement and Environment Operation Permission Observation
+  validation while preserving AIO-036 public codes, messages, precedence, API,
+  and behavior
 - private controlled read-only execution preparation dry run for the single
   provisional `repository_file_read` operation and one exact canonical
   repository-relative Markdown resource
@@ -199,6 +211,20 @@ Status: In Development
 - established that missing Runtime/Core-operation observations normalize to
   unknown while explicit non-support remains absent, with both states remaining
   distinct for future composition
+- separated Environment Operation Permission Observation from requirement,
+  Runtime capability and availability, Permission Decision, Human/policy
+  authorization, enforcement, mutation, dispatch, and execution
+- established opaque caller-owned environment scope and exact
+  Runtime/environment/operation/resource identity without an Environment
+  Definition, registry, freshness field, discovery, polling, or native-state
+  verification
+- established that missing exact permission evidence means unknown without
+  Cartesian synthesis, while valid snapshots preserve only supplied observations
+  in canonical exact-identity order
+- established identical repeated permission evidence and differing-state
+  conflicts as mutually exclusive invalid-input categories; conflicts invalidate
+  the entire snapshot without first-, last-, latest-, allowed-, deny-, or
+  stricter-wins resolution and remain caller/environment-owned for reconciliation
 - established the Role authority hierarchy from semantic specification to
   structural schema, canonical YAML instances, compatibility Markdown, and
   regression tooling

@@ -19,6 +19,7 @@ def schema_resource(name: str) -> Traversable | None:
         "agent-runtime-option.schema.json",
         "agent-runtime-option-availability.schema.json",
         "assignment.schema.json",
+        "environment-operation-permission.schema.json",
         "inference-option.schema.json",
         "inference-option-availability.schema.json",
         "operation-requirement.schema.json",

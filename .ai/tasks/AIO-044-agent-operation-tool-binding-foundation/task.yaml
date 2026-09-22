@@ -1,0 +1,54 @@
+id: AIO-044
+title: Agent Operation Tool Binding Foundation
+type: implementation
+status: cancelled
+version_target: "0.1.0"
+complexity: high
+risk: high
+execution:
+  mode: deep
+workflow: architecture-change
+objective: >
+  Define and implement the smallest canonical immutable, serializable,
+  provider-neutral, non-authoritative Agent Operation Tool Binding that binds
+  one exact complete Agent Execution Run to one externally selected immutable
+  configured tool implementation, without discovery, persistence, Grant
+  consumption, dispatch admission, dispatch, or invocation.
+scope:
+  include:
+    - Canonical Agent Operation Tool Binding specification and terminology
+    - Exact two-field immutable value containing a complete nested Agent Execution Run and tool_id
+    - Immutable and version-stable externally owned configured Tool identity semantics
+    - External resolver and future adapter ownership boundaries
+    - Structural non-widening across every nested Run and Contract field
+    - Pure intrinsic validation with atomic deterministic results
+    - Closed Draft 2020-12 schema with packaged offline Run and Contract references
+    - Structural, semantic, mutation, serialization, purity, packaging, and installation tests
+    - Focused AIO-036, AIO-037, AIO-041, AIO-042, and AIO-043 regressions
+    - Architect and Security design locks, final specialist reviews, independent review, Gate evidence, and Human checkpoint preparation
+    - Audited cancellation preserving the process incident, 63/66 historical result, technical review outcome, and clean-replacement requirement
+  exclude:
+    - Final Human implementation acceptance, successful Task completion, push, merge, tag, release, or publication
+    - Canonical delivery of Agent Operation Tool Binding from this cancelled Task or automatic reuse of its evidence by a replacement Task
+    - AIO-045, AIO-030, Full Control Center, read models, dashboards, APIs, or frontend work
+    - Tool inventory, discovery, probing, enumeration, ranking, fallback, or dynamic reselection
+    - Real Tool existence, trust, currentness, availability, executability, or behavioral-conformance claims
+    - Adapter, MCP, Provider, endpoint, credential, command, argument, parameter, or payload implementation
+    - Grant authentication, currentness, revocation, consumption, replay protection, or security-state mutation
+    - Persistence, database, cache, queue, store, ledger, transaction, or registry
+    - Dispatch admission, dispatch, invocation, Run lifecycle, result, error, event, or telemetry
+    - New Core operations, resource I/O, protected-target access, or unsafe broad validation
+dependencies:
+  - AIO-036
+  - AIO-037
+  - AIO-041
+  - AIO-042
+  - AIO-043
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

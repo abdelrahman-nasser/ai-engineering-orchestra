@@ -1,0 +1,52 @@
+id: AIO-048
+title: Local Authorization Domain Ownership and Fencing Foundation
+type: implementation
+status: cancelled
+version_target: "0.1.0"
+complexity: high
+risk: critical
+execution:
+  mode: critical
+workflow: architecture-change
+objective: >
+  Define and implement the bounded Windows same-host ownership foundation
+  that permits exactly one trusted local AEO coordinator to hold operational
+  authority for one authorization domain and its exact pre-provisioned
+  AIO-047 SQLite Admission ledger at a time, with an external durable binding,
+  a live non-serializable ownership capability, exact ledger identity checks,
+  and terminal fail-closed fencing.
+scope:
+  include:
+    - Canonical Authorization Domain Ownership Authority, Local Authorization Domain Binding, Authorization Domain Ownership Capability, and Local Authorization Domain Owner semantics
+    - Supported Windows current-user local profile and explicit local threat model
+    - Fixed current-user Known Folder registry and domain-keyed lock namespace independent of Admission ledger placement
+    - Immutable strict domain-to-ledger binding and append-only inactive, active, fencing, and fenced state evidence
+    - Canonical ledger path, immutable ledger instance, positive domain generation, Windows FILE_ID_INFO, and single-hard-link validation
+    - Share-zero CreateFileW domain lock with handle-lifetime ownership and process-exit release
+    - Live process-local non-serializable capability and owned Store session
+    - Ownership-gated trusted composition for all four operational AIO-047 Store operations
+    - Explicit register, activate, acquire, recovery, migrate, backup, fence, close, and release policies
+    - Fail-closed copy, move, replacement, alias, corruption, mismatch, stale-capability, ABA, and partial-fence behavior
+    - Disposable synthetic multiprocess, crash, copy, mismatch, capability, and fencing tests
+    - Focused AIO-047 regression and package/install verification where applicable
+    - Fresh Architect, Security, Ownership/Storage, and independent final review; Quality Gate evidence; and preparation of the Human Control checkpoint
+  exclude:
+    - Human final approval, Task closure, staging, commit, push, merge, tag, release, or publication
+    - AIO-049 or other successor Task creation or implementation
+    - Grant Producer, Grant signing, issuer entitlement, Human authentication, Keycloak, or OIDC
+    - Tool registry, Tool aliases, Tool or adapter descriptors, secret broker, or real Tool resolution
+    - PostgreSQL, distributed ownership, central ownership services, leases, automatic failover, or cross-backend migration
+    - Dispatch, outbox, delivery, invocation, lifecycle, result, event, telemetry, protected-target access, or real resource action
+    - Real authorization-domain activation, real Grant consumption, real Tool use, or real Admission authority
+    - Public Ownership Capability or Local Domain Binding JSON Schema
+    - AIO-044, AIO-030, or Full Control Center/UI work
+dependencies:
+  - AIO-047
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

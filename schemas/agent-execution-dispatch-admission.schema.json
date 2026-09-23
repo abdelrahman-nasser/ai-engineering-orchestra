@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-engineering-orchestra.dev/schemas/agent-execution-dispatch-admission.schema.json",
+  "title": "AI Engineering Orchestra Agent Execution Dispatch Admission",
+  "description": "Structural schema for one Agent Execution Dispatch Admission defined by core/agent-execution-dispatch-admission-specification.md. Structural validity does not establish authoritative-store provenance.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "grant",
+    "tool_binding",
+    "decision_time"
+  ],
+  "properties": {
+    "grant": {
+      "$ref": "https://ai-engineering-orchestra.dev/schemas/agent-execution-authorization-grant.schema.json",
+      "description": "Exact complete Agent Execution Authorization Grant atomically consumed by authoritative Admission creation."
+    },
+    "tool_binding": {
+      "$ref": "https://ai-engineering-orchestra.dev/schemas/agent-operation-tool-binding.schema.json",
+      "description": "Exact complete trusted non-widening Agent Operation Tool Binding admitted for the Grant Run."
+    },
+    "decision_time": {
+      "type": "string",
+      "pattern": "^(?!0000)[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])T(?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{6}Z(?![\\s\\S])",
+      "description": "Authoritative-store-owned canonical UTC decision instant with exactly six fractional digits."
+    }
+  }
+}

@@ -537,6 +537,16 @@ Agent Execution Run
      existence/trust proof, authority, Grant consumption, admission, dispatch,
      or invocation
 
+current canonical atomic dispatch admission:
+operationally authenticated Agent Execution Authorization Grant
+  + trusted Agent Operation Tool Binding for the same complete Run
+  + freshly recomputed prerequisites, Contract, and expected Run
+  -> authoritative domain-store serialization of currentness, revocation,
+     Grant identity, domain/Run uniqueness, and atomic consumption
+  -> Agent Execution Dispatch Admission(grant, tool_binding, decision_time)
+  -> immutable durable historical fact only; no delivery, dispatch,
+     invocation, success, or continuing permission
+
 current private experiment:
 candidate prerequisite assessment
   + its existing provisional capability evidence
@@ -546,11 +556,8 @@ candidate prerequisite assessment
   -> potentially_executable | blocked | unresolved
   -> no target I/O, permission discovery, request, dispatch, or invocation
 
-future only, through separately authorized contracts and adapters:
-operationally trusted Agent Execution Authorization Grant
-  + Agent Operation Tool Binding for the same exact complete Run
-  + current prerequisites, revocation/currentness, and durable atomic
-    consumption coordinated with dispatch admission
+future only, through separately authorized delivery contracts and adapters:
+authoritative Agent Execution Dispatch Admission
   + future adapter resolution and invocation controls
   -> invocation / result / lifecycle evidence
 ```
@@ -596,11 +603,15 @@ The Run-bound positive-authority artifact is
 [`core/agent-execution-authorization-grant-specification.md`](core/agent-execution-authorization-grant-specification.md).
 The exact configured-implementation binding specification is
 [`core/agent-operation-tool-binding-specification.md`](core/agent-operation-tool-binding-specification.md).
+The atomic authorization-consumption value and authoritative Store contracts
+are
+[`core/agent-execution-dispatch-admission-specification.md`](core/agent-execution-dispatch-admission-specification.md)
+and
+[`core/agent-execution-dispatch-admission-store-specification.md`](core/agent-execution-dispatch-admission-store-specification.md).
 AIO-035 deliberately adds no new Core specification: its provisional semantics
 remain in the AIO-035 Task evidence, private implementation, and focused tests.
-AIO-037 through AIO-043 and AIO-045 do not retrofit that private experiment or
-compose capability, permission, candidate, authorization, intent, Run identity,
-and Tool Binding into execution.
+AIO-047 composes the existing values only into bounded authoritative Admission;
+it does not retrofit AIO-035 or compose Admission into delivery or execution.
 
 ## Operation Requirement
 
@@ -1025,6 +1036,75 @@ references the packaged Run and transitive Contract schemas through fail-closed
 offline resolution. Exact semantics are defined by
 [`core/agent-operation-tool-binding-specification.md`](core/agent-operation-tool-binding-specification.md).
 
+## Agent Execution Dispatch Admission
+
+Agent Execution Dispatch Admission is the immutable three-field record produced
+when one operationally trusted current, non-revoked Grant is atomically
+consumed for one exact trusted Tool Binding:
+
+```python
+from engineering_orchestration.agent_execution_dispatch_admission import (
+    AgentExecutionDispatchAdmission,
+    validate_agent_execution_dispatch_admission,
+)
+
+admission = AgentExecutionDispatchAdmission(
+    grant=grant,
+    tool_binding=binding,
+    decision_time="2026-09-23T10:01:00.000000Z",
+)
+assert validate_agent_execution_dispatch_admission(admission).valid
+```
+
+The value contains exactly `grant`, `tool_binding`, and `decision_time`; it has
+no Admission ID or lifecycle. Intrinsic validation checks both complete nested
+values, exact Run equality, fixed-six-digit UTC syntax, and parsed
+`issued_at <= decision_time < expires_at` coherence. It does not establish
+issuer authentication, Tool resolver trust, authoritative time,
+non-revocation, persistence, or provenance. An arbitrary constructed or
+deserialized equal value is therefore not authoritative.
+
+Operational authority comes only from
+`AgentExecutionDispatchAdmissionCoordinator` and the configured
+`AgentExecutionDispatchAdmissionStore`. The coordinator authenticates the
+Grant, resolves the trusted Binding, recomputes AIO-040 from newly collected
+parents, resolves the effective mode, and reconstructs the exact Contract and
+Run with the existing Run ID. The Store owns the domain serial order,
+currentness, original-issuer revocation, Grant and domain/Run uniqueness,
+atomic insertion, and exact historical retry.
+
+`SqliteAgentExecutionDispatchAdmissionStore` is the supported local backend.
+It uses one explicitly provisioned, pinned, dedicated SQLite ledger on trusted
+local storage for same-host processes, with SQLite 3.37+, WAL,
+`synchronous=FULL`, foreign keys, normal locking, `BEGIN IMMEDIATE`, checked
+packaged migrations, canonical payloads, integrity verification, and one-way
+fencing. Operational open never creates, migrates, repairs, reactivates, or
+falls back. Supported backups are SQLite-consistent and published only after
+the destination is permanently fenced; raw active-file copies and same-domain
+restore/reactivation are unsupported.
+
+A reusable backend-neutral Store conformance harness exercises exact retry,
+conflicts, currentness, revocation, uniqueness, concurrency, failure closure,
+and authoritative retrieval against SQLite now; a future PostgreSQL backend is
+expected to run the same scenarios in addition to its own backend-specific
+crash, migration, integrity, and backup tests.
+
+The bounded claim assumes one correctly owned active ledger and all declared
+Grant, Tool, clock, filesystem, configuration, and domain-ownership trust
+preconditions. Database-contained fencing cannot detect a manually substituted
+stale active copy or prevent independently copied active ledgers; external
+ownership/fencing remains future work.
+
+```text
+Admission != dispatch != invocation != success
+authorization-consumption replay protection != invocation replay protection
+```
+
+Exact semantics are defined by
+[`core/agent-execution-dispatch-admission-specification.md`](core/agent-execution-dispatch-admission-specification.md)
+and
+[`core/agent-execution-dispatch-admission-store-specification.md`](core/agent-execution-dispatch-admission-store-specification.md).
+
 ## Installed Structural Validation
 
 The programmatic API reads the nearest active project's supported AIO structures:
@@ -1053,11 +1133,13 @@ Actor-to-Runtime Applicability Evidence, Agent Runtime Option, Agent Runtime
 Option Availability Observation, Runtime Operation Capability Observation,
 Environment Operation Permission Observation, Agent Execution Authorization
 Evidence, Agent Execution Contract, Agent Execution Run, Agent Execution
-Authorization Grant, Agent Operation Tool Binding, Assignment, Inference
+Authorization Grant, Agent Operation Tool Binding, Agent Execution Dispatch
+Admission, Assignment, Inference
 Option, Inference Option Availability Observation, Runtime-to-Inference
 Compatibility Evidence, Role, Task, Workflow, and Project Manifest schemas from
 their single sources in `schemas/`, plus the five framework-owned canonical Role
-YAML instances from `roles/`.
+YAML instances from `roles/` and the allowlisted checksummed SQLite Admission
+migration resources.
 Managed projects
 need no schema regression scripts, fixtures, Orchestra Task history, Git,
 Node/npm, or Python tests. Python and the declared tool dependencies run the

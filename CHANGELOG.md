@@ -170,6 +170,29 @@ Status: In Development
 - packaged fail-closed offline Tool-Binding-to-Run-to-Contract schema
   resolution and target-safe source, editable-install, and normal-wheel
   coverage without a package-root export or source fallback
+- canonical three-field Agent Execution Dispatch Admission specification and
+  closed schema for one complete Grant, one complete Tool Binding, and one
+  fixed-six-digit authoritative UTC decision time
+- pure intrinsic Admission validation with complete nested validation, exact
+  Run equality, parsed half-open currentness coherence, descriptive direct
+  construction, and fail-closed offline Grant/Binding/Run/Contract references
+- backend-neutral `AgentExecutionDispatchAdmissionStore` protocol and trusted
+  coordinator with typed authentication/resolver/fresh-evidence/mode/revocation
+  ports, typed outcomes and retry guidance, guarded exact historical retry,
+  fresh AIO-040/041/042 reconstruction, and no trust booleans
+- supported dedicated local SQLite Admission backend with explicit
+  provisioning, SQLite 3.37+ strict tables, WAL/FULL durability, foreign keys,
+  `BEGIN IMMEDIATE` serialization, store-owned time, non-regression,
+  original-issuer tombstones, and atomic Grant plus Run consumption
+- packaged forward-only checksummed SQLite migration resources, pinned ledger
+  identity/domain/generation, schema fingerprint and payload verification,
+  fail-closed compatibility/integrity handling, one-way fencing, and
+  SQLite-consistent permanently fenced backups, with Git-enforced LF bytes for
+  cross-platform checksum stability
+- reusable backend-neutral Store conformance scenarios exercised against
+  SQLite plus focused value, schema, process-crash/restart/revocation-race,
+  corruption/backup, source, editable-install, and wheel coverage using only
+  synthetic values and disposable ledgers
 - private controlled read-only execution preparation dry run for the single
   provisional `repository_file_read` operation and one exact canonical
   repository-relative Markdown resource

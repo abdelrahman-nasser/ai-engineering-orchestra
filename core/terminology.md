@@ -400,6 +400,44 @@ canonical contract is defined in:
 
 ---
 
+## Agent Execution Dispatch Admission
+
+An immutable, serializable, positive authorization-consumption record and
+historical security fact for one exact complete Agent Execution Authorization
+Grant and one exact trusted non-widening Agent Operation Tool Binding at one
+authoritative decision time.
+
+The value contains exactly `grant`, `tool_binding`, and `decision_time` in that
+order. It has no Admission ID or lifecycle state. Its natural identity is the
+Grant composite `(authorization_domain_id, issuer_kind, issuer_id, grant_id)`;
+`(authorization_domain_id, run_id)` is a separate durable uniqueness
+constraint. A new Admission requires exact complete
+`grant.run == tool_binding.run == freshly reconstructed expected_run`
+equality, reusing the existing Run ID.
+
+Direct construction, deserialization, schema validity, and intrinsic validity
+are descriptive only. Operational authority derives exclusively from creation
+or retrieval through the configured authoritative authorization-domain store.
+The store owns authoritative time, currentness, revocation ordering,
+uniqueness, atomic Grant consumption plus Admission insertion, and exact
+historical retry. The trusted coordinator owns Grant authentication, Tool
+resolution, fresh AIO-040 composition, effective-mode resolution, and exact
+Contract/Run reconstruction.
+
+The official AIO-047 local realization is a dedicated, pinned, same-host
+SQLite ledger on supported local storage. Its bounded duplicate-suppression
+claim assumes one correctly owned active ledger and all declared Grant, Tool,
+clock, filesystem, configuration, and domain-ownership trust preconditions.
+It is not multi-machine consensus, malicious-local-administrator tamper
+resistance, invocation replay protection, dispatch, invocation, or success.
+The canonical value and store contracts are defined in:
+
+`core/agent-execution-dispatch-admission-specification.md`
+
+`core/agent-execution-dispatch-admission-store-specification.md`
+
+---
+
 ## Actor-to-Runtime Applicability Evidence
 
 An immutable, caller-supplied positive evidence value stating that one known

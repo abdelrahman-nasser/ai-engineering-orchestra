@@ -1,0 +1,26 @@
+grant:
+  grant_id: grant::synthetic-calendar
+  run: &run
+    run_id: run::synthetic-calendar
+    contract:
+      task_id: synthetic-task
+      workflow_id: architecture-change
+      stage_id: implement
+      role_id: software-engineer
+      actor_id: actor::synthetic
+      runtime_option_id: runtime::synthetic
+      option_id: option::synthetic
+      environment_id: environment::synthetic
+      operation_id: repository_file_read
+      resource: synthetic/input.txt
+      execution_mode: critical
+  authorization_domain_id: domain::synthetic
+  issuer_kind: policy
+  issuer_id: issuer::synthetic
+  provenance_reference: provenance::synthetic
+  issued_at: "2025-02-01T00:00:00Z"
+  expires_at: "2025-03-01T00:00:00Z"
+tool_binding:
+  run: *run
+  tool_id: tool::synthetic::v1
+decision_time: "2025-02-29T10:00:00.000000Z"

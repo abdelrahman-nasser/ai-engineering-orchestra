@@ -1187,9 +1187,14 @@ class AuthorizationDomainAdmissionExperimentTests(unittest.TestCase):
                 "engineering_orchestration",
                 "engineering_orchestration._schemas",
                 "engineering_orchestration._roles",
+                "engineering_orchestration._sqlite_admission_migrations",
             ],
         )
         self.assertNotIn("experiments", json.dumps(setuptools))
+        self.assertNotIn(
+            "authorization_domain_admission",
+            json.dumps(setuptools),
+        )
 
 
 if __name__ == "__main__":

@@ -44,6 +44,8 @@ def require(condition: bool, message: str) -> None:
 def source_digest() -> dict[str, str]:
     paths = [ROOT / "pyproject.toml", ROOT / "aio.py"]
     paths += list((ROOT / "engineering_orchestration").glob("*.py"))
+    paths += list((ROOT / "engineering_orchestration" / "_sqlite_admission_migrations").glob("*.py"))
+    paths += list((ROOT / "engineering_orchestration" / "_sqlite_admission_migrations").glob("*.sql"))
     paths += list((ROOT / "schemas").glob("*.json"))
     paths += list((ROOT / "roles").glob("*.yaml"))
     return {str(path): hashlib.sha256(path.read_bytes()).hexdigest() for path in paths}
@@ -114,9 +116,11 @@ def main() -> None:
             ("engineering_orchestration", "*.py"),
             ("schemas", "*.json"),
             ("roles", "*.yaml"),
+            ("engineering_orchestration/_sqlite_admission_migrations", "*.py"),
+            ("engineering_orchestration/_sqlite_admission_migrations", "*.sql"),
         ):
             destination = package_source / relative
-            destination.mkdir()
+            destination.mkdir(exist_ok=True)
             for source in (ROOT / relative).glob(pattern):
                 shutil.copy2(source, destination / source.name)
         for mode in ("editable", "normal"):
@@ -137,7 +141,7 @@ def main() -> None:
                 with zipfile.ZipFile(wheel) as archive:
                     names = archive.namelist()
                     modules = {f"engineering_orchestration/{name}" for name in
-                               ("__init__.py", "_operation_vocabulary.py", "_read_only_execution_preparation.py", "_repository_resource.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_action_prerequisite.py", "agent_operation_tool_binding.py", "agent_execution_authorization_evidence.py", "agent_execution_authorization_grant.py", "agent_execution_candidate_prerequisite.py", "agent_execution_contract.py", "agent_execution_run.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
+                               ("__init__.py", "_operation_vocabulary.py", "_read_only_execution_preparation.py", "_repository_resource.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_action_prerequisite.py", "agent_operation_tool_binding.py", "agent_execution_authorization_evidence.py", "agent_execution_authorization_grant.py", "agent_execution_dispatch_admission.py", "agent_execution_dispatch_admission_store.py", "sqlite_agent_execution_dispatch_admission_store.py", "agent_execution_candidate_prerequisite.py", "agent_execution_contract.py", "agent_execution_run.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
                                 "environment_operation_permission.py",
                                 "execution_mode.py", "inference_option.py",
                                 "inference_option_availability.py",
@@ -152,6 +156,7 @@ def main() -> None:
                                 "agent-operation-tool-binding.schema.json",
                                 "agent-execution-authorization-evidence.schema.json",
                                 "agent-execution-authorization-grant.schema.json",
+                                "agent-execution-dispatch-admission.schema.json",
                                 "agent-execution-contract.schema.json",
                                 "agent-execution-run.schema.json",
                                 "agent-runtime-option.schema.json", "agent-runtime-option-availability.schema.json",
@@ -166,8 +171,12 @@ def main() -> None:
                     roles = {f"engineering_orchestration/_roles/{name}" for name in
                              ("architect.yaml", "documentation-specialist.yaml", "reviewer.yaml",
                               "security-reviewer.yaml", "software-engineer.yaml")}
+                    migrations = {
+                        "engineering_orchestration/_sqlite_admission_migrations/__init__.py",
+                        "engineering_orchestration/_sqlite_admission_migrations/0001_initial.sql",
+                    }
                     payload = {name for name in names if ".dist-info/" not in name}
-                    require(payload == modules | schemas | roles,
+                    require(payload == modules | schemas | roles | migrations,
                             f"Unexpected wheel payload: {payload}")
                     for name in schemas:
                         require(archive.read(name) == (ROOT / "schemas" / Path(name).name).read_bytes(),
@@ -175,6 +184,17 @@ def main() -> None:
                     for name in roles:
                         require(archive.read(name) == (ROOT / "roles" / Path(name).name).read_bytes(),
                                 "Installed Role differs from canonical source")
+                    for name in migrations:
+                        require(
+                            archive.read(name)
+                            == (
+                                ROOT
+                                / "engineering_orchestration"
+                                / "_sqlite_admission_migrations"
+                                / Path(name).name
+                            ).read_bytes(),
+                            "Installed Admission migration differs from canonical source",
+                        )
                     print("WHEEL CONTENTS:\n" + "\n".join(names), flush=True)
                 run([str(python), "-m", "pip", "install", str(wheel)], base, run_env)
             run([str(python), "-m", "pip", "check"], base, run_env)
@@ -1592,6 +1612,105 @@ print(json.dumps({
             evidence["schemas"].append(
                 evidence["agent_operation_tool_binding_schema"]
             )
+            admission_store_probe = """
+import hashlib, json, socket, tempfile, urllib.request
+from dataclasses import asdict, fields
+from datetime import datetime, timezone
+from importlib.resources import files
+from pathlib import Path
+from unittest.mock import patch
+import engineering_orchestration
+import engineering_orchestration.agent_execution_authorization_grant as grant_module
+import engineering_orchestration.agent_execution_contract as contract_module
+import engineering_orchestration.agent_execution_dispatch_admission as admission_module
+import engineering_orchestration.agent_execution_dispatch_admission_store as store_module
+import engineering_orchestration.agent_execution_run as run_module
+import engineering_orchestration.agent_operation_tool_binding as binding_module
+import engineering_orchestration.sqlite_agent_execution_dispatch_admission_store as sqlite_module
+from engineering_orchestration._sqlite_admission_migrations import MIGRATIONS
+from engineering_orchestration.schema_resources import load_validator, schema_resource
+
+contract = contract_module.AgentExecutionContract(
+    'LOCAL-123', 'external-flow', 'external-stage', 'software-engineer',
+    'installed-agent', 'installed-runtime-primary', 'installed-primary',
+    'installed-environment', 'repository_file_read',
+    'synthetic/install-admission.txt', 'critical')
+run = run_module.AgentExecutionRun('run::installed-admission', contract)
+grant = grant_module.AgentExecutionAuthorizationGrant(
+    'grant::installed-admission', run, 'authorization-domain::installed',
+    'human', 'human::installed-reviewer', 'approval::installed-admission',
+    '2026-09-23T10:00:00Z', '2026-09-23T10:05:00Z')
+binding = binding_module.AgentOperationToolBinding(
+    run, 'tool::installed-repository-reader::v1')
+admission = admission_module.AgentExecutionDispatchAdmission(
+    grant, binding, '2026-09-23T10:01:00.000000Z')
+assert [field.name for field in fields(type(admission))] == [
+    'grant', 'tool_binding', 'decision_time']
+assert admission_module.validate_agent_execution_dispatch_admission(
+    admission).admission is admission
+
+schema = schema_resource('agent-execution-dispatch-admission.schema.json')
+blocked = AssertionError('Admission schema resolution must remain offline')
+with patch('pathlib.Path.cwd', side_effect=blocked), patch.object(
+        socket, 'create_connection', side_effect=blocked), patch.object(
+        socket, 'getaddrinfo', side_effect=blocked), patch.object(
+        urllib.request, 'urlopen', side_effect=blocked):
+    load_validator('agent-execution-dispatch-admission.schema.json').validate(
+        asdict(admission))
+
+migration = files(
+    'engineering_orchestration._sqlite_admission_migrations').joinpath(
+        MIGRATIONS[0].resource_name)
+migration_bytes = migration.read_bytes()
+assert hashlib.sha256(migration_bytes).hexdigest() == MIGRATIONS[0].sha256
+
+class Clock:
+    def now_utc(self):
+        return datetime(2026, 9, 23, 10, 1, tzinfo=timezone.utc)
+
+with tempfile.TemporaryDirectory(prefix='aio047-installed-') as folder:
+    configuration = (
+        sqlite_module.SqliteAgentExecutionDispatchAdmissionStoreConfiguration(
+            Path(folder) / 'admission.sqlite3',
+            'authorization-domain::installed',
+            'ledger-instance::installed',
+            1))
+    provisioned = sqlite_module.SqliteAgentExecutionDispatchAdmissionStore.provision(
+        configuration)
+    assert provisioned.outcome.value == 'provisioned', provisioned
+    store = sqlite_module.SqliteAgentExecutionDispatchAdmissionStore(
+        configuration, clock=Clock())
+    request = store_module._mint_admission_request(
+        grant.authorization_domain_id, grant, binding, run)
+    created = store.admit_or_return_existing(request)
+    recovered = store.admit_or_return_existing(request)
+    assert created.outcome.value == 'newly_admitted', created
+    assert recovered.outcome.value == 'existing_exact_admission', recovered
+    assert recovered.admission == created.admission
+
+assert all(not hasattr(engineering_orchestration, name) for name in (
+    'AgentExecutionDispatchAdmission',
+    'AgentExecutionDispatchAdmissionCoordinator',
+    'SqliteAgentExecutionDispatchAdmissionStore'))
+print(json.dumps({
+    'agent_execution_dispatch_admission_module': admission_module.__file__,
+    'agent_execution_dispatch_admission_store_module': store_module.__file__,
+    'sqlite_agent_execution_dispatch_admission_store_module': sqlite_module.__file__,
+    'agent_execution_dispatch_admission_schema': str(schema),
+    'sqlite_admission_migration_resource': str(migration),
+    'agent_execution_dispatch_admission_fields': [
+        field.name for field in fields(type(admission))],
+    'agent_execution_dispatch_admission_installed_backend': True,
+}))
+"""
+            evidence.update(json.loads(run(
+                [str(python), "-B", "-c", admission_store_probe],
+                project / "src/nested",
+                run_env,
+            )))
+            evidence["schemas"].append(
+                evidence["agent_execution_dispatch_admission_schema"]
+            )
             print(f"{mode.upper()} IMPORT/RESOURCE EVIDENCE: {json.dumps(evidence)}", flush=True)
             if mode == "normal":
                 require(Path(evidence["module"]).resolve().is_relative_to(environment),
@@ -1630,6 +1749,14 @@ print(json.dumps({
                         "Normal Agent Execution Authorization Grant import leaked to source")
                 require(Path(evidence["agent_operation_tool_binding_module"]).resolve().is_relative_to(environment),
                         "Normal Agent Operation Tool Binding import leaked to source")
+                require(Path(evidence["agent_execution_dispatch_admission_module"]).resolve().is_relative_to(environment),
+                        "Normal Agent Execution Dispatch Admission import leaked to source")
+                require(Path(evidence["agent_execution_dispatch_admission_store_module"]).resolve().is_relative_to(environment),
+                        "Normal Agent Execution Dispatch Admission Store import leaked to source")
+                require(Path(evidence["sqlite_agent_execution_dispatch_admission_store_module"]).resolve().is_relative_to(environment),
+                        "Normal SQLite Admission Store import leaked to source")
+                require(Path(evidence["sqlite_admission_migration_resource"]).resolve().is_relative_to(environment),
+                        "Normal SQLite Admission migration resource leaked to source")
                 require(Path(evidence["read_only_execution_preparation_module"]).resolve().is_relative_to(environment),
                         "Normal read-only execution preparation import leaked to source")
                 require(Path(evidence["operation_requirement_module"]).resolve().is_relative_to(environment),
@@ -2145,6 +2272,15 @@ print(json.dumps({
                 evidence["agent_operation_tool_binding_public_export_absent"],
                 "Agent Operation Tool Binding unexpectedly gained a root "
                 "export",
+            )
+            require(
+                evidence["agent_execution_dispatch_admission_fields"]
+                == ["grant", "tool_binding", "decision_time"],
+                "Installed Agent Execution Dispatch Admission fields differ",
+            )
+            require(
+                evidence["agent_execution_dispatch_admission_installed_backend"],
+                "Installed SQLite Admission backend exact-retry probe failed",
             )
             require(evidence["operation_requirement_valid"] == {
                         "valid": True,

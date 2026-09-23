@@ -1,0 +1,23 @@
+grant:
+  grant_id: grant::synthetic-missing-binding
+  run:
+    run_id: run::synthetic-missing-binding
+    contract:
+      task_id: synthetic-task
+      workflow_id: architecture-change
+      stage_id: implement
+      role_id: software-engineer
+      actor_id: actor::synthetic
+      runtime_option_id: runtime::synthetic
+      option_id: option::synthetic
+      environment_id: environment::synthetic
+      operation_id: repository_file_read
+      resource: synthetic/input.txt
+      execution_mode: critical
+  authorization_domain_id: domain::synthetic
+  issuer_kind: policy
+  issuer_id: issuer::synthetic
+  provenance_reference: provenance::synthetic
+  issued_at: "2026-09-23T10:00:00Z"
+  expires_at: "2026-09-23T11:00:00Z"
+decision_time: "2026-09-23T10:30:00.000000Z"

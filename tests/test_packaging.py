@@ -1,6 +1,7 @@
 """Fast package-boundary regressions; isolated pip evidence is a separate smoke test."""
 
 import ast
+import hashlib
 import importlib
 import engineering_orchestration.role_catalog as role_catalog
 from importlib.metadata import EntryPoint
@@ -17,6 +18,10 @@ from engineering_orchestration.role_catalog import (
     load_role_catalog,
 )
 from engineering_orchestration.schema_resources import load_validator, schema_resource
+from engineering_orchestration._sqlite_admission_migrations import MIGRATIONS
+from engineering_orchestration.sqlite_agent_execution_dispatch_admission_store import (
+    _migration_bytes,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,6 +31,7 @@ PACKAGED_SCHEMAS = (
     "actor-runtime-applicability.schema.json",
     "agent-operation-tool-binding.schema.json",
     "agent-execution-authorization-grant.schema.json",
+    "agent-execution-dispatch-admission.schema.json",
     "agent-execution-authorization-evidence.schema.json",
     "agent-execution-contract.schema.json",
     "agent-execution-run.schema.json",
@@ -97,6 +103,47 @@ class PackagingTests(unittest.TestCase):
                 resources.joinpath(name).read_bytes(),
                 (ROOT / "roles" / name).read_bytes(),
             )
+
+    def test_packaged_sqlite_admission_migration_is_allowlisted_and_checksummed(self):
+        self.assertEqual(len(MIGRATIONS), 1)
+        migration = MIGRATIONS[0]
+        loaded = _migration_bytes()
+        self.assertIn(
+            "engineering_orchestration/_sqlite_admission_migrations/*.sql "
+            "text eol=lf",
+            (ROOT / ".gitattributes").read_text(encoding="utf-8").splitlines(),
+        )
+        self.assertNotIn(b"\r", loaded[0][3])
+        self.assertEqual(
+            loaded,
+            ((
+                migration.migration_id,
+                migration.resource_name,
+                migration.sha256,
+                (
+                    ROOT
+                    / "engineering_orchestration"
+                    / "_sqlite_admission_migrations"
+                    / migration.resource_name
+                ).read_bytes(),
+            ),),
+        )
+        self.assertEqual(
+            hashlib.sha256(loaded[0][3]).hexdigest(),
+            migration.sha256,
+        )
+
+    def test_missing_sqlite_admission_migration_fails_without_fallback(self):
+        with tempfile.TemporaryDirectory() as folder, patch(
+            "engineering_orchestration."
+            "sqlite_agent_execution_dispatch_admission_store.files",
+            return_value=Path(folder),
+        ):
+            with self.assertRaisesRegex(
+                Exception,
+                "packaged migration is unavailable",
+            ):
+                _migration_bytes()
 
     def test_schema_lookup_does_not_consult_cwd(self):
         with patch("pathlib.Path.cwd", side_effect=AssertionError("CWD is project data")):
@@ -461,10 +508,12 @@ class PackagingTests(unittest.TestCase):
         self.assertFalse(config["include-package-data"])
         self.assertEqual(config["packages"],
                          ["engineering_orchestration", "engineering_orchestration._schemas",
-                          "engineering_orchestration._roles"])
+                          "engineering_orchestration._roles",
+                          "engineering_orchestration._sqlite_admission_migrations"])
         self.assertEqual(config["package-data"], {
             "engineering_orchestration._schemas": list(PACKAGED_SCHEMAS),
             "engineering_orchestration._roles": ["*.yaml"],
+            "engineering_orchestration._sqlite_admission_migrations": ["*.sql"],
         })
 
     def test_documented_scope_is_local_and_verify_is_portable(self):

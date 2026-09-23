@@ -13,7 +13,33 @@ _AGENT_EXECUTION_RUN_SCHEMA_ID = (
     "https://ai-engineering-orchestra.dev/schemas/"
     "agent-execution-run.schema.json"
 )
+_AGENT_EXECUTION_AUTHORIZATION_GRANT_SCHEMA_ID = (
+    "https://ai-engineering-orchestra.dev/schemas/"
+    "agent-execution-authorization-grant.schema.json"
+)
+_AGENT_OPERATION_TOOL_BINDING_SCHEMA_ID = (
+    "https://ai-engineering-orchestra.dev/schemas/"
+    "agent-operation-tool-binding.schema.json"
+)
 _OFFLINE_SCHEMA_REFERENCES = {
+    "agent-execution-dispatch-admission.schema.json": (
+        (
+            _AGENT_EXECUTION_AUTHORIZATION_GRANT_SCHEMA_ID,
+            "agent-execution-authorization-grant.schema.json",
+        ),
+        (
+            _AGENT_OPERATION_TOOL_BINDING_SCHEMA_ID,
+            "agent-operation-tool-binding.schema.json",
+        ),
+        (
+            _AGENT_EXECUTION_RUN_SCHEMA_ID,
+            "agent-execution-run.schema.json",
+        ),
+        (
+            _AGENT_EXECUTION_CONTRACT_SCHEMA_ID,
+            "agent-execution-contract.schema.json",
+        ),
+    ),
     "agent-operation-tool-binding.schema.json": (
         (
             _AGENT_EXECUTION_RUN_SCHEMA_ID,
@@ -56,6 +82,7 @@ def schema_resource(name: str) -> Traversable | None:
         "actor-runtime-applicability.schema.json",
         "agent-operation-tool-binding.schema.json",
         "agent-execution-authorization-grant.schema.json",
+        "agent-execution-dispatch-admission.schema.json",
         "agent-execution-authorization-evidence.schema.json",
         "agent-execution-contract.schema.json",
         "agent-execution-run.schema.json",

@@ -1,0 +1,55 @@
+id: AIO-047
+title: Atomic Grant Consumption and Agent Execution Dispatch Admission Foundation
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: critical
+execution:
+  mode: critical
+workflow: architecture-change
+objective: >
+  Define and implement the smallest canonical Agent Execution Dispatch
+  Admission contract, backend-neutral authoritative admission-store protocol,
+  and supported local SQLite backend that atomically consumes one
+  operationally trusted current non-revoked Grant for one exact Run and one
+  exact non-widening Tool Binding without dispatching or invoking anything.
+scope:
+  include:
+    - Canonical immutable three-field Agent Execution Dispatch Admission value
+    - Pure intrinsic validation and closed Draft 2020-12 JSON Schema
+    - Backend-neutral authoritative admission-store protocol and typed outcomes
+    - Trusted coordinator boundary for Grant, Tool Binding, and fresh prerequisites
+    - Supported dedicated local-filesystem SQLite admission backend
+    - Explicit production schema identity, forward migration, and checksum model
+    - Authoritative currentness, clock non-regression, and zero implicit skew
+    - Original-issuer immutable revocation tombstones in the same serial order
+    - Atomic Grant consumption and Admission creation with exact historical retry
+    - Grant-identity, Binding, and authorization-domain/Run conflict handling
+    - Local restart, multiprocess concurrency, crash, response-loss, integrity, and fencing evidence
+    - Packaged schema and migration resources with source, editable, and wheel coverage
+    - Fresh Architect, Security, storage/atomicity, independent review, Gate evidence, explicit Human approval, Task closure, and one local implementation-and-closure commit
+  exclude:
+    - Push, merge, tag, release, or publication
+    - AIO-048 creation, AIO-030 work, AIO-044 changes, or Full Control Center/UI work
+    - Real Grant issuer authentication, issuance, resolver integration, Tool resolution, or operational trust
+    - Real user or production authorization databases, data migrations, Grant consumption, or Admissions
+    - PostgreSQL, central services, cross-machine consensus, or cross-backend migration implementation
+    - Dispatch, outbox delivery, leases, attempts, invocation, lifecycle, result, event, error, or telemetry
+    - Permission Decision enforcement or permission, Runtime, Inference, and Tool-mapping TOCTOU resolution
+    - Durable request-bound denial receipts, invocation replay protection, or protected-target access
+dependencies:
+  - AIO-040
+  - AIO-041
+  - AIO-042
+  - AIO-043
+  - AIO-045
+  - AIO-046
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

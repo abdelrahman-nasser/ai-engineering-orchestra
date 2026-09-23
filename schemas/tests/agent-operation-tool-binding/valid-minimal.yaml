@@ -1,0 +1,15 @@
+run:
+  run_id: r
+  contract:
+    task_id: t
+    workflow_id: w
+    stage_id: s
+    role_id: role
+    actor_id: actor
+    runtime_option_id: runtime
+    option_id: option
+    environment_id: environment
+    operation_id: repository_file_read
+    resource: synthetic/minimal.txt
+    execution_mode: lite
+tool_id: tool

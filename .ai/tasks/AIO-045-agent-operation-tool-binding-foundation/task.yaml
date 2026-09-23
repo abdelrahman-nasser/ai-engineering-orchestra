@@ -1,0 +1,54 @@
+id: AIO-045
+title: Agent Operation Tool Binding Foundation
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: high
+execution:
+  mode: deep
+workflow: architecture-change
+objective: >
+  Define and implement the smallest canonical immutable, serializable,
+  provider-neutral Agent Operation Tool Binding that binds one exact complete
+  Agent Execution Run to one exact immutable configured Tool implementation
+  identity supplied by an external trusted resolver, without granting authority,
+  widening the Run Contract, performing discovery, consuming authorization,
+  admitting dispatch, or invoking the Tool.
+scope:
+  include:
+    - Canonical Agent Operation Tool Binding specification and terminology
+    - Exact two-field immutable value with a complete nested Agent Execution Run
+    - Opaque immutable-version Tool identity supplied by an external trusted resolver
+    - Runtime- and environment-scoped Tool namespace semantics
+    - Pure intrinsic validation with atomic fail-closed results
+    - Closed Draft 2020-12 schema with packaged offline Run and Contract references
+    - Serialization, no-widening, purity, regression, packaging, and installation tests
+    - Fresh Architect and Security design locks before implementation
+    - Fresh final specialist reviews, independent review, Gate evidence, Human approval, Task closure, and one local commit
+  exclude:
+    - Push, merge, tag, release, or publication
+    - Any dependency on, edit to, or reuse of acceptance, review, Gate, or test evidence from AIO-044
+    - AIO-046 creation, AIO-030 work, Full Control Center, read models, dashboards, APIs, or frontend work
+    - Real Tool discovery, probing, resolution, environment binding, or external-system integration
+    - Mutable Tool aliases without a permanent non-rebinding guarantee
+    - Tool inventory, candidates, ranking, fallback, or reselection
+    - Adapter, Provider, endpoint, credential, command, payload, argument, or native-parameter implementation
+    - Grant embedding, Grant consumption, currentness, revocation, replay protection, or security-state mutation
+    - Registry, persistence, database, cache, queue, store, history, outbox, or transaction handling
+    - Dispatch admission, dispatch, invocation, Agent execution, result, event, error, or telemetry
+    - Clock access, randomness, UUID generation, protected-target access, or prohibited broad validation
+dependencies:
+  - AIO-036
+  - AIO-037
+  - AIO-041
+  - AIO-042
+  - AIO-043
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

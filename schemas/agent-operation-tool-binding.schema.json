@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-engineering-orchestra.dev/schemas/agent-operation-tool-binding.schema.json",
+  "title": "AI Engineering Orchestra Agent Operation Tool Binding",
+  "description": "Structural schema for one Agent Operation Tool Binding defined by core/agent-operation-tool-binding-specification.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run",
+    "tool_id"
+  ],
+  "properties": {
+    "run": {
+      "$ref": "https://ai-engineering-orchestra.dev/schemas/agent-execution-run.schema.json",
+      "description": "Exact complete Agent Execution Run bound to this configured Tool implementation."
+    },
+    "tool_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact opaque immutable configured Tool implementation identity in the external resolver namespace scoped by the Run Runtime and environment."
+    }
+  }
+}

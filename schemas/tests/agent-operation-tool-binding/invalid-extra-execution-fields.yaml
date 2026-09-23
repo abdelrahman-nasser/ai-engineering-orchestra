@@ -1,0 +1,30 @@
+run:
+  run_id: run::extra-execution-fields
+  contract:
+    task_id: synthetic-task
+    workflow_id: architecture-change
+    stage_id: implement
+    role_id: software-engineer
+    actor_id: actor::synthetic
+    runtime_option_id: runtime::synthetic
+    option_id: option::synthetic
+    environment_id: environment::synthetic
+    operation_id: repository_file_read
+    resource: synthetic/input.txt
+    execution_mode: deep
+tool_id: tool::synthetic-repository-reader::v1
+binding_id: binding::forbidden
+adapter_id: adapter::forbidden
+provider_id: provider::forbidden
+model_id: model::forbidden
+endpoint: synthetic://forbidden
+command: forbidden
+payload: forbidden
+arguments: []
+credentials: forbidden
+status: selected
+grant: forbidden
+authorization: forbidden
+consumed: false
+admitted: false
+result: forbidden

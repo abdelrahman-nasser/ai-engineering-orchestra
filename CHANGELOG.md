@@ -161,6 +161,15 @@ Status: In Development
   unsupported multi-authority rejection
 - packaged fail-closed offline Grant-to-Run-to-Contract schema resolution and
   target-safe source, editable-install, and normal-wheel coverage
+- canonical two-field Agent Operation Tool Binding specification and closed
+  schema for one exact complete Agent Execution Run plus one exact immutable,
+  version-stable configured Tool implementation identity
+- pure intrinsic Tool Binding validation with deterministic atomic findings,
+  complete nested Run reuse, external resolver ownership, strict non-widening,
+  and no discovery, authority, Grant consumption, admission, or invocation
+- packaged fail-closed offline Tool-Binding-to-Run-to-Contract schema
+  resolution and target-safe source, editable-install, and normal-wheel
+  coverage without a package-root export or source fallback
 - private controlled read-only execution preparation dry run for the single
   provisional `repository_file_read` operation and one exact canonical
   repository-relative Markdown resource
@@ -264,6 +273,13 @@ Status: In Development
 - established fixed at-most-one-use intent and one-Grant-per-Run/domain
   cardinality without adding a use counter, conflict winner, authority
   composition, ledger, or consumption API
+- established Agent Operation Tool Binding as a separate non-authoritative
+  value over the complete Run and an externally owned immutable configured
+  implementation identity, without flattening or widening Contract semantics
+- established that Runtime capability `present` is not a concrete Tool
+  Binding, Core performs no Tool discovery or selection, and future admission
+  must require exact Binding/Grant/fresh expected Run equality before consuming
+  single-use authority
 - kept the AIO-035 preparation experiment private and non-invoking: it consumes
   evidence without discovering or changing permissions, parsing approval prose,
   touching the target, creating an Execution Contract, dispatching, or adding a

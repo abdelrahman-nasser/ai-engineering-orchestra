@@ -529,6 +529,14 @@ Agent Execution Run
      atomic consumption; no Core issuance/authentication, currentness,
      consumption, replay protection, persistence, dispatch, or invocation
 
+current canonical exact implementation binding:
+Agent Execution Run
+  + externally supplied exact immutable/version-stable tool_id
+  -> Agent Operation Tool Binding(run, tool_id)
+  -> immutable serializable selected binding only; no Tool discovery,
+     existence/trust proof, authority, Grant consumption, admission, dispatch,
+     or invocation
+
 current private experiment:
 candidate prerequisite assessment
   + its existing provisional capability evidence
@@ -540,9 +548,10 @@ candidate prerequisite assessment
 
 future only, through separately authorized contracts and adapters:
 operationally trusted Agent Execution Authorization Grant
-  + current prerequisites, revocation/currentness, Tool Binding, and durable
-    atomic consumption
-  + future adapter/tool binding and dispatch admission
+  + Agent Operation Tool Binding for the same exact complete Run
+  + current prerequisites, revocation/currentness, and durable atomic
+    consumption coordinated with dispatch admission
+  + future adapter resolution and invocation controls
   -> invocation / result / lifecycle evidence
 ```
 
@@ -585,11 +594,13 @@ The execution-occurrence identity authority is
 [`core/agent-execution-run-specification.md`](core/agent-execution-run-specification.md).
 The Run-bound positive-authority artifact is
 [`core/agent-execution-authorization-grant-specification.md`](core/agent-execution-authorization-grant-specification.md).
+The exact configured-implementation binding specification is
+[`core/agent-operation-tool-binding-specification.md`](core/agent-operation-tool-binding-specification.md).
 AIO-035 deliberately adds no new Core specification: its provisional semantics
 remain in the AIO-035 Task evidence, private implementation, and focused tests.
-AIO-037 through AIO-043 do not retrofit that private experiment or compose
-capability, permission, candidate, authorization, intent, and Run identity into
-execution.
+AIO-037 through AIO-043 and AIO-045 do not retrofit that private experiment or
+compose capability, permission, candidate, authorization, intent, Run identity,
+and Tool Binding into execution.
 
 ## Operation Requirement
 
@@ -961,6 +972,59 @@ Run and transitive Contract schemas through fail-closed offline resolution.
 Exact semantics are defined by
 [`core/agent-execution-authorization-grant-specification.md`](core/agent-execution-authorization-grant-specification.md).
 
+## Agent Operation Tool Binding
+
+Agent Operation Tool Binding is the immutable, serializable, provider-neutral
+value that binds one exact complete Agent Execution Run to one exact immutable
+configured Tool implementation identity supplied by an external trusted
+resolver:
+
+```python
+from engineering_orchestration.agent_operation_tool_binding import (
+    AgentOperationToolBinding,
+    validate_agent_operation_tool_binding,
+)
+
+binding = AgentOperationToolBinding(
+    run=prepared_run.run,
+    tool_id="tool::synthetic-repository-reader::v1",
+)
+assert validate_agent_operation_tool_binding(binding).valid
+```
+
+The value contains exactly `run` followed by `tool_id`. It nests the complete
+Run rather than bare `run_id`, so no Assignment, Runtime, Inference Option,
+environment, operation, resource, or Execution Mode field can be flattened or
+substituted through the binding. Full `(run, tool_id)` value equality defines
+binding equality; there is no `binding_id`.
+
+`tool_id` is exact, opaque, nonempty, case-sensitive, and unnormalized. It is
+owned by the external configured runtime/tool resolver and scoped by the nested
+Run's exact Runtime Option and environment; Core does not allocate Tool IDs or
+prove global uniqueness. The ID must itself denote one immutable/version-stable
+configured implementation revision. A mutable alias or display name is
+insufficient unless the resolver guarantees it can never be rebound.
+
+The resolver owns configured Tool existence, namespace, immutable identity,
+Runtime/environment applicability, and selection. A future adapter owns native
+resolution, credentials, endpoints, protocol translation, parameters,
+containment, and invocation. Core does not scan binaries, inspect PATH, query
+MCP or Providers, enumerate Tools, probe availability, rank candidates, or
+perform fallback/reselection. Runtime Operation Capability `present` therefore
+does not establish a concrete Tool Binding.
+
+Intrinsic validation proves only exact value type, nested Run validity, and an
+exact nonempty Tool ID. Direct construction, validation, and serialization do
+not prove Tool existence, trust, availability, executability, or semantic
+operation fit. A binding grants no permission or authority, consumes no Grant,
+creates no dispatch admission, and performs no dispatch or invocation. A future
+admission layer must establish exact
+`binding.run == grant.run == freshly prepared expected Run` equality and must
+resolve the binding before consuming single-use authority. The closed schema
+references the packaged Run and transitive Contract schemas through fail-closed
+offline resolution. Exact semantics are defined by
+[`core/agent-operation-tool-binding-specification.md`](core/agent-operation-tool-binding-specification.md).
+
 ## Installed Structural Validation
 
 The programmatic API reads the nearest active project's supported AIO structures:
@@ -989,7 +1053,7 @@ Actor-to-Runtime Applicability Evidence, Agent Runtime Option, Agent Runtime
 Option Availability Observation, Runtime Operation Capability Observation,
 Environment Operation Permission Observation, Agent Execution Authorization
 Evidence, Agent Execution Contract, Agent Execution Run, Agent Execution
-Authorization Grant, Assignment, Inference
+Authorization Grant, Agent Operation Tool Binding, Assignment, Inference
 Option, Inference Option Availability Observation, Runtime-to-Inference
 Compatibility Evidence, Role, Task, Workflow, and Project Manifest schemas from
 their single sources in `schemas/`, plus the five framework-owned canonical Role

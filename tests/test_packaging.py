@@ -24,6 +24,7 @@ PACKAGED_SCHEMAS = (
     "actor.schema.json",
     "actor-availability.schema.json",
     "actor-runtime-applicability.schema.json",
+    "agent-operation-tool-binding.schema.json",
     "agent-execution-authorization-grant.schema.json",
     "agent-execution-authorization-evidence.schema.json",
     "agent-execution-contract.schema.json",
@@ -185,6 +186,122 @@ class PackagingTests(unittest.TestCase):
             ):
                 with self.assertRaisesRegex(ValueError, "canonical ID mismatch"):
                     load_validator("agent-execution-run.schema.json")
+
+    def test_tool_binding_schema_resolves_packaged_run_and_contract_offline(self):
+        document = {
+            "run": {
+                "run_id": "run::binding-packaging-test",
+                "contract": {
+                    "task_id": "synthetic-task",
+                    "workflow_id": "architecture-change",
+                    "stage_id": "implement",
+                    "role_id": "software-engineer",
+                    "actor_id": "actor::synthetic",
+                    "runtime_option_id": "runtime::synthetic",
+                    "option_id": "option::synthetic",
+                    "environment_id": "environment::synthetic",
+                    "operation_id": "repository_file_read",
+                    "resource": "synthetic/input.txt",
+                    "execution_mode": "deep",
+                },
+            },
+            "tool_id": "tool::synthetic-repository-reader::v1",
+        }
+        blocked = AssertionError("schema resolution attempted external access")
+        with patch("pathlib.Path.cwd", side_effect=blocked), \
+                patch("socket.create_connection", side_effect=blocked), \
+                patch("socket.getaddrinfo", side_effect=blocked), \
+                patch("urllib.request.urlopen", side_effect=blocked):
+            validator = load_validator(
+                "agent-operation-tool-binding.schema.json"
+            )
+            validator.validate(document)
+            invalid = json.loads(json.dumps(document))
+            invalid["run"]["contract"]["actor_id"] = ""
+            errors = list(validator.iter_errors(invalid))
+        self.assertEqual(
+            [(error.validator, tuple(error.absolute_path)) for error in errors],
+            [("minLength", ("run", "contract", "actor_id"))],
+        )
+
+    def test_tool_binding_schema_unregistered_reference_fails_closed(self):
+        blocked = AssertionError("schema resolution attempted network access")
+        with patch("socket.create_connection", side_effect=blocked), \
+                patch("socket.getaddrinfo", side_effect=blocked), \
+                patch("urllib.request.urlopen", side_effect=blocked):
+            validator = load_validator(
+                "agent-operation-tool-binding.schema.json"
+            )
+            unknown = validator.evolve(schema={
+                "$ref": "https://example.invalid/unregistered.schema.json",
+            })
+            with self.assertRaises(Exception) as caught:
+                unknown.validate({})
+        self.assertNotIsInstance(caught.exception, AssertionError)
+        self.assertIn("unregistered.schema.json", str(caught.exception))
+
+    def test_tool_binding_schema_missing_references_fail_without_fallback(self):
+        dependencies = (
+            "agent-execution-run.schema.json",
+            "agent-execution-contract.schema.json",
+        )
+        for missing_name in dependencies:
+            with self.subTest(missing=missing_name), \
+                    tempfile.TemporaryDirectory() as folder:
+                resources = Path(folder)
+                for name in (
+                    "agent-operation-tool-binding.schema.json",
+                    *dependencies,
+                ):
+                    if name != missing_name:
+                        (resources / name).write_bytes(
+                            (ROOT / "schemas" / name).read_bytes()
+                        )
+                with patch(
+                    "engineering_orchestration.schema_resources.files",
+                    return_value=resources,
+                ):
+                    with self.assertRaisesRegex(FileNotFoundError, missing_name):
+                        load_validator(
+                            "agent-operation-tool-binding.schema.json"
+                        )
+
+    def test_tool_binding_schema_rejects_mismatched_reference_ids(self):
+        dependencies = (
+            "agent-execution-run.schema.json",
+            "agent-execution-contract.schema.json",
+        )
+        for mismatched_name in dependencies:
+            with self.subTest(reference=mismatched_name), \
+                    tempfile.TemporaryDirectory() as folder:
+                resources = Path(folder)
+                (resources / "agent-operation-tool-binding.schema.json").write_bytes(
+                    (
+                        ROOT
+                        / "schemas"
+                        / "agent-operation-tool-binding.schema.json"
+                    ).read_bytes()
+                )
+                for name in dependencies:
+                    document = json.loads(
+                        (ROOT / "schemas" / name).read_text(encoding="utf-8")
+                    )
+                    if name == mismatched_name:
+                        document["$id"] = (
+                            "https://example.invalid/substitute.schema.json"
+                        )
+                    (resources / name).write_text(
+                        json.dumps(document),
+                        encoding="utf-8",
+                    )
+                with patch(
+                    "engineering_orchestration.schema_resources.files",
+                    return_value=resources,
+                ):
+                    with self.assertRaisesRegex(ValueError, "canonical ID mismatch"):
+                        load_validator(
+                            "agent-operation-tool-binding.schema.json"
+                        )
 
     def test_grant_schema_resolves_packaged_run_and_contract_offline(self):
         document = {

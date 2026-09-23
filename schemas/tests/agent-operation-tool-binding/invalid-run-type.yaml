@@ -1,0 +1,2 @@
+run: not-an-object
+tool_id: tool::synthetic-repository-reader::v1

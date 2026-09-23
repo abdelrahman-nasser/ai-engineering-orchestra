@@ -14,6 +14,16 @@ _AGENT_EXECUTION_RUN_SCHEMA_ID = (
     "agent-execution-run.schema.json"
 )
 _OFFLINE_SCHEMA_REFERENCES = {
+    "agent-operation-tool-binding.schema.json": (
+        (
+            _AGENT_EXECUTION_RUN_SCHEMA_ID,
+            "agent-execution-run.schema.json",
+        ),
+        (
+            _AGENT_EXECUTION_CONTRACT_SCHEMA_ID,
+            "agent-execution-contract.schema.json",
+        ),
+    ),
     "agent-execution-authorization-grant.schema.json": (
         (
             _AGENT_EXECUTION_RUN_SCHEMA_ID,
@@ -44,6 +54,7 @@ def schema_resource(name: str) -> Traversable | None:
         "actor.schema.json",
         "actor-availability.schema.json",
         "actor-runtime-applicability.schema.json",
+        "agent-operation-tool-binding.schema.json",
         "agent-execution-authorization-grant.schema.json",
         "agent-execution-authorization-evidence.schema.json",
         "agent-execution-contract.schema.json",

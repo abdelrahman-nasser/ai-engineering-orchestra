@@ -367,6 +367,39 @@ success. The canonical contract is defined in:
 
 ---
 
+## Agent Operation Tool Binding
+
+An immutable, serializable, provider-neutral selected-binding value that binds
+one exact complete Agent Execution Run to one exact immutable configured Tool
+implementation identity supplied by an external trusted resolver.
+
+The value contains exactly `run` followed by `tool_id`. The complete nested Run,
+not `run_id` alone, preserves the exact Contract binding. `tool_id` is an exact,
+opaque, case-sensitive, nonempty identity in the namespace of the configured
+runtime/tool resolver for the Run's exact Runtime Option and environment. Core
+does not allocate Tool IDs or claim global uniqueness. The identifier must name
+one immutable/version-stable configured implementation revision; a mutable
+alias or display name is not a canonical Tool ID unless the resolver guarantees
+that it can never be rebound.
+
+The resolver owns configured Tool existence, namespace, immutable identity,
+Runtime/environment applicability, and selection. A future adapter owns native
+resolution, credentials, endpoints, protocol translation, parameters,
+containment, and invocation. Core performs no Tool discovery or probing.
+Runtime Operation Capability `present` reports only abstract support and does
+not establish a concrete Tool Binding.
+
+The binding cannot widen or replace any Run or Contract field. Direct
+construction, intrinsic or schema validity, and serialization do not prove that
+the Tool exists, is trusted, available, executable, or implements the intended
+operation. The binding grants no permission or authority, consumes no Grant,
+creates no dispatch admission, and performs no dispatch or invocation. The
+canonical contract is defined in:
+
+`core/agent-operation-tool-binding-specification.md`
+
+---
+
 ## Actor-to-Runtime Applicability Evidence
 
 An immutable, caller-supplied positive evidence value stating that one known

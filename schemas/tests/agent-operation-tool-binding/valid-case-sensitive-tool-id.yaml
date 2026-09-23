@@ -1,0 +1,15 @@
+run:
+  run_id: run::case-sensitive-tool
+  contract:
+    task_id: synthetic-task
+    workflow_id: architecture-change
+    stage_id: implement
+    role_id: software-engineer
+    actor_id: actor::synthetic
+    runtime_option_id: runtime::synthetic
+    option_id: option::synthetic
+    environment_id: environment::synthetic
+    operation_id: repository_file_read
+    resource: synthetic/case-sensitive.txt
+    execution_mode: standard
+tool_id: TOOL::Synthetic-Repository-Reader::V1

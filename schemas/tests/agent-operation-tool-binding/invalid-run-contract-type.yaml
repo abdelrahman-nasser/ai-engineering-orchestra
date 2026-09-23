@@ -1,0 +1,4 @@
+run:
+  run_id: run::contract-type
+  contract: not-an-object
+tool_id: tool::synthetic-repository-reader::v1

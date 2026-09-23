@@ -534,16 +534,26 @@ AIO-043 sits above the complete Run without modifying it.
 A future separately authorized admission layer must combine, at minimum:
 
 - an operationally trusted Grant received from the authenticated producer;
-- exact expected domain and complete Run equality;
+- exact expected domain and complete Run equality across the Grant, one valid
+  AIO-045 Agent Operation Tool Binding, and the freshly prepared expected Run;
 - trusted current time and any explicit revocation result;
 - freshly satisfied prerequisites and permission state;
-- concrete Tool Binding that cannot widen the Run Contract; and
+- an exact immutable/version-stable `tool_id` supplied by the external trusted
+  resolver without widening any field of the Run Contract; and
 - durable atomic Grant consumption coordinated with dispatch admission.
 
-Ordering must prevent dispatch before successful consumption. Crash,
-no-response, transaction failure, concurrent consumers, retries, and tool
-failure around consumption require durable semantics. AIO-043 implements and
-claims none of them.
+The required equality is:
+
+```text
+binding.run == grant.run == freshly prepared expected Run
+```
+
+Tool Binding must succeed before the single-use Grant is consumed, and neither
+intrinsic nor schema validity proves Tool existence, trust, availability,
+executability, or semantic behavior. Ordering must prevent dispatch before
+successful consumption. Crash, no-response, transaction failure, concurrent
+consumers, retries, and Tool failure around consumption require durable
+semantics. AIO-043 and AIO-045 implement and claim none of them.
 
 ---
 
@@ -588,7 +598,7 @@ The complete investigated scenario disposition is:
 13. Revocation is not modeled.
 14. Consumption followed by a crash requires future durable semantics.
 15. Future ordering must prohibit dispatch before successful consumption.
-16. Tool Binding failure after consumption is a future admission concern.
+16. Future admission must reject Tool Binding failure before consumption.
 17. Tool Binding success followed by consumption failure is a future concern.
 18. Blocked fresh prerequisites do not become Grant logic.
 19. Unresolved fresh prerequisites do not become Grant logic.

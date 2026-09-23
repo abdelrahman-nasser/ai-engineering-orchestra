@@ -395,9 +395,12 @@ and events require future contracts grounded in real runtime and dispatch
 ownership. Any future lifecycle evidence must use immutable Run identity as its
 anchor without mutating the two-field Run value.
 
-Future Tool Binding should reference `run_id` and must not alter the nested
-Contract's Assignment, Runtime Option, Inference Option, environment,
-operation, resource, or Execution Mode. A future Execution Result should likewise
+AIO-045 Agent Operation Tool Binding nests this exact complete Run, not bare
+`run_id`, together with one immutable/version-stable configured implementation
+identity. Complete nesting preserves the Contract binding and prevents a Tool
+Binding from altering the Assignment, Runtime Option, Inference Option,
+environment, operation, resource, or Execution Mode. The binding remains
+non-authoritative and non-executing. A future Execution Result should likewise
 reference the Run rather than adding output to this identity value. Event and
 telemetry vocabularies follow stable lifecycle and invocation semantics.
 
@@ -424,6 +427,8 @@ AIO-042 contains no:
 AIO-042 consumes but does not modify AIO-040 diagnostic assessment semantics or
 AIO-041 Contract meaning and public behavior. AIO-043 nests this exact Run in a
 separate Grant without adding Grant, consumed, or authorization state to the
-Run. Any future lifecycle, authorization-consumption, replay, binding,
-dispatch, invocation, result, event, telemetry, or persistence contract
-requires separate explicit authorization.
+Run. AIO-045 separately nests this exact Run in an Agent Operation Tool Binding
+without adding Tool state, authority, discovery, admission, or invocation to
+the Run. Any future lifecycle, authorization-consumption, replay, dispatch,
+invocation, result, event, telemetry, or persistence contract requires separate
+explicit authorization.

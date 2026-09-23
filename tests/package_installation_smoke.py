@@ -137,7 +137,7 @@ def main() -> None:
                 with zipfile.ZipFile(wheel) as archive:
                     names = archive.namelist()
                     modules = {f"engineering_orchestration/{name}" for name in
-                               ("__init__.py", "_operation_vocabulary.py", "_read_only_execution_preparation.py", "_repository_resource.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_action_prerequisite.py", "agent_execution_authorization_evidence.py", "agent_execution_authorization_grant.py", "agent_execution_candidate_prerequisite.py", "agent_execution_contract.py", "agent_execution_run.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
+                               ("__init__.py", "_operation_vocabulary.py", "_read_only_execution_preparation.py", "_repository_resource.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_action_prerequisite.py", "agent_operation_tool_binding.py", "agent_execution_authorization_evidence.py", "agent_execution_authorization_grant.py", "agent_execution_candidate_prerequisite.py", "agent_execution_contract.py", "agent_execution_run.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
                                 "environment_operation_permission.py",
                                 "execution_mode.py", "inference_option.py",
                                 "inference_option_availability.py",
@@ -149,6 +149,7 @@ def main() -> None:
                                 "project.py", "validation.py", "project_verification.py")}
                     schemas = {f"engineering_orchestration/_schemas/{name}" for name in
                                ("actor-availability.schema.json", "actor-runtime-applicability.schema.json", "actor.schema.json",
+                                "agent-operation-tool-binding.schema.json",
                                 "agent-execution-authorization-evidence.schema.json",
                                 "agent-execution-authorization-grant.schema.json",
                                 "agent-execution-contract.schema.json",
@@ -1464,6 +1465,133 @@ print(json.dumps({
             evidence["schemas"].append(
                 evidence["agent_execution_authorization_grant_schema"]
             )
+            tool_binding_probe = """
+import json, os, random, secrets, socket, sqlite3, subprocess, time, urllib.request, uuid
+from contextlib import ExitStack
+from dataclasses import asdict, fields
+from pathlib import Path
+from unittest.mock import patch
+import engineering_orchestration
+import engineering_orchestration.agent_execution_contract as contract
+import engineering_orchestration.agent_execution_run as execution_run
+import engineering_orchestration.agent_operation_tool_binding as tool_binding
+from engineering_orchestration.schema_resources import load_validator, schema_resource
+bound_contract = contract.AgentExecutionContract(
+    'LOCAL-123', 'external-flow', 'external-stage', 'software-engineer',
+    'installed-agent', 'installed-runtime-primary', 'installed-primary',
+    'installed-environment', 'repository_file_read',
+    'synthetic/install-tool-binding.txt', 'deep')
+bound_run = execution_run.AgentExecutionRun(
+    'run::installed-tool-binding', bound_contract)
+value = tool_binding.AgentOperationToolBinding(
+    bound_run, 'tool::installed-repository-reader::v1')
+binding_schema_resource = schema_resource(
+    'agent-operation-tool-binding.schema.json')
+binding_schema_path = str(binding_schema_resource)
+blocked_schema = AssertionError(
+    'Tool Binding schema resolution must remain offline')
+with patch('pathlib.Path.cwd', side_effect=blocked_schema), patch.object(
+        socket, 'create_connection', side_effect=blocked_schema), patch.object(
+        socket, 'getaddrinfo', side_effect=blocked_schema), patch.object(
+        urllib.request, 'urlopen', side_effect=blocked_schema):
+    validator = load_validator('agent-operation-tool-binding.schema.json')
+    validator.validate(asdict(value))
+blocked = AssertionError(
+    'Tool Binding validation must remain pure and nondiscovering')
+guards = (
+    patch('builtins.open', side_effect=blocked),
+    patch.object(Path, 'open', side_effect=blocked),
+    patch.object(Path, 'read_text', side_effect=blocked),
+    patch.object(Path, 'read_bytes', side_effect=blocked),
+    patch.object(Path, 'stat', side_effect=blocked),
+    patch.object(Path, 'resolve', side_effect=blocked),
+    patch.object(Path, 'iterdir', side_effect=blocked),
+    patch.object(Path, 'glob', side_effect=blocked),
+    patch.object(Path, 'rglob', side_effect=blocked),
+    patch.object(os, 'stat', side_effect=blocked),
+    patch.object(os, 'access', side_effect=blocked),
+    patch.object(os, 'listdir', side_effect=blocked),
+    patch.object(os, 'scandir', side_effect=blocked),
+    patch.object(os, 'getenv', side_effect=blocked),
+    patch.object(socket, 'socket', side_effect=blocked),
+    patch.object(socket, 'create_connection', side_effect=blocked),
+    patch.object(socket, 'getaddrinfo', side_effect=blocked),
+    patch.object(sqlite3, 'connect', side_effect=blocked),
+    patch.object(subprocess, 'run', side_effect=blocked),
+    patch.object(subprocess, 'Popen', side_effect=blocked),
+    patch.object(urllib.request, 'urlopen', side_effect=blocked),
+    patch.object(urllib.request, 'urlretrieve', side_effect=blocked),
+    patch.object(time, 'time', side_effect=blocked),
+    patch.object(time, 'monotonic', side_effect=blocked),
+    patch.object(time, 'perf_counter', side_effect=blocked),
+    patch.object(random, 'random', side_effect=blocked),
+    patch.object(random, 'getrandbits', side_effect=blocked),
+    patch.object(secrets, 'token_hex', side_effect=blocked),
+    patch.object(secrets, 'token_urlsafe', side_effect=blocked),
+    patch.object(uuid, 'uuid4', side_effect=blocked),
+)
+with ExitStack() as stack:
+    for guard in guards:
+        stack.enter_context(guard)
+    for name in ('discover', 'probe', 'select', 'rank', 'fallback', 'resolve',
+                 'authenticate', 'consume', 'persist', 'admit', 'dispatch',
+                 'execute', 'invoke'):
+        stack.enter_context(patch.object(
+            tool_binding, name, create=True, side_effect=blocked))
+    intrinsic = tool_binding.validate_agent_operation_tool_binding(value)
+    invalid_tool_id = tool_binding.validate_agent_operation_tool_binding(
+        tool_binding.AgentOperationToolBinding(bound_run, ''))
+document = json.loads(json.dumps(asdict(value)))
+roundtrip_contract = contract.AgentExecutionContract(
+    **document['run']['contract'])
+roundtrip_run = execution_run.AgentExecutionRun(
+    document['run']['run_id'], roundtrip_contract)
+roundtrip_value = tool_binding.AgentOperationToolBinding(
+    roundtrip_run, document['tool_id'])
+roundtrip = tool_binding.validate_agent_operation_tool_binding(roundtrip_value)
+field_names = [item.name for item in fields(
+    tool_binding.AgentOperationToolBinding)]
+print(json.dumps({
+    'agent_operation_tool_binding_module': tool_binding.__file__,
+    'agent_operation_tool_binding_schema': binding_schema_path,
+    'agent_operation_tool_binding_fields': field_names,
+    'agent_operation_tool_binding_intrinsic': {
+        'valid': intrinsic.valid,
+        'same_value': intrinsic.binding is value,
+        'same_run': intrinsic.binding.run is bound_run,
+        'codes': [item.code for item in intrinsic.findings],
+    },
+    'agent_operation_tool_binding_invalid_tool_id': {
+        'codes': [item.code for item in invalid_tool_id.findings],
+        'atomic': (
+            not invalid_tool_id.valid and invalid_tool_id.binding is None),
+    },
+    'agent_operation_tool_binding_schema_roundtrip': {
+        'valid': roundtrip.valid,
+        'equal': roundtrip.binding == value,
+    },
+    'agent_operation_tool_binding_pure_nondiscovering_probe': True,
+    'agent_operation_tool_binding_forbidden_fields_absent': all(
+        name not in field_names for name in (
+            'binding_id', 'run_id', 'adapter_id', 'provider_id', 'endpoint',
+            'command', 'payload', 'arguments', 'credentials', 'grant',
+            'consumed', 'admitted', 'status')),
+    'agent_operation_tool_binding_public_export_absent': all(
+        not hasattr(engineering_orchestration, name) for name in (
+            'AgentOperationToolBinding',
+            'AgentOperationToolBindingFinding',
+            'AgentOperationToolBindingValidationResult',
+            'validate_agent_operation_tool_binding')),
+}))
+"""
+            evidence.update(json.loads(run(
+                [str(python), "-B", "-c", tool_binding_probe],
+                project / "src/nested",
+                run_env,
+            )))
+            evidence["schemas"].append(
+                evidence["agent_operation_tool_binding_schema"]
+            )
             print(f"{mode.upper()} IMPORT/RESOURCE EVIDENCE: {json.dumps(evidence)}", flush=True)
             if mode == "normal":
                 require(Path(evidence["module"]).resolve().is_relative_to(environment),
@@ -1500,6 +1628,8 @@ print(json.dumps({
                         "Normal Agent Execution Run import leaked to source")
                 require(Path(evidence["agent_execution_authorization_grant_module"]).resolve().is_relative_to(environment),
                         "Normal Agent Execution Authorization Grant import leaked to source")
+                require(Path(evidence["agent_operation_tool_binding_module"]).resolve().is_relative_to(environment),
+                        "Normal Agent Operation Tool Binding import leaked to source")
                 require(Path(evidence["read_only_execution_preparation_module"]).resolve().is_relative_to(environment),
                         "Normal read-only execution preparation import leaked to source")
                 require(Path(evidence["operation_requirement_module"]).resolve().is_relative_to(environment),
@@ -1967,6 +2097,54 @@ print(json.dumps({
                 ],
                 "Agent Execution Authorization Grant unexpectedly gained a "
                 "root export",
+            )
+            require(
+                evidence["agent_operation_tool_binding_fields"]
+                == ["run", "tool_id"],
+                "Installed Agent Operation Tool Binding fields differ",
+            )
+            require(
+                evidence["agent_operation_tool_binding_intrinsic"] == {
+                    "valid": True,
+                    "same_value": True,
+                    "same_run": True,
+                    "codes": [],
+                },
+                "Installed Agent Operation Tool Binding intrinsic validation "
+                "failed",
+            )
+            require(
+                evidence["agent_operation_tool_binding_invalid_tool_id"] == {
+                    "codes": [
+                        "agent_operation_tool_binding_tool_id_invalid"
+                    ],
+                    "atomic": True,
+                },
+                "Installed Agent Operation Tool Binding Tool-ID rejection "
+                "failed",
+            )
+            require(
+                evidence["agent_operation_tool_binding_schema_roundtrip"]
+                == {"valid": True, "equal": True},
+                "Installed Agent Operation Tool Binding offline schema/"
+                "round-trip failed",
+            )
+            require(
+                evidence[
+                    "agent_operation_tool_binding_pure_nondiscovering_probe"
+                ],
+                "Agent Operation Tool Binding probe did not establish purity",
+            )
+            require(
+                evidence[
+                    "agent_operation_tool_binding_forbidden_fields_absent"
+                ],
+                "Agent Operation Tool Binding gained forbidden state",
+            )
+            require(
+                evidence["agent_operation_tool_binding_public_export_absent"],
+                "Agent Operation Tool Binding unexpectedly gained a root "
+                "export",
             )
             require(evidence["operation_requirement_valid"] == {
                         "valid": True,

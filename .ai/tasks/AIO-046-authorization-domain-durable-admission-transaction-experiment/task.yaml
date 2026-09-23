@@ -1,0 +1,53 @@
+id: AIO-046
+title: Authorization-Domain Durable Admission Transaction Experiment
+type: investigation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: critical
+execution:
+  mode: critical
+workflow: architecture-change
+objective: >
+  Produce synthetic, non-production evidence that one authorization-domain
+  ledger can durably and atomically combine a trusted Grant assumption, an
+  exact Tool Binding, freshly reconstructed prerequisite equality, trusted
+  decision time, same-ledger revocation, and Grant/Run uniqueness into one
+  immutable dispatch-admission record without dispatching or invoking a Tool.
+scope:
+  include:
+    - A private, non-packaged SQLite authorization-domain admission experiment
+    - Exact Grant, Tool Binding, Run, and Contract retention and comparison
+    - Fresh AIO-040 assessment and AIO-041/AIO-042 Run reconstruction
+    - Trusted synthetic Grant, Tool resolver, and authority-clock stubs
+    - One-ledger-per-domain ownership and local-filesystem SQLite assumptions
+    - Atomic Grant/Run uniqueness, revocation, and decision-time ordering
+    - Multi-process contention, fault injection, response-loss, and restart tests
+    - In-memory and split-database negative counterexamples
+    - Architect, Security, storage/atomicity, and independent review evidence
+    - Target-safe validation, recorded Human final approval, and bounded closure
+  exclude:
+    - Production persistence, replay protection, store API, or database schema
+    - Canonical public admission JSON Schema or schema-resource registration
+    - Real issuer authentication, cryptography, or signature verification
+    - Real Tool discovery, resolution, existence checks, dispatch, or invocation
+    - Run lifecycle, delivery lease, retry dispatcher, result, event, or telemetry
+    - Permission, Runtime, Inference, or Tool-mapping TOCTOU resolution
+    - Package exports, package-data changes, push, merge, tag, release, or publication
+    - Any commit beyond the single authorized local AIO-046 closure commit
+    - AIO-044 changes or evidence reuse, AIO-030 work, or Full Control Center work
+    - Protected-target access, network access, or repository-wide validation
+dependencies:
+  - AIO-040
+  - AIO-041
+  - AIO-042
+  - AIO-043
+  - AIO-045
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

@@ -5,6 +5,10 @@ absolute local database path, authorization domain, ledger instance, and
 positive generation.  Operational calls never create, migrate, repair,
 reactivate, or fall back to another authority store.
 
+Construction consumes one package-internal owner capability bound to that
+exact identity.  Provisioning and migration consume a distinct one-use
+administrative capability; neither access form is caller-supplied authority.
+
 The durability claim applies only while every same-host consumer uses the
 same correctly owned active ledger on trusted local storage.  A database can
 record that it is fenced, but database-contained metadata cannot detect a
@@ -46,6 +50,7 @@ from engineering_orchestration.agent_execution_dispatch_admission_store import (
     AgentExecutionDispatchAdmissionStoreAdministrationResult,
     AgentExecutionDispatchAdmissionClock,
     AgentExecutionDispatchAdmissionStoreResult,
+    _claim_store_access,
     _open_admission_request,
     _open_authoritative_lookup_request,
     _open_guarded_history_request,
@@ -616,6 +621,30 @@ def _validate_configuration(
     return configuration
 
 
+def _claim_configuration_access(
+    configuration: object,
+    access: object,
+    *,
+    administrative: bool,
+) -> None:
+    """Consume exact-identity access before any configured path is touched."""
+
+    if type(configuration) is not SqliteAgentExecutionDispatchAdmissionStoreConfiguration:
+        raise SqliteAdmissionStoreConfigurationError(
+            "configuration must be the exact SQLite Admission-store type"
+        )
+    try:
+        _claim_store_access(
+            access,
+            configuration.authorization_domain_id,
+            configuration.ledger_instance_id,
+            configuration.domain_generation,
+            administrative=administrative,
+        )
+    except (TypeError, ValueError) as error:
+        raise SqliteAdmissionStoreConfigurationError(str(error)) from error
+
+
 _EXPECTED_SCHEMA_FINGERPRINT = (
     "de080810b1d644dacf53e6bf79cbbd01343344904397a91c6dd483bd48dfad46"
 )
@@ -644,7 +673,8 @@ class SqliteAgentExecutionDispatchAdmissionStore:
 
     The object implements the backend-neutral authority-internal store
     protocol.  Request authority is minted only by the trusted coordinator;
-    this class never authenticates arbitrary serialized values itself.
+    Store access is minted only by trusted package composition.  This class
+    never authenticates arbitrary serialized values itself.
     """
 
     def __init__(
@@ -652,7 +682,56 @@ class SqliteAgentExecutionDispatchAdmissionStore:
         configuration: SqliteAgentExecutionDispatchAdmissionStoreConfiguration,
         *,
         clock: AgentExecutionDispatchAdmissionClock,
+        access: object,
     ) -> None:
+        self._initialize_owned(
+            configuration,
+            clock=clock,
+            access=access,
+            allow_fenced=False,
+            administrative=False,
+        )
+
+    @classmethod
+    def _open_for_ownership(
+        cls,
+        configuration: SqliteAgentExecutionDispatchAdmissionStoreConfiguration,
+        *,
+        clock: AgentExecutionDispatchAdmissionClock,
+        access: object,
+        allow_fenced: bool = False,
+        administrative: bool = False,
+    ) -> SqliteAgentExecutionDispatchAdmissionStore:
+        """Open with exact owner operational/admin access for recovery work."""
+
+        if type(allow_fenced) is not bool or type(administrative) is not bool:
+            raise SqliteAdmissionStoreConfigurationError(
+                "allow_fenced and administrative must be exact booleans"
+            )
+        store = cls.__new__(cls)
+        store._initialize_owned(
+            configuration,
+            clock=clock,
+            access=access,
+            allow_fenced=allow_fenced,
+            administrative=administrative,
+        )
+        return store
+
+    def _initialize_owned(
+        self,
+        configuration: SqliteAgentExecutionDispatchAdmissionStoreConfiguration,
+        *,
+        clock: AgentExecutionDispatchAdmissionClock,
+        access: object,
+        allow_fenced: bool,
+        administrative: bool,
+    ) -> None:
+        _claim_configuration_access(
+            configuration,
+            access,
+            administrative=administrative,
+        )
         self.configuration = _validate_configuration(
             configuration,
             require_file=True,
@@ -662,17 +741,24 @@ class SqliteAgentExecutionDispatchAdmissionStore:
                 "clock must implement now_utc()"
             )
         self._clock = clock
-        connection = self._open_existing(allow_fenced=False)
+        connection = self._open_existing(allow_fenced=allow_fenced)
         connection.close()
 
     @classmethod
     def provision(
         cls,
         configuration: SqliteAgentExecutionDispatchAdmissionStoreConfiguration,
+        *,
+        access: object,
     ) -> SqliteAdmissionStoreAdministrationResult:
         """Explicitly create a new current-schema ledger exactly once."""
 
         try:
+            _claim_configuration_access(
+                configuration,
+                access,
+                administrative=True,
+            )
             config = _validate_configuration(configuration, require_file=False)
             migrations = _migration_bytes()
         except SqliteAdmissionStoreConfigurationError as error:
@@ -798,10 +884,17 @@ class SqliteAgentExecutionDispatchAdmissionStore:
     def migrate(
         cls,
         configuration: SqliteAgentExecutionDispatchAdmissionStoreConfiguration,
+        *,
+        access: object,
     ) -> SqliteAdmissionStoreAdministrationResult:
         """Explicit single-owner forward migration; never used by open/calls."""
 
         try:
+            _claim_configuration_access(
+                configuration,
+                access,
+                administrative=True,
+            )
             config = _validate_configuration(configuration, require_file=True)
             migrations = _migration_bytes()
         except SqliteAdmissionStoreConfigurationError as error:
@@ -1272,6 +1365,24 @@ class SqliteAgentExecutionDispatchAdmissionStore:
                 self.configuration,
                 establish_wal=False,
             )
+        finally:
+            connection.close()
+
+    def _verified_activation_state_for_ownership(self) -> str:
+        """Return fully verified active/fenced state for owner recovery."""
+
+        connection = self._open_existing(allow_fenced=True)
+        try:
+            connection.execute("BEGIN")
+            metadata = self._verify_authoritative_connection(
+                connection,
+                allow_fenced=True,
+            )
+            connection.execute("ROLLBACK")
+            return metadata.activation_state
+        except BaseException:
+            _safe_rollback(connection)
+            raise
         finally:
             connection.close()
 

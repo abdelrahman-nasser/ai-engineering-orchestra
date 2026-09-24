@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import copy
 from dataclasses import replace
 from inspect import signature
+import pickle
 import unittest
 from unittest.mock import patch
 
@@ -616,6 +618,104 @@ class AuthorityInternalRequestTests(unittest.TestCase):
         self.assertEqual(parameters, ("self", "presented_grant"))
         module_text = subject.__doc__ or ""
         self.assertNotIn("trusted: bool", module_text)
+
+
+class StoreAccessCapabilityTests(unittest.TestCase):
+    def test_access_types_are_minter_only_noncopyable_and_nonserializable(
+        self,
+    ) -> None:
+        mint_access = (
+            subject._mint_test_only_agent_execution_dispatch_admission_store_access
+        )
+        mint_administration_access = (
+            subject.
+            _mint_test_only_agent_execution_dispatch_admission_store_administration_access
+        )
+        access_types = (
+            subject._AgentExecutionDispatchAdmissionStoreAccess,
+            subject._AgentExecutionDispatchAdmissionStoreAdministrationAccess,
+        )
+        for access_type in access_types:
+            with self.subTest(access_type=access_type):
+                with self.assertRaises(TypeError):
+                    access_type()
+        for generation in (0, -1, True):
+            with self.subTest(generation=generation):
+                with self.assertRaises(TypeError):
+                    mint_access(
+                        DOMAIN_ID,
+                        "ledger::synthetic",
+                        generation,
+                    )
+
+        access = mint_access(
+            DOMAIN_ID,
+            "ledger::synthetic",
+            1,
+        )
+        administration = mint_administration_access(
+            DOMAIN_ID,
+            "ledger::synthetic",
+            1,
+        )
+        for candidate in (access, administration):
+            for operation in (copy.copy, copy.deepcopy, pickle.dumps):
+                with self.subTest(candidate=candidate, operation=operation):
+                    with self.assertRaises(TypeError):
+                        operation(candidate)
+        with self.assertRaises(AttributeError):
+            access._authorization_domain_id = "authorization-domain::changed"
+
+    def test_access_is_exact_identity_bound_and_single_claim(self) -> None:
+        mint_access = (
+            subject._mint_test_only_agent_execution_dispatch_admission_store_access
+        )
+        mint_administration_access = (
+            subject.
+            _mint_test_only_agent_execution_dispatch_admission_store_administration_access
+        )
+        access = mint_access(
+            DOMAIN_ID,
+            "ledger::synthetic",
+            1,
+        )
+        with self.assertRaises(ValueError):
+            subject._claim_store_access(
+                access,
+                DOMAIN_ID,
+                "ledger::other",
+                1,
+                administrative=False,
+            )
+        subject._claim_store_access(
+            access,
+            DOMAIN_ID,
+            "ledger::synthetic",
+            1,
+            administrative=False,
+        )
+        with self.assertRaises(TypeError):
+            subject._claim_store_access(
+                access,
+                DOMAIN_ID,
+                "ledger::synthetic",
+                1,
+                administrative=False,
+            )
+
+        administration = mint_administration_access(
+            DOMAIN_ID,
+            "ledger::synthetic",
+            1,
+        )
+        with self.assertRaises(TypeError):
+            subject._claim_store_access(
+                administration,
+                DOMAIN_ID,
+                "ledger::synthetic",
+                1,
+                administrative=False,
+            )
 
 
 class CoordinatorOrderingAndConformanceTests(CoordinatorFixture):

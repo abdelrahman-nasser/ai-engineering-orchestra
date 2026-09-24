@@ -438,6 +438,52 @@ The canonical value and store contracts are defined in:
 
 ---
 
+## Authorization Domain Ownership Authority
+
+A provider-neutral operational boundary that exclusively acquires, validates,
+holds, and releases live ownership of one exact authorization domain and its
+exact authoritative ledger identity. Ownership is a prerequisite for supported
+local AIO-047 Store use; it is not Grant authentication, issuer entitlement,
+Tool trust, Admission, dispatch, or invocation.
+
+The AIO-049 v1 realization is deliberately limited to one conforming
+coordinator under one current Windows user SID on one host, using a fixed
+Local AppData registry, a domain-keyed OS lock, and a local fixed NTFS ledger.
+The provider-neutral contract is defined in:
+
+`core/authorization-domain-ownership-specification.md`
+
+---
+
+## Local Authorization Domain Binding
+
+The immutable, private, adapter-owned durable record that binds one exact
+authorization domain and current user identity to one canonical ledger path,
+stable file identity, ledger instance, and positive generation. Append-only
+activation and terminal-fencing evidence extends the binding without rebinding
+it. A binding, marker, checksum, path, PID, or generation is descriptive
+evidence and never a live bearer capability.
+
+The Windows v1 binding format is private to its adapter and is not a public
+Core schema.
+
+---
+
+## Owned Authorization Domain Session
+
+The live, process-local, nonserializable and noncopyable capability returned by
+a conforming Authorization Domain Ownership Authority. It retains the required
+OS ownership and ledger-pin handles and holds one lifecycle lease across each
+complete coordinator operation, including trust checks, fresh prerequisite
+reconstruction, guarded history, and the final Store operation.
+
+Closing, ownership loss, or the start of terminal fencing makes the session
+irreversibly unusable. Reacquisition creates a distinct session; an old object
+cannot be reanimated even when the same immutable domain generation is
+reacquired after an ordinary process exit.
+
+---
+
 ## Actor-to-Runtime Applicability Evidence
 
 An immutable, caller-supplied positive evidence value stating that one known
@@ -992,15 +1038,13 @@ Adapters translate Orchestra concepts into Provider-specific configuration where
 
 Example:
 
+```text
 Orchestra Role
-
     ↓
-
 Provider Adapter
-
     ↓
-
 Provider-specific Agent configuration
+```
 
 ---
 
@@ -1186,7 +1230,9 @@ self-direction. It is neither an exact ceiling nor a Task classification.
 
 The modes have this normative process-depth order:
 
-    lite < standard < deep < critical
+```text
+lite < standard < deep < critical
+```
 
 A mode satisfies its own minimum and every lower minimum; it does not satisfy a
 higher minimum. The order describes process depth only, not authority, approval,

@@ -12,6 +12,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
+from threading import Lock
 from typing import Protocol
 
 from engineering_orchestration.agent_action_prerequisite import (
@@ -471,6 +472,242 @@ class AgentExecutionDispatchAdmissionClock(Protocol):
 
     def now_utc(self) -> datetime:
         """Return an aware UTC instant; backends fail closed otherwise."""
+
+
+_STORE_ACCESS_AUTHORITY = object()
+_STORE_ADMINISTRATION_ACCESS_AUTHORITY = object()
+_STORE_ACCESS_LOCK_TYPE = type(Lock())
+
+
+class _AgentExecutionDispatchAdmissionStoreAccess:
+    """Process-local, exact-identity capability for one Store construction."""
+
+    __slots__ = (
+        "_authorization_domain_id",
+        "_ledger_instance_id",
+        "_domain_generation",
+        "_authority",
+        "_claimed",
+        "_claim_lock",
+    )
+
+    def __new__(cls) -> _AgentExecutionDispatchAdmissionStoreAccess:
+        raise TypeError("operational Store access is owner-minted")
+
+    def __setattr__(self, name: str, value: object) -> None:
+        del name, value
+        raise AttributeError("operational Store access is immutable")
+
+    def __copy__(self) -> object:
+        raise TypeError("operational Store access cannot be copied")
+
+    def __deepcopy__(self, memo: object) -> object:
+        del memo
+        raise TypeError("operational Store access cannot be copied")
+
+    def __reduce__(self) -> object:
+        raise TypeError("operational Store access cannot be serialized")
+
+    def __reduce_ex__(self, protocol: object) -> object:
+        del protocol
+        raise TypeError("operational Store access cannot be serialized")
+
+
+class _AgentExecutionDispatchAdmissionStoreAdministrationAccess:
+    """Process-local capability for one explicit Store administration call."""
+
+    __slots__ = (
+        "_authorization_domain_id",
+        "_ledger_instance_id",
+        "_domain_generation",
+        "_authority",
+        "_claimed",
+        "_claim_lock",
+    )
+
+    def __new__(
+        cls,
+    ) -> _AgentExecutionDispatchAdmissionStoreAdministrationAccess:
+        raise TypeError("administrative Store access is owner-minted")
+
+    def __setattr__(self, name: str, value: object) -> None:
+        del name, value
+        raise AttributeError("administrative Store access is immutable")
+
+    def __copy__(self) -> object:
+        raise TypeError("administrative Store access cannot be copied")
+
+    def __deepcopy__(self, memo: object) -> object:
+        del memo
+        raise TypeError("administrative Store access cannot be copied")
+
+    def __reduce__(self) -> object:
+        raise TypeError("administrative Store access cannot be serialized")
+
+    def __reduce_ex__(self, protocol: object) -> object:
+        del protocol
+        raise TypeError("administrative Store access cannot be serialized")
+
+
+def _validate_store_access_identity(
+    authorization_domain_id: object,
+    ledger_instance_id: object,
+    domain_generation: object,
+) -> tuple[str, str, int]:
+    if (
+        type(authorization_domain_id) is not str
+        or not authorization_domain_id
+        or type(ledger_instance_id) is not str
+        or not ledger_instance_id
+        or type(domain_generation) is not int
+        or domain_generation <= 0
+    ):
+        raise TypeError(
+            "Store access requires exact nonempty domain and ledger IDs "
+            "and a positive integer generation"
+        )
+    return authorization_domain_id, ledger_instance_id, domain_generation
+
+
+def _mint_store_access(
+    access_type: type[object],
+    authority: object,
+    authorization_domain_id: object,
+    ledger_instance_id: object,
+    domain_generation: object,
+) -> object:
+    domain_id, ledger_id, generation = _validate_store_access_identity(
+        authorization_domain_id,
+        ledger_instance_id,
+        domain_generation,
+    )
+    access = object.__new__(access_type)
+    object.__setattr__(access, "_authorization_domain_id", domain_id)
+    object.__setattr__(access, "_ledger_instance_id", ledger_id)
+    object.__setattr__(access, "_domain_generation", generation)
+    object.__setattr__(access, "_authority", authority)
+    object.__setattr__(access, "_claimed", False)
+    object.__setattr__(access, "_claim_lock", Lock())
+    return access
+
+
+def _mint_owned_agent_execution_dispatch_admission_store_access(
+    authorization_domain_id: str,
+    ledger_instance_id: str,
+    domain_generation: int,
+) -> _AgentExecutionDispatchAdmissionStoreAccess:
+    """Mint one operational capability for a live package-owned session."""
+
+    return _mint_store_access(
+        _AgentExecutionDispatchAdmissionStoreAccess,
+        _STORE_ACCESS_AUTHORITY,
+        authorization_domain_id,
+        ledger_instance_id,
+        domain_generation,
+    )  # type: ignore[return-value]
+
+
+def _mint_owned_agent_execution_dispatch_admission_store_administration_access(
+    authorization_domain_id: str,
+    ledger_instance_id: str,
+    domain_generation: int,
+) -> _AgentExecutionDispatchAdmissionStoreAdministrationAccess:
+    """Mint one capability for a trusted package administration operation."""
+
+    return _mint_store_access(
+        _AgentExecutionDispatchAdmissionStoreAdministrationAccess,
+        _STORE_ADMINISTRATION_ACCESS_AUTHORITY,
+        authorization_domain_id,
+        ledger_instance_id,
+        domain_generation,
+    )  # type: ignore[return-value]
+
+
+def _mint_test_only_agent_execution_dispatch_admission_store_access(
+    authorization_domain_id: str,
+    ledger_instance_id: str,
+    domain_generation: int,
+) -> _AgentExecutionDispatchAdmissionStoreAccess:
+    """Mint focused AIO-047 test access; never a production authority API."""
+
+    return _mint_owned_agent_execution_dispatch_admission_store_access(
+        authorization_domain_id,
+        ledger_instance_id,
+        domain_generation,
+    )
+
+
+def _mint_test_only_agent_execution_dispatch_admission_store_administration_access(
+    authorization_domain_id: str,
+    ledger_instance_id: str,
+    domain_generation: int,
+) -> _AgentExecutionDispatchAdmissionStoreAdministrationAccess:
+    """Mint focused AIO-047 test administration access only."""
+
+    return (
+        _mint_owned_agent_execution_dispatch_admission_store_administration_access(
+            authorization_domain_id,
+            ledger_instance_id,
+            domain_generation,
+        )
+    )
+
+
+def _claim_store_access(
+    access: object,
+    authorization_domain_id: object,
+    ledger_instance_id: object,
+    domain_generation: object,
+    *,
+    administrative: bool,
+) -> None:
+    """Consume one exact capability or fail before backend access."""
+
+    if type(administrative) is not bool:
+        raise TypeError("administrative must be an exact boolean")
+    expected_identity = _validate_store_access_identity(
+        authorization_domain_id,
+        ledger_instance_id,
+        domain_generation,
+    )
+    access_type = (
+        _AgentExecutionDispatchAdmissionStoreAdministrationAccess
+        if administrative
+        else _AgentExecutionDispatchAdmissionStoreAccess
+    )
+    authority = (
+        _STORE_ADMINISTRATION_ACCESS_AUTHORITY
+        if administrative
+        else _STORE_ACCESS_AUTHORITY
+    )
+    if type(access) is not access_type:
+        raise TypeError("Store access capability has the wrong exact type")
+    try:
+        claim_lock = access._claim_lock
+    except AttributeError as error:
+        raise TypeError("Store access capability is counterfeit") from error
+    if type(claim_lock) is not _STORE_ACCESS_LOCK_TYPE:
+        raise TypeError("Store access capability is counterfeit")
+    with claim_lock:
+        try:
+            presented_identity = (
+                access._authorization_domain_id,
+                access._ledger_instance_id,
+                access._domain_generation,
+            )
+            presented_authority = access._authority
+            claimed = access._claimed
+        except AttributeError as error:
+            raise TypeError("Store access capability is counterfeit") from error
+        if presented_authority is not authority:
+            raise TypeError("Store access capability is counterfeit")
+        if type(claimed) is not bool:
+            raise TypeError("Store access capability is counterfeit")
+        if claimed:
+            raise TypeError("Store access capability was already claimed")
+        if presented_identity != expected_identity:
+            raise ValueError("Store access capability identity does not match")
+        object.__setattr__(access, "_claimed", True)
 
 
 _STORE_REQUEST_AUTHORITY = object()

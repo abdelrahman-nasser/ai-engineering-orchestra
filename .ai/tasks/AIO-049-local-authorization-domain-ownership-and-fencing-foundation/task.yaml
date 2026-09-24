@@ -1,0 +1,53 @@
+id: AIO-049
+title: Local Authorization Domain Ownership and Fencing Foundation
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: critical
+execution:
+  mode: critical
+workflow: architecture-change
+objective: >
+  Establish the bounded current-user, single-host operational authority that
+  exclusively binds one authorization domain to one pre-provisioned AIO-047
+  SQLite ledger path, ledger instance, positive generation, and activation
+  state under a live OS-backed ownership capability, rejecting duplicate
+  owners and copied, stale, mismatched, or fenced ledger states without
+  issuing Grants, resolving Tools, dispatching, or invoking anything.
+scope:
+  include:
+    - Provider-neutral authorization-domain ownership semantics and specification
+    - Windows current-user SID-scoped local ownership adapter
+    - Fixed AEO-owned Local AppData ownership registry and protected ACL profile
+    - Immutable external domain-to-ledger binding and monotonic activation/fencing evidence
+    - Domain-keyed Win32 share-zero ownership lock independent of ledger location
+    - NTFS canonical-path, FILE_ID_INFO, single-hard-link, and reparse-point validation
+    - Positive immutable domain generation and explicit activation lifecycle
+    - Live process-local nonserializable Owned Authorization Domain Session
+    - Structural ownership gating for supported AIO-047 operational Store use
+    - Crash recovery, stale-session rejection, terminal fencing, and forward-only reconciliation
+    - Focused synthetic Windows tests and focused AIO-047 regression evidence
+    - Target-safe packaging evidence and real privileged symlink evidence before closure
+    - Fresh design and final specialist reviews, independent review, Quality Gates, and Human checkpoints
+  exclude:
+    - Reopening, amending, completing, replacing, or curing AIO-048
+    - Reusing any AIO-048 acceptance, review, Gate, test, validation, process, protected-target, or Human-approval evidence
+    - Bulk restoration, mirroring, patch application, or automatic copying from the noncanonical AIO-048 archive
+    - Linux, macOS, ReFS, network shares, cloud-synchronized storage, or multi-host ownership
+    - PostgreSQL, central ownership services, distributed consensus, leases, transfer, automatic failover, or restore activation
+    - Grant Producer, Grant authentication, issuer entitlement, Human authentication, Keycloak, OIDC, or JWS
+    - Tool registry, Tool Resolver, Tool aliases, adapter descriptors, secrets broker, or real Tool resolution
+    - Dispatch, outbox, claim, lease, delivery, invocation, Result, event, Journal, telemetry, or Full UI work
+    - Real authorization-domain provisioning, activation, acquisition, fencing, Grant consumption, Admission, Tool use, dispatch, or invocation
+    - AIO-044 changes, AIO-030 work, protected-target access, staging, push, merge, tag, release, or publication
+dependencies:
+  - AIO-047
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

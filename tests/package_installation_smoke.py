@@ -141,7 +141,7 @@ def main() -> None:
                 with zipfile.ZipFile(wheel) as archive:
                     names = archive.namelist()
                     modules = {f"engineering_orchestration/{name}" for name in
-                               ("__init__.py", "_operation_vocabulary.py", "_read_only_execution_preparation.py", "_repository_resource.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_action_prerequisite.py", "agent_operation_tool_binding.py", "agent_execution_authorization_evidence.py", "agent_execution_authorization_grant.py", "agent_execution_dispatch_admission.py", "agent_execution_dispatch_admission_store.py", "sqlite_agent_execution_dispatch_admission_store.py", "agent_execution_candidate_prerequisite.py", "agent_execution_contract.py", "agent_execution_run.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
+                               ("__init__.py", "_operation_vocabulary.py", "_read_only_execution_preparation.py", "_repository_resource.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_action_prerequisite.py", "agent_operation_tool_binding.py", "agent_execution_authorization_evidence.py", "agent_execution_authorization_grant.py", "agent_execution_dispatch_admission.py", "agent_execution_dispatch_admission_store.py", "authorization_domain_ownership.py", "windows_local_authorization_domain_owner.py", "sqlite_agent_execution_dispatch_admission_store.py", "agent_execution_candidate_prerequisite.py", "agent_execution_contract.py", "agent_execution_run.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
                                 "environment_operation_permission.py",
                                 "execution_mode.py", "inference_option.py",
                                 "inference_option_availability.py",
@@ -1626,7 +1626,9 @@ import engineering_orchestration.agent_execution_dispatch_admission as admission
 import engineering_orchestration.agent_execution_dispatch_admission_store as store_module
 import engineering_orchestration.agent_execution_run as run_module
 import engineering_orchestration.agent_operation_tool_binding as binding_module
+import engineering_orchestration.authorization_domain_ownership as ownership_module
 import engineering_orchestration.sqlite_agent_execution_dispatch_admission_store as sqlite_module
+import engineering_orchestration.windows_local_authorization_domain_owner as windows_owner_module
 from engineering_orchestration._sqlite_admission_migrations import MIGRATIONS
 from engineering_orchestration.schema_resources import load_validator, schema_resource
 
@@ -1676,10 +1678,19 @@ with tempfile.TemporaryDirectory(prefix='aio047-installed-') as folder:
             'ledger-instance::installed',
             1))
     provisioned = sqlite_module.SqliteAgentExecutionDispatchAdmissionStore.provision(
-        configuration)
+        configuration,
+        access=store_module._mint_test_only_agent_execution_dispatch_admission_store_administration_access(
+            configuration.authorization_domain_id,
+            configuration.ledger_instance_id,
+            configuration.domain_generation))
     assert provisioned.outcome.value == 'provisioned', provisioned
     store = sqlite_module.SqliteAgentExecutionDispatchAdmissionStore(
-        configuration, clock=Clock())
+        configuration,
+        clock=Clock(),
+        access=store_module._mint_test_only_agent_execution_dispatch_admission_store_access(
+            configuration.authorization_domain_id,
+            configuration.ledger_instance_id,
+            configuration.domain_generation))
     request = store_module._mint_admission_request(
         grant.authorization_domain_id, grant, binding, run)
     created = store.admit_or_return_existing(request)
@@ -1688,19 +1699,73 @@ with tempfile.TemporaryDirectory(prefix='aio047-installed-') as folder:
     assert recovered.outcome.value == 'existing_exact_admission', recovered
     assert recovered.admission == created.admission
 
+ownership_identity = ownership_module.AuthorizationDomainIdentity(
+    'authorization-domain::installed', 'ledger-instance::installed', 1)
+assert ownership_identity.domain_generation == 1
+ownership_exports = (
+    'AuthorizationDomainAlreadyOwnedError',
+    'AuthorizationDomainIdentity',
+    'AuthorizationDomainOperationLease',
+    'AuthorizationDomainOwnershipAuthority',
+    'AuthorizationDomainOwnershipError',
+    'AuthorizationDomainOwnershipIntegrityError',
+    'AuthorizationDomainOwnershipStateError',
+    'AuthorizationDomainOwnershipUnavailableError',
+    'AuthorizationDomainOwnershipUnsupportedError',
+    'OwnedAuthorizationDomainSession',
+    'OwnedAuthorizationDomainSessionClosedError',
+    'OwnedAuthorizationDomainSessionError',
+    'OwnedAuthorizationDomainSessionLostError',
+)
+assert ownership_module.__all__ == ownership_exports
+ownership_symbols = tuple(
+    getattr(ownership_module, name) for name in ownership_exports)
+assert len(ownership_symbols) == 13
+assert all(isinstance(symbol, type) for symbol in ownership_symbols)
+assert ownership_symbols[1] is type(ownership_identity)
+assert all(
+    issubclass(getattr(ownership_module, name),
+               ownership_module.AuthorizationDomainOwnershipError)
+    for name in (
+        'AuthorizationDomainAlreadyOwnedError',
+        'AuthorizationDomainOwnershipIntegrityError',
+        'AuthorizationDomainOwnershipStateError',
+        'AuthorizationDomainOwnershipUnavailableError',
+        'AuthorizationDomainOwnershipUnsupportedError',
+        'OwnedAuthorizationDomainSessionError',
+        'OwnedAuthorizationDomainSessionClosedError',
+        'OwnedAuthorizationDomainSessionLostError',
+    ))
+assert issubclass(
+    ownership_module.OwnedAuthorizationDomainSessionClosedError,
+    ownership_module.OwnedAuthorizationDomainSessionError)
+assert issubclass(
+    ownership_module.OwnedAuthorizationDomainSessionLostError,
+    ownership_module.OwnedAuthorizationDomainSessionError)
+assert set(windows_owner_module.__all__) == {
+    'WindowsLocalAuthorizationDomainAdministration',
+    'WindowsLocalAuthorizationDomainOwner'}
+
 assert all(not hasattr(engineering_orchestration, name) for name in (
     'AgentExecutionDispatchAdmission',
     'AgentExecutionDispatchAdmissionCoordinator',
-    'SqliteAgentExecutionDispatchAdmissionStore'))
+    'SqliteAgentExecutionDispatchAdmissionStore',
+    *ownership_exports,
+    *windows_owner_module.__all__))
 print(json.dumps({
     'agent_execution_dispatch_admission_module': admission_module.__file__,
     'agent_execution_dispatch_admission_store_module': store_module.__file__,
     'sqlite_agent_execution_dispatch_admission_store_module': sqlite_module.__file__,
+    'authorization_domain_ownership_module': ownership_module.__file__,
+    'windows_local_authorization_domain_owner_module': windows_owner_module.__file__,
     'agent_execution_dispatch_admission_schema': str(schema),
     'sqlite_admission_migration_resource': str(migration),
     'agent_execution_dispatch_admission_fields': [
         field.name for field in fields(type(admission))],
     'agent_execution_dispatch_admission_installed_backend': True,
+    'authorization_domain_ownership_exports': list(
+        ownership_module.__all__),
+    'authorization_domain_ownership_symbols_resolved': True,
 }))
 """
             evidence.update(json.loads(run(
@@ -1755,6 +1820,10 @@ print(json.dumps({
                         "Normal Agent Execution Dispatch Admission Store import leaked to source")
                 require(Path(evidence["sqlite_agent_execution_dispatch_admission_store_module"]).resolve().is_relative_to(environment),
                         "Normal SQLite Admission Store import leaked to source")
+                require(Path(evidence["authorization_domain_ownership_module"]).resolve().is_relative_to(environment),
+                        "Normal Authorization Domain Ownership import leaked to source")
+                require(Path(evidence["windows_local_authorization_domain_owner_module"]).resolve().is_relative_to(environment),
+                        "Normal Windows Local Authorization Domain Owner import leaked to source")
                 require(Path(evidence["sqlite_admission_migration_resource"]).resolve().is_relative_to(environment),
                         "Normal SQLite Admission migration resource leaked to source")
                 require(Path(evidence["read_only_execution_preparation_module"]).resolve().is_relative_to(environment),
@@ -2281,6 +2350,27 @@ print(json.dumps({
             require(
                 evidence["agent_execution_dispatch_admission_installed_backend"],
                 "Installed SQLite Admission backend exact-retry probe failed",
+            )
+            require(
+                evidence["authorization_domain_ownership_exports"] == [
+                    "AuthorizationDomainAlreadyOwnedError",
+                    "AuthorizationDomainIdentity",
+                    "AuthorizationDomainOperationLease",
+                    "AuthorizationDomainOwnershipAuthority",
+                    "AuthorizationDomainOwnershipError",
+                    "AuthorizationDomainOwnershipIntegrityError",
+                    "AuthorizationDomainOwnershipStateError",
+                    "AuthorizationDomainOwnershipUnavailableError",
+                    "AuthorizationDomainOwnershipUnsupportedError",
+                    "OwnedAuthorizationDomainSession",
+                    "OwnedAuthorizationDomainSessionClosedError",
+                    "OwnedAuthorizationDomainSessionError",
+                    "OwnedAuthorizationDomainSessionLostError",
+                ]
+                and evidence[
+                    "authorization_domain_ownership_symbols_resolved"
+                ],
+                "Installed authorization-domain ownership API probe failed",
             )
             require(evidence["operation_requirement_valid"] == {
                         "valid": True,

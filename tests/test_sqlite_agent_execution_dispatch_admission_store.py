@@ -22,10 +22,14 @@ from engineering_orchestration.agent_execution_dispatch_admission import (
     AgentExecutionDispatchAdmission,
 )
 from engineering_orchestration.agent_execution_dispatch_admission_store import (
+    _AgentExecutionDispatchAdmissionStoreAccess,
+    _AgentExecutionDispatchAdmissionStoreAdministrationAccess,
     _mint_admission_request,
     _mint_authoritative_lookup_request,
     _mint_guarded_history_request,
     _mint_revocation_request,
+    _mint_test_only_agent_execution_dispatch_admission_store_access,
+    _mint_test_only_agent_execution_dispatch_admission_store_administration_access,
 )
 from engineering_orchestration.agent_execution_run import AgentExecutionRun
 from engineering_orchestration.agent_operation_tool_binding import (
@@ -219,6 +223,28 @@ def config_for(
     )
 
 
+def store_access(
+    configuration: SqliteAgentExecutionDispatchAdmissionStoreConfiguration,
+):
+    return _mint_test_only_agent_execution_dispatch_admission_store_access(
+        configuration.authorization_domain_id,
+        configuration.ledger_instance_id,
+        configuration.domain_generation,
+    )
+
+
+def administration_access(
+    configuration: SqliteAgentExecutionDispatchAdmissionStoreConfiguration,
+):
+    return (
+        _mint_test_only_agent_execution_dispatch_admission_store_administration_access(
+            configuration.authorization_domain_id,
+            configuration.ledger_instance_id,
+            configuration.domain_generation,
+        )
+    )
+
+
 def admit_request(
     grant: AgentExecutionAuthorizationGrant,
     binding: AgentOperationToolBinding,
@@ -248,6 +274,7 @@ def _spawn_store_operation(
         store = SqliteAgentExecutionDispatchAdmissionStore(
             configuration,
             clock=MutableClock(),
+            access=store_access(configuration),
         )
         start.wait(15)  # type: ignore[attr-defined]
         if operation == "admit":
@@ -277,6 +304,7 @@ def _spawn_crashing_admission(
     store = HardExitStore(
         configuration,
         clock=MutableClock(),
+        access=store_access(configuration),
         fault_point=fault_point,
     )
     store.admit_or_return_existing(admit_request(grant, binding))
@@ -309,18 +337,145 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
             busy_timeout_ms=busy_timeout_ms,
         )
         result = SqliteAgentExecutionDispatchAdmissionStore.provision(
-            configuration
+            configuration,
+            access=administration_access(configuration),
         )
         self.assertEqual(result.outcome.value, "provisioned", result.detail)
         supplied_clock = MutableClock() if clock is None else clock
         store = SqliteAgentExecutionDispatchAdmissionStore(
             configuration,
             clock=supplied_clock,
+            access=store_access(configuration),
         )
         return configuration, store, supplied_clock
 
     def assert_outcome(self, result: object, expected: str) -> None:
         self.assertEqual(result.outcome.value, expected, result.detail)  # type: ignore[attr-defined]
+
+    def test_store_construction_and_administration_require_exact_access(
+        self,
+    ) -> None:
+        configuration = self.configuration
+
+        with self.assertRaises(TypeError):
+            SqliteAgentExecutionDispatchAdmissionStore.provision(configuration)
+        counterfeit_administration = object.__new__(
+            _AgentExecutionDispatchAdmissionStoreAdministrationAccess
+        )
+        rejected_counterfeit = (
+            SqliteAgentExecutionDispatchAdmissionStore.provision(
+                configuration,
+                access=counterfeit_administration,
+            )
+        )
+        self.assert_outcome(rejected_counterfeit, "storage_unavailable")
+        self.assertFalse(configuration.database_path.exists())
+
+        mismatched_administration = (
+            _mint_test_only_agent_execution_dispatch_admission_store_administration_access(
+                "authorization-domain::mismatched",
+                configuration.ledger_instance_id,
+                configuration.domain_generation,
+            )
+        )
+        rejected_mismatch = SqliteAgentExecutionDispatchAdmissionStore.provision(
+            configuration,
+            access=mismatched_administration,
+        )
+        self.assert_outcome(rejected_mismatch, "storage_unavailable")
+        self.assertFalse(configuration.database_path.exists())
+
+        administrative = administration_access(configuration)
+        provisioned = SqliteAgentExecutionDispatchAdmissionStore.provision(
+            configuration,
+            access=administrative,
+        )
+        self.assert_outcome(provisioned, "provisioned")
+        rejected_admin_reuse = SqliteAgentExecutionDispatchAdmissionStore.migrate(
+            configuration,
+            access=administrative,
+        )
+        self.assert_outcome(rejected_admin_reuse, "storage_unavailable")
+
+        with self.assertRaises(TypeError):
+            SqliteAgentExecutionDispatchAdmissionStore(
+                configuration,
+                clock=MutableClock(),
+            )
+        counterfeit = object.__new__(
+            _AgentExecutionDispatchAdmissionStoreAccess
+        )
+        with self.assertRaises(SqliteAdmissionStoreConfigurationError):
+            SqliteAgentExecutionDispatchAdmissionStore(
+                configuration,
+                clock=MutableClock(),
+                access=counterfeit,
+            )
+        mismatched_accesses = (
+            _mint_test_only_agent_execution_dispatch_admission_store_access(
+                "authorization-domain::mismatched",
+                configuration.ledger_instance_id,
+                configuration.domain_generation,
+            ),
+            _mint_test_only_agent_execution_dispatch_admission_store_access(
+                configuration.authorization_domain_id,
+                "ledger::mismatched",
+                configuration.domain_generation,
+            ),
+            _mint_test_only_agent_execution_dispatch_admission_store_access(
+                configuration.authorization_domain_id,
+                configuration.ledger_instance_id,
+                configuration.domain_generation + 1,
+            ),
+        )
+        for mismatched in mismatched_accesses:
+            with self.subTest(mismatched=mismatched):
+                with self.assertRaises(SqliteAdmissionStoreConfigurationError):
+                    SqliteAgentExecutionDispatchAdmissionStore(
+                        configuration,
+                        clock=MutableClock(),
+                        access=mismatched,
+                    )
+
+        administrative_open = administration_access(configuration)
+        with self.assertRaises(SqliteAdmissionStoreConfigurationError):
+            SqliteAgentExecutionDispatchAdmissionStore._open_for_ownership(
+                configuration,
+                clock=MutableClock(),
+                access=administrative_open,
+            )
+        administration_store = (
+            SqliteAgentExecutionDispatchAdmissionStore._open_for_ownership(
+                configuration,
+                clock=MutableClock(),
+                access=administrative_open,
+                administrative=True,
+            )
+        )
+        self.assertEqual(
+            administration_store._verified_activation_state_for_ownership(),
+            "active",
+        )
+        with self.assertRaises(SqliteAdmissionStoreConfigurationError):
+            SqliteAgentExecutionDispatchAdmissionStore._open_for_ownership(
+                configuration,
+                clock=MutableClock(),
+                access=administrative_open,
+                administrative=True,
+            )
+
+        operational = store_access(configuration)
+        SqliteAgentExecutionDispatchAdmissionStore(
+            configuration,
+            clock=MutableClock(),
+            access=operational,
+        )
+        with self.assertRaises(SqliteAdmissionStoreConfigurationError):
+            SqliteAgentExecutionDispatchAdmissionStore(
+                configuration,
+                clock=MutableClock(),
+                access=operational,
+            )
 
     def test_explicit_provisioning_open_profile_and_no_implicit_create(self) -> None:
         missing = config_for(self.root / "missing.sqlite3")
@@ -328,11 +483,13 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
             SqliteAgentExecutionDispatchAdmissionStore(
                 missing,
                 clock=MutableClock(),
+                access=store_access(missing),
             )
         self.assertFalse(missing.database_path.exists())
 
         migrate_missing = SqliteAgentExecutionDispatchAdmissionStore.migrate(
-            missing
+            missing,
+            access=administration_access(missing),
         )
         self.assertEqual(migrate_missing.outcome.value, "storage_unavailable")
         self.assertFalse(missing.database_path.exists())
@@ -352,11 +509,13 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
         )
 
         second = SqliteAgentExecutionDispatchAdmissionStore.provision(
-            configuration
+            configuration,
+            access=administration_access(configuration),
         )
         self.assertEqual(second.outcome.value, "storage_unavailable")
         current = SqliteAgentExecutionDispatchAdmissionStore.migrate(
-            configuration
+            configuration,
+            access=administration_access(configuration),
         )
         self.assertEqual(current.outcome.value, "already_current", current.detail)
 
@@ -373,6 +532,7 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
                     SqliteAgentExecutionDispatchAdmissionStore(
                         configuration,
                         clock=MutableClock(),
+                        access=store_access(configuration),
                     )
 
     def test_admit_history_load_and_restart_preserve_exact_admission(self) -> None:
@@ -406,6 +566,7 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
         restarted = SqliteAgentExecutionDispatchAdmissionStore(
             configuration,
             clock=restarted_clock,
+            access=store_access(configuration),
         )
         loaded = restarted.load_authoritative_admission(
             _mint_authoritative_lookup_request(DOMAIN_ID, grant, binding)
@@ -607,6 +768,7 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
         reader = PausingVerificationStore(
             configuration,
             clock=MutableClock(RuntimeError("history must not sample time")),
+            access=store_access(configuration),
         )
         reader.pause_verification = True
         observed: list[object] = []
@@ -650,6 +812,7 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
         store = MutatingRequestStore(
             configuration,
             clock=clock,
+            access=store_access(configuration),
             grant_to_mutate=grant,
             replacement_run=make_run(
                 "run::mutated-after-begin",
@@ -717,12 +880,14 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
             path = self.root / f"fault-{index}.sqlite3"
             configuration = config_for(path)
             provisioned = SqliteAgentExecutionDispatchAdmissionStore.provision(
-                configuration
+                configuration,
+                access=administration_access(configuration),
             )
             self.assertEqual(provisioned.outcome.value, "provisioned", provisioned.detail)
             faulting = FaultingStore(
                 configuration,
                 clock=MutableClock(),
+                access=store_access(configuration),
                 fault_point=point,
             )
             exact_run = make_run(
@@ -741,6 +906,7 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
             normal = SqliteAgentExecutionDispatchAdmissionStore(
                 configuration,
                 clock=MutableClock(),
+                access=store_access(configuration),
             )
             absent = normal.classify_guarded_history(
                 history_request(grant, binding)
@@ -750,12 +916,14 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
         post_path = self.root / "fault-after-commit.sqlite3"
         post_configuration = config_for(post_path)
         provisioned = SqliteAgentExecutionDispatchAdmissionStore.provision(
-            post_configuration
+            post_configuration,
+            access=administration_access(post_configuration),
         )
         self.assertEqual(provisioned.outcome.value, "provisioned", provisioned.detail)
         post_store = FaultingStore(
             post_configuration,
             clock=MutableClock(),
+            access=store_access(post_configuration),
             fault_point="after_commit_before_response",
         )
         post_run = make_run("run::postcommit", task_id="postcommit")
@@ -771,6 +939,7 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
         normal = SqliteAgentExecutionDispatchAdmissionStore(
             post_configuration,
             clock=MutableClock(RuntimeError("exact retry must not resample")),
+            access=store_access(post_configuration),
         )
         recovered = normal.admit_or_return_existing(
             admit_request(post_grant, post_binding)
@@ -793,6 +962,7 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
                 SqliteAgentExecutionDispatchAdmissionStore(
                     configuration,
                     clock=MutableClock(),
+                    access=store_access(configuration),
                 )
 
         checksum_path = self.root / "schema-checksum.sqlite3"
@@ -814,6 +984,7 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
             SqliteAgentExecutionDispatchAdmissionStore(
                 checksum_configuration,
                 clock=MutableClock(),
+                access=store_access(checksum_configuration),
             )
 
     def test_malformed_payload_and_index_payload_mismatch_fail_closed(self) -> None:
@@ -845,6 +1016,7 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
             SqliteAgentExecutionDispatchAdmissionStore(
                 malformed_configuration,
                 clock=MutableClock(),
+                access=store_access(malformed_configuration),
             )
 
         mismatch_path = self.root / "payload-index-mismatch.sqlite3"
@@ -890,6 +1062,7 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
             SqliteAgentExecutionDispatchAdmissionStore(
                 mismatch_configuration,
                 clock=MutableClock(),
+                access=store_access(mismatch_configuration),
             )
 
     def test_corrupt_database_and_wrong_application_identity_fail_closed(self) -> None:
@@ -900,6 +1073,7 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
             SqliteAgentExecutionDispatchAdmissionStore(
                 corrupt_configuration,
                 clock=MutableClock(),
+                access=store_access(corrupt_configuration),
             )
 
         identity_path = self.root / "wrong-identity.sqlite3"
@@ -913,6 +1087,7 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
             SqliteAgentExecutionDispatchAdmissionStore(
                 identity_configuration,
                 clock=MutableClock(),
+                access=store_access(identity_configuration),
             )
 
     def test_revocation_serial_time_cannot_precede_same_grant_admission(self) -> None:
@@ -958,10 +1133,15 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
             SqliteAgentExecutionDispatchAdmissionStore(
                 configuration,
                 clock=MutableClock(),
+                access=store_access(configuration),
             )
 
     def test_one_way_fence_and_consistent_fenced_backup(self) -> None:
         configuration, store, _ = self.provision()
+        self.assertEqual(
+            store._verified_activation_state_for_ownership(),
+            "active",
+        )
         exact_run = make_run()
         grant = make_grant(bound_run=exact_run)
         binding = make_binding(bound_run=exact_run)
@@ -992,6 +1172,7 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
             SqliteAgentExecutionDispatchAdmissionStore(
                 backup_configuration,
                 clock=MutableClock(),
+                access=store_access(backup_configuration),
             )
 
         # Creating the inert snapshot does not fence the source authority.
@@ -1005,10 +1186,26 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
             "fenced",
             exact_fence_retry.detail,
         )
+        recovery_store = (
+            SqliteAgentExecutionDispatchAdmissionStore._open_for_ownership(
+                configuration,
+                clock=MutableClock(),
+                access=administration_access(configuration),
+                allow_fenced=True,
+                administrative=True,
+            )
+        )
+        self.assertEqual(
+            recovery_store._verified_activation_state_for_ownership(),
+            "fenced",
+        )
+        recovered_fence = recovery_store.fence()
+        self.assertEqual(recovered_fence.outcome.value, "fenced")
         with self.assertRaises(SqliteAdmissionStoreIncompatibleSchemaError):
             SqliteAgentExecutionDispatchAdmissionStore(
                 configuration,
                 clock=MutableClock(),
+                access=store_access(configuration),
             )
         with closing(sqlite3.connect(configuration.database_path)) as connection:
             with self.assertRaises(sqlite3.IntegrityError):
@@ -1024,6 +1221,7 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
         copied = SqliteAgentExecutionDispatchAdmissionStore(
             copied_configuration,
             clock=MutableClock(),
+            access=store_access(copied_configuration),
         )
 
         source_run = make_run("run::source-only", task_id="source-only")
@@ -1077,7 +1275,8 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
     ) -> list[str]:
         configuration = config_for(path)
         provisioned = SqliteAgentExecutionDispatchAdmissionStore.provision(
-            configuration
+            configuration,
+            access=administration_access(configuration),
         )
         self.assertEqual(provisioned.outcome.value, "provisioned", provisioned.detail)
         context = multiprocessing.get_context("spawn")
@@ -1141,7 +1340,8 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
         path = self.root / "spawn-admit-revoke.sqlite3"
         configuration = config_for(path)
         provisioned = SqliteAgentExecutionDispatchAdmissionStore.provision(
-            configuration
+            configuration,
+            access=administration_access(configuration),
         )
         self.assertEqual(provisioned.outcome.value, "provisioned")
         exact_run = make_run()
@@ -1184,6 +1384,7 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
         reopened = SqliteAgentExecutionDispatchAdmissionStore(
             configuration,
             clock=MutableClock(RuntimeError("history must not sample time")),
+            access=store_access(configuration),
         )
         history = reopened.classify_guarded_history(
             history_request(grant, binding)
@@ -1210,7 +1411,8 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
                 configuration = config_for(path)
                 provisioned = (
                     SqliteAgentExecutionDispatchAdmissionStore.provision(
-                        configuration
+                        configuration,
+                        access=administration_access(configuration),
                     )
                 )
                 self.assertEqual(provisioned.outcome.value, "provisioned")
@@ -1238,6 +1440,7 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
                 reopened = SqliteAgentExecutionDispatchAdmissionStore(
                     configuration,
                     clock=retry_clock,
+                    access=store_access(configuration),
                 )
                 history = reopened.classify_guarded_history(
                     history_request(grant, binding)
@@ -1282,7 +1485,8 @@ class SqliteAdmissionStoreReusableConformanceTests(
             ledger_id=f"ledger::store-conformance::{self.harness_index}",
         )
         provisioned = SqliteAgentExecutionDispatchAdmissionStore.provision(
-            configuration
+            configuration,
+            access=administration_access(configuration),
         )
         self.assertEqual(
             provisioned.outcome.value,
@@ -1293,6 +1497,7 @@ class SqliteAdmissionStoreReusableConformanceTests(
         store = SqliteAgentExecutionDispatchAdmissionStore(
             configuration,
             clock=clock,
+            access=store_access(configuration),
         )
         unavailable_path = path.with_name(path.name + ".unavailable")
 

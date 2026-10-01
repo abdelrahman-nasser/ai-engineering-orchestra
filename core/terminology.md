@@ -425,6 +425,50 @@ canonical contract is defined in:
 
 ---
 
+## Agent Operation Tool Registration
+
+A private, frozen, process-local declaration that permanently associates one
+exact `(runtime_option_id, environment_id, operation_id)` route with one
+canonical `tool_id` and one closed package-owned, non-callable implementation
+selector. It is configured identity, not a live Tool, availability fact,
+invocation descriptor, Agent Operation Tool Binding, or dispatch authority.
+
+Registrations have no public serialized schema, generic configuration bag,
+credential, endpoint, command, callable, resource, lifecycle state, or mutable
+metadata. Within `(runtime_option_id, environment_id, tool_id)`, the Tool ID
+denotes one immutable implementation and security-relevant configuration
+revision forever. An implementation or trust-meaning change requires a new
+Tool ID on a new complete route; an existing route or scoped Tool ID is never
+rebound.
+
+---
+
+## Trusted Agent Operation Tool Registry and Resolver
+
+A trusted-composition facility that atomically builds one deeply immutable,
+process-local snapshot from explicit package-owned Agent Operation Tool
+Registrations and deterministically constructs the canonical two-field Agent
+Operation Tool Binding for an exact authenticated Grant.
+
+The permanent historical mapping is an append-only partial function from the
+exact, case-sensitive Runtime/environment/operation route embedded in the Run
+to one canonical Tool ID. Optional aliases select complete active routes only
+before Run construction. Upgrades append a new Tool ID on a distinct route.
+Retirement blocks future pre-Run selection while retaining the permanent
+registration so historical Runs continue to resolve to the same Binding.
+
+The resolver preserves the exact nested Run object and never accepts a caller
+Binding, alias, Tool ID, route override, candidate list, or fallback choice.
+It performs no dynamic discovery, persistence, live availability probing,
+credential resolution, resource access, dispatch, or invocation. The initial
+`tool::aeo-native-repository-file-read::v1` registration is identity-only and
+does not implement a callable repository reader. The canonical contract is
+defined in:
+
+`core/agent-operation-tool-registry-and-resolver-specification.md`
+
+---
+
 ## Agent Execution Dispatch Admission
 
 An immutable, serializable, positive authorization-consumption record and

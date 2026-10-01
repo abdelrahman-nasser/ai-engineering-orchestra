@@ -1,0 +1,57 @@
+id: AIO-051
+title: Trusted Agent Operation Tool Registry and Resolver Foundation
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: critical
+execution:
+  mode: critical
+workflow: architecture-change
+objective: >
+  Establish an explicit trusted Agent Operation Tool Registry that maps an
+  exact immutable Runtime/environment/operation route to one immutable
+  configured Tool identity and deterministically constructs the canonical
+  Agent Operation Tool Binding without discovery, fallback, live availability
+  probing, dispatch, or invocation.
+scope:
+  include:
+    - Canonical Trusted Agent Operation Tool Registry and Resolver terminology and specification
+    - Private frozen Agent Operation Tool Registration semantics without a public schema
+    - Atomic trusted-composition construction of one deeply immutable process-local registry snapshot
+    - Permanent exact Runtime Option, environment, and operation route-to-tool_id mapping
+    - Immutable scoped Tool identity, no-rebind, duplicate, contradiction, and corruption handling
+    - Strict pre-Run alias-to-complete-route selection with no alias in Run, Binding, or Admission
+    - New-route upgrade semantics and append-only preservation of every historical registration
+    - Pre-Run retirement filtering, total historical identity resolution, and future dispatch fail-closed boundary
+    - Deterministic restart and package-upgrade resolution under an explicit append-only release invariant
+    - Exact Runtime, environment, and operation applicability with complete Run and resource preservation
+    - Existing two-field AIO-045 Agent Operation Tool Binding construction without schema changes
+    - Existing AIO-047 AgentOperationToolBindingResolverPort implementation without signature changes
+    - Closed private construction, selection, and resolution outcomes, retry dispositions, and nonsecret audit material
+    - Identity-only native AEO-owned repository_file_read Tool registration with no callable adapter behavior
+    - Focused implementation, regression, packaging, security, integration, and independent-review evidence in later authorized phases
+  exclude:
+    - Phase 2 implementation without separate explicit Human authorization
+    - AIO-050 implementation, modification, or dependency
+    - AIO-049 modification or direct technical dependency
+    - AIO-052 creation or Local Operational Trust Integration
+    - Changes to the AIO-045 Tool Binding, its schema, or the AIO-047 resolver-port signature
+    - Same-route Tool replacement, persistent Run-to-Tool selection state, or registry-revision fields on Run or Binding
+    - Public Tool Registration, resolved-registration, registry, resolver-result, alias, or audit schemas
+    - Dynamic discovery, plugin marketplace, MCP, PATH, CLI, Provider, entry-point, filesystem, or network discovery
+    - Writable registry, live reload, SQLite registry, external registry service, ranking, fallback, or post-Run reselection
+    - Live Tool availability or health probing, credentials, secret references, endpoints, commands, or full invocation descriptors
+    - Callable repository_file_read behavior, physical containment, repository access, dispatch, invocation, Result, or lifecycle
+    - Protected-target access, unsafe broad validation, staging, commit, push, merge, tag, release, or publication
+dependencies:
+  - AIO-045
+  - AIO-047
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

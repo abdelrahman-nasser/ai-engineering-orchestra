@@ -141,7 +141,7 @@ def main() -> None:
                 with zipfile.ZipFile(wheel) as archive:
                     names = archive.namelist()
                     modules = {f"engineering_orchestration/{name}" for name in
-                               ("__init__.py", "_operation_vocabulary.py", "_read_only_execution_preparation.py", "_repository_resource.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_action_prerequisite.py", "agent_operation_tool_binding.py", "agent_execution_authorization_evidence.py", "agent_execution_authorization_grant.py", "agent_execution_authorization_grant_producer.py", "agent_execution_dispatch_admission.py", "agent_execution_dispatch_admission_store.py", "authorization_domain_ownership.py", "windows_local_authorization_domain_owner.py", "sqlite_agent_execution_dispatch_admission_store.py", "agent_execution_candidate_prerequisite.py", "agent_execution_contract.py", "agent_execution_run.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
+                               ("__init__.py", "_operation_vocabulary.py", "_read_only_execution_preparation.py", "_repository_resource.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_action_prerequisite.py", "agent_operation_tool_binding.py", "agent_operation_tool_registry.py", "agent_operation_tool_resolver.py", "agent_execution_authorization_evidence.py", "agent_execution_authorization_grant.py", "agent_execution_authorization_grant_producer.py", "agent_execution_dispatch_admission.py", "agent_execution_dispatch_admission_store.py", "authorization_domain_ownership.py", "windows_local_authorization_domain_owner.py", "sqlite_agent_execution_dispatch_admission_store.py", "agent_execution_candidate_prerequisite.py", "agent_execution_contract.py", "agent_execution_run.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
                                 "environment_operation_permission.py",
                                 "execution_mode.py", "inference_option.py",
                                 "inference_option_availability.py",
@@ -214,6 +214,8 @@ import engineering_orchestration.assignment as assignment
 import engineering_orchestration.execution_mode as execution_mode
 import engineering_orchestration.inference_option as inference_option
 import engineering_orchestration.inference_option_availability as inference_option_availability
+import engineering_orchestration.agent_operation_tool_registry as agent_operation_tool_registry
+import engineering_orchestration.agent_operation_tool_resolver as agent_operation_tool_resolver
 import engineering_orchestration.operation_requirement as operation_requirement
 import engineering_orchestration.runtime_operation_capability as runtime_operation_capability
 import engineering_orchestration.project_verification as project_verification
@@ -562,6 +564,8 @@ print(json.dumps({'module': cli.__file__,
     'runtime_inference_pair_availability_module': runtime_inference_pair_availability.__file__,
     'candidate_prerequisite_module': agent_execution_candidate_prerequisite.__file__,
     'read_only_execution_preparation_module': read_only_execution_preparation.__file__,
+    'agent_operation_tool_registry_module': agent_operation_tool_registry.__file__,
+    'agent_operation_tool_resolver_module': agent_operation_tool_resolver.__file__,
     'operation_requirement_module': operation_requirement.__file__,
     'operation_vocabulary_module': operation_vocabulary.__file__,
     'runtime_operation_capability_module': runtime_operation_capability.__file__,
@@ -790,7 +794,18 @@ print(json.dumps({'module': cli.__file__,
      'role.schema.json', 'task.schema.json', 'workflow.schema.json',
      'project-manifest.schema.json')], 'sys_path': sys.path}))
 """
-            evidence = json.loads(run([str(python), "-B", "-c", probe], project / "src/nested", run_env))
+            probe_path = base / f"{mode}-import-resource-probe.py"
+            probe_path.write_text(probe, encoding="utf-8")
+            try:
+                evidence = json.loads(
+                    run(
+                        [str(python), "-B", str(probe_path)],
+                        project / "src/nested",
+                        run_env,
+                    )
+                )
+            finally:
+                probe_path.unlink(missing_ok=True)
             authorization_probe = """
 import json, os, socket, subprocess, time, urllib.request
 from contextlib import ExitStack
@@ -1832,6 +1847,10 @@ print(json.dumps({
                         "Normal SQLite Admission migration resource leaked to source")
                 require(Path(evidence["read_only_execution_preparation_module"]).resolve().is_relative_to(environment),
                         "Normal read-only execution preparation import leaked to source")
+                require(Path(evidence["agent_operation_tool_registry_module"]).resolve().is_relative_to(environment),
+                        "Normal Agent Operation Tool Registry import leaked to source")
+                require(Path(evidence["agent_operation_tool_resolver_module"]).resolve().is_relative_to(environment),
+                        "Normal Agent Operation Tool Resolver import leaked to source")
                 require(Path(evidence["operation_requirement_module"]).resolve().is_relative_to(environment),
                         "Normal Operation Requirement import leaked to source")
                 require(Path(evidence["operation_vocabulary_module"]).resolve().is_relative_to(environment),

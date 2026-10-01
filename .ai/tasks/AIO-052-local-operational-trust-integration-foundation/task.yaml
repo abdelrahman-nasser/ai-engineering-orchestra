@@ -1,0 +1,60 @@
+id: AIO-052
+title: Local Operational Trust Integration Foundation
+type: implementation
+status: cancelled
+version_target: "0.1.0"
+complexity: high
+risk: critical
+execution:
+  mode: critical
+workflow: architecture-change
+objective: >
+  Compose the real local ownership, Grant-production, Tool-resolution, and
+  authoritative Admission components into one trusted operational path and
+  prove their contracts agree using synthetic and disposable authority inputs,
+  while stopping before dispatch, Tool invocation, or repository resource
+  access.
+scope:
+  include:
+    - Canonical Local Operational Trust Coordinator responsibility and same-process trust boundary
+    - Real AIO-049 owned authorization-domain session over a disposable AIO-047 SQLite ledger
+    - Real AIO-050 Grant Producer and paired Grant-authentication port
+    - Real AIO-051 immutable Tool Registry and Tool Binding Resolver
+    - Real AIO-047 coordinator and authoritative local SQLite Admission Store
+    - Private one-time fail-closed composition wiring required to join the acquired session to its paired Grant-authentication port
+    - Synthetic authenticated principal and exact Human-approval or policy-decision edges
+    - Independently authenticated synthetic original-issuer revocation edge for real AIO-047 revocation evidence
+    - Fresh prerequisite and effective-execution-mode observations supplied at their existing ports
+    - Exact complete-Run agreement across Producer, Grant, Binding, reconstructed expected Run, and Admission
+    - Same-process pre-Admission and post-Admission retry behavior without replacement or fallback
+    - Explicit two-lease issuance-to-Admission boundary and fail-closed inter-operation ownership gap
+    - Unchanged AIO-050 failure and AIO-047 Admission result families with no integration outcome taxonomy
+    - Terminal race-safe coordinator and authentication-latch lifecycle
+    - Explicit restart boundaries that preserve predecessor guarantees without inventing cross-restart presentation recovery
+    - Focused failure, no-fallback, no-dispatch, no-invocation, no-resource-read, restart, and reconstruction evidence
+    - Fresh Architect, Security, Operational Trust/Integration, independent, Quality Gate, and Human review evidence in separately authorized phases
+  exclude:
+    - Phase 2 implementation without separate explicit Human authorization
+    - Production principals, production approval or policy systems, production authorization domains, or production ledgers
+    - Dispatch, outbox, claim, lease, delivery, Tool invocation, Result, lifecycle, Execution Journal, telemetry, or Full UI work
+    - Callable repository_file_read behavior or any physical repository resource read
+    - A new authorization engine, Tool registry, prerequisite assessor, ownership authority, Admission Store, or Integration Admission contract
+    - A new public integration, Grant, Tool Binding, Admission, Run, proof, presentation, or audit schema
+    - Grant, Tool Binding, Admission, Run, ownership, Producer, resolver-port, or Admission-store contract changes
+    - Durable Producer or presentation persistence and unsupported cross-restart historical-Admission retrieval
+    - Runtime Option, Inference Option, Tool, authority-channel, resource, domain, generation, or Run substitution and every form of fallback
+    - Protected-target access, broad Task or Workflow catalog enumeration, repository-wide verification, recursive repository search, broad Markdown traversal, or non-target-safe smoke
+    - Staging, commit, push, merge, tag, release, or publication
+dependencies:
+  - AIO-047
+  - AIO-049
+  - AIO-050
+  - AIO-051
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

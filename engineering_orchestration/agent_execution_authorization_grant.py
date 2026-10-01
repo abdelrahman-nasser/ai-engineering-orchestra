@@ -1,10 +1,10 @@
 """Pure validation for Run-bound Agent Execution Authorization Grants.
 
-The values in this module are intrinsic, declarative data.  Core neither
-issues nor authenticates a Grant and does not evaluate current time, consume
-authority, provide replay protection, persist state, admit dispatch, or invoke
-an Agent.  Operational trust requires a separate authenticated and
-integrity-protected authority-producer boundary.
+The values and validators in this module are intrinsic, declarative data.
+This intrinsic value layer neither issues nor authenticates a Grant and does
+not evaluate current time, consume authority, provide replay protection,
+persist state, admit dispatch, or invoke an Agent.  Operational trust requires
+the separate authenticated and integrity-protected Producer boundary.
 """
 
 from __future__ import annotations

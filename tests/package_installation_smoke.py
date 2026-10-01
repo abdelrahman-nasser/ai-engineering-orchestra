@@ -141,7 +141,7 @@ def main() -> None:
                 with zipfile.ZipFile(wheel) as archive:
                     names = archive.namelist()
                     modules = {f"engineering_orchestration/{name}" for name in
-                               ("__init__.py", "_operation_vocabulary.py", "_read_only_execution_preparation.py", "_repository_resource.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_action_prerequisite.py", "agent_operation_tool_binding.py", "agent_execution_authorization_evidence.py", "agent_execution_authorization_grant.py", "agent_execution_dispatch_admission.py", "agent_execution_dispatch_admission_store.py", "authorization_domain_ownership.py", "windows_local_authorization_domain_owner.py", "sqlite_agent_execution_dispatch_admission_store.py", "agent_execution_candidate_prerequisite.py", "agent_execution_contract.py", "agent_execution_run.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
+                               ("__init__.py", "_operation_vocabulary.py", "_read_only_execution_preparation.py", "_repository_resource.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_action_prerequisite.py", "agent_operation_tool_binding.py", "agent_execution_authorization_evidence.py", "agent_execution_authorization_grant.py", "agent_execution_authorization_grant_producer.py", "agent_execution_dispatch_admission.py", "agent_execution_dispatch_admission_store.py", "authorization_domain_ownership.py", "windows_local_authorization_domain_owner.py", "sqlite_agent_execution_dispatch_admission_store.py", "agent_execution_candidate_prerequisite.py", "agent_execution_contract.py", "agent_execution_run.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
                                 "environment_operation_permission.py",
                                 "execution_mode.py", "inference_option.py",
                                 "inference_option_availability.py",
@@ -1358,6 +1358,7 @@ from pathlib import Path
 from unittest.mock import patch
 import engineering_orchestration
 import engineering_orchestration.agent_execution_authorization_grant as grant
+import engineering_orchestration.agent_execution_authorization_grant_producer as grant_producer
 import engineering_orchestration.agent_execution_contract as contract
 import engineering_orchestration.agent_execution_run as execution_run
 from engineering_orchestration.schema_resources import load_validator, schema_resource
@@ -1440,6 +1441,7 @@ field_names = [item.name for item in fields(
     grant.AgentExecutionAuthorizationGrant)]
 print(json.dumps({
     'agent_execution_authorization_grant_module': grant.__file__,
+    'agent_execution_authorization_grant_producer_module': grant_producer.__file__,
     'agent_execution_authorization_grant_schema': grant_schema_path,
     'agent_execution_authorization_grant_fields': field_names,
     'agent_execution_authorization_grant_intrinsic': {
@@ -1812,6 +1814,8 @@ print(json.dumps({
                         "Normal Agent Execution Run import leaked to source")
                 require(Path(evidence["agent_execution_authorization_grant_module"]).resolve().is_relative_to(environment),
                         "Normal Agent Execution Authorization Grant import leaked to source")
+                require(Path(evidence["agent_execution_authorization_grant_producer_module"]).resolve().is_relative_to(environment),
+                        "Normal Agent Execution Authorization Grant Producer import leaked to source")
                 require(Path(evidence["agent_operation_tool_binding_module"]).resolve().is_relative_to(environment),
                         "Normal Agent Operation Tool Binding import leaked to source")
                 require(Path(evidence["agent_execution_dispatch_admission_module"]).resolve().is_relative_to(environment),

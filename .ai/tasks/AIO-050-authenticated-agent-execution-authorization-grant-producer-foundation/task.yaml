@@ -1,0 +1,55 @@
+id: AIO-050
+title: Authenticated Agent Execution Authorization Grant Producer Foundation
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: critical
+execution:
+  mode: critical
+workflow: architecture-change
+objective: >
+  Authenticate one issuer principal, establish exact entitlement for one
+  complete Agent Execution Run in one currently owned authorization domain,
+  construct the existing canonical Agent Execution Authorization Grant, and
+  hand it to AIO-047 through an integrity-preserving same-process trust
+  boundary without dispatching or invoking anything.
+scope:
+  include:
+    - Canonical Agent Execution Authorization Grant Producer specification and terminology
+    - Explicit principal-authentication, issuer-entitlement, Grant-construction, Grant-authentication, currentness, revocation, consumption, dispatch, and invocation boundaries
+    - Bounded local Human principal model using a stable installation-scoped principal identity bound to current Windows SID evidence
+    - Private same-process authenticated principal, Human approval, and policy decision proofs without public schemas
+    - Exact entitlement over one complete Run, authorization domain, live AIO-049 Owned Session, full domain identity, and current generation
+    - Existing eight-field AIO-043 Grant construction without Grant or schema changes
+    - Producer-owned opaque 256-bit OS-CSPRNG Grant-ID allocation and bounded session-local collision protection
+    - Injected trusted UTC clock and domain-configured default and maximum lifetime policy
+    - Private process-local issued-Grant presentation bound to Producer, session, domain generation, issuer state, and exact Grant integrity
+    - AIO-047 AgentExecutionAuthorizationGrantAuthenticationPort implementation without signature changes
+    - Session-scoped process-local same-Run issuance serialization, exact retry, conflict, restart, fencing, ownership-loss, and issuer-disable semantics
+    - Closed typed producer outcomes, retry dispositions, and nonsecret audit material
+    - Focused implementation, regression, packaging, security, ownership/integration, and independent-review evidence in later authorized phases
+  exclude:
+    - Phase 2 implementation without separate explicit Human authorization
+    - AIO-051 creation or Tool Registry, Tool Resolver, Tool availability, adapter, credential, or Tool invocation work
+    - Changes to the canonical eight-field Grant, its schema, AIO-049 ownership semantics, or the AIO-047 authentication-port signature
+    - Public signed-Grant, issued-presentation, authenticated-principal, Human-approval, or policy-decision schemas
+    - Grant signatures, JWS, keys, certificates, bearer tokens, OAuth, OIDC, Keycloak, passkey, mTLS, or remote authority-service implementation
+    - General policy language, policy database, delegation framework, quorum, or policy engine
+    - Producer database, durable unconsumed Grant persistence, remote Grant handoff, or cross-process presentation
+    - AIO-047 currentness, revocation ordering, consumption, Admission, or authoritative Store redesign
+    - Original-issuer revocation authority implementation beyond documenting the future integration seam
+    - PostgreSQL, dispatch, outbox, delivery, invocation, Result, Execution Journal persistence, telemetry, AIO-030, or Full UI work
+    - Protected-target access, unsafe broad validation, staging, commit, push, merge, tag, release, or publication
+dependencies:
+  - AIO-043
+  - AIO-047
+  - AIO-049
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

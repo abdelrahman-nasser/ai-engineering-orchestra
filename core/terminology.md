@@ -342,8 +342,8 @@ The value contains exactly `grant_id`, `run`, `authorization_domain_id`,
 `issuer_kind`, `issuer_id`, `provenance_reference`, `issued_at`, and
 `expires_at`. Effective Grant identity is the exact tuple
 `(authorization_domain_id, issuer_kind, issuer_id, grant_id)`. The issuer owns
-Grant-ID allocation and namespace non-reuse; Core neither generates IDs nor
-proves global uniqueness.
+Grant-ID allocation and namespace non-reuse; the intrinsic Grant value layer
+neither generates IDs nor proves global uniqueness.
 
 The complete nested Run, not `run_id` alone, is the authorized subject.
 `authorization_domain_id` identifies the future acceptance and shared-ledger
@@ -364,6 +364,31 @@ protection, revocation, persistence, dispatch admission, invocation, or
 success. The canonical contract is defined in:
 
 `core/agent-execution-authorization-grant-specification.md`
+
+---
+
+## Agent Execution Authorization Grant Producer
+
+A trusted-composition, process-local component bound to one exact live Owned
+Authorization Domain Session. It accepts only private proofs minted through
+its configured identity and Human-approval or policy-decision boundaries,
+establishes exact entitlement for one complete Agent Execution Run, samples
+one trusted UTC issuance instant, allocates an opaque 256-bit CSPRNG Grant ID,
+and constructs the unchanged canonical Agent Execution Authorization Grant.
+
+The Producer returns a private Issued Agent Execution Authorization Grant
+presentation. Its paired implementation of the unchanged AIO-047 one-argument
+authentication port resolves only the exact registered presentation back to
+the exact canonical Grant while the supported outer Owned Session coordinator
+holds the ownership operation lease. The Producer does not establish Grant
+currentness, revocation, consumption, Admission, Tool trust, dispatch, or
+invocation.
+
+Proofs, presentations, issuance serialization, and exact retry are bounded to
+one Producer/session epoch. They are nonserializable, nonpersistent, and do
+not survive process restart. The canonical contract is defined in:
+
+`core/agent-execution-authorization-grant-producer-specification.md`
 
 ---
 

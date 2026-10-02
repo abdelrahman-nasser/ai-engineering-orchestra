@@ -6,10 +6,14 @@ Run: python -B tests/package_installation_smoke.py
 Use ``--target-safe`` to skip checkout CLI probes that enumerate the repository
 Workflow catalog when an external protected-target boundary requires focused
 checks instead. Installed behavior is still exercised against synthetic data.
+Use ``--aio-053-safe`` for the separately bounded AIO-053 local integration
+module smoke. That mode uses explicit file allowlists and locally generated
+editable/wheel artifacts only; it does not enter the legacy smoke path.
 """
 
 from __future__ import annotations
 
+import base64
 import hashlib
 import json
 import os
@@ -23,6 +27,224 @@ import zipfile
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+AIO053_SAFE_FILES = (
+    "engineering_orchestration/__init__.py",
+    "engineering_orchestration/_operation_vocabulary.py",
+    "engineering_orchestration/_repository_resource.py",
+    "engineering_orchestration/_responsibility.py",
+    "engineering_orchestration/_sqlite_admission_migrations/__init__.py",
+    "engineering_orchestration/_sqlite_admission_migrations/0001_initial.sql",
+    "engineering_orchestration/actor_availability.py",
+    "engineering_orchestration/actor_coverage.py",
+    "engineering_orchestration/actor_runtime_applicability.py",
+    "engineering_orchestration/agent_action_prerequisite.py",
+    "engineering_orchestration/agent_execution_authorization_evidence.py",
+    "engineering_orchestration/agent_execution_authorization_grant.py",
+    "engineering_orchestration/agent_execution_authorization_grant_producer.py",
+    "engineering_orchestration/agent_execution_candidate_prerequisite.py",
+    "engineering_orchestration/agent_execution_contract.py",
+    "engineering_orchestration/agent_execution_dispatch_admission.py",
+    "engineering_orchestration/agent_execution_dispatch_admission_store.py",
+    "engineering_orchestration/agent_execution_run.py",
+    "engineering_orchestration/agent_operation_tool_binding.py",
+    "engineering_orchestration/agent_operation_tool_registry.py",
+    "engineering_orchestration/agent_operation_tool_resolver.py",
+    "engineering_orchestration/agent_runtime_option.py",
+    "engineering_orchestration/agent_runtime_option_availability.py",
+    "engineering_orchestration/assignment.py",
+    "engineering_orchestration/authorization_domain_ownership.py",
+    "engineering_orchestration/environment_operation_permission.py",
+    "engineering_orchestration/execution_mode.py",
+    "engineering_orchestration/inference_option.py",
+    "engineering_orchestration/inference_option_availability.py",
+    "engineering_orchestration/local_operational_trust.py",
+    "engineering_orchestration/operation_requirement.py",
+    "engineering_orchestration/role_catalog.py",
+    "engineering_orchestration/runtime_inference_compatibility.py",
+    "engineering_orchestration/runtime_inference_pair_availability.py",
+    "engineering_orchestration/runtime_operation_capability.py",
+    "engineering_orchestration/schema_resources.py",
+    "engineering_orchestration/sqlite_agent_execution_dispatch_admission_store.py",
+    "engineering_orchestration/windows_local_authorization_domain_owner.py",
+    "engineering_orchestration/workflow_catalog.py",
+)
+
+
+def _aio053_safe_wheel(
+        destination: Path,
+        distribution: str,
+        files: dict[str, bytes]) -> None:
+    """Create one deterministic local wheel from an explicit payload."""
+    version = "0.0.0"
+    normalized = distribution.replace("-", "_")
+    dist_info = f"{normalized}-{version}.dist-info"
+    payload = dict(files)
+    payload[f"{dist_info}/METADATA"] = (
+        "Metadata-Version: 2.1\n"
+        f"Name: {distribution}\n"
+        f"Version: {version}\n"
+        "Requires-Python: >=3.12\n\n"
+    ).encode("utf-8")
+    payload[f"{dist_info}/WHEEL"] = (
+        "Wheel-Version: 1.0\n"
+        "Generator: aio053-safe-stdlib\n"
+        "Root-Is-Purelib: true\n"
+        "Tag: py3-none-any\n\n"
+    ).encode("utf-8")
+    record_path = f"{dist_info}/RECORD"
+    record_lines = []
+    for name, content in payload.items():
+        digest = base64.urlsafe_b64encode(
+            hashlib.sha256(content).digest()
+        ).decode("ascii").rstrip("=")
+        record_lines.append(f"{name},sha256={digest},{len(content)}\n")
+    record_lines.append(f"{record_path},,\n")
+    payload[record_path] = "".join(record_lines).encode("utf-8")
+
+    with zipfile.ZipFile(
+            destination, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        for name, content in payload.items():
+            archive.writestr(name, content)
+
+    with zipfile.ZipFile(destination) as archive:
+        require(
+            set(archive.namelist()) == set(payload),
+            "AIO-053 local wheel payload differs from its explicit allowlist",
+        )
+
+
+def _aio053_safe_environment(base: Path, name: str) -> tuple[Path, Path]:
+    environment = base / name
+    venv.EnvBuilder(with_pip=True, system_site_packages=True).create(environment)
+    executable_dir = environment / ("Scripts" if os.name == "nt" else "bin")
+    python = executable_dir / ("python.exe" if os.name == "nt" else "python")
+    return environment, python
+
+
+def _aio053_safe_install(
+        wheel: Path,
+        base: Path,
+        environment_name: str,
+        expected_module: Path,
+        distribution: str,
+        run_env: dict[str, str]) -> None:
+    _, python = _aio053_safe_environment(base, environment_name)
+    run(
+        [
+            str(python),
+            "-m",
+            "pip",
+            "install",
+            "--isolated",
+            "--no-index",
+            "--no-deps",
+            "--no-cache-dir",
+            "--disable-pip-version-check",
+            str(wheel),
+        ],
+        base,
+        run_env,
+    )
+    probe = """
+import importlib.metadata
+from pathlib import Path
+import sys
+import engineering_orchestration.local_operational_trust as target
+actual = Path(target.__file__).resolve()
+expected = Path(sys.argv[1]).resolve()
+assert actual == expected, (actual, expected)
+assert target.__all__ == ('LocalOperationalTrustCoordinator',)
+assert importlib.metadata.version(sys.argv[2]) == '0.0.0'
+print(f'PASS module={actual}')
+"""
+    run(
+        [
+            str(python),
+            "-I",
+            "-B",
+            "-c",
+            probe,
+            str(expected_module),
+            distribution,
+        ],
+        base,
+        run_env,
+    )
+
+
+def aio053_safe_main() -> None:
+    """Run the explicit, offline AIO-053 editable and wheel smoke."""
+    require(sys.version_info[:2] == (3, 12), "AIO-053 requires Python 3.12")
+    run_env = dict(os.environ)
+    for key in ("PYTHONPATH", "PYTHONHOME"):
+        run_env.pop(key, None)
+    run_env.update({
+        "PIP_DISABLE_PIP_VERSION_CHECK": "1",
+        "PIP_NO_CACHE_DIR": "1",
+        "PIP_NO_INDEX": "1",
+        "PIP_NO_INPUT": "1",
+        "PYTHONUTF8": "1",
+    })
+
+    sources: dict[str, bytes] = {}
+    for relative in AIO053_SAFE_FILES:
+        source = ROOT / Path(relative)
+        require(source.is_file(), f"Missing explicit AIO-053 source: {relative}")
+        sources[relative] = source.read_bytes()
+
+    with tempfile.TemporaryDirectory(prefix="aio053-safe-") as temporary:
+        base = Path(temporary).resolve()
+        require(not base.is_relative_to(ROOT), "Smoke artifacts must be external")
+        editable_distribution = "aio053-local-operational-trust-editable"
+        editable_wheel = (
+            base / "aio053_local_operational_trust_editable-0.0.0-py3-none-any.whl"
+        )
+        editable_payload = {
+            "aio053_local_operational_trust_editable.pth": (
+                str(ROOT) + "\n"
+            ).encode("utf-8")
+        }
+        _aio053_safe_wheel(
+            editable_wheel,
+            editable_distribution,
+            editable_payload,
+        )
+        _aio053_safe_install(
+            editable_wheel,
+            base,
+            "editable-environment",
+            ROOT / "engineering_orchestration" / "local_operational_trust.py",
+            editable_distribution,
+            run_env,
+        )
+        print("AIO-053 TARGET-SAFE EDITABLE SMOKE: PASS", flush=True)
+
+        wheel_distribution = "aio053-local-operational-trust-wheel"
+        wheel = (
+            base / "aio053_local_operational_trust_wheel-0.0.0-py3-none-any.whl"
+        )
+        _aio053_safe_wheel(wheel, wheel_distribution, sources)
+        wheel_environment = base / "wheel-environment"
+        installed_module = (
+            wheel_environment
+            / "Lib"
+            / "site-packages"
+            / "engineering_orchestration"
+            / "local_operational_trust.py"
+        )
+        _aio053_safe_install(
+            wheel,
+            base,
+            "wheel-environment",
+            installed_module,
+            wheel_distribution,
+            run_env,
+        )
+        print("AIO-053 TARGET-SAFE WHEEL SMOKE: PASS", flush=True)
+
+    require(not base.exists(), "AIO-053 smoke artifacts were not removed")
+    print("AIO-053 TARGET-SAFE SMOKE ARTIFACT CLEANUP: PASS", flush=True)
 
 
 def run(command: list[str], cwd: Path, env: dict[str, str], expected: int = 0) -> str:
@@ -94,6 +316,10 @@ def make_project(base: Path) -> Path:
 
 
 def main() -> None:
+    if sys.argv[1:] == ["--aio-053-safe"]:
+        aio053_safe_main()
+        return
+
     require(sys.version_info[:2] == (3, 12), "Validate the adopted baseline on Python 3.12")
     target_safe = "--target-safe" in sys.argv[1:]
     unknown_arguments = set(sys.argv[1:]) - {"--target-safe"}
@@ -141,7 +367,7 @@ def main() -> None:
                 with zipfile.ZipFile(wheel) as archive:
                     names = archive.namelist()
                     modules = {f"engineering_orchestration/{name}" for name in
-                               ("__init__.py", "_operation_vocabulary.py", "_read_only_execution_preparation.py", "_repository_resource.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_action_prerequisite.py", "agent_operation_tool_binding.py", "agent_operation_tool_registry.py", "agent_operation_tool_resolver.py", "agent_execution_authorization_evidence.py", "agent_execution_authorization_grant.py", "agent_execution_authorization_grant_producer.py", "agent_execution_dispatch_admission.py", "agent_execution_dispatch_admission_store.py", "authorization_domain_ownership.py", "windows_local_authorization_domain_owner.py", "sqlite_agent_execution_dispatch_admission_store.py", "agent_execution_candidate_prerequisite.py", "agent_execution_contract.py", "agent_execution_run.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
+                               ("__init__.py", "_operation_vocabulary.py", "_read_only_execution_preparation.py", "_repository_resource.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_action_prerequisite.py", "agent_operation_tool_binding.py", "agent_operation_tool_registry.py", "agent_operation_tool_resolver.py", "local_operational_trust.py", "agent_execution_authorization_evidence.py", "agent_execution_authorization_grant.py", "agent_execution_authorization_grant_producer.py", "agent_execution_dispatch_admission.py", "agent_execution_dispatch_admission_store.py", "authorization_domain_ownership.py", "windows_local_authorization_domain_owner.py", "sqlite_agent_execution_dispatch_admission_store.py", "agent_execution_candidate_prerequisite.py", "agent_execution_contract.py", "agent_execution_run.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
                                 "environment_operation_permission.py",
                                 "execution_mode.py", "inference_option.py",
                                 "inference_option_availability.py",

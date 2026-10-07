@@ -1,0 +1,62 @@
+id: AIO-054
+title: Dispatch Outbox and Claim-Lease Transaction Experiment
+type: investigation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: critical
+execution:
+  mode: critical
+workflow: architecture-change
+objective: >
+  Produce bounded disposable evidence for atomic Admission and Dispatch Intent
+  persistence plus append-only Claim, Lease Renewal, expiry, reclaim, fencing,
+  retry, crash, clock, and local ownership semantics before any production
+  AIO-047 persistence change, while stopping before dispatch transport, Tool
+  invocation, repository resource access, or Result handling.
+scope:
+  include:
+    - Private nonpackaged and noncanonical SQLite transaction experiment design
+    - Atomic new Admission and immutable Dispatch Intent creation in one transaction
+    - Exact Admission retry with exactly one Dispatch Intent
+    - Immutable legacy non-dispatchable classification for pre-dispatch Admissions
+    - Admission-natural logical dispatch identity without a dispatch ID
+    - Ledger-unique Claim and Renewal request identities
+    - Process-incarnation Executor identity distinct from Actor and Runtime
+    - Append-only Claims and append-only Lease Renewals
+    - Derived pending, claimed, and available-for-reclaim state
+    - Trusted UTC lease expiry and shared non-regressing decision-time watermark
+    - Monotonic per-Intent lease-generation fencing and stale-claimant rejection
+    - Same-host local-process SQLite contention, response loss, crash, and restart evidence
+    - Experiment-only ownership-lifecycle surrogate evidence bounded against AIO-049 semantics
+    - Explicit proof that real AIO-049 and extended-Store integration remains deferred
+    - Exact 128-scenario minimum matrix and Task-local Validation Safety Matrix
+    - Fresh Phase 1 Architect, Security, Storage/Atomicity, and Operational Trust design reviews
+    - Later separately authorized Phase 2 experiment execution and Phase 3 review and closure
+  exclude:
+    - Experiment execution or creation of experiment code and tests during Phase 1
+    - Production AIO-047 source, schema, migration, Store, or contract changes
+    - Production AIO-049, AIO-050, AIO-051, or AIO-053 changes
+    - A claim that the private extended ledger is accepted by the canonical AIO-049 owner
+    - Public Dispatch Intent, Claim, Lease, Renewal, worker, or delivery schema
+    - Mutable authoritative dispatch-state enum or current-head record
+    - Dispatch transport, worker IPC, combined multiprocess-plus-AIO-049 operational claims, adapter execution, or Tool invocation
+    - repository_file_read behavior or any physical repository resource access
+    - Tool, Runtime, Inference, credential, endpoint, or containment probing
+    - Acknowledgement, progress, invocation, completion, failure, Result, event, error, usage, cost, or telemetry
+    - Network shares, cloud-synchronized storage, replicated writers, multi-machine guarantees, distributed consensus, or failover copies
+    - Task or Workflow catalog enumeration, repository-wide verification, broad discovery, recursive repository traversal, or broad Markdown globs
+    - Protected-target access, staging, commit, push, merge, tag, release, or publication in Phase 1
+dependencies:
+  - AIO-046
+  - AIO-047
+  - AIO-049
+  - AIO-053
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

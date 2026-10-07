@@ -2,8 +2,9 @@
 
 This module joins the existing AIO-049, AIO-050, AIO-051, and AIO-047
 components.  It does not dispatch, invoke a Tool, or read a repository
-resource.  The only durable state remains the AIO-047 Admission ledger owned
-through AIO-049.
+resource.  Durable Admission, immutable Dispatch Intent, and legacy
+classification remain in the AIO-047 ledger owned through AIO-049; the
+process-local presentation and integration control flow are unchanged.
 """
 
 from __future__ import annotations

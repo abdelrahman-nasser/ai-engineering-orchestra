@@ -542,6 +542,107 @@ implementation-owned conformance mechanisms rather than protocol fields.
 
 ---
 
+### 12.1 AIO-055 atomic Dispatch Intent extension
+
+The supported local SQLite ledger now stores an immutable keys-only Agent
+Execution Dispatch Intent for every newly admitted action. The Intent is
+logically separate from Admission and uses exactly its existing Grant
+composite identity. The public three-field Admission and backend-neutral
+four-operation protocol remain unchanged. The canonical semantic contract is
+`core/agent-execution-dispatch-intent-specification.md`.
+
+The existing `admit_or_return_existing` writer transaction inserts Admission,
+inserts exactly one Intent, advances the existing sampled-decision watermark,
+verifies the complete final state, and commits once. Either both records are
+durable or neither is. The Store alone owns this insertion; no coordinator or
+later retry writes an Intent in a second transaction.
+
+The private `agent_execution_dispatch_intents` table stores the four
+TEXT COLLATE BINARY Grant-composite key columns only. Its composite
+primary/restrictive foreign keys anchor the exact immutable Admission payload,
+including complete Grant, Run/Contract, trusted Binding, and decision time.
+No copied Run/Tool/time/payload or allocated dispatch ID is needed.
+
+The private `legacy_admission_markers` table stores the same keys and
+migration_id fixed to 2, with restrictive Admission/history foreign keys.
+Explicit migration is its only creation window. Duplicate/REPLACE,
+overlap, update, delete and rebind attempts are rejected.
+
+Every committed Admission has exactly one Intent or legacy marker, never
+both or neither. Full same-snapshot verification checks disjointness, union
+completeness, duplicates/orphans, canonical parent payload/index equality,
+metadata, migration provenance, revocations and watermark. That audit is
+also mandatory after each supported mutation and before successful COMMIT,
+including provisioning and migration. Classification never repairs history.
+
+Exact authenticated new-Admission retry verifies its Intent and returns the
+unchanged historical Admission; exact legacy retry verifies its marker,
+returns the unchanged historical Admission, and creates no Intent. Neither
+retry samples time, recollects prerequisites or changes the watermark.
+Existing conflict precedence and outcome/retry taxonomy are unchanged.
+Temporal and revocation denials retain AIO-047 watermark rules and emit no
+Admission/Intent pair.
+
+### 12.2 Explicit v1-to-v2 migration
+
+Allowlisted checksummed `0002_dispatch_outbox.sql` adds the private tables and
+guards. Migration 1's exact UTF-8/LF bytes and checksum remain unchanged.
+Schema verification uses exact version-specific DDL fingerprints and
+migration-history/manifest prefixes; numeric version alone is insufficient.
+
+Under the existing AIO-049 trusted administrative entitlement, domain lock,
+quiescence and exact registered-file pin, administration verifies the entire
+active/clean v1 source before mutation and repeats verification under
+BEGIN EXCLUSIVE. Source checks cover application/user/metadata versions,
+exact history prefix/checksums/manifest/fingerprint, configured domain,
+ledger instance and generation, canonical security payloads, integrity,
+foreign keys, revocation completeness and watermark.
+
+One transaction marks migration state dirty, applies the exact allowlisted
+suffix, gives every existing v1 Admission one immutable migration-2 legacy
+marker, appends the history entry, publishes complete clean v2 metadata,
+verifies the complete destination before COMMIT, and commits once. It creates
+zero historical Intents and preserves all original security payloads and
+the watermark. The deferred marker-history FK permits backfill before the
+same transaction appends migration 2.
+
+Fresh current-v2 provisioning retains its existing API and single transaction,
+applies exact 0001 and 0002, initializes full current metadata/history, has zero
+Admissions/markers/Intents, and verifies the full destination before commit.
+
+Operational open rejects old, newer, dirty, partial, checksum/fingerprint
+mismatched or corrupt state without migration or repair. A valid exact-current
+administrative retry returns already_current only after complete verification.
+Crash before migration commit preserves intact v1. Commit ambiguity is
+reconciled only against the same configured pinned ledger: verified intact
+v1 permits explicitly authorized retry; complete verified v2 is recognized as
+current; any mixed or corrupt state fails closed. No blind suffix replay,
+replacement ledger, restore, downgrade or repair is permitted.
+
+WAL BEGIN EXCLUSIVE serializes writers; it does not itself prove complete
+reader/process administrative quiescence. AIO-049 APIs/control flow and its
+owned operation lease remain unchanged. That lease is an ownership lifecycle
+guard, not a dispatch worker Lease.
+
+### 12.3 Owned history and future internal seam
+
+Private Store-owned immutable classification/dereference is available inside
+the verified ownership boundary. No public enumerator, mutable SQLite handle,
+dispatchable flag, worker selector or Claim operation is exposed.
+
+AIO-056 may later extend the internal seam with controlled eligible-Intent
+selection and Claim transactions under its own authority, currentness,
+revocation and fencing contract. Intent presence supplies no execution
+authority. Later revocation retains immutable history.
+
+The existing owned-session pre/post checks cover the full Admission/Intent
+transaction. Ownership loss after a durable commit cannot undo it or justify
+a live-authority claim; existing failure outcomes and exact same-ledger
+recovery apply. Terminal fencing never reanimates an old session.
+Storage restart durability does not recover AIO-053's lost opaque AIO-050
+presentation. Integrated exact retry remains bounded to the same live
+Producer/session/presentation; no cross-restart authentication is invented.
+
 ## 13. Failure and Exception Boundary
 
 Expected operational failures are typed results, not booleans. The backend
@@ -582,8 +683,9 @@ containment.
 
 A future adapter must use just-in-time or native enforcement, and a future
 dispatcher must handle changed Runtime/Inference availability and verify the
-configured immutable Tool mapping. A future delivery/outbox system may use an
-authoritative Admission as its immutable source record, but AIO-047 adds no
+configured immutable Tool mapping. The AIO-055 local outbox foundation adds immutable Dispatch Intent history
+anchored to authoritative Admission. A future delivery system may consume
+that history under separately authorized rules. This foundation adds no
 pending/claimed/dispatching/sent/failed/completed state, claim, lease, delivery
 attempt, acknowledgement, event, result, error, usage, cost, or telemetry.
 
@@ -624,6 +726,7 @@ AIO-047 does not implement or authorize:
 - Run lifecycle or cancellation; or
 - AIO-030, AIO-044, Full Control Center/UI, or protected-target behavior.
 
-All AIO-047 tests use synthetic Grants, domains, Bindings, parent facts, and
-disposable temporary ledgers. No real Grant is consumed and no real Admission,
-dispatch, or invocation occurs.
+AIO-047/AIO-055 persistence tests use synthetic authority edges, domains,
+Bindings and parent facts with disposable ledgers. Canonical production-path
+Admissions and Intents may be persisted in those ledgers; no actual user
+workload is dispatched and no Tool is invoked.

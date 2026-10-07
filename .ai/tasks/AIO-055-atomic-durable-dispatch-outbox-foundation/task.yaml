@@ -1,0 +1,46 @@
+id: AIO-055
+title: Atomic Durable Dispatch Outbox Foundation
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: critical
+execution:
+  mode: critical
+workflow: architecture-change
+objective: >
+  Extend the authoritative AIO-047 authorization-domain SQLite ledger so every
+  newly committed dispatch-enabled Admission is atomically accompanied by
+  exactly one immutable Agent Execution Dispatch Intent, while safely
+  classifying pre-outbox historical Admissions as legacy non-dispatchable,
+  without introducing Claim/Lease, dispatch transport, Tool invocation, or
+  Result semantics.
+scope:
+  include:
+    - Phase 1 is complete; Phase 2 production implementation and focused validation are explicitly authorized under the locked design.
+    - Fresh Architect, Security, Storage/Atomicity, Migration/Compatibility, and Operational Trust design reviews.
+    - Design the same-ledger single-transaction Admission and immutable Dispatch Intent extension at the existing AIO-047 Store seam.
+    - Design explicit forward-only checksummed v1-to-v2 migration with immutable legacy classification, exact history-prefix verification, schema fingerprinting, and AIO-049 administrative ownership.
+    - Lock exact retry, same-pinned-ledger commit-unknown recovery, corruption rejection, unchanged public Admission, and private future AIO-056 seam.
+    - Implement the locked minimal production Store/migration/specification changes and execute all 60 scenarios plus exact allowlisted validation; update Task evidence and stop after Phase 2.
+  exclude:
+    - Phase 3 reviews, final Quality Gate adjudication, Human final approval, and Task closure during Phase 2.
+    - Creating or implementing AIO-056 or any Claim, Lease, Renewal, reclaim, executor identity, worker selection, or generation-fencing semantics.
+    - Dispatch transport, queue consumption, worker processes, Tool availability probes, credentials, repository_file_read execution, Tool invocation, Result, or external effects.
+    - Separate dispatch database, public dispatch_id, public Dispatch Intent value or JSON schema, or changes to the three-field public Admission.
+    - Automatic operational-open migration, silent repair, historical Intent backfill, and copying the experimental Store wholesale.
+    - Task or Workflow catalog enumeration, test discovery, recursive repository search, broad Markdown traversal, unsafe legacy validators or smoke helpers, and protected-target access.
+    - Staging, commit, push, actual user workload dispatch, production-ledger administration, and protected-target access.
+dependencies:
+  - AIO-047
+  - AIO-049
+  - AIO-053
+  - AIO-054
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

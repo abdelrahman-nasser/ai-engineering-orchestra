@@ -507,6 +507,28 @@ The canonical value and store contracts are defined in:
 
 ---
 
+## Agent Execution Dispatch Intent
+
+An immutable private same-ledger dispatch-intent record for one newly
+admitted action. Its logical identity is the existing Admission Grant
+composite; its keys-only foreign-key relationship inherits the exact immutable
+Admission, Grant, Run, Binding and decision time without duplicating payloads.
+
+The supported local SQLite Store atomically persists a new Admission and
+exactly one Intent in its existing transaction, or neither. Pre-outbox
+Admissions retain immutable legacy non-dispatchable markers and never become
+Intents through migration or retry. Every committed Admission has exactly one
+of those classifications.
+
+Intent presence is historical persistence, not current dispatch eligibility,
+execution authority, a Claim, a worker Lease, transport, invocation, Result
+or success. There is no public Dispatch Intent value/schema or dispatch_id.
+The canonical semantic contract is defined in:
+
+`core/agent-execution-dispatch-intent-specification.md`
+
+---
+
 ## Authorization Domain Ownership Authority
 
 A provider-neutral operational boundary that exclusively acquires, validates,

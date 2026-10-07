@@ -311,12 +311,40 @@ def _spawn_crashing_admission(
     os._exit(74)
 
 
+def _cleanup_disposable_root(temporary_directory: object) -> None:
+    """Delete only the invocation-owned root inside the external temp parent."""
+    path = Path(temporary_directory.name)
+    parent = Path(tempfile.gettempdir()).resolve()
+    if (path.is_symlink() or path.is_junction() or path.resolve().parent != parent
+            or not path.name.startswith("aio-")):
+        raise AssertionError("disposable cleanup target escaped its exact temp parent")
+    temporary_directory.cleanup()
+
+
+def _cleanup_owned_processes(processes: object, results: object | None = None) -> None:
+    """Always terminate/reap/close only children created by this exact test."""
+    for process in processes:
+        if process.pid is not None:
+            if process.is_alive():
+                process.terminate()
+            process.join(20)
+            if process.is_alive():
+                process.kill()
+                process.join(20)
+            if process.is_alive():
+                raise AssertionError("owned SQLite probe did not exit after kill")
+        process.close()
+    if results is not None:
+        results.cancel_join_thread()
+        results.close()
+
+
 class SqliteAdmissionStoreTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temporary_directory = tempfile.TemporaryDirectory(
             prefix="aio-047-sqlite-tests-"
         )
-        self.addCleanup(self.temporary_directory.cleanup)
+        self.addCleanup(_cleanup_disposable_root, self.temporary_directory)
         self.root = Path(self.temporary_directory.name).resolve()
         self.database_path = self.root / "admission.sqlite3"
         self.configuration = config_for(self.database_path)
@@ -948,7 +976,7 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
 
     def test_newer_schema_dirty_state_missing_trigger_and_checksum_fail_closed(self) -> None:
         mutations = (
-            ("newer", lambda connection: connection.execute("PRAGMA user_version=2"), SqliteAdmissionStoreIncompatibleSchemaError),
+            ("newer", lambda connection: connection.execute(f"PRAGMA user_version={subject.SCHEMA_VERSION + 1}"), SqliteAdmissionStoreIncompatibleSchemaError),
             ("dirty", lambda connection: connection.execute("UPDATE admission_ledger_metadata SET migration_state='dirty' WHERE singleton=1"), SqliteAdmissionStoreIntegrityError),
             ("trigger", lambda connection: connection.execute("DROP TRIGGER agent_execution_dispatch_admissions_no_delete"), SqliteAdmissionStoreIntegrityError),
         )
@@ -1289,14 +1317,17 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
             )
             for request in (left, right)
         ]
-        for process in processes:
-            process.start()
-        start.set()
-        messages = [results.get(timeout=20) for _ in processes]
-        for process in processes:
-            process.join(20)
-            self.assertFalse(process.is_alive(), "spawned SQLite worker hung")
-            self.assertEqual(process.exitcode, 0)
+        try:
+            for process in processes:
+                process.start()
+            start.set()
+            messages = [results.get(timeout=20) for _ in processes]
+            for process in processes:
+                process.join(20)
+                self.assertFalse(process.is_alive(), "spawned SQLite worker hung")
+                self.assertEqual(process.exitcode, 0)
+        finally:
+            _cleanup_owned_processes(processes, results)
         errors = [message for message in messages if message[0] != "ok"]
         self.assertEqual(errors, [])
         return sorted(message[1] for message in messages)
@@ -1360,14 +1391,17 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
                 args=(str(path), grant, binding, "revoke", start, results),
             ),
         )
-        for process in processes:
-            process.start()
-        start.set()
-        messages = [results.get(timeout=20) for _ in processes]
-        for process in processes:
-            process.join(20)
-            self.assertFalse(process.is_alive(), "spawned race worker hung")
-            self.assertEqual(process.exitcode, 0)
+        try:
+            for process in processes:
+                process.start()
+            start.set()
+            messages = [results.get(timeout=20) for _ in processes]
+            for process in processes:
+                process.join(20)
+                self.assertFalse(process.is_alive(), "spawned race worker hung")
+                self.assertEqual(process.exitcode, 0)
+        finally:
+            _cleanup_owned_processes(processes, results)
         self.assertEqual(
             [message for message in messages if message[0] != "ok"],
             [],
@@ -1429,10 +1463,13 @@ class SqliteAdmissionStoreTests(unittest.TestCase):
                     target=_spawn_crashing_admission,
                     args=(str(path), grant, binding, fault_point),
                 )
-                process.start()
-                process.join(20)
-                self.assertFalse(process.is_alive(), "crash worker hung")
-                self.assertEqual(process.exitcode, 73)
+                try:
+                    process.start()
+                    process.join(20)
+                    self.assertFalse(process.is_alive(), "crash worker hung")
+                    self.assertEqual(process.exitcode, 73)
+                finally:
+                    _cleanup_owned_processes((process,))
 
                 retry_clock = MutableClock(
                     RuntimeError("exact committed retry must not sample time")
@@ -1468,7 +1505,7 @@ class SqliteAdmissionStoreReusableConformanceTests(
         self.temporary_directory = tempfile.TemporaryDirectory(
             prefix="aio-047-sqlite-conformance-"
         )
-        self.addCleanup(self.temporary_directory.cleanup)
+        self.addCleanup(_cleanup_disposable_root, self.temporary_directory)
         self.root = Path(self.temporary_directory.name).resolve()
         self.harness_index = 0
 

@@ -5,6 +5,10 @@ absolute local database path, authorization domain, ledger instance, and
 positive generation.  Operational calls never create, migrate, repair,
 reactivate, or fall back to another authority store.
 
+Every new Admission commits one immutable keys-only Dispatch Intent in the
+same transaction. Explicit forward migration classifies existing Admissions
+as immutable legacy history; it never activates historical work.
+
 Construction consumes one package-internal owner capability bound to that
 exact identity.  Provisioning and migration consume a distinct one-use
 administrative capability; neither access form is caller-supplied authority.
@@ -156,6 +160,14 @@ class _LedgerMetadata:
     migration_state: str
     decision_time: str | None
     decision_time_key: int | None
+
+
+@dataclass(frozen=True)
+class _DispatchClassification:
+    """Private immutable history reference, never present execution authority."""
+
+    admission: AgentExecutionDispatchAdmission
+    kind: str
 
 
 @dataclass(frozen=True)
@@ -494,10 +506,15 @@ def _migration_bytes() -> tuple[tuple[int, str, str, bytes], ...]:
     return tuple(loaded)
 
 
-def _schema_manifest_id() -> str:
+def _schema_manifest_id(schema_version: int = SCHEMA_VERSION) -> str:
+    migrations = _migration_bytes()
+    if type(schema_version) is not int or not 1 <= schema_version <= SCHEMA_VERSION:
+        raise SqliteAdmissionStoreIncompatibleSchemaError(
+            "unsupported schema manifest prefix"
+        )
     material = "\n".join(
         f"{migration_id}:{name}:{checksum}"
-        for migration_id, name, checksum, _ in _migration_bytes()
+        for migration_id, name, checksum, _ in migrations[:schema_version]
     ).encode("utf-8")
     return hashlib.sha256(material).hexdigest()
 
@@ -645,9 +662,11 @@ def _claim_configuration_access(
         raise SqliteAdmissionStoreConfigurationError(str(error)) from error
 
 
-_EXPECTED_SCHEMA_FINGERPRINT = (
-    "de080810b1d644dacf53e6bf79cbbd01343344904397a91c6dd483bd48dfad46"
-)
+_EXPECTED_SCHEMA_FINGERPRINTS = {
+    1: "de080810b1d644dacf53e6bf79cbbd01343344904397a91c6dd483bd48dfad46",
+    2: "cce9d5c375da37c40eb6a73458f519f2840192500fb64ce1a20126383d2944e3",
+}
+_EXPECTED_SCHEMA_FINGERPRINT = _EXPECTED_SCHEMA_FINGERPRINTS[SCHEMA_VERSION]
 
 
 def _schema_fingerprint(connection: sqlite3.Connection) -> str:
@@ -835,6 +854,10 @@ class SqliteAgentExecutionDispatchAdmissionStore:
             )
             connection.execute(f"PRAGMA application_id={SQLITE_APPLICATION_ID}")
             connection.execute(f"PRAGMA user_version={SCHEMA_VERSION}")
+            verifier = cls.__new__(cls)
+            verifier.configuration = config
+            verifier._clock = None
+            verifier._verify_authoritative_connection(connection, allow_fenced=False)
             commit_attempted = True
             _commit(connection)
             connection.close()
@@ -881,31 +904,29 @@ class SqliteAgentExecutionDispatchAdmissionStore:
                         pass
 
     @classmethod
+    def _administration_fault(cls, point: str) -> None:
+        """Private inert fault seam for bounded administrative crash tests."""
+
+    @classmethod
     def migrate(
         cls,
         configuration: SqliteAgentExecutionDispatchAdmissionStoreConfiguration,
         *,
         access: object,
     ) -> SqliteAdmissionStoreAdministrationResult:
-        """Explicit single-owner forward migration; never used by open/calls."""
+        """Explicit owned, quiescent forward migration of the exact bound ledger."""
 
         try:
-            _claim_configuration_access(
-                configuration,
-                access,
-                administrative=True,
-            )
+            _claim_configuration_access(configuration, access, administrative=True)
             config = _validate_configuration(configuration, require_file=True)
             migrations = _migration_bytes()
         except SqliteAdmissionStoreConfigurationError as error:
             return _admin_result(
-                SqliteAdmissionStoreAdministrationOutcome.STORAGE_UNAVAILABLE,
-                str(error),
+                SqliteAdmissionStoreAdministrationOutcome.STORAGE_UNAVAILABLE, str(error)
             )
         except SqliteAdmissionStoreIncompatibleSchemaError as error:
             return _admin_result(
-                SqliteAdmissionStoreAdministrationOutcome.MIGRATION_FAILURE,
-                str(error),
+                SqliteAdmissionStoreAdministrationOutcome.MIGRATION_FAILURE, str(error)
             )
 
         connection: sqlite3.Connection | None = None
@@ -913,53 +934,62 @@ class SqliteAgentExecutionDispatchAdmissionStore:
         try:
             connection = cls._connect_rw(config)
             cls._configure_connection(connection, config, establish_wal=False)
-            application_id = int(connection.execute("PRAGMA application_id").fetchone()[0])
+            verifier = cls.__new__(cls)
+            verifier.configuration = config
+            verifier._clock = None
+            connection.execute("BEGIN")
             version = int(connection.execute("PRAGMA user_version").fetchone()[0])
-            if application_id != SQLITE_APPLICATION_ID:
-                return _admin_result(
-                    SqliteAdmissionStoreAdministrationOutcome.INCOMPATIBLE_SCHEMA,
-                    "SQLite application_id does not identify an Admission ledger",
-                )
-            if version > SCHEMA_VERSION:
-                return _admin_result(
-                    SqliteAdmissionStoreAdministrationOutcome.INCOMPATIBLE_SCHEMA,
-                    "ledger schema is newer; downgrade is unsupported",
-                )
+            verifier._verify_versioned_connection(
+                connection, allow_fenced=False, schema_version=version
+            )
+            connection.execute("ROLLBACK")
             if version == SCHEMA_VERSION:
-                verifier = cls.__new__(cls)
-                verifier.configuration = config
-                verifier._clock = None
-                verifier._verify_authoritative_connection(
-                    connection,
-                    allow_fenced=False,
-                )
                 return _admin_result(
                     SqliteAdmissionStoreAdministrationOutcome.ALREADY_CURRENT
                 )
-            if version < 1:
-                return _admin_result(
-                    SqliteAdmissionStoreAdministrationOutcome.INCOMPATIBLE_SCHEMA,
-                    "an unversioned database must be provisioned, not migrated",
-                )
 
+            cls._administration_fault("migration.before_transaction")
             connection.execute("BEGIN EXCLUSIVE")
-            metadata = connection.execute(
-                "SELECT migration_state FROM admission_ledger_metadata WHERE singleton=1"
-            ).fetchall()
-            if len(metadata) != 1 or metadata[0][0] != "clean":
-                connection.execute("ROLLBACK")
-                return _admin_result(
-                    SqliteAdmissionStoreAdministrationOutcome.MIGRATION_FAILURE,
-                    "migration state is missing or dirty",
-                )
+            cls._administration_fault("migration.after_begin")
+            # Repeat all source checks after serialization, before dirty mutation.
+            verifier._verify_versioned_connection(
+                connection, allow_fenced=False, schema_version=version
+            )
             connection.execute(
                 "UPDATE admission_ledger_metadata SET migration_state='dirty' WHERE singleton=1"
             )
+            cls._administration_fault("migration.after_dirty")
             for migration_id, resource_name, checksum, data in migrations:
                 if migration_id <= version:
                     continue
                 for statement in _sql_statements(data):
+                    backfill = statement.startswith("INSERT INTO legacy_admission_markers")
+                    if backfill:
+                        cls._administration_fault("migration.after_schema")
                     connection.execute(statement)
+                    if backfill:
+                        cls._administration_fault("migration.after_legacy_population")
+                if connection.execute(
+                    "SELECT 1 FROM agent_execution_dispatch_intents LIMIT 1"
+                ).fetchone() is not None:
+                    raise SqliteAdmissionStoreIntegrityError(
+                        "migration must not create historical Dispatch Intents"
+                    )
+                # Audit the additive classification before publishing v2 metadata.
+                source_keys = {
+                    tuple(row) for row in connection.execute(
+                        "SELECT authorization_domain_id, issuer_kind, issuer_id, grant_id "
+                        "FROM agent_execution_dispatch_admissions"
+                    ).fetchall()
+                }
+                verifier._verify_dispatch_classifications(connection, source_keys)
+                if (
+                    _schema_fingerprint(connection)
+                    != _EXPECTED_SCHEMA_FINGERPRINTS[migration_id]
+                ):
+                    raise SqliteAdmissionStoreIntegrityError(
+                        "destination DDL fingerprint disagrees before publication"
+                    )
                 connection.execute(
                     "INSERT INTO admission_schema_migrations VALUES (?, ?, ?)",
                     (migration_id, resource_name, checksum),
@@ -971,25 +1001,25 @@ class SqliteAgentExecutionDispatchAdmissionStore:
                     SET schema_version=?, schema_manifest_id=?
                     WHERE singleton=1
                     """,
-                    (migration_id, _schema_manifest_id()),
+                    (migration_id, _schema_manifest_id(migration_id)),
                 )
             connection.execute(
                 "UPDATE admission_ledger_metadata SET migration_state='clean' WHERE singleton=1"
             )
+            cls._administration_fault("migration.after_clean_transition")
+            verifier._verify_authoritative_connection(connection, allow_fenced=False)
+            cls._administration_fault("migration.before_commit")
             commit_attempted = True
             _commit(connection)
-            verifier = cls.__new__(cls)
-            verifier.configuration = config
-            verifier._clock = None
+            cls._administration_fault("migration.after_commit_before_response")
+            connection.execute("BEGIN")
             verifier._verify_authoritative_connection(connection, allow_fenced=False)
-            return _admin_result(
-                SqliteAdmissionStoreAdministrationOutcome.MIGRATED
-            )
+            connection.execute("ROLLBACK")
+            return _admin_result(SqliteAdmissionStoreAdministrationOutcome.MIGRATED)
         except _CommitUnknown as error:
             _safe_rollback(connection)
             return _admin_result(
-                SqliteAdmissionStoreAdministrationOutcome.COMMIT_UNKNOWN,
-                str(error),
+                SqliteAdmissionStoreAdministrationOutcome.COMMIT_UNKNOWN, str(error)
             )
         except BaseException as error:
             _safe_rollback(connection)
@@ -999,6 +1029,10 @@ class SqliteAgentExecutionDispatchAdmissionStore:
                 outcome = SqliteAdmissionStoreAdministrationOutcome.STORAGE_BUSY
             elif isinstance(error, SqliteAdmissionStoreIntegrityError):
                 outcome = SqliteAdmissionStoreAdministrationOutcome.INTEGRITY_FAILURE
+            elif isinstance(error, SqliteAdmissionStoreIncompatibleSchemaError):
+                outcome = SqliteAdmissionStoreAdministrationOutcome.INCOMPATIBLE_SCHEMA
+            elif isinstance(error, SqliteAdmissionStoreConfigurationError):
+                outcome = SqliteAdmissionStoreAdministrationOutcome.STORAGE_UNAVAILABLE
             else:
                 outcome = SqliteAdmissionStoreAdministrationOutcome.MIGRATION_FAILURE
             return _admin_result(outcome, str(error))
@@ -1121,19 +1155,44 @@ class SqliteAgentExecutionDispatchAdmissionStore:
         *,
         allow_fenced: bool,
     ) -> _LedgerMetadata:
+        """Operational verification accepts only the current schema."""
+
+        return self._verify_versioned_connection(
+            connection, allow_fenced=allow_fenced, schema_version=SCHEMA_VERSION
+        )
+
+    def _verify_versioned_connection(
+        self,
+        connection: sqlite3.Connection,
+        *,
+        allow_fenced: bool,
+        schema_version: int,
+    ) -> _LedgerMetadata:
+        """Administration alone may verify an exact supported older prefix."""
+
         try:
+            if (
+                type(schema_version) is not int
+                or schema_version not in _EXPECTED_SCHEMA_FINGERPRINTS
+            ):
+                raise SqliteAdmissionStoreIncompatibleSchemaError(
+                    "unsupported Admission ledger schema; no downgrade or inference"
+                )
             application_id = int(connection.execute("PRAGMA application_id").fetchone()[0])
             user_version = int(connection.execute("PRAGMA user_version").fetchone()[0])
             if application_id != SQLITE_APPLICATION_ID:
                 raise SqliteAdmissionStoreIncompatibleSchemaError(
                     "SQLite application_id does not identify an Admission ledger"
                 )
-            if user_version != SCHEMA_VERSION:
-                direction = "newer" if user_version > SCHEMA_VERSION else "older"
+            if user_version != schema_version:
+                direction = "newer" if user_version > schema_version else "older"
                 raise SqliteAdmissionStoreIncompatibleSchemaError(
                     f"Admission ledger schema is {direction}; explicit migration is required"
                 )
-            if _schema_fingerprint(connection) != _EXPECTED_SCHEMA_FINGERPRINT:
+            if (
+                _schema_fingerprint(connection)
+                != _EXPECTED_SCHEMA_FINGERPRINTS[schema_version]
+            ):
                 raise SqliteAdmissionStoreIntegrityError(
                     "sqlite_schema object/DDL fingerprint mismatch"
                 )
@@ -1146,8 +1205,14 @@ class SqliteAgentExecutionDispatchAdmissionStore:
                 raise SqliteAdmissionStoreIntegrityError(
                     "SQLite foreign_key_check failed"
                 )
-            self._verify_migration_history(connection)
-            metadata = self._verify_metadata(connection, allow_fenced=allow_fenced)
+            if schema_version == SCHEMA_VERSION:
+                self._verify_migration_history(connection)
+                metadata = self._verify_metadata(connection, allow_fenced=allow_fenced)
+            else:
+                self._verify_versioned_migration_history(connection, schema_version)
+                metadata = self._verify_versioned_metadata(
+                    connection, allow_fenced=allow_fenced, schema_version=schema_version
+                )
             self._verify_all_payloads(connection, metadata)
             return metadata
         except (
@@ -1162,6 +1227,14 @@ class SqliteAgentExecutionDispatchAdmissionStore:
 
     @staticmethod
     def _verify_migration_history(connection: sqlite3.Connection) -> None:
+        SqliteAgentExecutionDispatchAdmissionStore._verify_versioned_migration_history(
+            connection, SCHEMA_VERSION
+        )
+
+    @staticmethod
+    def _verify_versioned_migration_history(
+        connection: sqlite3.Connection, schema_version: int
+    ) -> None:
         rows = connection.execute(
             """
             SELECT migration_id, resource_name, sha256
@@ -1171,7 +1244,7 @@ class SqliteAgentExecutionDispatchAdmissionStore:
         ).fetchall()
         expected = tuple(
             (migration_id, name, checksum)
-            for migration_id, name, checksum, _ in _migration_bytes()
+            for migration_id, name, checksum, _ in _migration_bytes()[:schema_version]
         )
         actual = tuple(
             (row["migration_id"], row["resource_name"], row["sha256"])
@@ -1188,6 +1261,17 @@ class SqliteAgentExecutionDispatchAdmissionStore:
         *,
         allow_fenced: bool,
     ) -> _LedgerMetadata:
+        return self._verify_versioned_metadata(
+            connection, allow_fenced=allow_fenced, schema_version=SCHEMA_VERSION
+        )
+
+    def _verify_versioned_metadata(
+        self,
+        connection: sqlite3.Connection,
+        *,
+        allow_fenced: bool,
+        schema_version: int,
+    ) -> _LedgerMetadata:
         rows = connection.execute(
             "SELECT * FROM admission_ledger_metadata"
         ).fetchall()
@@ -1203,8 +1287,8 @@ class SqliteAgentExecutionDispatchAdmissionStore:
             or row["store_id"] != STORE_ID
             or row["application_id"] != SQLITE_APPLICATION_ID
             or row["authorization_domain_id"] != expected.authorization_domain_id
-            or row["schema_version"] != SCHEMA_VERSION
-            or row["schema_manifest_id"] != _schema_manifest_id()
+            or row["schema_version"] != schema_version
+            or row["schema_manifest_id"] != _schema_manifest_id(schema_version)
             or row["ledger_instance_id"] != expected.ledger_instance_id
             or row["domain_generation"] != expected.domain_generation
             or row["migration_state"] != "clean"
@@ -1355,6 +1439,89 @@ class SqliteAgentExecutionDispatchAdmissionStore:
                 "watermark precedes a durable security record"
             )
 
+        if metadata.schema_version == SCHEMA_VERSION:
+            self._verify_dispatch_classifications(connection, set(admitted_grants))
+
+    @staticmethod
+    def _verify_dispatch_classifications(
+        connection: sqlite3.Connection,
+        admission_keys: set[tuple[str, str, str, str]],
+    ) -> None:
+        """Prove complete, disjoint immutable classification in this snapshot."""
+
+        classified: list[set[tuple[str, str, str, str]]] = []
+        for table in ("agent_execution_dispatch_intents", "legacy_admission_markers"):
+            rows = connection.execute(f"SELECT * FROM {table}").fetchall()
+            keys: set[tuple[str, str, str, str]] = set()
+            for row in rows:
+                key = tuple(row[name] for name in (
+                    "authorization_domain_id", "issuer_kind", "issuer_id", "grant_id"
+                ))
+                if (
+                    any(type(value) is not str or not value for value in key)
+                    or key[1] not in ("human", "policy")
+                    or key in keys
+                    or key not in admission_keys
+                ):
+                    raise SqliteAdmissionStoreIntegrityError(
+                        "classification identity is malformed, duplicated, or orphaned"
+                    )
+                if table == "legacy_admission_markers" and (
+                    type(row["migration_id"]) is not int or row["migration_id"] != 2
+                ):
+                    raise SqliteAdmissionStoreIntegrityError(
+                        "legacy classification does not name migration 2"
+                    )
+                keys.add(key)
+            classified.append(keys)
+        intents, markers = classified
+        if intents & markers or intents | markers != admission_keys:
+            raise SqliteAdmissionStoreIntegrityError(
+                "every Admission requires exactly one Intent or legacy marker"
+            )
+
+    @staticmethod
+    def _classify_admission_dispatch(
+        connection: sqlite3.Connection,
+        admission: AgentExecutionDispatchAdmission,
+    ) -> _DispatchClassification:
+        """Dereference one verified immutable history record, never live authority."""
+
+        stored = SqliteAgentExecutionDispatchAdmissionStore._find_admission_by_identity(
+            connection, admission.grant
+        )
+        if stored is None or stored != admission:
+            raise SqliteAdmissionStoreIntegrityError(
+                "dispatch classification does not match its complete immutable Admission"
+            )
+        identity = _grant_identity(stored.grant)
+        where = (
+            "authorization_domain_id=? COLLATE BINARY AND issuer_kind=? COLLATE BINARY "
+            "AND issuer_id=? COLLATE BINARY AND grant_id=? COLLATE BINARY"
+        )
+        intent = connection.execute(
+            f"SELECT * FROM agent_execution_dispatch_intents WHERE {where}", identity
+        ).fetchall()
+        markers = connection.execute(
+            f"SELECT * FROM legacy_admission_markers WHERE {where}", identity
+        ).fetchall()
+        if len(intent) + len(markers) != 1:
+            raise SqliteAdmissionStoreIntegrityError(
+                "Admission history has missing, duplicate, or overlapping classification"
+            )
+        if markers:
+            marker = markers[0]
+            if type(marker["migration_id"]) is not int or marker["migration_id"] != 2:
+                raise SqliteAdmissionStoreIntegrityError("legacy migration provenance disagrees")
+            history = connection.execute(
+                "SELECT migration_id, resource_name, sha256 FROM admission_schema_migrations "
+                "WHERE migration_id=2"
+            ).fetchall()
+            expected = _migration_bytes()[1][:3]
+            if len(history) != 1 or tuple(history[0]) != expected:
+                raise SqliteAdmissionStoreIntegrityError("legacy migration history disagrees")
+        return _DispatchClassification(stored, "legacy" if markers else "intent")
+
     def verified_settings(self) -> SqliteAdmissionStoreSettings:
         """Return the verified operational profile without changing state."""
 
@@ -1391,8 +1558,13 @@ class SqliteAgentExecutionDispatchAdmissionStore:
 
         connection = self._open_existing(allow_fenced=False)
         try:
-            metadata = self._verify_metadata(connection, allow_fenced=False)
+            connection.execute("BEGIN")
+            metadata = self._verify_authoritative_connection(connection, allow_fenced=False)
+            connection.execute("ROLLBACK")
             return metadata.decision_time, metadata.decision_time_key
+        except BaseException:
+            _safe_rollback(connection)
+            raise
         finally:
             connection.close()
 
@@ -1480,6 +1652,9 @@ class SqliteAgentExecutionDispatchAdmissionStore:
                     "binding_conflict",
                     detail="the complete Grant is bound to another Tool Binding",
                 )
+            SqliteAgentExecutionDispatchAdmissionStore._classify_admission_dispatch(
+                connection, existing
+            )
             return _result(
                 "existing_exact_admission",
                 admission=existing,
@@ -1631,7 +1806,7 @@ class SqliteAgentExecutionDispatchAdmissionStore:
         try:
             connection = self._open_existing(allow_fenced=False)
             connection.execute("BEGIN")
-            self._verify_metadata(connection, allow_fenced=False)
+            self._verify_authoritative_connection(connection, allow_fenced=False)
             historical = self._classify_existing(connection, grant, binding)
             connection.execute("ROLLBACK")
             if historical is not None:
@@ -1667,7 +1842,7 @@ class SqliteAgentExecutionDispatchAdmissionStore:
         try:
             connection = self._open_existing(allow_fenced=False)
             connection.execute("BEGIN")
-            self._verify_metadata(connection, allow_fenced=False)
+            self._verify_authoritative_connection(connection, allow_fenced=False)
             historical = self._classify_existing(connection, grant, binding)
             connection.execute("ROLLBACK")
             if historical is not None:
@@ -1753,6 +1928,7 @@ class SqliteAgentExecutionDispatchAdmissionStore:
 
             if decision < issued_at:
                 self._advance_watermark(connection, decision_text, decision_key)
+                self._verify_authoritative_connection(connection, allow_fenced=False)
                 commit_attempted = True
                 _commit(connection)
                 self._fault("after_commit_before_response")
@@ -1762,6 +1938,7 @@ class SqliteAgentExecutionDispatchAdmissionStore:
                 )
             if decision >= expires_at:
                 self._advance_watermark(connection, decision_text, decision_key)
+                self._verify_authoritative_connection(connection, allow_fenced=False)
                 commit_attempted = True
                 _commit(connection)
                 self._fault("after_commit_before_response")
@@ -1771,6 +1948,7 @@ class SqliteAgentExecutionDispatchAdmissionStore:
                 )
             if revocation is not None:
                 self._advance_watermark(connection, decision_text, decision_key)
+                self._verify_authoritative_connection(connection, allow_fenced=False)
                 commit_attempted = True
                 _commit(connection)
                 self._fault("after_commit_before_response")
@@ -1780,6 +1958,7 @@ class SqliteAgentExecutionDispatchAdmissionStore:
                 )
 
             self._fault("after_checks")
+            self._fault("before_admission_insert")
             admission = AgentExecutionDispatchAdmission(
                 grant=grant,
                 tool_binding=binding,
@@ -1814,8 +1993,21 @@ class SqliteAgentExecutionDispatchAdmissionStore:
                     decision_key,
                 ),
             )
+            self._fault("after_admission_insert_before_intent")
+            connection.execute(
+                """
+                INSERT INTO agent_execution_dispatch_intents (
+                    authorization_domain_id, issuer_kind, issuer_id, grant_id
+                ) VALUES (?, ?, ?, ?)
+                """,
+                _grant_identity(grant),
+            )
+            self._fault("after_intent_insert_before_watermark")
             self._fault("after_insert_before_commit")
             self._advance_watermark(connection, decision_text, decision_key)
+            self._fault("after_watermark_before_commit")
+            self._verify_authoritative_connection(connection, allow_fenced=False)
+            self._fault("before_commit")
             commit_attempted = True
             _commit(connection)
             self._fault("after_commit_before_response")
@@ -1921,6 +2113,7 @@ class SqliteAgentExecutionDispatchAdmissionStore:
             )
             self._fault("after_insert_before_commit")
             self._advance_watermark(connection, decision_text, decision_key)
+            self._verify_authoritative_connection(connection, allow_fenced=False)
             commit_attempted = True
             _commit(connection)
             self._fault("after_commit_before_response")
@@ -1975,6 +2168,7 @@ class SqliteAgentExecutionDispatchAdmissionStore:
                 raise SqliteAdmissionStoreIntegrityError(
                     "active ledger fencing lost ownership"
                 )
+            self._verify_authoritative_connection(connection, allow_fenced=True)
             commit_attempted = True
             _commit(connection)
             return _admin_result(
@@ -2088,6 +2282,7 @@ class SqliteAgentExecutionDispatchAdmissionStore:
                 raise SqliteAdmissionStoreIntegrityError(
                     "backup fencing lost copied ledger ownership"
                 )
+            temporary_verifier._verify_authoritative_connection(target, allow_fenced=True)
             fencing_commit_attempted = True
             _commit(target)
             target.execute("PRAGMA wal_checkpoint(TRUNCATE)")

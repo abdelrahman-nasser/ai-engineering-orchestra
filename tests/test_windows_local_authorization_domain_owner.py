@@ -46,6 +46,16 @@ _UNKNOWN_REPARSE_TAG = 0x00000042
 _UNKNOWN_REPARSE_GUID = uuid.UUID("f7bc6e54-2f80-4f35-b424-0f7be4f6a049")
 
 
+def _cleanup_disposable_root(temporary_directory: object) -> None:
+    path = Path(temporary_directory.name)
+    resolved = path.resolve()
+    if (path.is_symlink() or path.is_junction()
+            or resolved.parent != Path(tempfile.gettempdir()).resolve()
+            or not resolved.name.startswith("aio-049-")):
+        raise AssertionError("ownership fixture cleanup escaped its owned temp root")
+    temporary_directory.cleanup()
+
+
 class _FixedClock:
     def now_utc(self) -> datetime:
         return datetime(2026, 9, 24, 12, 0, tzinfo=timezone.utc)
@@ -185,12 +195,12 @@ class WindowsLocalAuthorizationDomainOwnerWin32Tests(unittest.TestCase):
     """Real Win32 tests confined to one disposable, explicitly secured root."""
 
     def setUp(self) -> None:
-        workspace_root = Path(__file__).resolve().parent.parent
+        temporary_parent = Path(tempfile.gettempdir()).resolve()
         self.temporary_directory = tempfile.TemporaryDirectory(
             prefix="aio-049-windows-owner-",
-            dir=workspace_root,
+            dir=temporary_parent,
         )
-        self.addCleanup(self.temporary_directory.cleanup)
+        self.addCleanup(_cleanup_disposable_root, self.temporary_directory)
         self.root = Path(self.temporary_directory.name).resolve()
         self.sid = subject._current_user_sid()
         subject._apply_security_profile(self.root, self.sid, directory=True)
@@ -490,29 +500,49 @@ class WindowsLocalAuthorizationDomainOwnerWin32Tests(unittest.TestCase):
                 "os._exit(73)",
             )
         )
+        environment = {
+            key: os.environ[key]
+            for key in ("SystemRoot", "WINDIR", "TEMP", "TMP")
+            if key in os.environ
+        }
         process = subprocess.Popen(
-            [sys.executable, "-c", child_source, str(lock_path), str(ROOT)],
+            [sys.executable, "-I", "-B", "-c", child_source, str(lock_path), str(ROOT)],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
+            cwd=self.root,
+            env=environment,
+            shell=False,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
         )
-        self.addCleanup(lambda: process.kill() if process.poll() is None else None)
         assert process.stdout is not None
         assert process.stdin is not None
         assert process.stderr is not None
-        ready = process.stdout.readline()
-        if ready != b"locked\n":
-            error = process.stderr.read().decode("utf-8", errors="replace")
-            self.fail(f"hard-exit lock child failed before acquisition: {error}")
-        with self.assertRaises(AuthorizationDomainAlreadyOwnedError):
-            subject._open_lock(lock_path, self.sid, domain=True)
+        ready = threading.Event()
+        messages = []
 
-        process.stdin.write(b"x")
-        process.stdin.flush()
-        self.assertEqual(process.wait(timeout=15), 73)
-        process.stdin.close()
-        process.stdout.close()
-        process.stderr.close()
+        def read_ready() -> None:
+            messages.append(process.stdout.readline())
+            ready.set()
+
+        reader = threading.Thread(target=read_ready, daemon=True)
+        reader.start()
+        try:
+            self.assertTrue(ready.wait(15), "owned lock probe readiness timed out")
+            self.assertEqual(messages, [b"locked\n"], "lock probe failed before readiness")
+            with self.assertRaises(AuthorizationDomainAlreadyOwnedError):
+                subject._open_lock(lock_path, self.sid, domain=True)
+            process.stdin.write(b"x")
+            process.stdin.flush()
+            self.assertEqual(process.wait(timeout=15), 73)
+        finally:
+            if process.poll() is None:
+                process.kill()
+            process.wait(timeout=15)
+            reader.join(15)
+            self.assertFalse(reader.is_alive(), "owned readiness thread did not exit")
+            for handle in (process.stdin, process.stdout, process.stderr):
+                handle.close()
         recovered = subject._open_lock(lock_path, self.sid, domain=True)
         recovered.close()
 

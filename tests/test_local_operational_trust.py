@@ -141,6 +141,16 @@ SCENARIO_TEST_MAP = {
 }
 
 
+def _cleanup_disposable_root(temporary_directory: object) -> None:
+    path = Path(temporary_directory.name)
+    resolved = path.resolve()
+    if (path.is_symlink() or path.is_junction()
+            or resolved.parent != Path(tempfile.gettempdir()).resolve()
+            or not resolved.name.startswith("aio-053-")):
+        raise AssertionError("integration fixture cleanup escaped its owned temp root")
+    temporary_directory.cleanup()
+
+
 class _ExecutionProbe:
     """Record real identity-only Bindings and inspect executable surfaces."""
 
@@ -584,9 +594,9 @@ class _WindowsHarness:
         self.domain_id = domain_id
         self._temporary_directory = tempfile.TemporaryDirectory(
             prefix="aio-053-local-trust-",
-            dir=Path(__file__).resolve().parent.parent,
+            dir=Path(tempfile.gettempdir()).resolve(),
         )
-        case.addCleanup(self._temporary_directory.cleanup)
+        case.addCleanup(_cleanup_disposable_root, self._temporary_directory)
         self.root = Path(self._temporary_directory.name) / "local-appdata"
         self.root.mkdir()
         sid = windows_owner._current_user_sid()

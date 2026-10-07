@@ -27,7 +27,11 @@ issuance, it passes that exact presentation unchanged to the existing
 AIO-049-owned Admission operation and returns the resulting predecessor value
 unchanged.
 
-The operational boundary ends after Admission. It performs no dispatch, Tool
+The unchanged return boundary ends after Admission. With the AIO-055 local
+SQLite extension, a newly committed Admission also durably implies exactly
+one immutable Agent Execution Dispatch Intent in that same Store transaction.
+Historical legacy Admissions remain non-dispatchable. The integration performs
+no dispatch, Tool
 invocation, operation execution, repository resource read, lifecycle
 execution, result recording, delivery, or telemetry.
 
@@ -216,6 +220,9 @@ One Admission attempt follows this exact order:
     prerequisites, resolves effective mode, prepares the Contract, and
     reconstructs the expected Run.
 12. AIO-047 enforces exact Run equality and calls the official SQLite Store.
+    AIO-055 atomically persists a new Admission and its immutable Intent; an
+    exact historical retry verifies Intent or legacy classification and writes
+    nothing. The integration adds no direct Store or Intent write.
 13. Return the exact predecessor result unchanged.
 14. Leave the registered outer operation and stop.
 
@@ -351,7 +358,8 @@ AIO-047 remains the sole owner of:
 - authoritative decision time and currentness;
 - revocation ordering;
 - atomic Grant and Run consumption; and
-- exact historical retry and persistence.
+- exact historical retry and persistence, including the AIO-055 same-ledger
+  atomic Intent extension and immutable legacy classification.
 
 The integration never calls the SQLite Store directly, never mints an
 AIO-047 authority-internal request, and never moves freshness work ahead of
@@ -388,7 +396,8 @@ Before Admission, process restart loses proofs, issuance registry, Producer,
 session, and presentation. Recovery requires a new session, new Run, fresh
 authority, and new Grant.
 
-After Admission, the AIO-047 SQLite record remains durable and authoritative,
+After Admission, the AIO-047 SQLite record and its AIO-055 Intent or legacy
+classification remain durable and authoritative as history,
 but the integrated path cannot reload it without the lost AIO-050
 presentation. The integration does not invent durable presentation storage.
 
@@ -500,4 +509,6 @@ permission-inspect, or use any protected target as a fixture. Abstract Tool
 identity registration and Binding construction do not access a resource.
 
 The path ends immediately after returning the unchanged AIO-050 non-issuance
-or AIO-047 Admission result.
+or AIO-047 Admission result. A successful new Admission now durably implies
+one immutable Intent; this is Store-owned persistence, not dispatch. No
+AIO-053 API, control flow, presentation persistence or architecture changes.

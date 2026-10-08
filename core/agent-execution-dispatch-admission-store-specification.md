@@ -606,9 +606,10 @@ zero historical Intents and preserves all original security payloads and
 the watermark. The deferred marker-history FK permits backfill before the
 same transaction appends migration 2.
 
-Fresh current-v2 provisioning retains its existing API and single transaction,
-applies exact 0001 and 0002, initializes full current metadata/history, has zero
-Admissions/markers/Intents, and verifies the full destination before commit.
+The AIO-055 v2 provisioning design retains its existing API and single
+transaction. Current AIO-056 v3 provisioning additionally applies exact 0003,
+initializes complete metadata/history, has zero Admissions/markers/Intents/
+Claims/Renewals, and verifies the full destination before commit.
 
 Operational open rejects old, newer, dirty, partial, checksum/fingerprint
 mismatched or corrupt state without migration or repair. A valid exact-current
@@ -630,10 +631,16 @@ Private Store-owned immutable classification/dereference is available inside
 the verified ownership boundary. No public enumerator, mutable SQLite handle,
 dispatchable flag, worker selector or Claim operation is exposed.
 
-AIO-056 may later extend the internal seam with controlled eligible-Intent
-selection and Claim transactions under its own authority, currentness,
-revocation and fencing contract. Intent presence supplies no execution
-authority. Later revocation retains immutable history.
+AIO-056 extends the private local seam with eligible-Intent Claim selection,
+append-only Renewal, half-open fixed-duration Lease and contiguous generation
+fencing. See `core/agent-execution-dispatch-claim-lease-specification.md`.
+The same Store owns those transactions and shared durable watermark. Explicit
+0003 migration preserves existing Intents/legacy classification and every
+security row; v1-to-v3 and v2-to-v3 are forward-only atomic transitions with
+empty Claim/Renewal histories. 0001/0002 bytes remain unchanged. Old-source
+classification auditing applies to every schema version at least 2.
+Intent presence supplies no execution authority. Later revocation retains
+immutable history and prevents fresh Claim/Renewal under the locked policy.
 
 The existing owned-session pre/post checks cover the full Admission/Intent
 transaction. Ownership loss after a durable commit cannot undo it or justify
@@ -685,9 +692,10 @@ A future adapter must use just-in-time or native enforcement, and a future
 dispatcher must handle changed Runtime/Inference availability and verify the
 configured immutable Tool mapping. The AIO-055 local outbox foundation adds immutable Dispatch Intent history
 anchored to authoritative Admission. A future delivery system may consume
-that history under separately authorized rules. This foundation adds no
-pending/claimed/dispatching/sent/failed/completed state, claim, lease, delivery
-attempt, acknowledgement, event, result, error, usage, cost, or telemetry.
+that history under separately authorized rules. AIO-056 adds immutable private
+Claim/Renewal history and derives current Lease state from it. It adds no
+mutable dispatch lifecycle, delivery attempt, acknowledgement, event, result,
+error, usage, cost, invocation or telemetry.
 
 ---
 

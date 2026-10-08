@@ -83,7 +83,7 @@ def _make_v1(configuration, *, nonempty=True, reset=False):
             connection.execute("PRAGMA foreign_keys=OFF")
             for row in connection.execute("SELECT name FROM sqlite_schema WHERE type='trigger'").fetchall():
                 connection.execute('DROP TRIGGER "' + row[0].replace('"', '""') + '"')
-            for row in connection.execute("SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%'").fetchall():
+            for row in connection.execute("SELECT name FROM sqlite_schema WHERE type='table' AND substr(name, 1, 7) <> 'sqlite_'").fetchall():
                 connection.execute('DROP TABLE "' + row[0].replace('"', '""') + '"')
             connection.execute("PRAGMA foreign_keys=ON")
         connection.execute("BEGIN IMMEDIATE")
@@ -361,7 +361,7 @@ class AtomicDurableDispatchOutboxTests(unittest.TestCase):
             self.assertEqual(observations, [1, 1, 1])
             self.assertEqual(reader.execute("PRAGMA user_version").fetchone()[0], 1)
             reader.execute("COMMIT")
-            self.assertEqual(reader.execute("PRAGMA user_version").fetchone()[0], 2)
+            self.assertEqual(reader.execute("PRAGMA user_version").fetchone()[0], subject.SCHEMA_VERSION)
         self.assertEqual(self._counts(), (2, 0, 2))
 
     def test_O05_migration_crash_before_transaction(self):
@@ -394,7 +394,7 @@ class AtomicDurableDispatchOutboxTests(unittest.TestCase):
                 self._assert_outcome(self._migrate(configuration), retry)
                 self.assertEqual(self._counts(configuration), (2, 0, 2))
                 with closing(_connect(configuration.database_path)) as connection:
-                    self.assertEqual(connection.execute("SELECT count(*) FROM admission_schema_migrations").fetchone()[0], 2)
+                    self.assertEqual(connection.execute("SELECT count(*) FROM admission_schema_migrations").fetchone()[0], subject.SCHEMA_VERSION)
 
     def test_O10_migration_one_checksum_mismatch(self):
         _make_v1(self.configuration)
@@ -430,7 +430,7 @@ class AtomicDurableDispatchOutboxTests(unittest.TestCase):
         before = _snapshot(self.configuration.database_path)
         original = subject._schema_fingerprint
         def wrong_destination(connection):
-            return "0" * 64 if connection.execute("PRAGMA user_version").fetchone()[0] == 2 else original(connection)
+            return "0" * 64 if connection.execute("PRAGMA user_version").fetchone()[0] == subject.SCHEMA_VERSION else original(connection)
         with patch.object(subject, "_schema_fingerprint", side_effect=wrong_destination):
             self._assert_outcome(self._migrate(), "integrity_failure")
         self.assertEqual(_snapshot(self.configuration.database_path), before)
@@ -443,7 +443,7 @@ class AtomicDurableDispatchOutboxTests(unittest.TestCase):
         mutations = {
             "gap": lambda c: c.execute("DELETE FROM admission_schema_migrations WHERE migration_id=1"),
             "rebound": lambda c: c.execute("UPDATE admission_schema_migrations SET resource_name='rebound.sql' WHERE migration_id=1"),
-            "extra": lambda c: c.execute("INSERT INTO admission_schema_migrations VALUES (3, 'unknown.sql', ?)", ("a" * 64,)),
+            "extra": lambda c: c.execute("INSERT INTO admission_schema_migrations VALUES (?, 'unknown.sql', ?)", (subject.SCHEMA_VERSION + 1, "a" * 64)),
             "changed": lambda c: c.execute("UPDATE admission_schema_migrations SET sha256=? WHERE migration_id=2", ("a" * 64,)),
             "reordered": lambda c: (c.execute("UPDATE admission_schema_migrations SET resource_name='temporary.sql' WHERE migration_id=1"),
                                       c.execute("UPDATE admission_schema_migrations SET resource_name='0001_initial.sql' WHERE migration_id=2"),
@@ -462,7 +462,7 @@ class AtomicDurableDispatchOutboxTests(unittest.TestCase):
     def test_O15_unknown_newer_schema(self):
         self._provision()
         with closing(_connect(self.configuration.database_path)) as connection:
-            connection.execute("PRAGMA user_version=3")
+            connection.execute(f"PRAGMA user_version={subject.SCHEMA_VERSION + 1}")
         before = _snapshot(self.configuration.database_path)
         self._reject_open(self.configuration)
         self._assert_outcome(self._migrate(), "incompatible_schema")
@@ -647,7 +647,7 @@ class AtomicDurableDispatchOutboxTests(unittest.TestCase):
 
     def _assert_classification_audit_rejects(self, configuration, *, message=None):
         with closing(_connect(configuration.database_path)) as connection:
-            self.assertEqual(subject._schema_fingerprint(connection), subject._EXPECTED_SCHEMA_FINGERPRINTS[2])
+            self.assertEqual(subject._schema_fingerprint(connection), subject._EXPECTED_SCHEMA_FINGERPRINTS[subject.SCHEMA_VERSION])
             keys = {tuple(row) for row in connection.execute(f"SELECT authorization_domain_id,issuer_kind,issuer_id,grant_id FROM {ADMISSIONS}")}
             if message:
                 with self.assertRaisesRegex(subject.SqliteAdmissionStoreIntegrityError, message):
@@ -777,7 +777,7 @@ class AtomicDurableDispatchOutboxTests(unittest.TestCase):
                     return connection
             with self.subTest(table=table, branch="duplicate-snapshot"):
                 with closing(_connect(self.configuration.database_path)) as connection:
-                    self.assertEqual(subject._schema_fingerprint(connection), subject._EXPECTED_SCHEMA_FINGERPRINTS[2])
+                    self.assertEqual(subject._schema_fingerprint(connection), subject._EXPECTED_SCHEMA_FINGERPRINTS[subject.SCHEMA_VERSION])
                 with self.assertRaisesRegex(subject.SqliteAdmissionStoreIntegrityError, "duplicated"):
                     self._open(store_type=SnapshotFaultStore)
         self.assertEqual(_snapshot(self.configuration.database_path), before)
@@ -827,7 +827,7 @@ class AtomicDurableDispatchOutboxTests(unittest.TestCase):
                     connection.execute(f"UPDATE {ADMISSIONS} SET {column}=?", (subject._canonical_json(document),))
                 self._corrupt(configuration, mutate)
                 with closing(_connect(configuration.database_path)) as connection:
-                    self.assertEqual(subject._schema_fingerprint(connection), subject._EXPECTED_SCHEMA_FINGERPRINTS[2])
+                    self.assertEqual(subject._schema_fingerprint(connection), subject._EXPECTED_SCHEMA_FINGERPRINTS[subject.SCHEMA_VERSION])
                 self._reject_open(configuration)
                 self._assert_outcome(self._admit(store), "integrity_failure")
 
@@ -1014,14 +1014,14 @@ class AtomicDurableDispatchOutboxTests(unittest.TestCase):
         self.assertFalse(any("experiment" in name for name in surfaces))
         self.assertEqual(declaration["tool"]["setuptools"]["package-data"][subject.MIGRATION_PACKAGE], ["*.sql"])
         migrations = subject._migration_bytes()
-        self.assertEqual([(item[0], item[1]) for item in migrations], [(1, "0001_initial.sql"), (2, "0002_dispatch_outbox.sql")])
+        self.assertEqual([(item[0], item[1]) for item in migrations], [(1, "0001_initial.sql"), (2, "0002_dispatch_outbox.sql"), (3, "0003_dispatch_claim_lease.sql")])
         self.assertEqual(migrations[0][2], V1_CHECKSUM)
         for _, _, checksum, data in migrations:
             self.assertEqual(hashlib.sha256(data).hexdigest(), checksum)
             self.assertNotIn(b"\r", data)
         self._provision()
         with closing(_connect(self.configuration.database_path)) as connection:
-            self.assertEqual(subject._schema_fingerprint(connection), subject._EXPECTED_SCHEMA_FINGERPRINTS[2])
+            self.assertEqual(subject._schema_fingerprint(connection), subject._EXPECTED_SCHEMA_FINGERPRINTS[subject.SCHEMA_VERSION])
             self.assertEqual([tuple(row) for row in connection.execute("SELECT * FROM admission_schema_migrations ORDER BY migration_id")],
                              [(number, name, checksum) for number, name, checksum, _ in migrations])
         v1_configuration = self._configuration("packaged-v1-fingerprint")

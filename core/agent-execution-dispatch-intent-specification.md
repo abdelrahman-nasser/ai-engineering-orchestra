@@ -139,9 +139,12 @@ Store-owned private classification/dereference returns only immutable verified
 history within the owned boundary. It does not expose a mutable connection,
 raw SQL authority, public enumerator, dispatchable boolean, or worker selector.
 
-A separately authorized AIO-056 may extend this internal seam with controlled
-Intent selection and Claim transactions under its own current authority and
-fencing rules. AIO-055 contains no Claim, Lease, Renewal, reclaim, executor
+AIO-056 extends this internal seam with private controlled Intent selection,
+append-only Claim/Renewal and generation fencing in schema v3. Its exact
+semantics are governed by
+`core/agent-execution-dispatch-claim-lease-specification.md`; the Intent value
+and public Admission contract are unchanged. AIO-055 itself contains no Claim,
+Lease, Renewal, reclaim, executor
 identity, worker API, dispatch loop, queue consumer, transport, Tool probe,
 credential resolution, resource read, Tool invocation, Result or external
 effect.

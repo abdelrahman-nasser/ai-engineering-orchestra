@@ -1,0 +1,42 @@
+id: AIO-056
+title: Dispatch Claim-Lease and Fencing Foundation
+type: implementation
+status: completed
+# Completed 2026-10-08; Human approval and explicit closure recorded in review.md.
+version_target: "0.1.0"
+complexity: high
+risk: critical
+execution:
+  mode: critical
+workflow: architecture-change
+objective: >
+  Establish authoritative same-ledger durable Dispatch Claim ownership,
+  half-open Lease renewal and expiry, reclaim, and monotonic generation
+  fencing on AIO-055 immutable Dispatch Intents, ending before invocation.
+scope:
+  include:
+    - Phase 1 design is converged; Phase 2 implementation and matrix-governed focused validation are explicitly authorized.
+    - Resolve all nineteen Human design questions against exact canonical sources and experimental evidence.
+    - Design immutable private Claim and Renewal history, owned Store transactions, clock, retry, corruption, and concurrency semantics.
+    - Design explicit forward-only migration 0003 preserving byte-exact migrations 0001 and 0002 and public Admission contracts.
+    - Lock production scenarios, crash expectations, a Task-local Validation Safety Matrix, and five fresh specialist design reviews.
+    - Implement the locked private production Store, adapter, migration, specifications and 112 scenarios; validate focused predecessors and offline package, then stop after Phase 2.
+  exclude:
+    - Phase 3 reviews, final Quality Gates, Human final approval and Task closure in Phase 2.
+    - Changes to AIO-049 APIs or semantics, public Admission or Intent values, and public Claim or Lease APIs.
+    - Agent or CLI launch, command execution, resource reads, Tool invocation, transport, networking, Result collection or persistence.
+    - Worker process management, worktrees, scheduler or DAG orchestration, and exactly-once invocation claims.
+    - Task or Workflow catalog enumeration, recursive repository search, workflows/README.md, unknown validators or legacy --help.
+    - Operational production targets, live owner registries, silent repair, automatic migration, alternate ledgers, staging, commit, or push.
+dependencies:
+  - AIO-055
+  - AIO-049
+  - AIO-054
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

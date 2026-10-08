@@ -23,7 +23,7 @@ There is no same-domain restore/reactivation path in AIO-047.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import hashlib
 from importlib.resources import files
 import json
@@ -176,6 +176,178 @@ class _RevocationRecord:
     revoker_kind: str
     revoker_id: str
     revocation_time: str
+
+
+_DISPATCH_TOKEN = re.compile(r"^[0-9a-f]{64}$")
+_DISPATCH_REQUEST_AUTHORITY = object()
+_DISPATCH_LEASE_US = 30_000_000
+_DISPATCH_MAX_INTEGER = 9_223_372_036_854_775_807
+_DISPATCH_MAX_TIME_KEY = 315_537_897_599_999_999
+_DISPATCH_ID_COLUMNS = (
+    "authorization_domain_id", "issuer_kind", "issuer_id", "grant_id",
+)
+_DISPATCH_CLAIMS = "agent_execution_dispatch_claims"
+_DISPATCH_RENEWALS = "agent_execution_dispatch_renewals"
+
+
+def _dispatch_token(value: object) -> str:
+    if type(value) is not str or _DISPATCH_TOKEN.fullmatch(value) is None:
+        raise ValueError("attempt/executor identity must be exact lowercase 64-hex text")
+    return value
+
+
+def _dispatch_identity(value: object) -> tuple[str, str, str, str]:
+    if (type(value) is not tuple or len(value) != 4
+            or any(type(part) is not str or not part for part in value)
+            or value[1] not in ("human", "policy")):
+        raise ValueError("Dispatch identity must be the exact four-part Grant composite")
+    return value
+
+
+def _dispatch_integer(value: object) -> int:
+    if type(value) is not int or not 1 <= value <= _DISPATCH_MAX_INTEGER:
+        raise ValueError("generation/sequence must be an exact positive signed-64 integer")
+    return value
+
+
+def _next_dispatch_integer(previous: int) -> int:
+    if type(previous) is not int or not 0 <= previous < _DISPATCH_MAX_INTEGER:
+        raise OverflowError("Dispatch generation/sequence is exhausted")
+    return previous + 1
+
+
+def _dispatch_expiry(now: datetime) -> tuple[str, int]:
+    expiry = now + timedelta(microseconds=_DISPATCH_LEASE_US)
+    _, text, key = _canonical_decision_time(expiry)
+    if key > _DISPATCH_MAX_TIME_KEY:
+        raise OverflowError("Dispatch Lease time is exhausted")
+    return text, key
+
+
+@dataclass(frozen=True)
+class _DispatchClaim:
+    claim_id: str
+    identity: tuple[str, str, str, str]
+    executor_instance_id: str
+    lease_generation: int
+    acquired_at: str
+    acquired_at_key: int
+    lease_until: str
+    lease_until_key: int
+
+
+@dataclass(frozen=True)
+class _DispatchRenewal:
+    renewal_id: str
+    claim_id: str
+    identity: tuple[str, str, str, str]
+    executor_instance_id: str
+    lease_generation: int
+    renewal_sequence: int
+    renewed_at: str
+    renewed_at_key: int
+    lease_until: str
+    lease_until_key: int
+
+
+@dataclass(frozen=True)
+class _DispatchResult:
+    """Private immutable point-in-time evidence; never invocation permission."""
+
+    outcome: str
+    retry: str
+    claim: _DispatchClaim | None = None
+    renewal: _DispatchRenewal | None = None
+    renewals: tuple[_DispatchRenewal, ...] = ()
+    effective_lease_until: str | None = None
+    history_only: bool = False
+    detail: str = ""
+
+
+def _dispatch_result(outcome: str, **values: object) -> _DispatchResult:
+    retry = (
+        "retry_exact_request" if outcome in ("commit_unknown", "storage_busy", "storage_unavailable")
+        else "reconcile_history" if outcome == "ownership_lost"
+        else "retry_after_remediation" if outcome in (
+            "incompatible_schema", "integrity_failure", "clock_failure", "clock_regression",
+            "generation_exhausted", "sequence_exhausted",
+        )
+        else "reevaluate" if outcome in ("empty", "temporarily_unavailable", "nonextending")
+        else "no_retry_needed" if outcome in (
+            "newly_claimed", "newly_renewed", "existing_claim_history",
+            "existing_renewal_history", "claim_history", "current_claim",
+        )
+        else "do_not_retry_same_request"
+    )
+    return _DispatchResult(outcome, retry, **values)
+
+
+class _DispatchRequest:
+    """Internally minted, immutable, nonserializable owned-operation request."""
+
+    __slots__ = ("operation", "session", "store", "capability", "claim_id",
+                 "renewal_id", "identity", "generation", "mode", "_authority")
+
+    def __new__(cls):
+        raise TypeError("Dispatch requests are privately minted")
+
+    def __setattr__(self, name, value):
+        raise TypeError("Dispatch requests are immutable")
+
+    def __reduce_ex__(self, protocol):
+        raise TypeError("Dispatch requests cannot be serialized")
+
+    def __copy__(self):
+        raise TypeError("Dispatch requests cannot be copied")
+
+    def __deepcopy__(self, memo):
+        raise TypeError("Dispatch requests cannot be copied")
+
+
+def _mint_dispatch_request(operation, session, store, *, capability=None,
+                           claim_id=None, renewal_id=None, identity=None,
+                           generation=None, mode=None):
+    request = object.__new__(_DispatchRequest)
+    for name, value in locals().copy().items():
+        if name != "request":
+            object.__setattr__(request, name, value)
+    object.__setattr__(request, "_authority", _DISPATCH_REQUEST_AUTHORITY)
+    return request
+
+
+def _open_dispatch_request(request, store, operation):
+    if (type(request) is not _DispatchRequest
+            or getattr(request, "_authority", None) is not _DISPATCH_REQUEST_AUTHORITY
+            or request.operation != operation or request.store is not store):
+        raise ValueError("invalid or rebound private Dispatch request")
+    # Local provider/session checks stay behind the private local adapter.
+    from engineering_orchestration._local_dispatch_claim_lease import (
+        _validate_owned_dispatch_context, _validate_executor,
+    )
+    _validate_owned_dispatch_context(request.session, store)
+    _dispatch_token(request.claim_id)
+    if operation == "query" and request.mode == "history":
+        if any(value is not None for value in (
+                request.capability, request.renewal_id, request.identity, request.generation)):
+            raise ValueError("history request contains only claim_id")
+        return request, None
+    executor_id = _validate_executor(request.capability, request.session)
+    if operation == "claim":
+        if any(value is not None for value in (
+                request.renewal_id, request.identity, request.generation, request.mode)):
+            raise ValueError("Claim request accepts no overrides")
+    else:
+        _dispatch_identity(request.identity)
+        _dispatch_integer(request.generation)
+        if request.identity[0] != store.configuration.authorization_domain_id:
+            raise ValueError("Dispatch request domain mismatch")
+        if operation == "renew":
+            _dispatch_token(request.renewal_id)
+            if request.mode is not None:
+                raise ValueError("Renewal accepts no query mode")
+        elif request.mode != "current" or request.renewal_id is not None:
+            raise ValueError("unknown Dispatch query mode")
+    return request, executor_id
 
 
 def _result(outcome: str, *, admission=None, detail: str = ""):
@@ -665,6 +837,7 @@ def _claim_configuration_access(
 _EXPECTED_SCHEMA_FINGERPRINTS = {
     1: "de080810b1d644dacf53e6bf79cbbd01343344904397a91c6dd483bd48dfad46",
     2: "cce9d5c375da37c40eb6a73458f519f2840192500fb64ce1a20126383d2944e3",
+    3: "8fb9c0473441babaaee7b322aa010a46f0481a6c7513bd1a0fd9e01c0d6009b7",
 }
 _EXPECTED_SCHEMA_FINGERPRINT = _EXPECTED_SCHEMA_FINGERPRINTS[SCHEMA_VERSION]
 
@@ -674,7 +847,7 @@ def _schema_fingerprint(connection: sqlite3.Connection) -> str:
         """
         SELECT type, name, tbl_name, sql
         FROM sqlite_schema
-        WHERE name NOT LIKE 'sqlite_%'
+        WHERE substr(name, 1, 7) <> 'sqlite_'
         ORDER BY type COLLATE BINARY, name COLLATE BINARY
         """
     ).fetchall()
@@ -962,6 +1135,16 @@ class SqliteAgentExecutionDispatchAdmissionStore:
             for migration_id, resource_name, checksum, data in migrations:
                 if migration_id <= version:
                     continue
+                preserved = None
+                if migration_id == 3:
+                    preserved = tuple(
+                        tuple(tuple(row) for row in connection.execute(
+                            f"SELECT * FROM {table} ORDER BY authorization_domain_id,issuer_kind,issuer_id,grant_id"
+                        ).fetchall()) for table in (
+                            "agent_execution_dispatch_admissions", "agent_execution_grant_revocations",
+                            "agent_execution_dispatch_intents", "legacy_admission_markers",
+                        )
+                    )
                 for statement in _sql_statements(data):
                     backfill = statement.startswith("INSERT INTO legacy_admission_markers")
                     if backfill:
@@ -969,12 +1152,26 @@ class SqliteAgentExecutionDispatchAdmissionStore:
                     connection.execute(statement)
                     if backfill:
                         cls._administration_fault("migration.after_legacy_population")
-                if connection.execute(
+                if migration_id == 2 and connection.execute(
                     "SELECT 1 FROM agent_execution_dispatch_intents LIMIT 1"
                 ).fetchone() is not None:
                     raise SqliteAdmissionStoreIntegrityError(
                         "migration must not create historical Dispatch Intents"
                     )
+                if migration_id == 3:
+                    cls._administration_fault("migration3.after_schema")
+                    after = tuple(
+                        tuple(tuple(row) for row in connection.execute(
+                            f"SELECT * FROM {table} ORDER BY authorization_domain_id,issuer_kind,issuer_id,grant_id"
+                        ).fetchall()) for table in (
+                            "agent_execution_dispatch_admissions", "agent_execution_grant_revocations",
+                            "agent_execution_dispatch_intents", "legacy_admission_markers",
+                        )
+                    )
+                    if after != preserved or any(connection.execute(
+                            f"SELECT 1 FROM {table} LIMIT 1").fetchone() is not None
+                            for table in (_DISPATCH_CLAIMS, _DISPATCH_RENEWALS)):
+                        raise SqliteAdmissionStoreIntegrityError("migration 3 changed preserved history or backfilled Claims")
                 # Audit the additive classification before publishing v2 metadata.
                 source_keys = {
                     tuple(row) for row in connection.execute(
@@ -994,6 +1191,7 @@ class SqliteAgentExecutionDispatchAdmissionStore:
                     "INSERT INTO admission_schema_migrations VALUES (?, ?, ?)",
                     (migration_id, resource_name, checksum),
                 )
+                cls._administration_fault("migration.after_history_before_version")
                 connection.execute(f"PRAGMA user_version={migration_id}")
                 connection.execute(
                     """
@@ -1003,6 +1201,7 @@ class SqliteAgentExecutionDispatchAdmissionStore:
                     """,
                     (migration_id, _schema_manifest_id(migration_id)),
                 )
+                cls._administration_fault("migration.after_version_publication")
             connection.execute(
                 "UPDATE admission_ledger_metadata SET migration_state='clean' WHERE singleton=1"
             )
@@ -1439,8 +1638,146 @@ class SqliteAgentExecutionDispatchAdmissionStore:
                 "watermark precedes a durable security record"
             )
 
-        if metadata.schema_version == SCHEMA_VERSION:
+        if metadata.schema_version >= 2:
             self._verify_dispatch_classifications(connection, set(admitted_grants))
+        if metadata.schema_version >= 3:
+            self._verify_dispatch_lease_history(connection, metadata, admitted_grants)
+
+    @staticmethod
+    def _dispatch_time_from_row(row, text_column, key_column):
+        _, key = _parse_decision_time(row[text_column])
+        if (type(row[key_column]) is not int or row[key_column] != key
+                or not 0 <= key <= _DISPATCH_MAX_TIME_KEY):
+            raise ValueError("Dispatch time text/key disagree")
+        return key
+
+    @staticmethod
+    def _dispatch_claim_from_row(row) -> _DispatchClaim:
+        try:
+            acquired = SqliteAgentExecutionDispatchAdmissionStore._dispatch_time_from_row(
+                row, "acquired_at", "acquired_at_key")
+            expiry = SqliteAgentExecutionDispatchAdmissionStore._dispatch_time_from_row(
+                row, "lease_until", "lease_until_key")
+            if expiry != acquired + _DISPATCH_LEASE_US:
+                raise ValueError("Claim duration disagrees")
+            return _DispatchClaim(
+                _dispatch_token(row["claim_id"]),
+                _dispatch_identity(tuple(row[name] for name in _DISPATCH_ID_COLUMNS)),
+                _dispatch_token(row["executor_instance_id"]),
+                _dispatch_integer(row["lease_generation"]),
+                row["acquired_at"], acquired, row["lease_until"], expiry,
+            )
+        except (ValueError, KeyError, IndexError, TypeError) as error:
+            raise SqliteAdmissionStoreIntegrityError("malformed immutable Dispatch Claim") from error
+
+    @staticmethod
+    def _dispatch_renewal_from_row(row) -> _DispatchRenewal:
+        try:
+            renewed = SqliteAgentExecutionDispatchAdmissionStore._dispatch_time_from_row(
+                row, "renewed_at", "renewed_at_key")
+            expiry = SqliteAgentExecutionDispatchAdmissionStore._dispatch_time_from_row(
+                row, "lease_until", "lease_until_key")
+            if expiry != renewed + _DISPATCH_LEASE_US:
+                raise ValueError("Renewal duration disagrees")
+            return _DispatchRenewal(
+                _dispatch_token(row["renewal_id"]), _dispatch_token(row["claim_id"]),
+                _dispatch_identity(tuple(row[name] for name in _DISPATCH_ID_COLUMNS)),
+                _dispatch_token(row["executor_instance_id"]),
+                _dispatch_integer(row["lease_generation"]),
+                _dispatch_integer(row["renewal_sequence"]),
+                row["renewed_at"], renewed, row["lease_until"], expiry,
+            )
+        except (ValueError, KeyError, IndexError, TypeError) as error:
+            raise SqliteAdmissionStoreIntegrityError("malformed immutable Dispatch Renewal") from error
+
+    def _verify_dispatch_lease_history(self, connection, metadata, admitted_grants):
+        claims = {}
+        chains = {}
+        latest = {}
+        highest_time = None
+        for row in connection.execute(
+                "SELECT * FROM agent_execution_dispatch_claims ORDER BY "
+                "authorization_domain_id COLLATE BINARY, issuer_kind COLLATE BINARY, "
+                "issuer_id COLLATE BINARY, grant_id COLLATE BINARY, lease_generation").fetchall():
+            claim = self._dispatch_claim_from_row(row)
+            if claim.claim_id in claims or claim.identity not in admitted_grants:
+                raise SqliteAdmissionStoreIntegrityError("duplicate/orphan Dispatch Claim")
+            admission = self._find_admission_by_identity(connection, admitted_grants[claim.identity][0])
+            if self._classify_admission_dispatch(connection, admission).kind != "intent":
+                raise SqliteAdmissionStoreIntegrityError("legacy history cannot own a Claim")
+            previous = latest.get(claim.identity)
+            if (claim.lease_generation != (1 if previous is None else previous.lease_generation + 1)
+                    or claim.acquired_at_key < admitted_grants[claim.identity][1]):
+                raise SqliteAdmissionStoreIntegrityError("Dispatch generation/time regresses or jumps")
+            claims[claim.claim_id] = claim
+            chains[claim.claim_id] = []
+            latest[claim.identity] = claim
+            highest_time = max(highest_time or 0, claim.acquired_at_key)
+        renewal_ids = set()
+        for row in connection.execute(
+                "SELECT * FROM agent_execution_dispatch_renewals ORDER BY claim_id COLLATE BINARY, renewal_sequence"
+        ).fetchall():
+            renewal = self._dispatch_renewal_from_row(row)
+            claim = claims.get(renewal.claim_id)
+            if (claim is None or renewal.renewal_id in renewal_ids
+                    or (renewal.identity, renewal.executor_instance_id, renewal.lease_generation)
+                    != (claim.identity, claim.executor_instance_id, claim.lease_generation)):
+                raise SqliteAdmissionStoreIntegrityError("orphan/duplicate/rebound Dispatch Renewal")
+            chain = chains[claim.claim_id]
+            previous = chain[-1] if chain else None
+            effective = claim.lease_until_key if previous is None else previous.lease_until_key
+            previous_time = claim.acquired_at_key if previous is None else previous.renewed_at_key
+            if (renewal.renewal_sequence != len(chain) + 1
+                    or not previous_time <= renewal.renewed_at_key < effective
+                    or renewal.lease_until_key <= effective):
+                raise SqliteAdmissionStoreIntegrityError("Renewal sequence/time/extension is inconsistent")
+            chain.append(renewal)
+            renewal_ids.add(renewal.renewal_id)
+            highest_time = max(highest_time or 0, renewal.renewed_at_key)
+        effective_by_identity = {}
+        for claim in claims.values():
+            prior_expiry = effective_by_identity.get(claim.identity)
+            if prior_expiry is not None and claim.acquired_at_key < prior_expiry:
+                raise SqliteAdmissionStoreIntegrityError("Dispatch generations overlap or Renewal follows supersession")
+            chain = chains[claim.claim_id]
+            effective_by_identity[claim.identity] = chain[-1].lease_until_key if chain else claim.lease_until_key
+            revoked = self._find_revocation_by_identity(connection, admitted_grants[claim.identity][0])
+            if revoked is not None:
+                _, revoked_key = _parse_decision_time(revoked.revocation_time)
+                if max([claim.acquired_at_key] + [value.renewed_at_key for value in chain]) > revoked_key:
+                    raise SqliteAdmissionStoreIntegrityError("Dispatch decision follows durable revocation")
+        if highest_time is not None and (
+                metadata.decision_time_key is None or metadata.decision_time_key < highest_time):
+            raise SqliteAdmissionStoreIntegrityError("watermark precedes durable Dispatch decision")
+
+    @staticmethod
+    def _find_dispatch_claim(connection, claim_id):
+        row = connection.execute(
+            "SELECT * FROM agent_execution_dispatch_claims WHERE claim_id=?", (claim_id,)
+        ).fetchone()
+        return None if row is None else SqliteAgentExecutionDispatchAdmissionStore._dispatch_claim_from_row(row)
+
+    @staticmethod
+    def _dispatch_highest_claim(connection, identity):
+        row = connection.execute(
+            "SELECT * FROM agent_execution_dispatch_claims WHERE "
+            "authorization_domain_id=? AND issuer_kind=? AND issuer_id=? AND grant_id=? "
+            "ORDER BY lease_generation DESC LIMIT 1", identity
+        ).fetchone()
+        return None if row is None else SqliteAgentExecutionDispatchAdmissionStore._dispatch_claim_from_row(row)
+
+    @staticmethod
+    def _dispatch_renewals(connection, claim_id):
+        return tuple(SqliteAgentExecutionDispatchAdmissionStore._dispatch_renewal_from_row(row)
+                     for row in connection.execute(
+                         "SELECT * FROM agent_execution_dispatch_renewals WHERE claim_id=? ORDER BY renewal_sequence",
+                         (claim_id,)).fetchall())
+
+    @staticmethod
+    def _dispatch_effective_expiry(connection, claim):
+        renewals = SqliteAgentExecutionDispatchAdmissionStore._dispatch_renewals(connection, claim.claim_id)
+        return (renewals[-1].lease_until, renewals[-1].lease_until_key) if renewals else (
+            claim.lease_until, claim.lease_until_key)
 
     @staticmethod
     def _verify_dispatch_classifications(
@@ -1785,6 +2122,248 @@ class SqliteAgentExecutionDispatchAdmissionStore:
             raise SqliteAdmissionStoreIntegrityError(
                 "watermark update lost active ledger ownership"
             )
+
+    def _dispatch_failure(self, error, commit_attempted):
+        if commit_attempted or isinstance(error, _CommitUnknown):
+            return _dispatch_result("commit_unknown", detail="reconcile original operation on the same pinned ledger")
+        failure = self._operational_failure(error)
+        return _dispatch_result(failure.outcome.value, detail=failure.detail)
+
+    def _dispatch_sample(self, metadata):
+        sampled = self._sample_clock(metadata)
+        if type(sampled) is AgentExecutionDispatchAdmissionStoreResult:
+            return _dispatch_result(sampled.outcome.value, detail=sampled.detail)
+        return sampled
+
+    def _claim_dispatch_intent(self, request) -> _DispatchResult:
+        """Claim one ordered eligible Intent; no launch, invocation or permission."""
+        try:
+            request, executor = _open_dispatch_request(request, self, "claim")
+        except (ValueError, TypeError, AttributeError) as error:
+            return _dispatch_result("invalid_input", detail=str(error))
+        connection = None
+        commit_attempted = False
+        try:
+            self._fault("claim.before_transaction")
+            connection = self._open_existing(allow_fenced=False)
+            connection.execute("BEGIN IMMEDIATE")
+            self._fault("claim.after_begin")
+            metadata = self._verify_authoritative_connection(connection, allow_fenced=False)
+            historical = self._find_dispatch_claim(connection, request.claim_id)
+            if historical is not None:
+                connection.execute("ROLLBACK")
+                if historical.executor_instance_id != executor:
+                    return _dispatch_result("claim_identity_conflict")
+                return _dispatch_result("existing_claim_history", claim=historical, history_only=True)
+            rows = connection.execute(
+                "SELECT a.* FROM agent_execution_dispatch_intents AS i "
+                "JOIN agent_execution_dispatch_admissions AS a USING "
+                "(authorization_domain_id,issuer_kind,issuer_id,grant_id) "
+                "ORDER BY a.decision_time_key, i.authorization_domain_id COLLATE BINARY, "
+                "i.issuer_kind COLLATE BINARY, i.issuer_id COLLATE BINARY, i.grant_id COLLATE BINARY"
+            ).fetchall()
+            parents = [self._admission_from_row(row) for row in rows]
+            eligible = [parent for parent in parents
+                        if self._find_revocation_by_identity(connection, parent.grant) is None]
+            if not eligible:
+                connection.execute("ROLLBACK")
+                return _dispatch_result("empty" if not parents else "authority_ineligible")
+            sampled = self._dispatch_sample(metadata)
+            if type(sampled) is _DispatchResult:
+                connection.execute("ROLLBACK")
+                return sampled
+            now, text, key = sampled
+            selected = None
+            previous = None
+            for parent in eligible:
+                identity = _grant_identity(parent.grant)
+                highest = self._dispatch_highest_claim(connection, identity)
+                if highest is None or key >= self._dispatch_effective_expiry(connection, highest)[1]:
+                    selected, previous = identity, highest
+                    break
+            self._fault("claim.after_candidate_selection")
+            if selected is None:
+                # This flag includes a watermark-only commit's ambiguity.
+                self._fault("claim.before_watermark")
+                self._advance_watermark(connection, text, key)
+                self._fault("claim.after_watermark")
+                self._verify_authoritative_connection(connection, allow_fenced=False)
+                self._fault("claim.before_commit")
+                commit_attempted = True
+                _commit(connection)
+                self._fault("claim.after_commit_before_response")
+                return _dispatch_result("temporarily_unavailable")
+            try:
+                generation = _next_dispatch_integer(0 if previous is None else previous.lease_generation)
+            except OverflowError:
+                connection.execute("ROLLBACK")
+                return _dispatch_result("generation_exhausted")
+            self._fault("claim.after_generation_allocation")
+            try:
+                expiry_text, expiry_key = _dispatch_expiry(now)
+            except (OverflowError, ValueError):
+                connection.execute("ROLLBACK")
+                return _dispatch_result("clock_failure", detail="Lease expiry is outside the canonical time range")
+            claim = _DispatchClaim(request.claim_id, selected, executor, generation,
+                                   text, key, expiry_text, expiry_key)
+            connection.execute(
+                "INSERT INTO agent_execution_dispatch_claims VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                (claim.claim_id, *claim.identity, claim.executor_instance_id, claim.lease_generation,
+                 claim.acquired_at, claim.acquired_at_key, claim.lease_until, claim.lease_until_key),
+            )
+            self._fault("claim.after_insert")
+            self._advance_watermark(connection, text, key)
+            self._fault("claim.after_watermark")
+            self._verify_authoritative_connection(connection, allow_fenced=False)
+            self._fault("claim.before_commit")
+            commit_attempted = True
+            _commit(connection)
+            self._fault("claim.after_commit_before_response")
+            return _dispatch_result("newly_claimed", claim=claim)
+        except BaseException as error:
+            _safe_rollback(connection)
+            return self._dispatch_failure(error, commit_attempted)
+        finally:
+            if connection is not None:
+                connection.close()
+
+    def _renew_dispatch_claim(self, request) -> _DispatchResult:
+        """Append one exact current-Claim extension; retry returns history only."""
+        try:
+            request, executor = _open_dispatch_request(request, self, "renew")
+        except (ValueError, TypeError, AttributeError) as error:
+            return _dispatch_result("invalid_input", detail=str(error))
+        connection = None
+        commit_attempted = False
+        try:
+            self._fault("renew.before_transaction")
+            connection = self._open_existing(allow_fenced=False)
+            connection.execute("BEGIN IMMEDIATE")
+            self._fault("renew.after_begin")
+            metadata = self._verify_authoritative_connection(connection, allow_fenced=False)
+            row = connection.execute(
+                "SELECT * FROM agent_execution_dispatch_renewals WHERE renewal_id=?", (request.renewal_id,)
+            ).fetchone()
+            if row is not None:
+                historical = self._dispatch_renewal_from_row(row)
+                connection.execute("ROLLBACK")
+                if (historical.claim_id, historical.identity, historical.executor_instance_id,
+                    historical.lease_generation) != (request.claim_id, request.identity, executor, request.generation):
+                    return _dispatch_result("renewal_identity_conflict")
+                return _dispatch_result("existing_renewal_history", renewal=historical, history_only=True)
+            claim = self._find_dispatch_claim(connection, request.claim_id)
+            rejected = self._dispatch_current_tuple(connection, request, executor, claim)
+            if rejected is not None:
+                connection.execute("ROLLBACK")
+                return rejected
+            self._fault("renew.after_validation")
+            sampled = self._dispatch_sample(metadata)
+            if type(sampled) is _DispatchResult:
+                connection.execute("ROLLBACK")
+                return sampled
+            now, text, key = sampled
+            effective_text, effective_key = self._dispatch_effective_expiry(connection, claim)
+            if key >= effective_key:
+                outcome = "expired_claim"
+            else:
+                try:
+                    expiry_text, expiry_key = _dispatch_expiry(now)
+                except (OverflowError, ValueError):
+                    connection.execute("ROLLBACK")
+                    return _dispatch_result("clock_failure", detail="Renewal expiry is outside the canonical time range")
+                outcome = "nonextending" if expiry_key <= effective_key else "newly_renewed"
+            renewal = None
+            if outcome == "newly_renewed":
+                renewals = self._dispatch_renewals(connection, claim.claim_id)
+                try:
+                    sequence = _next_dispatch_integer(0 if not renewals else renewals[-1].renewal_sequence)
+                except OverflowError:
+                    connection.execute("ROLLBACK")
+                    return _dispatch_result("sequence_exhausted")
+                renewal = _DispatchRenewal(request.renewal_id, claim.claim_id, claim.identity, executor,
+                                          claim.lease_generation, sequence, text, key, expiry_text, expiry_key)
+                connection.execute(
+                    "INSERT INTO agent_execution_dispatch_renewals VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    (renewal.renewal_id, renewal.claim_id, *renewal.identity, renewal.executor_instance_id,
+                     renewal.lease_generation, renewal.renewal_sequence, renewal.renewed_at,
+                     renewal.renewed_at_key, renewal.lease_until, renewal.lease_until_key),
+                )
+                self._fault("renew.after_insert")
+            self._advance_watermark(connection, text, key)
+            self._fault("renew.after_watermark")
+            self._verify_authoritative_connection(connection, allow_fenced=False)
+            self._fault("renew.before_commit")
+            commit_attempted = True
+            _commit(connection)
+            self._fault("renew.after_commit_before_response")
+            return _dispatch_result(outcome, renewal=renewal)
+        except BaseException as error:
+            _safe_rollback(connection)
+            return self._dispatch_failure(error, commit_attempted)
+        finally:
+            if connection is not None:
+                connection.close()
+
+    def _dispatch_current_tuple(self, connection, request, executor, claim):
+        if claim is None:
+            return _dispatch_result("claim_not_found")
+        if (claim.identity, claim.executor_instance_id, claim.lease_generation) != (
+                request.identity, executor, request.generation):
+            return _dispatch_result("claim_identity_conflict")
+        highest = self._dispatch_highest_claim(connection, claim.identity)
+        if highest is None or highest.claim_id != claim.claim_id:
+            return _dispatch_result("stale_generation")
+        row = connection.execute(
+            "SELECT * FROM agent_execution_grant_revocations WHERE "
+            "authorization_domain_id=? AND issuer_kind=? AND issuer_id=? AND grant_id=?", claim.identity
+        ).fetchone()
+        return None if row is None else _dispatch_result("revoked")
+
+    def _query_dispatch_claim(self, request) -> _DispatchResult:
+        """Private exact history or serialized point-in-time ownership assessment."""
+        try:
+            request, executor = _open_dispatch_request(request, self, "query")
+        except (ValueError, TypeError, AttributeError) as error:
+            return _dispatch_result("invalid_input", detail=str(error))
+        connection = None
+        commit_attempted = False
+        try:
+            self._fault("query.before_transaction")
+            connection = self._open_existing(allow_fenced=False)
+            connection.execute("BEGIN" if request.mode == "history" else "BEGIN IMMEDIATE")
+            metadata = self._verify_authoritative_connection(connection, allow_fenced=False)
+            claim = self._find_dispatch_claim(connection, request.claim_id)
+            if request.mode == "history":
+                renewals = () if claim is None else self._dispatch_renewals(connection, claim.claim_id)
+                connection.execute("ROLLBACK")
+                return (_dispatch_result("claim_not_found") if claim is None else
+                        _dispatch_result("claim_history", claim=claim, renewals=renewals, history_only=True))
+            rejected = self._dispatch_current_tuple(connection, request, executor, claim)
+            if rejected is not None:
+                connection.execute("ROLLBACK")
+                return rejected
+            sampled = self._dispatch_sample(metadata)
+            if type(sampled) is _DispatchResult:
+                connection.execute("ROLLBACK")
+                return sampled
+            _, text, key = sampled
+            effective_text, effective_key = self._dispatch_effective_expiry(connection, claim)
+            active = claim.acquired_at_key <= key < effective_key
+            self._advance_watermark(connection, text, key)
+            self._fault("query.after_watermark")
+            self._verify_authoritative_connection(connection, allow_fenced=False)
+            self._fault("query.before_commit")
+            commit_attempted = True
+            _commit(connection)
+            self._fault("query.after_commit_before_response")
+            return (_dispatch_result("current_claim", claim=claim, effective_lease_until=effective_text)
+                    if active else _dispatch_result("expired_claim"))
+        except BaseException as error:
+            _safe_rollback(connection)
+            return self._dispatch_failure(error, commit_attempted)
+        finally:
+            if connection is not None:
+                connection.close()
 
     def classify_guarded_history(
         self,

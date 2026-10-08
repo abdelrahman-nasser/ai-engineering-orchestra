@@ -507,6 +507,24 @@ The canonical value and store contracts are defined in:
 
 ---
 
+## Dispatch Claim, Renewal and Lease Generation
+
+An AIO-056 Dispatch Claim is a private immutable ownership attempt against
+one production Intent, retaining its exact four-field Grant composite.
+claim_id is a caller-supplied ledger-wide unique 64-lowercase-hex attempt token,
+not dispatch identity. A nonserializable capability binds a fresh internal
+executor_instance_id to one genuine process-owned local session incarnation.
+IDs or historical lookup cannot restore that capability.
+
+The fixed 30-second half-open Lease ends at the latest valid append-only
+Renewal expiry, calculated as trusted UTC now plus 30 seconds. Each Claim has
+contiguous Renewal sequences; reclaim uses a fresh claim_id and increments
+lease_generation exactly from N to N+1, beginning at 1. Earlier generations
+remain immutable history and cannot renew. Decisions share the durable
+Admission/revocation non-regression watermark. History is not invocation
+authority or exactly-once execution. The canonical private contract is
+`core/agent-execution-dispatch-claim-lease-specification.md`.
+
 ## Agent Execution Dispatch Intent
 
 An immutable private same-ledger dispatch-intent record for one newly

@@ -1016,3 +1016,41 @@ The bounded Foundation realization intentionally accepts these limits:
 
 Changing any of these limits requires a later architecture decision and Human
 authorization rather than an implicit AIO-050 extension.
+
+## AIO-057 optional private Entry coordination
+
+A trusted composition root may install exactly one cooperative AIO-057
+authority guard into this same Producer/Owned Session before publishing the
+participants. _attach_jit_authority_guard keeps the existing P mutex and wraps
+its acquisition with G. Public Producer, Grant, result, retry, presentation and
+authentication-port signatures and ordinary issuance behavior remain intact.
+Unguarded legacy bindings retain their original operation.
+
+Supported identity, Human/policy, issuer, entitlement and current prerequisite
+sources declare underlying mutable partitions and bind every writer alias to
+the same guard. Unsupported or incompatible sharing rejects composition.
+Mutations, configuration changes, close and proof minting obey the private
+protocol documented in the AIO-057 Task. Configuration changes and ambiguous
+mutations terminalize the binding; they are not hot-swappable observations.
+
+_mint_jit_entry_decision creates a new authenticated Human/policy proof and
+registers exact Entry purpose, subject, principal and guard. Existing issuance
+proofs/presentations/Grants are insufficient for Entry. Entry-purpose proofs
+are also rejected by public issuance; this does not change the interpretation
+of existing issuance-purpose proofs.
+
+_validate_jit_entry_decision runs only as a held-G/P leaf. It shares the
+existing exact principal/authority provenance, Producer/Session/adapter/issuer
+epochs, current issuer enablement, positive decision and exact entitlement
+predicates. It performs no Grant issuance, identifier allocation, discovery,
+independent clock sample or effect. Proof structure/current inputs are
+validated before the Store samples trusted logical time; proof windows are
+then checked against that same sample. Original consumed Grant expiry is not
+invented as a continuing Entry veto.
+
+This optional seam establishes no durable Entry and returns no invocation
+authority. AIO-057 preparation/verification end at provisional assessment;
+future AIO-058 must implement permanent Dispatch-unique Entry before any
+effect. It must retain the locked S/G/P/W/C ordering and original synchronous
+protected continuation. Private cooperation is a trusted-process contract,
+not a sandbox for hostile code or uncoordinated external mutations.

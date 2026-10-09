@@ -753,6 +753,8 @@ class _ProducerState:
         "allocated_grant_ids",
         "producer",
         "authentication_port",
+        "jit_guard",
+        "jit_entry_proofs",
     )
 
     def __init__(
@@ -781,6 +783,8 @@ class _ProducerState:
         self.grant_id_source = grant_id_source
         self.producer_epoch = object()
         self.lock = Lock()
+        self.jit_guard = None
+        self.jit_entry_proofs = {}
         self.closed = False
         self.principal_proofs: dict[int, AuthenticatedIssuerPrincipal] = {}
         self.authority_proofs: dict[
@@ -1719,6 +1723,13 @@ def _prepare_attempt(
         return failure(principal_failure)
     principal = authenticated_principal
 
+    # JIT decisions share the authentication predicates, never issuance purpose.
+    if id(authority_proof) in state.jit_entry_proofs:
+        return failure(
+            AgentExecutionAuthorizationGrantProductionOutcome.AUTHORITY_PROOF_INVALID,
+            principal=principal,
+        )
+
     authority_failure = _verified_authority_structure(
         state,
         run=run,
@@ -2096,6 +2107,84 @@ def _prepare_attempt(
         authority_proof=proof,
         sampled_time=sampled,
     )
+
+
+
+def _attach_jit_authority_guard(state, guard):
+    """Private install-once cooperative extension; no public contract change."""
+    from engineering_orchestration._jit_execution_attempt_authorization import (
+        _AuthorityGuard, _ProducerCoordinationLock,
+    )
+    if (type(guard) is not _AuthorityGuard or guard.state is not state
+            or guard.session is not state.owned_session):
+        raise TypeError("entry guard must be the exact Session/Producer coordinator")
+    if state.jit_guard is not None or state.closed:
+        raise RuntimeError("Producer already guarded or closed")
+    # Trusted root attaches under S/G before publication; P serializes installation.
+    original = state.lock
+    with original:
+        if state.jit_guard is not None or state.closed:
+            raise RuntimeError("Producer already guarded or closed")
+        state.jit_guard = guard
+        state.lock = _ProducerCoordinationLock(guard, original)
+
+
+def _mint_jit_entry_decision(state, guard, subject, principal, **fields):
+    """Mint a NEW authenticated proof for entry, never repurpose issuance proof."""
+    from engineering_orchestration._jit_execution_attempt_authorization import _validate_jit_subject
+    _validate_jit_subject(subject, guard)
+    if state.jit_guard is not guard:
+        raise RuntimeError("foreign entry guard")
+    with guard.mutation_scope(state, "proof_mint"):
+        if principal._issuer_kind == "human":
+            proof = state.mint_human_approval(
+                principal=principal, run=subject.run, requested_lifetime=None, **fields)
+        elif principal._issuer_kind == "policy":
+            proof = state.mint_policy_decision(
+                principal=principal, run=subject.run, requested_lifetime=None, **fields)
+        else:
+            raise ValueError("unsupported issuer kind")
+        with state.lock:
+            state.jit_entry_proofs[id(proof)] = (proof, subject, guard, principal)
+        return proof
+
+
+def _validate_jit_entry_decision(state, guard, subject, principal, proof, now):
+    """Held-G/P leaf validation; performs no issuance or independent time sample."""
+    from engineering_orchestration._jit_execution_attempt_authorization import _validate_jit_subject
+    _validate_jit_subject(subject, guard)
+    if state.closed or state.jit_guard is not guard:
+        return "producer_closed"
+    registered = state.jit_entry_proofs.get(id(proof))
+    if (registered is None or registered[0] is not proof or registered[1] != subject
+            or registered[2] is not guard or registered[3] is not principal):
+        return "invalid_entry_proof"
+    failure = _verified_principal(state, principal)
+    if failure is not None:
+        return failure.value
+    _, issuer_kind, issuer_id, _ = subject.dispatch_identity
+    if (principal._issuer_kind, principal._issuer_id) != (issuer_kind, issuer_id):
+        return "wrong_issuer"
+    if not state.observe_enabled_epoch(principal):
+        return "issuer_disabled"
+    failure = _verified_authority_structure(
+        state, run=subject.run, principal=principal, authority_proof=proof)
+    if failure is not None:
+        return failure.value
+    if not _validate_authority_adapter(state, proof):
+        return "authority_proof_invalid"
+    if type(proof) is AuthenticatedPolicyDecision and proof._decision != "allow":
+        return "policy_denied"
+    for value in (principal, proof):
+        if (not _valid_window(value._valid_from, value._valid_until)
+                or (now is not None and not (
+                    _normalized_utc(value._valid_from) <= now < _normalized_utc(value._valid_until)))):
+            return "authority_expired"
+    if state.issuer_entitlement_policy.is_entitled(
+        run=subject.run, domain_identity=state.identity,
+        issuer_kind=principal._issuer_kind, issuer_id=principal._issuer_id) is not True:
+        return "not_entitled"
+    return None
 
 
 def _require_callable(value: object, method_name: str, dependency: str) -> None:

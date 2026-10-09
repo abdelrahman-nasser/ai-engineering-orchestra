@@ -738,3 +738,36 @@ AIO-047/AIO-055 persistence tests use synthetic authority edges, domains,
 Bindings and parent facts with disposable ledgers. Canonical production-path
 Admissions and Intents may be persisted in those ledgers; no actual user
 workload is dispatched and no Tool is invoked.
+
+## AIO-057 private JIT assessment seam
+
+_assess_jit_dispatch is an optional private seam reached through the genuine
+same-Session executor/query capability and exact `_JitAssessmentOperation`.
+Public Store and Claim/Lease APIs remain unchanged.
+
+The caller holds S/G/P. Store opens only the existing bound authoritative
+ledger, acquires W using BEGIN IMMEDIATE, audits complete metadata/history and
+then acquires C through the private operation scope. Consumption enters
+CONSUMING before final eligibility validation. Store checks the exact current
+Claim, Dispatch, highest generation, executor, revocation, immutable parent
+Admission/Intent and effective renewal expiry. It never treats detached
+history or copied IDs as current authority.
+
+The guarded operation freezes current authority/prerequisite inputs before
+Store's existing trusted time sample. Canonical Run/Binding/prerequisite/mode
+and immutable registry/retirement checks use that sample and captured scope.
+The half-open Claim/proof windows and durable watermark regression rule remain
+unchanged; only the existing watermark advances. The final authoritative audit
+precedes COMMIT. COMMIT releases W; C cleanup acquires no writer scope.
+No raw connection, Store writer API or effect callback crosses this seam.
+
+No Claim/Renewal row, schema or migration is added or modified. The existing
+0001/0002/0003 migrations remain exact; there is no 0004 or durable Entry.
+A positive return means provisional assessment only. The current v3 consumer
+burns its cell to UNCERTAIN and cannot confer Entry success or Tool permission.
+Commit uncertainty and owned-operation post-check failure disclose no
+capability and never rearm a subject.
+
+Future AIO-058 must separately implement same-ledger permanent UNIQUE Dispatch
+Entry before target metadata/open/read or Tool effect. Watermark COMMIT,
+prepared capability and historical Claim evidence cannot substitute for it.

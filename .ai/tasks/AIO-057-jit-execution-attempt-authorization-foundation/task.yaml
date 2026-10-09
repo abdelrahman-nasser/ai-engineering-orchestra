@@ -1,0 +1,51 @@
+id: AIO-057
+title: JIT Execution Attempt Authorization Foundation
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: critical
+execution:
+  mode: critical
+workflow: architecture-change
+objective: >
+  Establish ephemeral exact-Claim-subject JIT authorization preparation,
+  cooperative current-authority coordination and single-consumption primitives,
+  with a mandatory separately implemented durable execution-entry contract for
+  future AIO-058, ending before Tool invocation.
+scope:
+  include:
+    - Phase 1 R2 design converged; Phase 2 implementation and bounded validation are explicitly authorized.
+    - Implement the private JIT registry/cell/capability in engineering_orchestration/_jit_execution_attempt_authorization.py and 72 scenarios in tests/test_jit_execution_attempt_authorization.py.
+    - Add only the approved private Producer guard and Store assessment seams; reuse read-only canonical prerequisite, Binding, registry/resolver and Execution Mode semantics.
+    - Record Phase-2 implementation and validation evidence while preserving all 24 future AIO-058 obligations.
+    - Compare Claim-based physical-attempt identity against an additional scalar execution_attempt_id.
+    - Define one shared process-local authorization cell per exact Claim subject across all logical workers of one genuine owned Session.
+    - Define exact current Claim, executor, pinned-ledger, complete Run, canonical Binding and entry-purpose authority proof requirements.
+    - Define cooperative private authority guards, complete mutation participation, fixed acquisition order and fail-closed unsupported-source behavior.
+    - Define logical entry time and the mandatory future Dispatch-unique durable entry before any effect.
+    - Define preparation, alias, loss, consume, rollback, commit-unknown, reclaim and crash behavior without authority resurrection.
+    - Lock 72 foundation scenarios and 24 future consumer-contract scenarios, the Task-local Validation Safety Matrix and fresh five-scope Phase-1 review evidence.
+    - Create exactly the four Task artifacts after all five independent reviews converge.
+  exclude:
+    - Production or validation outside the exact Phase-2 path and command supplements.
+    - Durable execution entry, its migration, Tool invocation or AIO-058 implementation in AIO-057.
+    - Public predecessor API or schema redesign, public Claim-Lease widening, raw Store or SQLite access outside Store ownership.
+    - AIO-049 changes, parallel issuer entitlement or policy engines, live mutable AIO-051 retirement or snapshot hot swapping.
+    - Tool resource access, command execution, transport, networking, Result or Journal implementation, exactly-once invocation or success claims.
+    - Task or Workflow catalog enumeration, recursive search, search-based discovery and workflows/README.md access.
+    - Unknown-safety validators, test discovery, external operational targets, repair, automatic migration or alternate ledgers.
+    - Phase 3, final Task-level Quality Gate adjudication, final Human approval, closure, staging, commit or push in Phase 2.
+dependencies:
+  - AIO-049
+  - AIO-050
+  - AIO-051
+  - AIO-056
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

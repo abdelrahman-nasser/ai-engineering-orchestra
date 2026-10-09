@@ -2365,6 +2365,67 @@ class SqliteAgentExecutionDispatchAdmissionStore:
             if connection is not None:
                 connection.close()
 
+
+    def _assess_jit_dispatch(self, request, operation):
+        """Private held-authority assessment; commits watermark only, never Entry."""
+        from engineering_orchestration._jit_execution_attempt_authorization import (
+            _JitAssessmentOperation, _JitFailure, _JitResult,
+        )
+        connection = None
+        commit_attempted = False
+        try:
+            request, executor = _open_dispatch_request(request, self, "query")
+            if (type(operation) is not _JitAssessmentOperation
+                    or operation.authorizer.session is not request.session
+                    or operation.authorizer.store is not self):
+                raise _JitFailure("invalid_integration")
+            connection = self._open_existing(allow_fenced=False)
+            connection.execute("BEGIN IMMEDIATE")
+            self._fault("jit.after_begin")
+            metadata = self._verify_authoritative_connection(connection, allow_fenced=False)
+            claim = self._find_dispatch_claim(connection, request.claim_id)
+            # W precedes C; consume reservation precedes every final validation.
+            with operation._cell_scope(self):
+                rejected = self._dispatch_current_tuple(connection, request, executor, claim)
+                if rejected is not None:
+                    raise _JitFailure(rejected.outcome)
+                row = connection.execute(
+                    "SELECT * FROM agent_execution_dispatch_admissions WHERE "
+                    "authorization_domain_id=? AND issuer_kind=? AND issuer_id=? AND grant_id=?",
+                    claim.identity).fetchone()
+                if row is None:
+                    raise SqliteAdmissionStoreIntegrityError("Claim has no exact Admission")
+                parent = self._admission_from_row(row)
+                _, effective_key = self._dispatch_effective_expiry(connection, claim)
+                operation._freeze(parent)
+                sampled = self._dispatch_sample(metadata)
+                if type(sampled) is _DispatchResult:
+                    raise _JitFailure(sampled.outcome)
+                now, text, key = sampled
+                result = operation._check(parent, claim, effective_key, now, text, key)
+                self._advance_watermark(connection, text, key)
+                self._fault("jit.after_watermark")
+                self._verify_authoritative_connection(connection, allow_fenced=False)
+                self._fault("jit.before_commit")
+                commit_attempted = True
+                _commit(connection)  # Releases W while C finishes terminal cleanup.
+                self._fault("jit.after_commit_before_response")
+                return result
+        except BaseException as error:
+            _safe_rollback(connection)
+            if commit_attempted or isinstance(error, _CommitUnknown):
+                return _JitResult("commit_unknown", category="infrastructure")
+            if isinstance(error, _JitFailure):
+                return _JitResult(error.outcome, category=error.category)
+            if isinstance(error, (ValueError, TypeError, AttributeError)):
+                return _JitResult("integrity_failure", category="integrity")
+            failure = self._operational_failure(error)
+            return _JitResult(failure.outcome.value, category=(
+                "integrity" if failure.outcome.value == "integrity_failure" else "infrastructure"))
+        finally:
+            if connection is not None:
+                connection.close()
+
     def classify_guarded_history(
         self,
         request: object,

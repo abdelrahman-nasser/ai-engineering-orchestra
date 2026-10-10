@@ -1,0 +1,49 @@
+id: AIO-058
+title: Durable Execution Entry and Controlled Invocation Foundation
+type: specification
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: critical
+execution:
+  mode: critical
+workflow: architecture-change
+objective: >
+  Design a private Dispatch-unique durable Agent Execution Entry, its original
+  protected synchronous continuation, and one controlled native repository
+  file read with a bounded outcome, preserving AIO-057 without exactly-once
+  invocation or a public durable Result/Journal contract.
+scope:
+  include:
+    - Human-authorized 2026-10-10 bounded I14 Phase-1 amendment; current-open write/mapping exclusion, fresh four-scope design review, then experiment-only remediation/static preflight; no elevated execution.
+    - Separately authorized noncanonical containment experiment X; exactly five experiment files, disposable owned NTFS fixtures and Task-local evidence updates, no production implementation.
+    - Phase 1 investigation and design only; exactly these four Task artifacts.
+    - Preserve all E01-E24 AIO-057 consumer obligations with explicit traceability.
+    - Specify permanent Dispatch exclusion, the same-ledger guarded Entry transaction, commit uncertainty and private continuation authority.
+    - Design private v4 persistence and explicit forward migration while preserving 0001/0002/0003 bytes and public predecessor semantics.
+    - Specify the native repository_file_read boundary, trusted root context, exact lexical resource mapping, availability and bounded internal outcomes.
+    - Design a separately authorized synthetic Windows containment experiment inside this Task before production implementation.
+    - Lock 128 scenarios, a Task-local Validation Safety Matrix and seven fresh independent design reviews.
+    - Define the single disposable first production-path read fixture for a later authorized phase.
+  exclude:
+    - Production code, tests, adapter, migration 0004 creation or execution in Phase 1.
+    - Containment experiment execution and all target-resource metadata/open/read in Phase 1.
+    - Shell, subprocess, PATH lookup, discovery, fallback Tool or Provider integration in the production invocation path.
+    - Public Entry, adapter or Result schemas/APIs; raw SQLite access outside Store ownership.
+    - Arbitrary shell, Git writes, HTTP, package managers, additional adapters, cloud workers, scheduler, DAG or full Result/Journal.
+    - Repository search, test discovery, Task/Workflow catalog enumeration, protected targets, unknown validators and legacy validator help.
+    - Automatic migration/repair, ambiguous replay, exactly-once claims, staging, commit, push and Task closure.
+dependencies:
+  - AIO-049
+  - AIO-050
+  - AIO-051
+  - AIO-056
+  - AIO-057
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

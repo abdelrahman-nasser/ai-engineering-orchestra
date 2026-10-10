@@ -838,6 +838,7 @@ _EXPECTED_SCHEMA_FINGERPRINTS = {
     1: "de080810b1d644dacf53e6bf79cbbd01343344904397a91c6dd483bd48dfad46",
     2: "cce9d5c375da37c40eb6a73458f519f2840192500fb64ce1a20126383d2944e3",
     3: "8fb9c0473441babaaee7b322aa010a46f0481a6c7513bd1a0fd9e01c0d6009b7",
+    4: "7b2ef8ede236183dcecfd54f426b0be66ce19cdb84c01f65b2b70cedf3b2ec72",
 }
 _EXPECTED_SCHEMA_FINGERPRINT = _EXPECTED_SCHEMA_FINGERPRINTS[SCHEMA_VERSION]
 
@@ -1136,14 +1137,14 @@ class SqliteAgentExecutionDispatchAdmissionStore:
                 if migration_id <= version:
                     continue
                 preserved = None
-                if migration_id == 3:
+                if migration_id in (3, 4):
                     preserved = tuple(
                         tuple(tuple(row) for row in connection.execute(
                             f"SELECT * FROM {table} ORDER BY authorization_domain_id,issuer_kind,issuer_id,grant_id"
                         ).fetchall()) for table in (
                             "agent_execution_dispatch_admissions", "agent_execution_grant_revocations",
                             "agent_execution_dispatch_intents", "legacy_admission_markers",
-                        )
+                        ) + ((_DISPATCH_CLAIMS, _DISPATCH_RENEWALS) if migration_id == 4 else ())
                     )
                 for statement in _sql_statements(data):
                     backfill = statement.startswith("INSERT INTO legacy_admission_markers")
@@ -1172,6 +1173,20 @@ class SqliteAgentExecutionDispatchAdmissionStore:
                             f"SELECT 1 FROM {table} LIMIT 1").fetchone() is not None
                             for table in (_DISPATCH_CLAIMS, _DISPATCH_RENEWALS)):
                         raise SqliteAdmissionStoreIntegrityError("migration 3 changed preserved history or backfilled Claims")
+                if migration_id == 4:
+                    cls._administration_fault("migration4.after_schema")
+                    after = tuple(
+                        tuple(tuple(row) for row in connection.execute(
+                            f"SELECT * FROM {table} ORDER BY authorization_domain_id,issuer_kind,issuer_id,grant_id"
+                        ).fetchall()) for table in (
+                            "agent_execution_dispatch_admissions", "agent_execution_grant_revocations",
+                            "agent_execution_dispatch_intents", "legacy_admission_markers",
+                            _DISPATCH_CLAIMS, _DISPATCH_RENEWALS,
+                        )
+                    )
+                    if after != preserved or connection.execute(
+                            "SELECT 1 FROM agent_execution_entries LIMIT 1").fetchone() is not None:
+                        raise SqliteAdmissionStoreIntegrityError("migration 4 changed history or backfilled Entries")
                 # Audit the additive classification before publishing v2 metadata.
                 source_keys = {
                     tuple(row) for row in connection.execute(
@@ -1642,6 +1657,8 @@ class SqliteAgentExecutionDispatchAdmissionStore:
             self._verify_dispatch_classifications(connection, set(admitted_grants))
         if metadata.schema_version >= 3:
             self._verify_dispatch_lease_history(connection, metadata, admitted_grants)
+        if metadata.schema_version >= 4:
+            self._verify_execution_entries(connection, metadata, admitted_grants)
 
     @staticmethod
     def _dispatch_time_from_row(row, text_column, key_column):
@@ -2365,6 +2382,155 @@ class SqliteAgentExecutionDispatchAdmissionStore:
             if connection is not None:
                 connection.close()
 
+
+    @staticmethod
+    def _execution_entry_from_row(row):
+        from engineering_orchestration._execution_entry_and_controlled_invocation import _ExecutionEntry
+        try:
+            key = SqliteAgentExecutionDispatchAdmissionStore._dispatch_time_from_row(
+                row, "entry_time", "entry_time_key")
+            return _ExecutionEntry(
+                _dispatch_identity(tuple(row[name] for name in _DISPATCH_ID_COLUMNS)),
+                _dispatch_token(row["claim_id"]), _dispatch_token(row["executor_instance_id"]),
+                _dispatch_integer(row["lease_generation"]), row["entry_time"], key)
+        except (ValueError, TypeError, KeyError, IndexError) as error:
+            raise SqliteAdmissionStoreIntegrityError("malformed immutable Execution Entry") from error
+
+    @staticmethod
+    def _find_execution_entry(connection, identity):
+        row = connection.execute(
+            "SELECT * FROM agent_execution_entries WHERE authorization_domain_id=? "
+            "AND issuer_kind=? AND issuer_id=? AND grant_id=?", identity).fetchone()
+        return None if row is None else SqliteAgentExecutionDispatchAdmissionStore._execution_entry_from_row(row)
+
+    def _verify_execution_entries(self, connection, metadata, admitted_grants):
+        seen = set()
+        for row in connection.execute("SELECT * FROM agent_execution_entries").fetchall():
+            entry = self._execution_entry_from_row(row)
+            claim = self._find_dispatch_claim(connection, entry.claim_id)
+            admitted = admitted_grants.get(entry.identity)
+            intent = connection.execute(
+                "SELECT 1 FROM agent_execution_dispatch_intents WHERE authorization_domain_id=? "
+                "AND issuer_kind=? AND issuer_id=? AND grant_id=?", entry.identity).fetchone()
+            if (entry.identity in seen or admitted is None or intent is None or claim is None
+                    or (claim.identity, claim.executor_instance_id, claim.lease_generation)
+                    != (entry.identity, entry.executor_instance_id, entry.lease_generation)):
+                raise SqliteAdmissionStoreIntegrityError("orphan/duplicate/rebound Execution Entry")
+            seen.add(entry.identity)
+            key = entry.entry_time_key
+            renewals = self._dispatch_renewals(connection, claim.claim_id)
+            prefix = [r for r in renewals if r.renewed_at_key <= key]
+            expiry = prefix[-1].lease_until_key if prefix else claim.lease_until_key
+            successor = connection.execute(
+                "SELECT 1 FROM agent_execution_dispatch_claims WHERE authorization_domain_id=? "
+                "AND issuer_kind=? AND issuer_id=? AND grant_id=? AND lease_generation>? "
+                "AND acquired_at_key<=?", (*entry.identity, entry.lease_generation, key)).fetchone()
+            revoked = self._find_revocation_by_identity(connection, admitted[0])
+            if (not claim.acquired_at_key <= key < expiry or key < admitted[1]
+                    or successor is not None or metadata.decision_time_key is None
+                    or metadata.decision_time_key < key
+                    or (revoked is not None and _parse_decision_time(revoked.revocation_time)[1] < key)):
+                raise SqliteAdmissionStoreIntegrityError("Execution Entry history/time is inconsistent")
+
+    def _enter_execution(self, request, operation):
+        """S/G/P held by original caller; W->C reservation, atomic Entry+watermark.
+
+        No SQL, connection, target callback or continuation escapes this writer.
+        Unknown commit always burns the cell and returns history-only evidence.
+        """
+        from engineering_orchestration._execution_entry_and_controlled_invocation import _EntryOperation, _EntryResult
+        from engineering_orchestration._jit_execution_attempt_authorization import _JitFailure
+        connection = None
+        commit_attempted = False
+        try:
+            request, executor = _open_dispatch_request(request, self, "query")
+            if (type(operation) is not _EntryOperation or operation.mode != "consume"
+                    or operation.authorizer.session is not request.session
+                    or operation.authorizer.store is not self):
+                raise _JitFailure("invalid_integration")
+            operation._writer_scope(self)  # Reject leaf/reentry before any W acquisition.
+            connection = self._open_existing(allow_fenced=False)
+            connection.execute("BEGIN IMMEDIATE")
+            self._fault("entry.after_begin")
+            metadata = self._verify_authoritative_connection(connection, allow_fenced=False)
+            claim = self._find_dispatch_claim(connection, request.claim_id)
+            with operation._cell_scope(self):
+                prior = self._find_execution_entry(connection, request.identity)
+                if prior is not None:
+                    raise _JitFailure("already_entered")
+                rejected = self._dispatch_current_tuple(connection, request, executor, claim)
+                if rejected is not None:
+                    raise _JitFailure(rejected.outcome)
+                row = connection.execute(
+                    "SELECT * FROM agent_execution_dispatch_admissions WHERE authorization_domain_id=? "
+                    "AND issuer_kind=? AND issuer_id=? AND grant_id=?", claim.identity).fetchone()
+                if row is None:
+                    raise SqliteAdmissionStoreIntegrityError("Claim has no exact Admission")
+                parent = self._admission_from_row(row)
+                _, effective_key = self._dispatch_effective_expiry(connection, claim)
+                operation._freeze(parent)
+                sampled = self._dispatch_sample(metadata)
+                if type(sampled) is _DispatchResult:
+                    raise _JitFailure(sampled.outcome)
+                now, text, key = sampled
+                operation._check(parent, claim, effective_key, now, text, key)
+                self._fault("entry.before_insert")
+                connection.execute("INSERT INTO agent_execution_entries VALUES (?,?,?,?,?,?,?,?,?)",
+                    (*claim.identity, claim.claim_id, claim.executor_instance_id, claim.lease_generation, text, key))
+                self._fault("entry.after_insert")
+                self._advance_watermark(connection, text, key)
+                self._fault("entry.after_watermark")
+                self._verify_authoritative_connection(connection, allow_fenced=False)
+                entry = self._find_execution_entry(connection, claim.identity)
+                self._fault("entry.before_commit")
+                commit_attempted = True
+                _commit(connection)
+                self._fault("entry.after_commit_before_response")
+                connection.close()
+                connection = None
+                operation.cell._transition("CONSUMED")
+                return _EntryResult("entered", entry, False)
+        except BaseException as error:
+            _safe_rollback(connection)
+            if not isinstance(error, Exception):
+                raise
+            if commit_attempted or isinstance(error, _CommitUnknown):
+                return _EntryResult("commit_unknown")
+            if isinstance(error, _JitFailure):
+                return _EntryResult(error.outcome)
+            if isinstance(error, (ValueError, TypeError, AttributeError)):
+                return _EntryResult("integrity_failure")
+            return _EntryResult(self._operational_failure(error).outcome.value)
+        finally:
+            if connection is not None:
+                connection.close()
+
+    def _classify_execution_entry(self, request):
+        """Audited history or proven absence on this same pinned authoritative Store."""
+        from engineering_orchestration._execution_entry_and_controlled_invocation import _EntryResult
+        connection = None
+        try:
+            request, executor = _open_dispatch_request(request, self, "query")
+            connection = self._open_existing(allow_fenced=False)
+            connection.execute("BEGIN")
+            self._verify_authoritative_connection(connection, allow_fenced=False)
+            entry = self._find_execution_entry(connection, request.identity)
+            claim = self._find_dispatch_claim(connection, request.claim_id)
+            if claim is None or (claim.identity, claim.executor_instance_id, claim.lease_generation) != (
+                    request.identity, executor, request.generation):
+                return _EntryResult("entry_conflict")
+            if entry is not None and (entry.claim_id, entry.executor_instance_id, entry.lease_generation) != (
+                    request.claim_id, executor, request.generation):
+                return _EntryResult("entry_conflict", entry)
+            return _EntryResult("verified_absent" if entry is None else "historical_entry", entry)
+        except Exception as error:
+            if isinstance(error, (TypeError, ValueError, AttributeError)):
+                return _EntryResult("integrity_failure")
+            return _EntryResult(self._operational_failure(error).outcome.value)
+        finally:
+            _safe_rollback(connection)
+            if connection is not None:
+                connection.close()
 
     def _assess_jit_dispatch(self, request, operation):
         """Private held-authority assessment; commits watermark only, never Entry."""

@@ -35,6 +35,11 @@ MIGRATIONS = (
         resource_name="0003_dispatch_claim_lease.sql",
         sha256="c9163740873586ab39ee760c292cdcdd07bf050ee06f37c29614c5e3a8144949",
     ),
+    SqliteAdmissionMigration(
+        migration_id=4,
+        resource_name="0004_execution_entry.sql",
+        sha256="044dec78513447aaddb5544f6e56ce9667be6b370ec42c510ae1fdf3a954a2b1",
+    ),
 )
 
 SCHEMA_VERSION = MIGRATIONS[-1].migration_id

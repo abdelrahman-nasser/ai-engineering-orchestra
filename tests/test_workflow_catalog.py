@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""AI Engineering Orchestra — Unit tests for Workflow catalog and resolution."""
+"""ITRU — Unit tests for Workflow catalog and resolution."""
 
 from __future__ import annotations
 

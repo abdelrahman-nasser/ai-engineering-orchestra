@@ -21,25 +21,25 @@ import unittest
 from unittest.mock import patch
 import urllib.request
 
-import engineering_orchestration
-import engineering_orchestration.operation_requirement as operation_requirement
-from engineering_orchestration._repository_resource import (
+import itru
+import itru.operation_requirement as operation_requirement
+from itru._repository_resource import (
     validate_repository_resource,
 )
-from engineering_orchestration.agent_execution_candidate_prerequisite import (
+from itru.agent_execution_candidate_prerequisite import (
     AgentExecutionCandidatePrerequisiteResult,
 )
-from engineering_orchestration.operation_requirement import (
+from itru.operation_requirement import (
     OperationRequirement,
     OperationRequirementFinding,
     OperationRequirementValidationResult,
     validate_operation_requirement,
 )
-from engineering_orchestration.schema_resources import load_validator
+from itru.schema_resources import load_validator
 
 
 ROOT = Path(__file__).resolve().parents[1]
-MODULE_PATH = ROOT / "engineering_orchestration" / "operation_requirement.py"
+MODULE_PATH = ROOT / "itru" / "operation_requirement.py"
 
 
 def requirement(
@@ -471,8 +471,8 @@ class OperationRequirementPurityTests(unittest.TestCase):
             {
                 "__future__",
                 "dataclasses",
-                "engineering_orchestration._operation_vocabulary",
-                "engineering_orchestration._repository_resource",
+                "itru._operation_vocabulary",
+                "itru._repository_resource",
             },
         )
 
@@ -676,7 +676,7 @@ class OperationRequirementBoundaryTests(unittest.TestCase):
             "validate_operation_requirement",
         ):
             with self.subTest(name=name):
-                self.assertFalse(hasattr(engineering_orchestration, name))
+                self.assertFalse(hasattr(itru, name))
 
     def test_no_capability_permission_authorization_or_execution_api_exists(
         self,

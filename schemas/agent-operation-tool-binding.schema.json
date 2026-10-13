@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ai-engineering-orchestra.dev/schemas/agent-operation-tool-binding.schema.json",
-  "title": "AI Engineering Orchestra Agent Operation Tool Binding",
+  "title": "ITRU Agent Operation Tool Binding",
   "description": "Structural schema for one Agent Operation Tool Binding defined by core/agent-operation-tool-binding-specification.md.",
   "type": "object",
   "additionalProperties": false,

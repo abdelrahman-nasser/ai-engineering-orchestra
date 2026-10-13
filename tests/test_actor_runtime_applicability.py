@@ -14,18 +14,18 @@ import unittest
 from unittest.mock import patch
 import urllib.request
 
-from engineering_orchestration.agent_runtime_option import (
+from itru.agent_runtime_option import (
     AgentRuntimeOptionDefinition,
     validate_agent_runtime_option_inventory,
 )
-import engineering_orchestration.actor_runtime_applicability as applicability
-from engineering_orchestration.actor_runtime_applicability import (
+import itru.actor_runtime_applicability as applicability
+from itru.actor_runtime_applicability import (
     ActorRuntimeApplicabilityEvidence,
     ActorRuntimeApplicabilityFinding,
     ActorRuntimeApplicabilityValidationResult,
     validate_actor_runtime_applicability,
 )
-from engineering_orchestration.schema_resources import load_validator
+from itru.schema_resources import load_validator
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -574,7 +574,7 @@ class ActorRuntimeApplicabilityBoundaryTests(unittest.TestCase):
 
     def test_module_imports_only_runtime_endpoint_contract(self) -> None:
         tree = ast.parse(
-            (ROOT / "engineering_orchestration" /
+            (ROOT / "itru" /
              "actor_runtime_applicability.py").read_text(encoding="utf-8")
         )
         internal_imports = {
@@ -582,11 +582,11 @@ class ActorRuntimeApplicabilityBoundaryTests(unittest.TestCase):
             for node in ast.walk(tree)
             if isinstance(node, ast.ImportFrom)
             and node.module
-            and node.module.startswith("engineering_orchestration")
+            and node.module.startswith("itru")
         }
         self.assertEqual(
             internal_imports,
-            {"engineering_orchestration.agent_runtime_option"},
+            {"itru.agent_runtime_option"},
         )
 
     def test_missing_edge_is_not_collapsed_into_applicability_boolean(self) -> None:

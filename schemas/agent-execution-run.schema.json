@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ai-engineering-orchestra.dev/schemas/agent-execution-run.schema.json",
-  "title": "AI Engineering Orchestra Agent Execution Run",
+  "title": "ITRU Agent Execution Run",
   "description": "Structural schema for one Agent Execution Run occurrence-identity value defined by core/agent-execution-run-specification.md.",
   "type": "object",
   "additionalProperties": false,

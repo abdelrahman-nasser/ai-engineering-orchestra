@@ -1,4 +1,4 @@
-# AI Engineering Orchestra — Context Policy
+# ITRU — Context Policy
 
 Version: 0.1.0
 

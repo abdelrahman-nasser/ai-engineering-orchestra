@@ -1,9 +1,9 @@
-# AI Engineering Orchestra - Environment Operation Permission Observation Specification
+# ITRU - Environment Operation Permission Observation Specification
 
 Version: 0.1.0
 
 This document defines the canonical Environment Operation Permission
-Observation contract for AI Engineering Orchestra v0.1.
+Observation contract for ITRU v0.1.
 
 ---
 
@@ -91,7 +91,7 @@ infer the Runtime from the environment identifier.
 
 `operation_id` uses the Core operation syntax and vocabulary shared with
 Operation Requirement and Runtime Operation Capability Observation through
-`engineering_orchestration._operation_vocabulary`. The current supported
+`itru._operation_vocabulary`. The current supported
 vocabulary contains exactly:
 
 ```text
@@ -579,7 +579,7 @@ canonicalize that experiment's permission or authorization evidence.
 
 Immutable values and pure deterministic snapshot validation are defined in:
 
-`engineering_orchestration.environment_operation_permission`
+`itru.environment_operation_permission`
 
 The submodule exposes:
 
@@ -627,9 +627,9 @@ are packaged resources/code; no new external dependency is introduced.
 
 The shared private helpers are:
 
-- `engineering_orchestration._operation_vocabulary` for operation syntax and
+- `itru._operation_vocabulary` for operation syntax and
   support; and
-- `engineering_orchestration._repository_resource` for the canonical first
+- `itru._repository_resource` for the canonical first
   lexical repository-resource issue.
 
 The latter exposes the frozen internal value

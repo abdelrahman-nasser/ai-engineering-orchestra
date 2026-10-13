@@ -21,31 +21,31 @@ from unittest.mock import patch
 import urllib.request
 import uuid
 
-import engineering_orchestration
-import engineering_orchestration.agent_execution_run as subject
-from engineering_orchestration.agent_action_prerequisite import (
+import itru
+import itru.agent_execution_run as subject
+from itru.agent_action_prerequisite import (
     AgentActionPrerequisiteFinding,
     AgentActionPrerequisiteOutcome,
     AgentActionPrerequisiteReason,
     AgentActionPrerequisiteResult,
 )
-from engineering_orchestration.agent_execution_contract import (
+from itru.agent_execution_contract import (
     AgentExecutionContract,
     AgentExecutionContractValidationResult,
     prepare_agent_execution_contract,
 )
-from engineering_orchestration.agent_execution_run import (
+from itru.agent_execution_run import (
     AgentExecutionRun,
     AgentExecutionRunFinding,
     AgentExecutionRunValidationResult,
     prepare_agent_execution_run,
     validate_agent_execution_run,
 )
-from engineering_orchestration.schema_resources import load_validator
+from itru.schema_resources import load_validator
 
 
 ROOT = Path(__file__).resolve().parents[1]
-MODULE_PATH = ROOT / "engineering_orchestration" / "agent_execution_run.py"
+MODULE_PATH = ROOT / "itru" / "agent_execution_run.py"
 RESPONSIBILITY_KEY = (
     "AIO-042",
     "architecture-change",
@@ -285,9 +285,9 @@ class AgentExecutionRunValueAndValidationTests(AgentExecutionRunFixture):
         self.assertIs(type(values[2].findings), tuple)
 
     def test_direct_module_public_api_and_no_package_root_export(self) -> None:
-        self.assertFalse(hasattr(engineering_orchestration, "AgentExecutionRun"))
+        self.assertFalse(hasattr(itru, "AgentExecutionRun"))
         self.assertFalse(
-            hasattr(engineering_orchestration, "prepare_agent_execution_run")
+            hasattr(itru, "prepare_agent_execution_run")
         )
         for name in (
             "AgentExecutionRun",

@@ -4,10 +4,10 @@ from dataclasses import FrozenInstanceError, fields
 from pathlib import Path
 import unittest
 
-from engineering_orchestration.actor_coverage import (
+from itru.actor_coverage import (
     EMPTY_ROLE_REQUIREMENTS_DIAGNOSTIC,
 )
-from engineering_orchestration.assignment import (
+from itru.assignment import (
     Assignment,
     AssignmentFinding,
     AssignmentSetValidationResult,
@@ -15,13 +15,13 @@ from engineering_orchestration.assignment import (
     validate_assignment,
     validate_assignment_set,
 )
-from engineering_orchestration.role_catalog import (
+from itru.role_catalog import (
     RoleCatalog,
     RoleCatalogError,
     load_role_catalog,
 )
-from engineering_orchestration.schema_resources import load_validator, schema_errors
-from engineering_orchestration.workflow_catalog import (
+from itru.schema_resources import load_validator, schema_errors
+from itru.workflow_catalog import (
     WorkflowCatalog,
     WorkflowCatalogError,
     WorkflowDefinition,

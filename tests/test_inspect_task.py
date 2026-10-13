@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""AI Engineering Orchestra — Unit tests for inspect_task utility."""
+"""ITRU — Unit tests for inspect_task utility."""
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ from scripts.inspect_task import (
 
 
 def create_minimal_valid_task_yaml(
-    task_id: str = "AIO-TEST",
+    task_id: str = "ITRU-060",
     status: str = "in_progress",
     quality_gates: list[str] | None = None,
     human_control: dict[str, bool] | None = None,
@@ -109,7 +109,7 @@ class TestInspectTask(unittest.TestCase):
     def setUp(self) -> None:
         self.temp_dir = tempfile.TemporaryDirectory()
         self.test_root = Path(self.temp_dir.name)
-        self.task_dir = self.test_root / "tasks" / "AIO-TEST-sample"
+        self.task_dir = self.test_root / "tasks" / "ITRU-060-sample"
         self.task_dir.mkdir(parents=True)
 
         # Create project manifest in temp root
@@ -153,7 +153,7 @@ class TestInspectTask(unittest.TestCase):
         )
         self.assertTrue(result.is_valid)
         self.assertEqual(result.schema_status, "VALID")
-        self.assertEqual(result.task_id, "AIO-TEST")
+        self.assertEqual(result.task_id, "ITRU-060")
         self.assertEqual(result.status, "in_progress")
         self.assertTrue(all(result.canonical_artifacts.values()))
 
@@ -298,7 +298,7 @@ class TestInspectTask(unittest.TestCase):
         """Verify fallback behavior when project manifest does not exist."""
         # Create an isolated task directory outside test_root
         with tempfile.TemporaryDirectory() as isolated_temp:
-            isolated_dir = Path(isolated_temp) / "AIO-ISOLATED"
+            isolated_dir = Path(isolated_temp) / "ITRU-060-isolated"
             isolated_dir.mkdir()
             for name in CANONICAL_ARTIFACTS:
                 if name == "task.yaml":

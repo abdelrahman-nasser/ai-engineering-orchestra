@@ -1,0 +1,40 @@
+id: AIO-059
+title: ITRU Canonical Namespace & Brand Cutover
+type: migration
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: high
+execution:
+  mode: deep
+workflow: standard-change
+objective: >
+  Establish ITRU as the single living product identity while preserving immutable
+  legacy audit and durable protocol identity. Phase 1 supplies inventory, design,
+  acceptance criteria, and six independent reviews only; implementation and
+  closure require subsequent explicit Human authorization.
+scope:
+  include:
+    - Phase-1 creation of this Task's four canonical artifacts and core/itru-canonical-namespace-specification.md only
+    - Bounded namespace inventory in pyproject.toml, README.md, core/, schemas/, engineering_orchestration/, and tests/
+    - Design of a single itru import/distribution namespace, itru CLI, ITRU_ environment prefix, and prospective ~/.itru configuration root
+    - Historical Tool identity compatibility, immutable migration continuity, and append-only route semantics
+    - Prospective ITRU-060 Task-prefix rule, historical allowlist, and namespace guard design
+    - Bounded implementation and validation plan plus six fresh independent read-only Phase-1 reviews
+  exclude:
+    - Production package moves, imports, runtime Tool IDs, packaging changes, compatibility shim code, test changes, or guard implementation in Phase 1
+    - General repository discovery, Task/Workflow catalog enumeration, and access to workflows/README.md
+    - Reading experiments/ or modifying completed AIO Tasks and AIO-058 experiment evidence
+    - Migration 0001-0004 byte changes, persisted fact rewrites, and Git history rewrites
+    - Physical working-directory rename, repository ownership/remote changes, network access, staging, commits, or pushes in Phase 1
+    - Result, Journal, Scheduler, UI, public distribution, and other future-roadmap implementation
+dependencies:
+  - AIO-058
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

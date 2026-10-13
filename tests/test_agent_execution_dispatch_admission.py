@@ -12,31 +12,31 @@ import unittest
 from unittest.mock import patch
 import urllib.request
 
-import engineering_orchestration
-import engineering_orchestration.agent_execution_dispatch_admission as subject
-from engineering_orchestration.agent_execution_authorization_grant import (
+import itru
+import itru.agent_execution_dispatch_admission as subject
+from itru.agent_execution_authorization_grant import (
     AgentExecutionAuthorizationGrant,
 )
-from engineering_orchestration.agent_execution_contract import (
+from itru.agent_execution_contract import (
     AgentExecutionContract,
 )
-from engineering_orchestration.agent_execution_dispatch_admission import (
+from itru.agent_execution_dispatch_admission import (
     AgentExecutionDispatchAdmission,
     AgentExecutionDispatchAdmissionFinding,
     AgentExecutionDispatchAdmissionValidationResult,
     validate_agent_execution_dispatch_admission,
 )
-from engineering_orchestration.agent_execution_run import AgentExecutionRun
-from engineering_orchestration.agent_operation_tool_binding import (
+from itru.agent_execution_run import AgentExecutionRun
+from itru.agent_operation_tool_binding import (
     AgentOperationToolBinding,
 )
-import engineering_orchestration.schema_resources as schema_resources
+import itru.schema_resources as schema_resources
 
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULE_PATH = (
     ROOT
-    / "engineering_orchestration"
+    / "itru"
     / "agent_execution_dispatch_admission.py"
 )
 ADMISSION_SCHEMA_NAME = "agent-execution-dispatch-admission.schema.json"
@@ -448,7 +448,7 @@ class AgentExecutionDispatchAdmissionTests(unittest.TestCase):
         }
         self.assertEqual(set(subject.__all__), expected)
         for name in expected:
-            self.assertFalse(hasattr(engineering_orchestration, name))
+            self.assertFalse(hasattr(itru, name))
 
     def test_schema_is_closed_exact_and_references_canonical_values(self) -> None:
         resource = schema_resources.schema_resource(ADMISSION_SCHEMA_NAME)

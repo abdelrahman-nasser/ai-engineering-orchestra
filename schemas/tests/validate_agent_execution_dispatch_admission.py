@@ -18,21 +18,21 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from engineering_orchestration.agent_execution_authorization_grant import (
+from itru.agent_execution_authorization_grant import (
     AgentExecutionAuthorizationGrant,
 )
-from engineering_orchestration.agent_execution_contract import (
+from itru.agent_execution_contract import (
     AgentExecutionContract,
 )
-from engineering_orchestration.agent_execution_dispatch_admission import (
+from itru.agent_execution_dispatch_admission import (
     AgentExecutionDispatchAdmission,
     validate_agent_execution_dispatch_admission,
 )
-from engineering_orchestration.agent_execution_run import AgentExecutionRun
-from engineering_orchestration.agent_operation_tool_binding import (
+from itru.agent_execution_run import AgentExecutionRun
+from itru.agent_operation_tool_binding import (
     AgentOperationToolBinding,
 )
-from engineering_orchestration.schema_resources import (
+from itru.schema_resources import (
     load_validator,
     schema_resource,
 )
@@ -328,7 +328,7 @@ class NetworkAccessAttempted(RuntimeError):
 
 
 def main() -> int:
-    print("AI Engineering Orchestra - Agent Execution Dispatch Admission Validation")
+    print("ITRU - Agent Execution Dispatch Admission Validation")
     print("=" * 80)
     if not check_fixture_coverage() or not check_schema_contract():
         return 1

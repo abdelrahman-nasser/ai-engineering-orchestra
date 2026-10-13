@@ -112,7 +112,7 @@ def validate_document(
 
 def main() -> int:
     print(
-        "AI Engineering Orchestra - Inference Option Availability Schema Validation"
+        "ITRU - Inference Option Availability Schema Validation"
     )
     print("=" * 88)
     if not check_fixture_coverage():

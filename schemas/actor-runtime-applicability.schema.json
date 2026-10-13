@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ai-engineering-orchestra.dev/schemas/actor-runtime-applicability.schema.json",
-  "title": "AI Engineering Orchestra Actor-to-Runtime Applicability Evidence",
+  "title": "ITRU Actor-to-Runtime Applicability Evidence",
   "description": "Structural schema for one Actor-to-Runtime Applicability Evidence value defined by core/actor-runtime-applicability-specification.md.",
   "type": "object",
   "additionalProperties": false,

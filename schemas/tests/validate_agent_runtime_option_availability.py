@@ -114,7 +114,7 @@ def validate_document(
 
 def main() -> int:
     print(
-        "AI Engineering Orchestra - Agent Runtime Option Availability "
+        "ITRU - Agent Runtime Option Availability "
         "Schema Validation"
     )
     print("=" * 91)

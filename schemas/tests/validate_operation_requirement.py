@@ -13,7 +13,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from engineering_orchestration.operation_requirement import (
+from itru.operation_requirement import (
     OperationRequirement,
     validate_operation_requirement,
 )
@@ -225,7 +225,7 @@ def semantic_result(
 
 
 def main() -> int:
-    print("AI Engineering Orchestra - Operation Requirement Validation")
+    print("ITRU - Operation Requirement Validation")
     print("=" * 67)
     if not check_fixture_coverage():
         return 1

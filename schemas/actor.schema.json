@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ai-engineering-orchestra.dev/schemas/actor.schema.json",
-  "title": "AI Engineering Orchestra Actor",
-  "description": "Structural schema for the AI Engineering Orchestra v0.1 Actor contract defined by core/actor-specification.md.",
+  "title": "ITRU Actor",
+  "description": "Structural schema for the ITRU v0.1 Actor contract defined by core/actor-specification.md.",
   "type": "object",
   "additionalProperties": false,
   "required": [

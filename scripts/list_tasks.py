@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compatibility delegate to engineering_orchestration.list_tasks."""
+"""Compatibility delegate to itru.list_tasks."""
 
 import sys
 from pathlib import Path
@@ -8,7 +8,7 @@ from pathlib import Path
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from engineering_orchestration import list_tasks as _implementation
+from itru import list_tasks as _implementation
 if __name__ == "__main__":
     raise SystemExit(_implementation.main())
 else:

@@ -1,9 +1,9 @@
-# AI Engineering Orchestra - Actor-to-Runtime Applicability Specification
+# ITRU - Actor-to-Runtime Applicability Specification
 
 Version: 0.1.0
 
 This document defines the canonical Actor-to-Runtime Applicability Evidence
-contract for AI Engineering Orchestra v0.1.
+contract for ITRU v0.1.
 
 ---
 
@@ -385,7 +385,7 @@ Evidence and results remain in memory for one supplied evaluation context.
 
 Immutable values and pure deterministic validation are defined in:
 
-`engineering_orchestration.actor_runtime_applicability`
+`itru.actor_runtime_applicability`
 
 The module exposes:
 

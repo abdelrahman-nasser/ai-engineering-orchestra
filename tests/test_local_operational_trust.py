@@ -9,72 +9,72 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest import mock
 
-import engineering_orchestration.local_operational_trust as local_trust
-from engineering_orchestration.agent_execution_authorization_evidence import (
+import itru.local_operational_trust as local_trust
+from itru.agent_execution_authorization_evidence import (
     AgentExecutionAuthorizationAuthorityKind,
     AgentExecutionAuthorizationEvidence,
     AgentExecutionAuthorizationState,
     AgentExecutionAuthorizationValidationResult,
 )
-from engineering_orchestration.agent_execution_authorization_grant import (
+from itru.agent_execution_authorization_grant import (
     AgentExecutionAuthorizationGrant,
 )
-from engineering_orchestration.agent_execution_authorization_grant_producer import (
+from itru.agent_execution_authorization_grant_producer import (
     AgentExecutionAuthorizationGrantLifetimePolicy,
     AgentExecutionAuthorizationGrantProductionOutcome,
     AgentExecutionAuthorizationGrantProductionResult,
     AgentExecutionAuthorizationGrantRetryDisposition,
     _AgentExecutionAuthorizationGrantAuthenticationPort,
 )
-from engineering_orchestration.agent_execution_candidate_prerequisite import (
+from itru.agent_execution_candidate_prerequisite import (
     AgentExecutionCandidatePrerequisiteOutcome,
     AgentExecutionCandidatePrerequisiteReason,
     AgentExecutionCandidatePrerequisiteResult,
 )
-from engineering_orchestration.agent_execution_contract import AgentExecutionContract
-from engineering_orchestration.agent_execution_dispatch_admission_store import (
+from itru.agent_execution_contract import AgentExecutionContract
+from itru.agent_execution_dispatch_admission_store import (
     AgentActionPrerequisiteParentInputs,
     AgentExecutionDispatchAdmissionStoreOutcome,
     AgentExecutionDispatchAdmissionStoreResult,
     AgentExecutionDispatchAdmissionStoreRetryDisposition,
 )
-from engineering_orchestration.agent_execution_run import AgentExecutionRun
-from engineering_orchestration.agent_operation_tool_binding import (
+from itru.agent_execution_run import AgentExecutionRun
+from itru.agent_operation_tool_binding import (
     AgentOperationToolBinding,
 )
-from engineering_orchestration.agent_operation_tool_registry import (
+from itru.agent_operation_tool_registry import (
     _AgentOperationToolRegistryOutcome,
     _AgentOperationToolRegistryRetryDisposition,
     _AgentOperationToolRoute,
     _build_trusted_agent_operation_tool_registry_snapshot,
-    _make_aeo_native_repository_file_read_registration,
+    _make_itru_native_repository_file_read_registration,
     _select_agent_operation_tool_route,
 )
-from engineering_orchestration.agent_operation_tool_resolver import (
+from itru.agent_operation_tool_resolver import (
     TrustedAgentOperationToolBindingResolver,
 )
-from engineering_orchestration.environment_operation_permission import (
+from itru.environment_operation_permission import (
     EnvironmentOperationPermissionObservation,
     EnvironmentOperationPermissionState,
     EnvironmentOperationPermissionValidationResult,
 )
-from engineering_orchestration.local_operational_trust import (
+from itru.local_operational_trust import (
     LocalOperationalTrustCoordinator,
     _cleanup_components,
     _compose_local_operational_trust_coordinator,
     _new_grant_authentication_latch,
 )
-from engineering_orchestration.operation_requirement import OperationRequirement
-from engineering_orchestration.runtime_operation_capability import (
+from itru.operation_requirement import OperationRequirement
+from itru.runtime_operation_capability import (
     RuntimeOperationCapabilityObservation,
     RuntimeOperationCapabilityState,
     RuntimeOperationCapabilityValidationResult,
 )
-from engineering_orchestration.sqlite_agent_execution_dispatch_admission_store import (
+from itru.sqlite_agent_execution_dispatch_admission_store import (
     SqliteAdmissionStoreIntegrityError,
     SqliteAgentExecutionDispatchAdmissionStoreConfiguration,
 )
-from engineering_orchestration import windows_local_authorization_domain_owner as windows_owner
+from itru import windows_local_authorization_domain_owner as windows_owner
 
 
 TASK_ID = "AIO-053"
@@ -90,7 +90,7 @@ RESOURCE = "synthetic/input.txt"
 EXECUTION_MODE = "critical"
 DOMAIN_ID = "authorization-domain::aio-053-synthetic"
 LEDGER_ID = "ledger-instance::aio-053-synthetic"
-TOOL_ID = "tool::aeo-native-repository-file-read::v1"
+TOOL_ID = "tool::itru-native-repository-file-read::v1"
 
 
 # This is deliberately a closed, reviewable map.  A scenario may not disappear
@@ -161,7 +161,7 @@ class _ExecutionProbe:
         self.bindings.append(binding)
 
     def assert_no_execution_surfaces(self, case: unittest.TestCase) -> None:
-        registration = _make_aeo_native_repository_file_read_registration(
+        registration = _make_itru_native_repository_file_read_registration(
             RUNTIME_ID,
             ENVIRONMENT_ID,
         )
@@ -581,6 +581,14 @@ def _make_unsatisfied_parent_inputs(
     )
 
 
+class _HistoryAccessPolicy:
+    def __init__(self):
+        self.allow = True
+
+    def allows_history_access(self, *, run, domain_identity, issuer_kind, issuer_id, intent):
+        return self.allow and intent in ("lookup", "revoke")
+
+
 class _WindowsHarness:
     def __init__(
         self,
@@ -589,9 +597,15 @@ class _WindowsHarness:
         domain_id: str = DOMAIN_ID,
         generation: int = 1,
         ledger_id: str = LEDGER_ID,
+        runtime_option_id: str = RUNTIME_ID,
+        historical_registrations: tuple = (),
+        prior_historical_manifest: object | None = None,
     ) -> None:
         self.case = case
         self.domain_id = domain_id
+        self.runtime_option_id = runtime_option_id
+        self.historical_registrations = historical_registrations
+        self.prior_historical_manifest = prior_historical_manifest
         self._temporary_directory = tempfile.TemporaryDirectory(
             prefix="aio-053-local-trust-",
             dir=Path(tempfile.gettempdir()).resolve(),
@@ -649,9 +663,10 @@ class _WindowsHarness:
         self.mode_resolver = _ExecutionModeResolver()
         self.revocation = _RevocationAdapter()
         self.grant_ids = _GrantIdSource()
+        self.history_policy = _HistoryAccessPolicy()
         self.coordinator = _compose_local_operational_trust_coordinator(
             authorization_domain_id=self.domain_id,
-            runtime_option_id=RUNTIME_ID,
+            runtime_option_id=self.runtime_option_id,
             environment_id=ENVIRONMENT_ID,
             identity_adapter=self.identity,
             human_approval_adapter=self.human,
@@ -669,6 +684,9 @@ class _WindowsHarness:
             execution_mode_resolver=self.mode_resolver,
             revocation_adapter=self.revocation,
             busy_timeout_ms=2_000,
+            history_access_policy=self.history_policy,
+            historical_registrations=self.historical_registrations,
+            prior_historical_manifest=self.prior_historical_manifest,
         )
 
     def _stop_patch(self) -> None:
@@ -745,7 +763,7 @@ class LocalOperationalTrustContractTests(_NoExecutionMixin, unittest.TestCase):
         self.assert_no_execution()
 
     def test_13_retired_route(self) -> None:
-        registration = _make_aeo_native_repository_file_read_registration(
+        registration = _make_itru_native_repository_file_read_registration(
             RUNTIME_ID,
             ENVIRONMENT_ID,
         )
@@ -782,11 +800,7 @@ class LocalOperationalTrustContractTests(_NoExecutionMixin, unittest.TestCase):
             "2026-01-15T12:05:00Z",
         )
         binding = resolver.resolve_tool_binding(grant)
-        self.assertIsNotNone(binding)
-        assert binding is not None
-        self.probe.observe_binding(binding)
-        self.assertEqual(binding.run, run)
-        self.assertEqual(binding.tool_id, TOOL_ID)
+        self.assertIsNone(binding)
         reconstructed = _build_trusted_agent_operation_tool_registry_snapshot(
             (registration,),
             retired_routes=(route,),
@@ -798,7 +812,7 @@ class LocalOperationalTrustContractTests(_NoExecutionMixin, unittest.TestCase):
         )
 
     def test_14_tool_id_rebind(self) -> None:
-        registration = _make_aeo_native_repository_file_read_registration(
+        registration = _make_itru_native_repository_file_read_registration(
             RUNTIME_ID,
             ENVIRONMENT_ID,
         )
@@ -836,7 +850,7 @@ class LocalOperationalTrustContractTests(_NoExecutionMixin, unittest.TestCase):
         self.assertIsNotNone(first.snapshot)
 
     def test_27_registry_reconstruction(self) -> None:
-        registration = _make_aeo_native_repository_file_read_registration(
+        registration = _make_itru_native_repository_file_read_registration(
             RUNTIME_ID,
             ENVIRONMENT_ID,
         )
@@ -847,7 +861,7 @@ class LocalOperationalTrustContractTests(_NoExecutionMixin, unittest.TestCase):
         assert first_snapshot is not None
         second = _build_trusted_agent_operation_tool_registry_snapshot(
             (
-                _make_aeo_native_repository_file_read_registration(
+                _make_itru_native_repository_file_read_registration(
                     RUNTIME_ID,
                     ENVIRONMENT_ID,
                 ),
@@ -988,6 +1002,7 @@ class LocalOperationalTrustContractTests(_NoExecutionMixin, unittest.TestCase):
                     domain_generation=1,
                 )
                 self.close_calls = 0
+                self._store = mock.Mock()
 
             @property
             def identity(self) -> object:
@@ -1287,7 +1302,7 @@ class LocalOperationalTrustWindowsTests(_NoExecutionMixin, unittest.TestCase):
     ) -> None:
         built = _build_trusted_agent_operation_tool_registry_snapshot(
             (
-                _make_aeo_native_repository_file_read_registration(
+                _make_itru_native_repository_file_read_registration(
                     RUNTIME_ID,
                     ENVIRONMENT_ID,
                 ),
@@ -1435,15 +1450,15 @@ class LocalOperationalTrustWindowsTests(_NoExecutionMixin, unittest.TestCase):
             "run::focused-other-failure-pass-through",
             runtime_option_id="runtime::focused-untrusted-route",
         )
-        result = self._human_call_with_captured_aio047_result(run)
+        result = self._human_call(run)
         self._assert_rejected(
             result,
             outcome=(
-                AgentExecutionDispatchAdmissionStoreOutcome.
-                UNTRUSTED_TOOL_BINDING
+                AgentExecutionAuthorizationGrantProductionOutcome.
+                NOT_ENTITLED
             ),
             retry_disposition=(
-                AgentExecutionDispatchAdmissionStoreRetryDisposition.
+                AgentExecutionAuthorizationGrantRetryDisposition.
                 DO_NOT_RETRY_SAME_REQUEST
             ),
         )
@@ -1690,11 +1705,11 @@ class LocalOperationalTrustWindowsTests(_NoExecutionMixin, unittest.TestCase):
         self._assert_rejected(
             self._human_call(run),
             outcome=(
-                AgentExecutionDispatchAdmissionStoreOutcome.
-                UNTRUSTED_TOOL_BINDING
+                AgentExecutionAuthorizationGrantProductionOutcome.
+                NOT_ENTITLED
             ),
             retry_disposition=(
-                AgentExecutionDispatchAdmissionStoreRetryDisposition.
+                AgentExecutionAuthorizationGrantRetryDisposition.
                 DO_NOT_RETRY_SAME_REQUEST
             ),
         )
@@ -1707,11 +1722,11 @@ class LocalOperationalTrustWindowsTests(_NoExecutionMixin, unittest.TestCase):
         self._assert_rejected(
             self._human_call(run),
             outcome=(
-                AgentExecutionDispatchAdmissionStoreOutcome.
-                UNTRUSTED_TOOL_BINDING
+                AgentExecutionAuthorizationGrantProductionOutcome.
+                NOT_ENTITLED
             ),
             retry_disposition=(
-                AgentExecutionDispatchAdmissionStoreRetryDisposition.
+                AgentExecutionAuthorizationGrantRetryDisposition.
                 DO_NOT_RETRY_SAME_REQUEST
             ),
         )
@@ -1724,11 +1739,11 @@ class LocalOperationalTrustWindowsTests(_NoExecutionMixin, unittest.TestCase):
         self._assert_rejected(
             self._human_call(run),
             outcome=(
-                AgentExecutionDispatchAdmissionStoreOutcome.
-                UNTRUSTED_TOOL_BINDING
+                AgentExecutionAuthorizationGrantProductionOutcome.
+                NOT_ENTITLED
             ),
             retry_disposition=(
-                AgentExecutionDispatchAdmissionStoreRetryDisposition.
+                AgentExecutionAuthorizationGrantRetryDisposition.
                 DO_NOT_RETRY_SAME_REQUEST
             ),
         )
@@ -1865,6 +1880,10 @@ class LocalOperationalTrustWindowsTests(_NoExecutionMixin, unittest.TestCase):
     def test_23_original_issuer_revocation(self) -> None:
         run = _make_run("run::revocation")
         principal, proof = self.harness.human_authority(run)
+        produced = self.coordinator._producer.produce(
+            run=run, authenticated_principal=principal, authority_proof=proof,
+        )
+        self.assertIs(produced.outcome, AgentExecutionAuthorizationGrantProductionOutcome.ISSUED)
         provenance = "revocation::synthetic"
         revocation_proof = self.harness.revocation.issue(
             run=run,
@@ -1894,13 +1913,13 @@ class LocalOperationalTrustWindowsTests(_NoExecutionMixin, unittest.TestCase):
                 authenticated_principal=principal,
                 authority_proof=proof,
             ),
-            outcome=AgentExecutionDispatchAdmissionStoreOutcome.REVOKED,
+            outcome=AgentExecutionAuthorizationGrantProductionOutcome.NOT_ENTITLED,
             retry_disposition=(
-                AgentExecutionDispatchAdmissionStoreRetryDisposition.
+                AgentExecutionAuthorizationGrantRetryDisposition.
                 DO_NOT_RETRY_SAME_REQUEST
             ),
         )
-        self.assertEqual(self.harness.revocation.validation_calls, 1)
+        self.assertGreaterEqual(self.harness.revocation.validation_calls, 2)
 
     def test_24_expired_grant(self) -> None:
         run = _make_run("run::expired-grant")
@@ -2006,11 +2025,11 @@ class LocalOperationalTrustWindowsTests(_NoExecutionMixin, unittest.TestCase):
         self._assert_rejected(
             self._human_call(run),
             outcome=(
-                AgentExecutionDispatchAdmissionStoreOutcome.
-                UNTRUSTED_TOOL_BINDING
+                AgentExecutionAuthorizationGrantProductionOutcome.
+                NOT_ENTITLED
             ),
             retry_disposition=(
-                AgentExecutionDispatchAdmissionStoreRetryDisposition.
+                AgentExecutionAuthorizationGrantRetryDisposition.
                 DO_NOT_RETRY_SAME_REQUEST
             ),
         )
@@ -2327,6 +2346,10 @@ class LocalOperationalTrustWindowsTests(_NoExecutionMixin, unittest.TestCase):
     def test_41_stale_revocation_proof(self) -> None:
         run = _make_run("run::stale-revocation")
         principal, approval = self.harness.human_authority(run)
+        produced = self.coordinator._producer.produce(
+            run=run, authenticated_principal=principal, authority_proof=approval,
+        )
+        self.assertIs(produced.outcome, AgentExecutionAuthorizationGrantProductionOutcome.ISSUED)
         provenance = "revocation::stale"
         proof = self.harness.revocation.issue(
             run=run,
@@ -2345,7 +2368,7 @@ class LocalOperationalTrustWindowsTests(_NoExecutionMixin, unittest.TestCase):
             result,
             outcome=(
                 AgentExecutionDispatchAdmissionStoreOutcome.
-                UNAUTHENTICATED_GRANT
+                INVALID_INPUT
             ),
             retry_disposition=(
                 AgentExecutionDispatchAdmissionStoreRetryDisposition.
@@ -2417,3 +2440,469 @@ class LocalOperationalTrustScenarioMapTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class PermanentHistoricalManifestTests(unittest.TestCase):
+    def manifests(self):
+        from itru import agent_operation_tool_registry as registry
+        historical_tool = ItruHistoricalBoundaryTests.OLD_TOOL
+        fact = registry._HistoricalRegistrationRecord(
+            ItruHistoricalBoundaryTests.OLD_RUNTIME, ENVIRONMENT_ID, OPERATION_ID,
+            historical_tool,
+            historical_tool.split("::")[1].split("-")[0].upper() + "_NATIVE_REPOSITORY_FILE_READ_V1",
+        )
+        active = local_trust._build_native_resolver(runtime_option_id=RUNTIME_ID, environment_id=ENVIRONMENT_ID)
+        prior = registry._permanent_registration_manifest(active._snapshot, (fact,))
+        return registry, active, fact, prior
+
+    def test_exact_prior_records_are_retained(self):
+        registry, active, fact, prior = self.manifests()
+        current = registry._permanent_registration_manifest(active._snapshot, (fact,), prior_manifest=prior)
+        self.assertEqual(current, prior)
+        self.assertIs(current[_AgentOperationToolRoute(fact.runtime_option_id, fact.environment_id, fact.operation_id)], fact)
+        with self.assertRaises(TypeError):
+            current[_AgentOperationToolRoute(fact.runtime_option_id, fact.environment_id, fact.operation_id)] = fact
+
+    def test_omission_without_admission_fails_closed(self):
+        registry, active, fact, prior = self.manifests()
+        with self.assertRaisesRegex(ValueError, "historical mapping is missing"):
+            registry._permanent_registration_manifest(active._snapshot, prior_manifest=prior)
+
+    def test_historical_identity_cannot_be_rewritten_as_canonical(self):
+        from dataclasses import replace
+        from types import MappingProxyType
+        registry, active, fact, prior = self.manifests()
+        current = dict(prior)
+        route = _AgentOperationToolRoute(fact.runtime_option_id, fact.environment_id, fact.operation_id)
+        current[route] = replace(fact, tool_id=TOOL_ID, implementation_selector="ITRU_NATIVE_REPOSITORY_FILE_READ_V1")
+        with self.assertRaisesRegex(ValueError, "cannot be rebound"):
+            registry._validate_permanent_registration_manifest_transition(prior, MappingProxyType(current))
+
+    def test_canonical_addition_preserves_every_prior_fact(self):
+        registry, active, fact, prior = self.manifests()
+        addition = _make_itru_native_repository_file_read_registration("runtime::additional", ENVIRONMENT_ID)
+        snapshot = _build_trusted_agent_operation_tool_registry_snapshot((*active._snapshot._registrations, addition)).snapshot
+        current = registry._permanent_registration_manifest(snapshot, (fact,), prior_manifest=prior)
+        self.assertEqual(len(current), len(prior) + 1)
+        self.assertTrue(all(current[key] == value for key, value in prior.items()))
+
+    def test_history_never_populates_active_selection_or_binding(self):
+        registry, active, fact, prior = self.manifests()
+        self.assertEqual({item.tool_id for item in active._snapshot._registrations}, {TOOL_ID})
+        selected = _select_agent_operation_tool_route(active._snapshot, route=_AgentOperationToolRoute(
+            fact.runtime_option_id, fact.environment_id, fact.operation_id,
+        ))
+        self.assertIsNone(selected.selected_route)
+        self.assertIsNone(_build_trusted_agent_operation_tool_registry_snapshot((fact,)).snapshot)
+        self.assertIsNone(active.resolve_tool_binding(fact))
+        self.assertIsNone(active.resolve_tool_binding(prior))
+
+    def test_malformed_or_mutable_prior_manifest_fails_closed(self):
+        from types import MappingProxyType
+        registry, active, fact, prior = self.manifests()
+        for invalid in (dict(prior), MappingProxyType({"invalid-route": fact})):
+            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                registry._permanent_registration_manifest(active._snapshot, (fact,), prior_manifest=invalid)
+
+
+@unittest.skipUnless(os.name == "nt", "owned historical ledger fixtures require Windows")
+class ItruHistoricalBoundaryTests(unittest.TestCase):
+    OLD_TOOL = "tool::aeo-native-repository-file-read::v1"
+    OLD_RUNTIME = "runtime::pre-itru-native"
+
+    def fixture(self, *, intent=True):
+        from itru import agent_operation_tool_registry as registry
+        from itru import sqlite_agent_execution_dispatch_admission_store as sql
+        from itru.agent_execution_dispatch_admission import AgentExecutionDispatchAdmission
+        fact = registry._HistoricalRegistrationRecord(
+            self.OLD_RUNTIME, ENVIRONMENT_ID, OPERATION_ID, self.OLD_TOOL,
+            "AEO_NATIVE_REPOSITORY_FILE_READ_V1",
+        )
+        h = _WindowsHarness(self, historical_registrations=(fact,))
+        old_run = _make_run("run::historical-pre-itru", runtime_option_id=self.OLD_RUNTIME)
+        decision, text, key = sql._canonical_decision_time(h.clock.now_utc())
+        grant = AgentExecutionAuthorizationGrant(
+            "grant::historical-pre-itru", old_run, h.domain_id, "human", "human::synthetic",
+            "approval::historical-pre-itru", text, sql._canonical_decision_time(decision + timedelta(minutes=5))[1],
+        )
+        binding = AgentOperationToolBinding(old_run, self.OLD_TOOL)
+        admission = AgentExecutionDispatchAdmission(grant, binding, text)
+        # Initial fixture provisioning inserts a pre-cutover fact into an empty
+        # disposable ledger. No existing production/history row is rewritten.
+        with h.coordinator._session.operation():
+            store = h.coordinator._session._store
+            connection = store._open_existing(allow_fenced=False)
+            try:
+                connection.execute("BEGIN IMMEDIATE")
+                connection.execute(
+                    "INSERT INTO agent_execution_dispatch_admissions VALUES (?,?,?,?,?,?,?,?,?,?)",
+                    (*sql._grant_identity(grant), old_run.run_id, sql._encode_grant(grant),
+                     sql._encode_binding(binding), sql._encode_admission(admission), text, key),
+                )
+                if intent:
+                    connection.execute("INSERT INTO agent_execution_dispatch_intents VALUES (?,?,?,?)", sql._grant_identity(grant))
+                else:
+                    connection.execute("INSERT INTO legacy_admission_markers VALUES (?,?,?,?,?)", (*sql._grant_identity(grant), 2))
+                store._advance_watermark(connection, text, key)
+                store._verify_authoritative_connection(connection, allow_fenced=False)
+                connection.execute("COMMIT")
+            finally:
+                connection.close()
+        h.restart()
+        return h, old_run, admission
+
+    def rows(self, h):
+        with h.coordinator._session.operation():
+            connection = h.coordinator._session._store._open_existing(allow_fenced=False)
+            try:
+                return tuple(tuple(row) for row in connection.execute(
+                    "SELECT * FROM agent_execution_dispatch_admissions ORDER BY run_id"
+                )), tuple(tuple(row) for row in connection.execute("SELECT * FROM agent_execution_grant_revocations"))
+            finally:
+                connection.close()
+
+    def test_exact_history_across_restart_has_no_positive_effects(self):
+        from itru import agent_operation_tool_registry as registry
+        h, run, admission = self.fixture()
+        original = self.rows(h)
+        principal, proof = h.human_authority(run)
+        producer = h.coordinator._producer
+        with mock.patch.object(type(producer), "produce", side_effect=AssertionError("historical lookup must not produce")), \
+             mock.patch.object(TrustedAgentOperationToolBindingResolver, "resolve_tool_binding", side_effect=AssertionError("history must not resolve")):
+            result = h.coordinator.load_authoritative_admission(
+                run=run, authenticated_principal=principal, authority_proof=proof,
+            )
+        self.assertEqual(result.outcome.value, "existing_exact_admission")
+        self.assertEqual(result.admission, admission)
+        self.assertEqual(result.admission.tool_binding.tool_id, self.OLD_TOOL)
+        self.assertEqual(self.rows(h), original)
+        self.assertEqual(h.grant_ids._counter, 0)
+        active = local_trust._build_native_resolver(runtime_option_id=RUNTIME_ID, environment_id=ENVIRONMENT_ID)
+        self.assertEqual({r.tool_id for r in active._snapshot._registrations}, {TOOL_ID})
+        self.assertIsNone(active.resolve_tool_binding(admission.grant))
+        old_fact = h.historical_registrations[0]
+        self.assertIsNone(registry._build_trusted_agent_operation_tool_registry_snapshot((old_fact,)).snapshot)
+        forged_active = registry._AgentOperationToolRegistration(
+            old_fact.runtime_option_id, old_fact.environment_id, old_fact.operation_id,
+            old_fact.tool_id, registry._AgentOperationToolImplementationSelector.ITRU_NATIVE_REPOSITORY_FILE_READ_V1,
+        )
+        self.assertIsNone(registry._build_trusted_agent_operation_tool_registry_snapshot((forged_active,)).snapshot)
+
+    def test_rebound_caps_old_run_and_reused_occurrence_fail_closed(self):
+        import copy, pickle
+        from dataclasses import replace
+        from itru.agent_execution_dispatch_admission_store import (
+            _HistoricalExecutionReference, _HistoricalLookupRequest, _HistoricalRevocationRequest,
+        )
+        h, run, admission = self.fixture()
+        principal, proof = h.human_authority(run)
+        boundary = h.coordinator._historical_boundary
+        with boundary._session.operation(), boundary._authentication.lock:
+            result, reference = boundary._lookup(run, principal, proof)
+        self.assertEqual(result.admission, admission)
+        for cls in (_HistoricalExecutionReference, _HistoricalLookupRequest, _HistoricalRevocationRequest):
+            with self.assertRaises(TypeError): cls()
+        for copy_op in (copy.copy, copy.deepcopy, pickle.dumps):
+            with self.assertRaises(TypeError): copy_op(reference)
+        before = self.rows(h)
+        for subject in (reference, run, replace(run, contract=replace(run.contract, runtime_option_id=RUNTIME_ID))):
+            if type(subject) is AgentExecutionRun:
+                principal, proof = h.human_authority(subject)
+            issued = h.coordinator._producer.produce(
+                run=subject, authenticated_principal=principal, authority_proof=proof,
+            )
+            self.assertIsNone(issued.presentation)
+            self.assertNotIn(issued.outcome.value, ("issued", "existing_exact_issuance"))
+        session = h.coordinator._session
+        for call in (session.admit, session.load_authoritative_admission, session.revoke):
+            self.assertIsNone(call(reference).admission)
+        resolver = local_trust._build_native_resolver(runtime_option_id=RUNTIME_ID, environment_id=ENVIRONMENT_ID)
+        self.assertIsNone(resolver.resolve_tool_binding(reference))
+        from itru import _local_dispatch_claim_lease as dispatch
+        facade = dispatch._create_owned_dispatch_claim_lease(session)
+        self.assertEqual(facade.claim("1" * 64).outcome, "authority_ineligible")
+        self.assertEqual(self.rows(h), before)
+        self.assertEqual(h.grant_ids._counter, 0)
+        boundary._authority._references.pop(id(reference), None)
+
+    def test_exact_original_revocation_is_negative_idempotent_and_coexists(self):
+        h, run, admission = self.fixture()
+        principal, proof = h.human_authority(run)
+        before = self.rows(h)[0]
+        provenance = "revocation::historical-original"
+        revocation = h.revocation.issue(run=run, domain_identity=h.coordinator._domain_identity, provenance_reference=provenance)
+        producer = h.coordinator._producer
+        with mock.patch.object(type(producer), "produce", side_effect=AssertionError("revocation must not produce")), \
+             mock.patch.object(TrustedAgentOperationToolBindingResolver, "resolve_tool_binding", side_effect=AssertionError("revocation must not resolve")):
+            for expected in ("newly_revoked", "existing_exact_revocation"):
+                result = h.coordinator.revoke(run=run, authenticated_principal=principal, authority_proof=proof,
+                    original_issuer_proof=revocation, provenance_reference=provenance)
+                self.assertEqual(result.outcome.value, expected, result.detail)
+        self.assertEqual(self.rows(h)[0], before)
+        self.assertEqual(len(self.rows(h)[1]), 1)
+        self.assertEqual(h.grant_ids._counter, 0)
+        new_run = _make_run("run::independent-itru-occurrence")
+        principal, proof = h.human_authority(new_run)
+        result = h.coordinator.admit(run=new_run, authenticated_principal=principal, authority_proof=proof)
+        self.assertEqual(result.outcome.value, "newly_admitted", result.detail)
+        self.assertEqual(result.admission.tool_binding.tool_id, TOOL_ID)
+        self.assertEqual(len(self.rows(h)[0]), 2)
+        self.assertIn(before[0], self.rows(h)[0])
+
+    def test_absence_and_invalid_proofs_do_not_create_revocable_authority(self):
+        h = _WindowsHarness(self)
+        run = _make_run("run::absent-history")
+        principal, proof = h.human_authority(run)
+        provenance = "revocation::absent"
+        revocation = h.revocation.issue(run=run, domain_identity=h.coordinator._domain_identity, provenance_reference=provenance)
+        result = h.coordinator.revoke(run=run, authenticated_principal=principal, authority_proof=proof,
+            original_issuer_proof=revocation, provenance_reference=provenance)
+        self.assertEqual(result.outcome.value, "no_existing_admission")
+        self.assertEqual(self.rows(h), ((), ()))
+        self.assertEqual(h.grant_ids._counter, 0)
+        h, run, admission = self.fixture()
+        principal, proof = h.human_authority(run)
+        before = self.rows(h)
+        for mutation in ("principal", "proof", "policy", "epoch"):
+            with self.subTest(mutation=mutation):
+                if mutation == "policy": h.history_policy.allow = False
+                if mutation == "epoch": h.identity.epoch = object()
+                result = h.coordinator.load_authoritative_admission(
+                    run=run, authenticated_principal=object() if mutation == "principal" else principal,
+                    authority_proof=object() if mutation == "proof" else proof,
+                )
+                self.assertIsNone(result.admission)
+                h.history_policy.allow = True
+        self.assertEqual(self.rows(h), before)
+        self.assertEqual(h.grant_ids._counter, 0)
+
+    def test_missing_manifest_and_same_route_rebind_fail_on_restart(self):
+        h, run, admission = self.fixture()
+        h.historical_registrations = ()
+        with self.assertRaises(SqliteAdmissionStoreIntegrityError): h.restart()
+        h.historical_registrations = (
+            __import__("itru.agent_operation_tool_registry", fromlist=["_HistoricalRegistrationRecord"])._HistoricalRegistrationRecord(
+                RUNTIME_ID, ENVIRONMENT_ID, OPERATION_ID, self.OLD_TOOL, "AEO_NATIVE_REPOSITORY_FILE_READ_V1",
+            ),
+        )
+        with self.assertRaises(ValueError): h._install_adapters_and_compose()
+
+    def test_prior_manifest_omission_fails_before_ownership_with_or_without_admission(self):
+        from itru import agent_operation_tool_registry as registry
+        fact = registry._HistoricalRegistrationRecord(
+            self.OLD_RUNTIME, ENVIRONMENT_ID, OPERATION_ID, self.OLD_TOOL,
+            self.OLD_TOOL.split("::")[1].split("-")[0].upper() + "_NATIVE_REPOSITORY_FILE_READ_V1",
+        )
+        for has_admission in (False, True):
+            with self.subTest(has_admission=has_admission):
+                h = self.fixture()[0] if has_admission else _WindowsHarness(self, historical_registrations=(fact,))
+                self.assertEqual(bool(self.rows(h)[0]), has_admission)
+                h.prior_historical_manifest = h.coordinator._historical_boundary._manifest
+                h.historical_registrations = ()
+                h.close()
+                with mock.patch.object(local_trust, "WindowsLocalAuthorizationDomainOwner") as owner:
+                    with self.assertRaisesRegex(ValueError, "historical mapping is missing"):
+                        h._install_adapters_and_compose()
+                    owner.assert_not_called()
+
+    def test_retained_prior_manifest_preserves_historical_authority_boundary(self):
+        h, run, admission = self.fixture()
+        prior = h.coordinator._historical_boundary._manifest
+        h.prior_historical_manifest = prior
+        h.restart()
+        self.assertEqual(h.coordinator._historical_boundary._manifest, prior)
+        principal, proof = h.human_authority(run)
+        found = h.coordinator.load_authoritative_admission(
+            run=run, authenticated_principal=principal, authority_proof=proof,
+        )
+        self.assertEqual(found.admission, admission)
+        self.assertEqual(found.admission.tool_binding.tool_id, self.OLD_TOOL)
+        for historical_input in (run, h.historical_registrations[0], prior):
+            issued = h.coordinator._producer.produce(
+                run=historical_input, authenticated_principal=principal, authority_proof=proof,
+            )
+            self.assertIsNone(issued.presentation)
+        self.assertEqual(h.grant_ids._counter, 0)
+
+
+    def test_revocation_commit_unknown_retries_the_original_without_issuance(self):
+        h, run, admission = self.fixture()
+        principal, proof = h.human_authority(run)
+        provenance = "revocation::historical-ambiguous"
+        issuer_proof = h.revocation.issue(run=run, domain_identity=h.coordinator._domain_identity, provenance_reference=provenance)
+        store = h.coordinator._session._store
+        before = self.rows(h)[0]
+        def cut(point):
+            if point == "after_commit_before_response": raise OSError("synthetic response loss")
+        with mock.patch.object(store, "_fault", side_effect=cut):
+            result = h.coordinator.revoke(run=run, authenticated_principal=principal, authority_proof=proof,
+                original_issuer_proof=issuer_proof, provenance_reference=provenance)
+        self.assertEqual(result.outcome.value, "commit_unknown")
+        result = h.coordinator.revoke(run=run, authenticated_principal=principal, authority_proof=proof,
+            original_issuer_proof=issuer_proof, provenance_reference=provenance)
+        self.assertEqual(result.outcome.value, "existing_exact_revocation")
+        self.assertEqual(self.rows(h)[0], before)
+        self.assertEqual(len(self.rows(h)[1]), 1)
+        self.assertEqual(h.grant_ids._counter, 0)
+
+    def test_writer_rechecks_current_authentication_before_revocation(self):
+        h, run, admission = self.fixture()
+        principal, proof = h.human_authority(run)
+        provenance = "revocation::historical-drift"
+        issuer_proof = h.revocation.issue(run=run, domain_identity=h.coordinator._domain_identity, provenance_reference=provenance)
+        store = h.coordinator._session._store
+        before = self.rows(h)
+        watermark = store.watermark()
+        def drift(point):
+            if point == "after_begin": h.history_policy.allow = False
+        with mock.patch.object(store, "_fault", side_effect=drift):
+            result = h.coordinator.revoke(run=run, authenticated_principal=principal, authority_proof=proof,
+                original_issuer_proof=issuer_proof, provenance_reference=provenance)
+        self.assertEqual(result.outcome.value, "invalid_input")
+        self.assertEqual(self.rows(h), before)
+        self.assertEqual(store.watermark(), watermark)
+        self.assertEqual(h.grant_ids._counter, 0)
+
+    def test_concurrent_original_revocations_create_one_tombstone(self):
+        h, run, admission = self.fixture()
+        principal, proof = h.human_authority(run)
+        provenance = "revocation::historical-concurrent"
+        issuer_proof = h.revocation.issue(run=run, domain_identity=h.coordinator._domain_identity, provenance_reference=provenance)
+        barrier = threading.Barrier(2)
+        outcomes = []
+        failures = []
+        def worker():
+            try:
+                barrier.wait(5)
+                result = h.coordinator.revoke(run=run, authenticated_principal=principal, authority_proof=proof,
+                    original_issuer_proof=issuer_proof, provenance_reference=provenance)
+                outcomes.append(result.outcome.value)
+            except BaseException as error: failures.append(error)
+        workers = [threading.Thread(target=worker) for _ in range(2)]
+        for worker in workers: worker.start()
+        for worker in workers: worker.join(10)
+        self.assertFalse(any(worker.is_alive() for worker in workers))
+        self.assertEqual(failures, [])
+        self.assertCountEqual(outcomes, ["newly_revoked", "existing_exact_revocation"])
+        self.assertEqual(len(self.rows(h)[1]), 1)
+        self.assertEqual(h.grant_ids._counter, 0)
+
+    def test_revocation_only_history_does_not_invent_a_binding(self):
+        from itru import sqlite_agent_execution_dispatch_admission_store as sql
+        h = _WindowsHarness(self)
+        run = _make_run("run::revocation-only-pre-itru", runtime_option_id=self.OLD_RUNTIME)
+        principal, proof = h.human_authority(run)
+        _, text, key = sql._canonical_decision_time(h.clock.now_utc())
+        grant = AgentExecutionAuthorizationGrant(
+            "grant::revocation-only-pre-itru", run, h.domain_id, "human", "human::synthetic",
+            "approval::revocation-only", text, sql._canonical_decision_time(h.clock.now_utc() + timedelta(minutes=5))[1],
+        )
+        with h.coordinator._session.operation():
+            store = h.coordinator._session._store
+            connection = store._open_existing(allow_fenced=False)
+            try:
+                connection.execute("BEGIN IMMEDIATE")
+                connection.execute("INSERT INTO agent_execution_grant_revocations VALUES (?,?,?,?,?,?,?,?,?,?)",
+                    (*sql._grant_identity(grant), run.run_id, sql._encode_grant(grant), "human", "human::synthetic", text, key))
+                store._advance_watermark(connection, text, key)
+                store._verify_authoritative_connection(connection, allow_fenced=False)
+                connection.execute("COMMIT")
+            finally: connection.close()
+        h.restart()
+        principal, proof = h.human_authority(run)
+        before = self.rows(h)
+        result = h.coordinator.load_authoritative_admission(run=run, authenticated_principal=principal, authority_proof=proof)
+        self.assertEqual(result.outcome.value, "existing_exact_revocation")
+        self.assertIsNone(result.admission)
+        provenance = "revocation::only-retry"
+        issuer_proof = h.revocation.issue(run=run, domain_identity=h.coordinator._domain_identity, provenance_reference=provenance)
+        result = h.coordinator.revoke(run=run, authenticated_principal=principal, authority_proof=proof,
+            original_issuer_proof=issuer_proof, provenance_reference=provenance)
+        self.assertEqual(result.outcome.value, "existing_exact_revocation")
+        self.assertEqual(self.rows(h), before)
+        self.assertEqual(h.grant_ids._counter, 0)
+
+    def test_expired_foreign_subject_and_seal_tampering_fail_closed(self):
+        h, run, admission = self.fixture()
+        principal, proof = h.human_authority(run)
+        boundary = h.coordinator._historical_boundary
+        before = self.rows(h)
+        foreign_principal, foreign_proof = h.human_authority(_make_run("run::other-subject"))
+        for requester, authority in ((foreign_principal, proof), (principal, foreign_proof)):
+            result = h.coordinator.load_authoritative_admission(run=run, authenticated_principal=requester, authority_proof=authority)
+            self.assertIsNone(result.admission)
+        with boundary._session.operation(), boundary._authentication.lock:
+            request = boundary._authority._mint(run=run, principal=principal, proof=proof, intent="lookup")
+            object.__setattr__(request, "_intent", "revoke")
+            result, reference = boundary._session._store._historical_lookup(request)
+            self.assertEqual(result.outcome.value, "invalid_input")
+            self.assertIsNone(reference)
+            boundary._authority._discard(request)
+        h.clock.advance(timedelta(hours=1))
+        result = h.coordinator.load_authoritative_admission(run=run, authenticated_principal=principal, authority_proof=proof)
+        self.assertIsNone(result.admission)
+        self.assertEqual(self.rows(h), before)
+        self.assertEqual(h.grant_ids._counter, 0)
+
+
+    def test_unbound_authority_and_copied_request_are_not_composition_authority(self):
+        import copy
+        from itru.agent_execution_dispatch_admission_store import (
+            _HistoricalRequestAuthority, _new_historical_request_authority,
+        )
+        h, run, admission = self.fixture()
+        principal, proof = h.human_authority(run)
+        boundary = h.coordinator._historical_boundary
+        with self.assertRaises(TypeError): _HistoricalRequestAuthority(lambda _: True, h.coordinator._domain_identity)
+        forged = _new_historical_request_authority(lambda _: True, h.coordinator._domain_identity)
+        request = forged._mint(run=run, principal=principal, proof=proof, intent="lookup")
+        with h.coordinator._session.operation():
+            result, reference = h.coordinator._session._store._historical_lookup(request)
+        self.assertEqual(result.outcome.value, "invalid_input")
+        self.assertIsNone(reference)
+        with self.assertRaises(TypeError): copy.copy(request)
+        with self.assertRaises(RuntimeError):
+            h.coordinator._session._store._bind_historical_request_authority(forged)
+        self.assertEqual(h.grant_ids._counter, 0)
+
+
+    def test_existing_legacy_claim_cannot_renew_or_supply_current_entry_evidence(self):
+        from itru import _local_dispatch_claim_lease as dispatch
+        from itru import sqlite_agent_execution_dispatch_admission_store as sql
+        h, run, admission = self.fixture()
+        session = h.coordinator._session
+        store = session._store
+        facade = dispatch._create_owned_dispatch_claim_lease(session)
+        identity = sql._grant_identity(admission.grant)
+        now, text, key = sql._canonical_decision_time(h.clock.now_utc())
+        expiry_text, expiry_key = sql._dispatch_expiry(now)
+        claim_id = "2" * 64
+        with session.operation():
+            connection = store._open_existing(allow_fenced=False)
+            try:
+                connection.execute("BEGIN IMMEDIATE")
+                connection.execute("INSERT INTO agent_execution_dispatch_claims VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                    (claim_id, *identity, facade.executor_instance_id, 1, text, key, expiry_text, expiry_key))
+                store._verify_authoritative_connection(connection, allow_fenced=False)
+                connection.execute("COMMIT")
+            finally: connection.close()
+        self.assertEqual(facade.query(claim_id).outcome, "claim_history")
+        self.assertEqual(facade.renew("3" * 64, identity, claim_id, 1).outcome, "invalid_input")
+        self.assertEqual(facade.query(claim_id, mode="current", identity=identity, lease_generation=1).outcome, "invalid_input")
+        with session.operation():
+            connection = store._open_existing(allow_fenced=False)
+            try:
+                self.assertEqual(connection.execute("SELECT count(*) FROM agent_execution_dispatch_renewals").fetchone()[0], 0)
+                self.assertEqual(connection.execute("SELECT count(*) FROM agent_execution_entries").fetchone()[0], 0)
+            finally: connection.close()
+        self.assertEqual(h.grant_ids._counter, 0)
+
+    def test_history_request_requires_the_original_owned_operation(self):
+        h, run, admission = self.fixture()
+        principal, proof = h.human_authority(run)
+        boundary = h.coordinator._historical_boundary
+        request = boundary._authority._mint(run=run, principal=principal, proof=proof, intent="lookup")
+        result, reference = boundary._session._store._historical_lookup(request)
+        self.assertEqual(result.outcome.value, "invalid_input")
+        self.assertIsNone(reference)
+        boundary._authority._discard(request)

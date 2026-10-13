@@ -11,8 +11,8 @@ from jsonschema import Draft202012Validator
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
-from engineering_orchestration.schema_resources import schema_errors
-from engineering_orchestration.validation import manifest_semantic_errors
+from itru.schema_resources import schema_errors
+from itru.validation import manifest_semantic_errors
 
 SCHEMA_PATH = REPO_ROOT / "schemas" / "project-manifest.schema.json"
 FIXTURE_DIR = REPO_ROOT / "schemas" / "tests" / "project-manifest"
@@ -104,7 +104,7 @@ def main() -> int:
         print("No validation cases were found.")
         return 1
 
-    print("AI Engineering Orchestra - Project Manifest Schema Validation")
+    print("ITRU - Project Manifest Schema Validation")
     print("=" * 67)
 
     passed = 0

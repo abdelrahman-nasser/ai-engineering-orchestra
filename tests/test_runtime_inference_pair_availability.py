@@ -14,30 +14,30 @@ import unittest
 from unittest.mock import patch
 import urllib.request
 
-import engineering_orchestration
-from engineering_orchestration.agent_runtime_option import (
+import itru
+from itru.agent_runtime_option import (
     AgentRuntimeOptionDefinition,
 )
-from engineering_orchestration.agent_runtime_option_availability import (
+from itru.agent_runtime_option_availability import (
     AgentRuntimeOptionAvailabilityObservation,
     AgentRuntimeOptionAvailabilityState,
     validate_agent_runtime_option_availability,
 )
-from engineering_orchestration.inference_option import InferenceOptionDefinition
-from engineering_orchestration.inference_option_availability import (
+from itru.inference_option import InferenceOptionDefinition
+from itru.inference_option_availability import (
     InferenceOptionAvailabilityObservation,
     InferenceOptionAvailabilityState,
     validate_inference_option_availability,
 )
-import engineering_orchestration.runtime_inference_pair_availability as assessment
-from engineering_orchestration.runtime_inference_pair_availability import (
+import itru.runtime_inference_pair_availability as assessment
+from itru.runtime_inference_pair_availability import (
     RuntimeInferencePairAvailabilityAssessment,
     RuntimeInferencePairAvailabilityFinding,
     RuntimeInferencePairAvailabilityOutcome,
     RuntimeInferencePairAvailabilityResult,
     assess_runtime_inference_pair_availability,
 )
-from engineering_orchestration.runtime_inference_compatibility import (
+from itru.runtime_inference_compatibility import (
     RuntimeInferenceCompatibilityEvidence,
     validate_runtime_inference_compatibility,
 )
@@ -1077,7 +1077,7 @@ class RuntimeInferencePairAvailabilityBoundaryTests(unittest.TestCase):
         tree = ast.parse(
             (
                 ROOT
-                / "engineering_orchestration"
+                / "itru"
                 / "runtime_inference_pair_availability.py"
             ).read_text(encoding="utf-8")
         )
@@ -1086,16 +1086,16 @@ class RuntimeInferencePairAvailabilityBoundaryTests(unittest.TestCase):
             for node in ast.walk(tree)
             if isinstance(node, ast.ImportFrom)
             and node.module
-            and node.module.startswith("engineering_orchestration")
+            and node.module.startswith("itru")
         }
         self.assertEqual(
             internal_imports,
             {
-                "engineering_orchestration.agent_runtime_option",
-                "engineering_orchestration.agent_runtime_option_availability",
-                "engineering_orchestration.inference_option",
-                "engineering_orchestration.inference_option_availability",
-                "engineering_orchestration.runtime_inference_compatibility",
+                "itru.agent_runtime_option",
+                "itru.agent_runtime_option_availability",
+                "itru.inference_option",
+                "itru.inference_option_availability",
+                "itru.runtime_inference_compatibility",
             },
         )
 
@@ -1145,7 +1145,7 @@ class RuntimeInferencePairAvailabilityBoundaryTests(unittest.TestCase):
             "RuntimeInferencePairAvailabilityResult",
             "assess_runtime_inference_pair_availability",
         ):
-            self.assertFalse(hasattr(engineering_orchestration, name))
+            self.assertFalse(hasattr(itru, name))
 
     def test_established_result_exposes_evidence_not_selection_or_authority(
         self,

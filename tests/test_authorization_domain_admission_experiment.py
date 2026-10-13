@@ -23,14 +23,14 @@ import tomllib
 import unittest
 from unittest.mock import patch
 
-from engineering_orchestration.agent_execution_authorization_grant import (
+from itru.agent_execution_authorization_grant import (
     AgentExecutionAuthorizationGrant,
 )
-from engineering_orchestration.agent_execution_contract import (
+from itru.agent_execution_contract import (
     AgentExecutionContract,
 )
-from engineering_orchestration.agent_execution_run import AgentExecutionRun
-from engineering_orchestration.agent_operation_tool_binding import (
+from itru.agent_execution_run import AgentExecutionRun
+from itru.agent_operation_tool_binding import (
     AgentOperationToolBinding,
 )
 from experiments.authorization_domain_admission.sqlite_store import (
@@ -1184,10 +1184,10 @@ class AuthorizationDomainAdmissionExperimentTests(unittest.TestCase):
         self.assertEqual(
             setuptools["packages"],
             [
-                "engineering_orchestration",
-                "engineering_orchestration._schemas",
-                "engineering_orchestration._roles",
-                "engineering_orchestration._sqlite_admission_migrations",
+                "itru",
+                "itru._schemas",
+                "itru._roles",
+                "itru._sqlite_admission_migrations",
             ],
         )
         self.assertNotIn("experiments", json.dumps(setuptools))

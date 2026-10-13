@@ -1,8 +1,8 @@
 schema_version: "0.1"
 
 project:
-  id: ai-engineering-orchestra
-  name: AI Engineering Orchestra
+  id: itru
+  name: ITRU
   type: framework
   lifecycle: greenfield
 

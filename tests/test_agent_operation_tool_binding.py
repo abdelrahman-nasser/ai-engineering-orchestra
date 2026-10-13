@@ -21,25 +21,25 @@ from unittest.mock import patch
 import urllib.request
 import uuid
 
-import engineering_orchestration
-import engineering_orchestration.agent_operation_tool_binding as subject
-from engineering_orchestration.agent_execution_contract import (
+import itru
+import itru.agent_operation_tool_binding as subject
+from itru.agent_execution_contract import (
     AgentExecutionContract,
 )
-from engineering_orchestration.agent_execution_run import AgentExecutionRun
-from engineering_orchestration.agent_operation_tool_binding import (
+from itru.agent_execution_run import AgentExecutionRun
+from itru.agent_operation_tool_binding import (
     AgentOperationToolBinding,
     AgentOperationToolBindingFinding,
     AgentOperationToolBindingValidationResult,
     validate_agent_operation_tool_binding,
 )
-import engineering_orchestration.schema_resources as schema_resources
-from engineering_orchestration.schema_resources import load_validator
+import itru.schema_resources as schema_resources
+from itru.schema_resources import load_validator
 
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULE_PATH = (
-    ROOT / "engineering_orchestration" / "agent_operation_tool_binding.py"
+    ROOT / "itru" / "agent_operation_tool_binding.py"
 )
 BINDING_SCHEMA_NAME = "agent-operation-tool-binding.schema.json"
 RUN_SCHEMA_NAME = "agent-execution-run.schema.json"
@@ -230,7 +230,7 @@ class AgentOperationToolBindingValueTests(AgentOperationToolBindingFixture):
         self.assertEqual(subject.__all__, expected)
         for name in expected:
             self.assertIn(name, vars(subject))
-            self.assertFalse(hasattr(engineering_orchestration, name))
+            self.assertFalse(hasattr(itru, name))
         self.assertFalse(
             hasattr(subject, "prepare_agent_operation_tool_binding")
         )

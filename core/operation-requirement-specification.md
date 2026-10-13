@@ -1,4 +1,4 @@
-# AI Engineering Orchestra - Operation Requirement Specification
+# ITRU - Operation Requirement Specification
 
 Version: 0.1.0
 
@@ -136,7 +136,7 @@ restriction. One requirement identifies one resource; callers represent
 multiple resources with multiple values.
 
 The canonical first-issue resource validation is implemented once in the
-package-internal `engineering_orchestration._repository_resource` helper and is
+package-internal `itru._repository_resource` helper and is
 also consumed by Environment Operation Permission Observation validation. The
 helper extraction preserves every Operation Requirement resource code, message,
 precedence rule, public API, and atomic result exactly.
@@ -311,7 +311,7 @@ That separate contract is defined in
 
 Immutable values and pure validation are defined in:
 
-`engineering_orchestration.operation_requirement`
+`itru.operation_requirement`
 
 The submodule exposes:
 
@@ -325,10 +325,10 @@ root does not re-export these names. The structural schema is a packaged schema
 resource.
 
 Operation syntax and support are implemented through the package-internal
-`engineering_orchestration._operation_vocabulary` helper shared with Runtime
+`itru._operation_vocabulary` helper shared with Runtime
 Operation Capability and Environment Operation Permission Observation
 validation. Resource grammar is implemented through the package-internal
-`engineering_orchestration._repository_resource` helper shared with Environment
+`itru._repository_resource` helper shared with Environment
 Operation Permission Observation validation. These internal helpers do not
 change the public Operation Requirement API or behavior.
 

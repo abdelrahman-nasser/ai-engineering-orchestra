@@ -1,15 +1,15 @@
-# AI Engineering Orchestra — Project Manifest Specification
+# ITRU — Project Manifest Specification
 
 Version: 0.1.0
 Manifest Schema Version: 0.1
 
-This document defines the canonical Project Manifest contract for AI Engineering Orchestra v0.1.
+This document defines the canonical Project Manifest contract for ITRU v0.1.
 
 ---
 
 ## 1. Purpose
 
-The Project Manifest is the primary Source of Truth describing how a repository uses AI Engineering Orchestra.
+The Project Manifest is the primary Source of Truth describing how a repository uses ITRU.
 
 Its default location is:
 
@@ -70,7 +70,7 @@ The Project Manifest must not directly contain:
 - production credentials
 - business data
 - environment-specific deployment secrets
-- hardcoded AI model names in Orchestra Core configuration
+- hardcoded AI model names in ITRU Core configuration
 - Provider-specific configuration that belongs to a Provider Adapter
 
 ---
@@ -160,8 +160,8 @@ Example:
 
 ```yaml
 project:
-  id: ai-engineering-orchestra
-  name: AI Engineering Orchestra
+  id: itru
+  name: ITRU
   type: framework
   lifecycle: greenfield
 ```
@@ -679,7 +679,7 @@ Overrides must not weaken protected Policies.
 
 ## 20. `extensions`
 
-The optional `extensions` section provides a controlled future extension point for configuration that is not part of the Orchestra Core Project Manifest contract.
+The optional `extensions` section provides a controlled future extension point for configuration that is not part of the ITRU Core Project Manifest contract.
 
 Example:
 
@@ -713,8 +713,8 @@ Namespace requirements:
 - each segment must be non-empty
 - segments should use lowercase letters, numbers, and hyphens
 - spaces are not allowed
-- extension namespaces must not use `orchestra` as the owner unless defined by Orchestra Core
-- extension namespaces must not impersonate or redefine canonical Orchestra Core sections
+- extension namespaces must not use `orchestra` as the owner unless defined by ITRU Core
+- extension namespaces must not impersonate or redefine canonical ITRU Core sections
 
 Examples of invalid namespaces:
 
@@ -729,11 +729,11 @@ orchestra
 
 - the section is optional
 - extension keys must follow the namespace format defined above
-- extension configuration must not redefine Orchestra Core semantics
+- extension configuration must not redefine ITRU Core semantics
 - extension configuration must not weaken protected Policies
 - extension configuration must not bypass Human control requirements
 - extension configuration must not bypass Quality Gate requirements
-- unknown extension namespaces must not be interpreted as Orchestra Core configuration
+- unknown extension namespaces must not be interpreted as ITRU Core configuration
 - consumers must not infer behavior from an unknown extension namespace
 
 The `extensions` section exists to avoid uncontrolled top-level configuration growth.
@@ -818,7 +818,7 @@ However, it remains subject to:
 Project Manifest configuration must not weaken:
 
 - protected security or safety Policies
-- Orchestra Core Principles
+- ITRU Core Principles
 - protected Core Policies
 - higher-authority applicable Policies
 
@@ -830,7 +830,7 @@ Task-specific configuration may override Project defaults only where permitted.
 
 The Project Manifest must not require a specific Provider or model.
 
-Orchestra Core configuration must remain valid regardless of whether execution is performed by:
+ITRU Core configuration must remain valid regardless of whether execution is performed by:
 
 - Claude
 - Codex
@@ -949,8 +949,8 @@ Current validation may be performed through:
 The installed `validate_project()` API validates supported project structures,
 including these declarations, without executing commands. Duplicate Verification
 Check IDs require data-only semantic validation in addition to JSON Schema.
-`aio verify --structure` exposes this non-executing supported validation path;
-full `aio verify` composes it with declared Project Verification Checks.
+`itru verify --structure` exposes this non-executing supported validation path;
+full `itru verify` composes it with declared Project Verification Checks.
 
 ---
 
@@ -963,7 +963,7 @@ A Project Manifest conforms to schema version `0.1` when:
 3. unsupported top-level fields are absent
 4. paths follow canonical path rules
 5. protected Policies are not weakened
-6. Provider-specific configuration is not embedded in Orchestra Core sections
+6. Provider-specific configuration is not embedded in ITRU Core sections
 7. application runtime configuration is kept outside the manifest
 8. explicit defaults and Source of Truth boundaries are respected
 
@@ -973,7 +973,7 @@ A Project Manifest conforms to schema version `0.1` when:
 
 A **Project Verification Check** (short form: **Verification Check**) is a
 declarative project-owned definition of a mechanical repository check that can
-be executed programmatically by AIO to collect mechanical evidence. The Project
+be executed programmatically by ITRU to collect mechanical evidence. The Project
 Manifest specification owns this declaration at `.ai/project.yaml` under
 `verification.checks`. There is no separate `.ai/verification.yaml`.
 Commands do not belong in Workflow, Quality Gate, Role, or Stack Module files.
@@ -1054,16 +1054,16 @@ programmatic planner materializes it, and the runner enforces it.
 
 AIO-018 defined the configuration contract and its structural validation. AIO-019
 added the separate programmatic planner and runner in
-`engineering_orchestration.project_verification`. Full `aio verify` now composes
+`itru.project_verification`. Full `itru verify` now composes
 supported structural validation, planning, and runner execution. Only
 `planning.is_ready` gates command execution: unrelated Task or Workflow findings
-remain part of the aggregate result without suppressing a usable plan. `aio verify
---structure`, `validate_project()`, `aio tasks`, and `aio inspect` remain
+remain part of the aggregate result without suppressing a usable plan. `itru verify
+--structure`, `validate_project()`, `itru tasks`, and `itru inspect` remain
 data-reading operations and never execute declarations merely because they are
 present. Orchestra's seven development checks are ordinary declarations in its
 Manifest; no hidden fallback battery exists.
 
-Execution uses argument arrays with `shell=False`. AIO does not concatenate
+Execution uses argument arrays with `shell=False`. ITRU does not concatenate
 arguments into command strings, interpret `&&` or `|`, perform shell expansion,
 variable interpolation, command substitution, or glob expansion. For example,
 `[pytest, 'tests/*']` passes `tests/*` literally; the invoked program may interpret
@@ -1112,7 +1112,7 @@ confine what the launched process can access.
 | --- | --- |
 | PASS | Command launched, completed, and returned exit code `0` |
 | FAIL | Command launched, completed, and returned any nonzero exit code, including `2` |
-| ERROR | AIO could not obtain an evaluable completion: unavailable executable, launch failure, invalid execution cwd, timeout, or runner failure |
+| ERROR | ITRU could not obtain an evaluable completion: unavailable executable, launch failure, invalid execution cwd, timeout, or runner failure |
 
 No persisted result state or SKIP is defined. No checks means **0 project checks
 configured**; an unavailable executable means ERROR, not SKIP. Programmatic
@@ -1133,11 +1133,11 @@ propagates and stops remaining Checks.
 
 A Check must never deliberately configure the aggregate verifier as its own
 command. Full verification sets the brand-neutral inherited marker
-`ENGINEERING_ORCHESTRATION_VERIFY_DEPTH=1` only around runner execution and
+`ITRU_VERIFY_DEPTH=1` only around runner execution and
 restores its prior state in `finally`. A nested full verifier rejects a nonzero or
 malformed marker; an unset marker or `0` allows the outer invocation. Structural
 mode ignores the marker. Wrappers can deliberately remove it, arbitrary scripts
-may conceal recursion, and AIO cannot prove recursion absent or provide a
+may conceal recursion, and ITRU cannot prove recursion absent or provide a
 process-tree guarantee.
 
 ### Trust and authority boundary
@@ -1150,7 +1150,7 @@ credential, Agent, Workflow, or approval authority.
 
 Commands may read/write accessible files, access network resources, use
 inherited credentials, spawn processes, generate build artifacts, modify caches,
-and update lockfiles. AIO claims no sandboxing, purity, read-only execution,
+and update lockfiles. ITRU claims no sandboxing, purity, read-only execution,
 harmlessness, filesystem/network/credential isolation, or full descendant
 containment. Bounded diagnostics are unsanitized and may expose sensitive output
 in terminal or CI logs. No new permission engine, trust persistence,

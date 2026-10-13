@@ -1,9 +1,9 @@
-# AI Engineering Orchestra - Actor Availability Observation Specification
+# ITRU - Actor Availability Observation Specification
 
 Version: 0.1.0
 
 This document defines the canonical Actor Availability Observation contract for
-AI Engineering Orchestra v0.1.
+ITRU v0.1.
 
 ---
 
@@ -256,7 +256,7 @@ Actor Availability Observation does not define or contain:
 
 The immutable value objects and pure snapshot validator are defined in:
 
-`engineering_orchestration.actor_availability`
+`itru.actor_availability`
 
 The validator consumes supplied values and returns immutable findings and
 normalized observations. It does not parse files, discover Actors, contact a

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ai-engineering-orchestra.dev/schemas/agent-execution-authorization-evidence.schema.json",
-  "title": "AI Engineering Orchestra Agent Execution Authorization Evidence",
+  "title": "ITRU Agent Execution Authorization Evidence",
   "description": "Structural schema for one Agent Execution Authorization Evidence value defined by core/agent-execution-authorization-evidence-specification.md.",
   "type": "object",
   "additionalProperties": false,

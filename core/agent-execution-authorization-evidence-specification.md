@@ -1,9 +1,9 @@
-# AI Engineering Orchestra - Agent Execution Authorization Evidence Specification
+# ITRU - Agent Execution Authorization Evidence Specification
 
 Version: 0.1.0
 
 This document defines the canonical Agent Execution Authorization Evidence
-contract for AI Engineering Orchestra v0.1.
+contract for ITRU v0.1.
 
 ---
 
@@ -65,7 +65,7 @@ The value contains exactly these fourteen fields, in this order:
 | `state` | Yes | Caller-attested authorization state |
 
 ```yaml
-task_id: AIO-SYNTHETIC
+task_id: ITRU-060
 workflow_id: architecture-change
 stage_id: implement
 role_id: software-engineer
@@ -657,7 +657,7 @@ contract.
 
 Immutable values and pure deterministic validation are defined in:
 
-`engineering_orchestration.agent_execution_authorization_evidence`
+`itru.agent_execution_authorization_evidence`
 
 The submodule exposes:
 

@@ -1,9 +1,9 @@
-# AI Engineering Orchestra - Inference Option Availability Specification
+# ITRU - Inference Option Availability Specification
 
 Version: 0.1.0
 
 This document defines the canonical Inference Option Availability Observation
-contract for AI Engineering Orchestra v0.1.
+contract for ITRU v0.1.
 
 ---
 
@@ -182,7 +182,7 @@ reasoning controls.
 
 The immutable value objects and pure snapshot validator are defined in:
 
-`engineering_orchestration.inference_option_availability`
+`itru.inference_option_availability`
 
 The validator performs no discovery, selection, authorization, execution,
 network access, or persistence.

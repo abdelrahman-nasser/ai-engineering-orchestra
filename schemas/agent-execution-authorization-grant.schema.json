@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ai-engineering-orchestra.dev/schemas/agent-execution-authorization-grant.schema.json",
-  "title": "AI Engineering Orchestra Agent Execution Authorization Grant",
+  "title": "ITRU Agent Execution Authorization Grant",
   "description": "Structural schema for one positive, Run-bound Agent Execution Authorization Grant defined by core/agent-execution-authorization-grant-specification.md.",
   "type": "object",
   "additionalProperties": false,

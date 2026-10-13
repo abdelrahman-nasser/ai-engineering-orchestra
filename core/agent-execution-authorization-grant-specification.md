@@ -1,4 +1,4 @@
-# AI Engineering Orchestra - Agent Execution Authorization Grant Specification
+# ITRU - Agent Execution Authorization Grant Specification
 
 Status: Canonical for AIO-043
 
@@ -320,7 +320,7 @@ consumption and admission.
 The canonical direct-import module is:
 
 ```text
-engineering_orchestration.agent_execution_authorization_grant
+itru.agent_execution_authorization_grant
 ```
 
 It defines these frozen public values:

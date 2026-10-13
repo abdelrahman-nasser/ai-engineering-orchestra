@@ -1,9 +1,9 @@
-# AI Engineering Orchestra - Runtime-to-Inference Pair Availability Assessment Specification
+# ITRU - Runtime-to-Inference Pair Availability Assessment Specification
 
 Version: 0.1.0
 
 This document defines the canonical Runtime-to-Inference Pair Availability
-Assessment contract for AI Engineering Orchestra v0.1.
+Assessment contract for ITRU v0.1.
 
 ---
 
@@ -314,7 +314,7 @@ and boundaries.
 
 The immutable values and pure deterministic function are defined in:
 
-`engineering_orchestration.runtime_inference_pair_availability`
+`itru.runtime_inference_pair_availability`
 
 The module exposes:
 

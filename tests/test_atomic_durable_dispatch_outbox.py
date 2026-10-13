@@ -25,10 +25,10 @@ import unittest
 from unittest.mock import patch
 import uuid
 
-import engineering_orchestration as package
-import engineering_orchestration.sqlite_agent_execution_dispatch_admission_store as subject
-from engineering_orchestration.agent_execution_dispatch_admission import AgentExecutionDispatchAdmission
-from engineering_orchestration.agent_execution_dispatch_admission_store import (
+import itru as package
+import itru.sqlite_agent_execution_dispatch_admission_store as subject
+from itru.agent_execution_dispatch_admission import AgentExecutionDispatchAdmission
+from itru.agent_execution_dispatch_admission_store import (
     _mint_admission_request, _mint_guarded_history_request, _mint_revocation_request,
 )
 from tests import test_sqlite_agent_execution_dispatch_admission_store as fixture
@@ -72,7 +72,7 @@ def _history(configuration, grant, binding):
 
 def _make_v1(configuration, *, nonempty=True, reset=False):
     """Build genuine preserved-v1 history only in closed disposable setup."""
-    data = (ROOT / "engineering_orchestration/_sqlite_admission_migrations/0001_initial.sql").read_bytes()
+    data = (ROOT / "itru/_sqlite_admission_migrations/0001_initial.sql").read_bytes()
     if hashlib.sha256(data).hexdigest() != V1_CHECKSUM:
         raise AssertionError("the preserved production v1 migration changed")
     records = []
@@ -1009,7 +1009,7 @@ class AtomicDurableDispatchOutboxTests(unittest.TestCase):
         import tomllib
         declaration = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
         surfaces = declaration["tool"]["setuptools"]["packages"]
-        self.assertIn("engineering_orchestration", surfaces)
+        self.assertIn("itru", surfaces)
         self.assertIn(subject.MIGRATION_PACKAGE, surfaces)
         self.assertFalse(any("experiment" in name for name in surfaces))
         self.assertEqual(declaration["tool"]["setuptools"]["package-data"][subject.MIGRATION_PACKAGE], ["*.sql"])
@@ -1028,8 +1028,8 @@ class AtomicDurableDispatchOutboxTests(unittest.TestCase):
         _make_v1(v1_configuration, nonempty=False)
         with closing(_connect(v1_configuration.database_path)) as connection:
             self.assertEqual(subject._schema_fingerprint(connection), V1_FINGERPRINT)
-        for exact_path in ("engineering_orchestration/sqlite_agent_execution_dispatch_admission_store.py",
-                           "engineering_orchestration/_sqlite_admission_migrations/__init__.py"):
+        for exact_path in ("itru/sqlite_agent_execution_dispatch_admission_store.py",
+                           "itru/_sqlite_admission_migrations/__init__.py"):
             tree = ast.parse((ROOT / exact_path).read_text(encoding="utf-8"))
             imports = [node.module or "" for node in ast.walk(tree) if isinstance(node, ast.ImportFrom)]
             imports += [alias.name for node in ast.walk(tree) if isinstance(node, ast.Import) for alias in node.names]

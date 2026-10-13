@@ -3,12 +3,12 @@
 from dataclasses import FrozenInstanceError, fields
 import unittest
 
-from engineering_orchestration.actor_coverage import (
+from itru.actor_coverage import (
     ActorRoleCoverage,
     EMPTY_ROLE_REQUIREMENTS_DIAGNOSTIC,
     evaluate_actor_role_coverage,
 )
-from engineering_orchestration.schema_resources import load_validator, schema_errors
+from itru.schema_resources import load_validator, schema_errors
 
 
 ENGINEERING_COMPETENCIES = [

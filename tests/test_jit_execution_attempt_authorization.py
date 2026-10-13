@@ -14,10 +14,10 @@ import pickle
 from threading import Barrier, Event, Thread
 from unittest import TestCase, mock
 
-from engineering_orchestration import _jit_execution_attempt_authorization as jit
-from engineering_orchestration import agent_execution_authorization_grant_producer as prod
-from engineering_orchestration import agent_operation_tool_registry as registry
-from engineering_orchestration.agent_operation_tool_resolver import TrustedAgentOperationToolBindingResolver
+from itru import _jit_execution_attempt_authorization as jit
+from itru import agent_execution_authorization_grant_producer as prod
+from itru import agent_operation_tool_registry as registry
+from itru.agent_operation_tool_resolver import TrustedAgentOperationToolBindingResolver
 from tests import test_dispatch_claim_lease_foundation as claims
 from tests import test_agent_execution_authorization_grant_producer as proofs
 from tests import test_agent_action_prerequisite as prereqs
@@ -94,22 +94,23 @@ class _Rig:
         f.setUp()
         test.addCleanup(f.doCleanups)
         self.fixture = f
-        if issuer_kind is not None or short_grant:
-            def admit(index, store):
-                run = claims.fixture.make_run(f"run::{index}")
-                grant = claims.fixture.make_grant(bound_run=run, grant_id=f"grant::{index}",
-                    domain_id=store.configuration.authorization_domain_id)
-                if issuer_kind is not None:
-                    grant = replace(grant, issuer_kind=issuer_kind)
-                if short_grant:
-                    grant = replace(grant, expires_at=claims.subject._canonical_decision_time(
-                        claims.T+timedelta(seconds=1))[1])
-                binding = claims.fixture.make_binding(bound_run=run)
-                result = store.admit_or_return_existing(claims.outbox._request(
-                    store.configuration, grant, binding))
-                test.assertEqual(result.outcome.value, "newly_admitted", result.detail)
-                return grant
-            f._admit = admit
+        # Initial fixture provisioning uses only the current native identity.
+        def admit(index, store):
+            run = claims.fixture.make_run(f"run::{index}")
+            grant = claims.fixture.make_grant(bound_run=run, grant_id=f"grant::{index}",
+                domain_id=store.configuration.authorization_domain_id)
+            if issuer_kind is not None:
+                grant = replace(grant, issuer_kind=issuer_kind)
+            if short_grant:
+                grant = replace(grant, expires_at=claims.subject._canonical_decision_time(
+                    claims.T+timedelta(seconds=1))[1])
+            binding = replace(claims.fixture.make_binding(bound_run=run),
+                tool_id=registry._ITRU_NATIVE_REPOSITORY_FILE_READ_TOOL_ID)
+            result = store.admit_or_return_existing(claims.outbox._request(
+                store.configuration, grant, binding))
+            test.assertEqual(result.outcome.value, "newly_admitted", result.detail)
+            return grant
+        f._admit = admit
         self.facade = f._setup()
         self.claim = f._claim()
         self.session = self.facade._session
@@ -117,25 +118,31 @@ class _Rig:
         self.clock = f.clock
         self.grant = f.grants[0]
         self.run = self.grant.run
-        self.binding_value = claims.fixture.make_binding(bound_run=self.run)
+        self.binding_value = replace(claims.fixture.make_binding(bound_run=self.run),
+            tool_id=registry._ITRU_NATIVE_REPOSITORY_FILE_READ_TOOL_ID)
         self.identity = _Identity()
         self.human = _Human()
         self.policy = _Policy()
         self.issuer = _Issuer()
         self.entitlement = _Entitlement()
+        c = self.run.contract
+        active = registry._build_trusted_agent_operation_tool_registry_snapshot((
+            registry._make_itru_native_repository_file_read_registration(c.runtime_option_id, c.environment_id),
+        ))
+        gate = registry._ActiveCanonicalToolRouteGate(active.snapshot, self.store._new_work_occurrence_allowed)
         self.producer_binding = prod._compose_agent_execution_authorization_grant_producer(
             owned_session=self.session, identity_adapter=self.identity,
             human_approval_adapter=self.human, policy_decision_adapter=self.policy,
             issuer_state_authority=self.issuer, issuer_entitlement_policy=self.entitlement,
             lifetime_policy=proofs.AgentExecutionAuthorizationGrantLifetimePolicy(
                 timedelta(minutes=2), timedelta(minutes=10), "jit-fixture"),
-            utc_clock=self.clock, grant_id_source=proofs._GrantIdSource())
+            utc_clock=self.clock, grant_id_source=proofs._GrantIdSource(), new_work_gate=gate)
         c = self.run.contract
         route = registry._AgentOperationToolRoute(c.runtime_option_id, c.environment_id, c.operation_id)
         registration = registry._AgentOperationToolRegistration(
             c.runtime_option_id, c.environment_id, c.operation_id,
             self.binding_value.tool_id,
-            registry._AgentOperationToolImplementationSelector.AEO_NATIVE_REPOSITORY_FILE_READ_V1)
+            registry._AgentOperationToolImplementationSelector.ITRU_NATIVE_REPOSITORY_FILE_READ_V1)
         built = registry._build_trusted_agent_operation_tool_registry_snapshot(
             (replace(registration, runtime_option_id=c.runtime_option_id+"-other"),)
                 if missing else (registration,),
@@ -478,8 +485,14 @@ class FoundationTests(TestCase):
                 issuance = r.policy.mint(decision="allow", policy_revision="issuance", **args)
             self.assertEqual(r.prepare(decision=issuance).outcome, "invalid_entry_proof")
             # Guard attachment preserves ordinary public issuance and close.
-            issued = public_producer.produce(run=r.run,
-                authenticated_principal=r.principal, authority_proof=issuance)
+            fresh_run = replace(r.run, run_id="run::fresh-jit-fixture-issuance")
+            fresh_args = dict(args, run=fresh_run)
+            if r.grant.issuer_kind == "human":
+                fresh_issuance = r.human.mint(approval_session_id="fresh-issuance", **fresh_args)
+            else:
+                fresh_issuance = r.policy.mint(decision="allow", policy_revision="issuance", **fresh_args)
+            issued = public_producer.produce(run=fresh_run,
+                authenticated_principal=r.principal, authority_proof=fresh_issuance)
             self.assertEqual(issued.outcome.value, "issued")
             public_producer.close()
             self.assertEqual(public_producer.produce(run=r.run,
@@ -626,7 +639,8 @@ class FoundationTests(TestCase):
             else:
                 self.assertNotEqual(r.prepare().outcome, "prepared")
                 if n == 60:
-                    self.assertEqual(r.resolver.resolve(r.grant).binding, r.binding_value)
+                    self.assertIsNone(r.resolver.resolve(r.grant).binding)
+                    self.assertEqual(r.resolver.resolve(r.grant).outcome.value, "tool_retired")
         elif n == 61:
             object.__setattr__(r.resolver, "_snapshot", object())
             self.assertEqual(r.prepare().outcome, "corrupt_snapshot")

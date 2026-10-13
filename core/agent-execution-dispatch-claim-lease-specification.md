@@ -1,4 +1,4 @@
-# AI Engineering Orchestra - Dispatch Claim-Lease and Fencing Specification
+# ITRU - Dispatch Claim-Lease and Fencing Specification
 
 Status: Canonical private local persistence contract for AIO-056
 

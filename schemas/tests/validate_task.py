@@ -15,7 +15,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from scripts.workflow_catalog import load_workflow_catalog
 
-from engineering_orchestration.schema_resources import schema_errors
+from itru.schema_resources import schema_errors
 
 SCHEMA_PATH = REPO_ROOT / "schemas" / "task.schema.json"
 FIXTURE_DIR = REPO_ROOT / "schemas" / "tests" / "task"
@@ -230,7 +230,7 @@ def validate_task_workflow_references() -> bool:
 
 
 def main() -> int:
-    print("AI Engineering Orchestra - Task Schema Validation")
+    print("ITRU - Task Schema Validation")
     print("=" * 63)
 
     if not check_fixture_coverage():

@@ -1,4 +1,4 @@
-# AI Engineering Orchestra - Actor Selection Specification
+# ITRU - Actor Selection Specification
 
 Version: 0.1.0
 
@@ -356,7 +356,7 @@ quota, or execution-requirement field and performs no Provider lookup.
 
 The pure runtime implementation is:
 
-`engineering_orchestration.actor_selection`
+`itru.actor_selection`
 
 It uses immutable values and pure functions with no I/O, network, clock,
 randomness, persistence, or global mutable state.

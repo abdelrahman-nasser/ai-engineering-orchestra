@@ -12,24 +12,24 @@ import unittest
 import urllib.request
 from unittest.mock import patch
 
-from engineering_orchestration.actor_availability import (
+from itru.actor_availability import (
     ActorAvailabilityObservation,
     AvailabilityState,
 )
-from engineering_orchestration.actor_selection import (
+from itru.actor_selection import (
     ActorSelectionFinding,
     ActorSelectionOutcome,
     ActorSelectionReason,
     ActorSelectionResult,
     select_actor,
 )
-from engineering_orchestration.assignment import Assignment, validate_assignment
-from engineering_orchestration.role_catalog import (
+from itru.assignment import Assignment, validate_assignment
+from itru.role_catalog import (
     RoleCatalog,
     RoleCatalogError,
     load_role_catalog,
 )
-from engineering_orchestration.workflow_catalog import (
+from itru.workflow_catalog import (
     WorkflowCatalog,
     WorkflowCatalogError,
     WorkflowDefinition,
@@ -553,7 +553,7 @@ class ActorSelectionBoundaryTests(ActorSelectionFixture):
 
     def test_selection_does_not_create_assignment(self):
         with patch(
-            "engineering_orchestration.assignment.Assignment",
+            "itru.assignment.Assignment",
             side_effect=AssertionError("Assignment construction is forbidden"),
         ):
             result, _ = self.selected_result()
@@ -561,7 +561,7 @@ class ActorSelectionBoundaryTests(ActorSelectionFixture):
 
     def test_selection_does_not_call_assignment_validation(self):
         with patch(
-            "engineering_orchestration.assignment.validate_assignment",
+            "itru.assignment.validate_assignment",
             side_effect=AssertionError("Assignment validation is forbidden"),
         ):
             result, _ = self.selected_result()

@@ -14,14 +14,14 @@ import tempfile
 import threading
 import unittest
 
-from engineering_orchestration.agent_execution_authorization_grant import (
+from itru.agent_execution_authorization_grant import (
     AgentExecutionAuthorizationGrant,
 )
-from engineering_orchestration.agent_execution_contract import AgentExecutionContract
-from engineering_orchestration.agent_execution_dispatch_admission import (
+from itru.agent_execution_contract import AgentExecutionContract
+from itru.agent_execution_dispatch_admission import (
     AgentExecutionDispatchAdmission,
 )
-from engineering_orchestration.agent_execution_dispatch_admission_store import (
+from itru.agent_execution_dispatch_admission_store import (
     _AgentExecutionDispatchAdmissionStoreAccess,
     _AgentExecutionDispatchAdmissionStoreAdministrationAccess,
     _mint_admission_request,
@@ -31,12 +31,12 @@ from engineering_orchestration.agent_execution_dispatch_admission_store import (
     _mint_test_only_agent_execution_dispatch_admission_store_access,
     _mint_test_only_agent_execution_dispatch_admission_store_administration_access,
 )
-from engineering_orchestration.agent_execution_run import AgentExecutionRun
-from engineering_orchestration.agent_operation_tool_binding import (
+from itru.agent_execution_run import AgentExecutionRun
+from itru.agent_operation_tool_binding import (
     AgentOperationToolBinding,
 )
-import engineering_orchestration.sqlite_agent_execution_dispatch_admission_store as subject
-from engineering_orchestration.sqlite_agent_execution_dispatch_admission_store import (
+import itru.sqlite_agent_execution_dispatch_admission_store as subject
+from itru.sqlite_agent_execution_dispatch_admission_store import (
     SQLITE_APPLICATION_ID,
     SqliteAdmissionStoreConfigurationError,
     SqliteAdmissionStoreIncompatibleSchemaError,

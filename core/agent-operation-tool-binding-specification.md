@@ -1,4 +1,4 @@
-# AI Engineering Orchestra - Agent Operation Tool Binding Specification
+# ITRU - Agent Operation Tool Binding Specification
 
 Status: Canonical for AIO-045
 
@@ -251,7 +251,7 @@ deduplicate values, or create an inventory.
 The canonical direct-import module is:
 
 ```text
-engineering_orchestration.agent_operation_tool_binding
+itru.agent_operation_tool_binding
 ```
 
 It defines these frozen public values:

@@ -10,11 +10,11 @@ from unittest.mock import patch
 
 import yaml
 
-from engineering_orchestration import cli
-from engineering_orchestration.project import task_directory
-from engineering_orchestration.role_catalog import RoleCatalog
-from engineering_orchestration.schema_resources import load_validator, schema_errors
-from engineering_orchestration.validation import manifest_semantic_errors, validate_project
+from itru import cli
+from itru.project import task_directory
+from itru.role_catalog import RoleCatalog
+from itru.schema_resources import load_validator, schema_errors
+from itru.validation import manifest_semantic_errors, validate_project
 
 
 def write(path, data):
@@ -167,7 +167,7 @@ class StructuralValidationTests(unittest.TestCase):
             self.assertEqual(cli.main(["inspect", "EXAMPLE-001"]), 2)
 
     def test_direct_inventory_missing_configured_path_diagnostic(self):
-        from engineering_orchestration.list_tasks import main
+        from itru.list_tasks import main
 
         self.manifest["tasks"]["directory"] = "absent"
         write(self.manifest_path, self.manifest)
@@ -276,7 +276,7 @@ class StructuralValidationTests(unittest.TestCase):
             load_errors=["packaged data corrupt", "schema unavailable"],
             infrastructure_errors=["packaged data corrupt", "schema unavailable"],
         )
-        with patch("engineering_orchestration.validation.load_role_catalog",
+        with patch("itru.validation.load_role_catalog",
                    return_value=broken):
             result = self.assert_status("ERROR", "Framework Role catalog could not load")
         catalog_findings = [
@@ -299,13 +299,13 @@ class StructuralValidationTests(unittest.TestCase):
         self.assertEqual(role_items, {"type": "string"})
 
     def test_missing_schema_is_error(self):
-        from engineering_orchestration.schema_resources import schema_resource
+        from itru.schema_resources import schema_resource
         for name in (
             "role.schema.json", "task.schema.json", "workflow.schema.json",
             "project-manifest.schema.json",
         ):
             with self.subTest(name=name), patch(
-                "engineering_orchestration.schema_resources.schema_resource",
+                "itru.schema_resources.schema_resource",
                 side_effect=lambda requested: None if requested == name else schema_resource(requested),
             ):
                 self.assert_status("ERROR", "Required tool schema missing")
@@ -321,7 +321,7 @@ class StructuralValidationTests(unittest.TestCase):
                 self.assert_status("ERROR", "denied")
 
     def test_internal_validator_failure_is_error(self):
-        with patch("engineering_orchestration.validation.schema_errors",
+        with patch("itru.validation.schema_errors",
                    side_effect=RuntimeError("validator failed")):
             self.assert_status("ERROR", "validator failed")
 

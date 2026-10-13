@@ -1,9 +1,9 @@
-# AI Engineering Orchestra - Agent Runtime Option Specification
+# ITRU - Agent Runtime Option Specification
 
 Version: 0.1.0
 
 This document defines the canonical Agent Runtime Option Definition contract
-for AI Engineering Orchestra v0.1.
+for ITRU v0.1.
 
 ---
 
@@ -344,7 +344,7 @@ types is defined.
 
 Immutable values and pure deterministic inventory validation are defined in:
 
-`engineering_orchestration.agent_runtime_option`
+`itru.agent_runtime_option`
 
 The API exposes `AgentRuntimeOptionDefinition`,
 `AgentRuntimeOptionFinding`,

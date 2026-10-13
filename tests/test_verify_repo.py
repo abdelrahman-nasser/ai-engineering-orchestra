@@ -11,8 +11,8 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from engineering_orchestration import project_verification as verification
-from engineering_orchestration.project_verification import (
+from itru import project_verification as verification
+from itru.project_verification import (
     VERIFY_DEPTH_ENV,
     ProjectVerificationResult,
     VerificationCheckResult,
@@ -21,7 +21,7 @@ from engineering_orchestration.project_verification import (
     format_verification_output,
     verify_project,
 )
-from engineering_orchestration.verify_repo import (
+from itru.verify_repo import (
     format_preflight_output,
     run_preflight,
 )
@@ -230,6 +230,21 @@ class AggregateVerificationTests(AggregateProjectFixture):
 
 
 class RecursionTests(AggregateProjectFixture):
+    def test_legacy_marker_is_inactive_even_when_canonical_marker_allows(self) -> None:
+        self.set_checks([])
+        for canonical in (None, "0"):
+            for legacy in ("", "1", "invalid", "0"):
+                with self.subTest(canonical=canonical, legacy=legacy), patch.dict(
+                    os.environ, {"ENGINEERING_ORCHESTRATION_VERIFY_DEPTH": legacy},
+                ):
+                    if canonical is None:
+                        os.environ.pop(VERIFY_DEPTH_ENV, None)
+                    else:
+                        os.environ[VERIFY_DEPTH_ENV] = canonical
+                    self.assertEqual(verify_project(self.root).exit_code, 0)
+                    self.assertEqual(os.environ.get(VERIFY_DEPTH_ENV), canonical)
+                    self.assertEqual(os.environ["ENGINEERING_ORCHESTRATION_VERIFY_DEPTH"], legacy)
+
     def test_nonzero_and_malformed_marker_reject_before_planning(self) -> None:
         for value in ("1", "2", "invalid", ""):
             with self.subTest(value=value), patch.dict(os.environ, {VERIFY_DEPTH_ENV: value}), \
@@ -272,7 +287,7 @@ class RecursionTests(AggregateProjectFixture):
             self.assertEqual(os.environ[VERIFY_DEPTH_ENV], "0")
 
     def test_guard_name_is_brand_neutral(self) -> None:
-        self.assertEqual(VERIFY_DEPTH_ENV, "ENGINEERING_ORCHESTRATION_VERIFY_DEPTH")
+        self.assertEqual(VERIFY_DEPTH_ENV, "ITRU_VERIFY_DEPTH")
         self.assertNotIn("AIO", VERIFY_DEPTH_ENV)
 
 
@@ -301,7 +316,7 @@ class OutputAndCompatibilityTests(AggregateProjectFixture):
 
     def test_run_preflight_and_formatter_are_thin_delegates(self) -> None:
         sentinel = ProjectVerificationResult(structural=verification.validate_project(self.root))
-        with patch("engineering_orchestration.verify_repo.verify_project",
+        with patch("itru.verify_repo.verify_project",
                    return_value=sentinel) as aggregate:
             self.assertIs(run_preflight(self.root), sentinel)
         aggregate.assert_called_once_with(
@@ -310,7 +325,7 @@ class OutputAndCompatibilityTests(AggregateProjectFixture):
         self.assertEqual(format_preflight_output(sentinel), format_verification_output(sentinel))
 
     def test_no_active_default_checks_or_legacy_runner(self) -> None:
-        import engineering_orchestration.verify_repo as compatibility
+        import itru.verify_repo as compatibility
 
         self.assertFalse(hasattr(compatibility, "DEFAULT_CHECKS"))
         source = Path(compatibility.__file__).read_text(encoding="utf-8")

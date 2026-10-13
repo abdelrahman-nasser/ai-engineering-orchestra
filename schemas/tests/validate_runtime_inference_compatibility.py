@@ -108,7 +108,7 @@ def validate_document(
 
 
 def main() -> int:
-    print("AI Engineering Orchestra - Runtime-to-Inference Compatibility Schema Validation")
+    print("ITRU - Runtime-to-Inference Compatibility Schema Validation")
     print("=" * 86)
     if not check_fixture_coverage():
         return 1

@@ -1,8 +1,8 @@
-# AI Engineering Orchestra - Role Specification
+# ITRU - Role Specification
 
 Version: 0.1.0
 
-This document defines the canonical Role contract for AI Engineering Orchestra v0.1.
+This document defines the canonical Role contract for ITRU v0.1.
 
 ---
 
@@ -196,7 +196,7 @@ The Role contract is intentionally suitable for different Actors and future
 runtimes:
 
 ```text
-AIO Role
+ITRU Role
   -> fulfilled by an Actor
        -> Human
        -> Agent
@@ -265,7 +265,7 @@ A machine-readable JSON Schema for normalized Role objects is available at:
 `schemas/role.schema.json`
 
 Canonical Role YAML resources and the Role schema are packaged from those
-Sources of Truth for `engineering_orchestration.role_catalog`. The catalog uses
+Sources of Truth for `itru.role_catalog`. The catalog uses
 package-safe resource access, validates each parsed object, indexes by declared
 `id`, and does not consult CWD or an active project's `roles/` directory.
 
@@ -287,7 +287,7 @@ data and must not be parsed by runtime or validation tooling.
 The Role catalog performs data access and validation only. It does not evaluate
 Actor coverage, choose or rank Actors, create Assignments, inspect availability,
 authorize or execute work, or evaluate Quality Gates. Actor coverage remains the
-separate responsibility of `engineering_orchestration.actor_coverage`.
+separate responsibility of `itru.actor_coverage`.
 
 ### Structural vs Semantic Validity
 

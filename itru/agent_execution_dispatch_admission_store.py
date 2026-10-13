@@ -1,0 +1,1454 @@
+"""Backend-neutral authoritative Dispatch Admission coordination contracts.
+
+This module separates an untrusted-facing coordinator from an authority-
+internal store protocol.  It defines no persistence backend and performs no
+dispatch or Tool invocation.  The configured authentication, resolver,
+fresh-evidence, and mode ports are trust boundaries; no supplied value can
+self-attest that it is trusted.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from datetime import datetime
+from enum import StrEnum
+from threading import Lock
+from typing import Protocol
+
+from itru.agent_action_prerequisite import (
+    AgentActionPrerequisiteOutcome,
+    assess_agent_action_prerequisites,
+)
+from itru.agent_execution_authorization_evidence import (
+    AgentExecutionAuthorizationValidationResult,
+)
+from itru.agent_execution_authorization_grant import (
+    AgentExecutionAuthorizationGrant,
+    validate_agent_execution_authorization_grant,
+)
+from itru.agent_execution_candidate_prerequisite import (
+    AgentExecutionCandidatePrerequisiteResult,
+)
+from itru.agent_execution_contract import (
+    prepare_agent_execution_contract,
+)
+from itru.agent_execution_dispatch_admission import (
+    AgentExecutionDispatchAdmission,
+    validate_agent_execution_dispatch_admission,
+)
+from itru.agent_execution_run import (
+    AgentExecutionRun,
+    prepare_agent_execution_run,
+)
+from itru.agent_operation_tool_binding import (
+    AgentOperationToolBinding,
+    validate_agent_operation_tool_binding,
+)
+from itru.environment_operation_permission import (
+    EnvironmentOperationPermissionValidationResult,
+)
+from itru.operation_requirement import OperationRequirement
+from itru.agent_operation_tool_registry import _is_active_tool_identity
+from itru.runtime_operation_capability import (
+    RuntimeOperationCapabilityValidationResult,
+)
+
+
+class _HistoricalCapability:
+    __slots__ = ()
+
+    def __new__(cls, *args, **kwargs):
+        raise TypeError("historical capabilities are minted only by trusted composition")
+
+    def __setattr__(self, name, value):
+        raise TypeError("historical capabilities are immutable")
+
+    def __copy__(self):
+        raise TypeError("historical capabilities cannot be copied")
+
+    def __deepcopy__(self, memo):
+        raise TypeError("historical capabilities cannot be copied")
+
+    def __reduce_ex__(self, protocol):
+        raise TypeError("historical capabilities cannot be serialized")
+
+
+class _HistoricalExecutionReference(_HistoricalCapability):
+    __slots__ = ("_authority", "_grant", "_admission", "_source", "_seal")
+
+
+class _HistoricalLookupRequest(_HistoricalCapability):
+    __slots__ = (
+        "_authority", "_seal", "_domain", "_run", "_principal", "_proof",
+        "_intent", "_reference", "_original_issuer_proof", "_provenance", "_adapter_epoch",
+    )
+
+
+class _HistoricalRevocationRequest(_HistoricalLookupRequest):
+    __slots__ = ()
+
+
+class _HistoricalRequestAuthority(_HistoricalCapability):
+    """Composition-owned exact identity registry, disjoint from positive ports."""
+
+    __slots__ = ("_verify", "_identity", "_requests", "_references")
+
+    def _reference(self, grant, admission, source):
+        reference = object.__new__(_HistoricalExecutionReference)
+        seal = (grant, admission, source)
+        for name, value in (("_authority", self), ("_grant", grant), ("_admission", admission), ("_source", source), ("_seal", seal)):
+            object.__setattr__(reference, name, value)
+        self._references[id(reference)] = (reference, seal)
+        return reference
+
+    def _mint(self, *, run, principal, proof, intent, reference=None,
+              original_issuer_proof=None, provenance=None, adapter_epoch=None):
+        cls = _HistoricalLookupRequest if intent == "lookup" else _HistoricalRevocationRequest
+        request = object.__new__(cls)
+        fields = (
+            ("_authority", self), ("_domain", self._identity), ("_run", run),
+            ("_principal", principal), ("_proof", proof), ("_intent", intent),
+            ("_reference", reference), ("_original_issuer_proof", original_issuer_proof),
+            ("_provenance", provenance), ("_adapter_epoch", adapter_epoch),
+        )
+        for name, value in fields:
+            object.__setattr__(request, name, value)
+        object.__setattr__(request, "_seal", fields)
+        self._requests[id(request)] = (request, fields)
+        return request
+
+    def _open(self, request, intent):
+        stored = self._requests.get(id(request))
+        if stored is None or stored[0] is not request or request._authority is not self:
+            return None
+        if request._intent != intent or request._domain != self._identity:
+            return None
+        if stored[1] != request._seal or any(getattr(request, n) is not v for n, v in stored[1]):
+            return None
+        reference = request._reference
+        if reference is not None:
+            ref = self._references.get(id(reference))
+            if (
+                type(reference) is not _HistoricalExecutionReference or ref is None
+                or ref[0] is not reference or reference._authority is not self
+                or ref[1] != reference._seal
+                or ref[1] != (reference._grant, reference._admission, reference._source)
+            ):
+                return None
+        return request if self._verify(request) is True else None
+
+    def _discard(self, request):
+        self._requests.pop(id(request), None)
+        if request._reference is not None:
+            self._references.pop(id(request._reference), None)
+
+
+def _new_historical_request_authority(verify, identity):
+    authority = object.__new__(_HistoricalRequestAuthority)
+    for name, value in (("_verify", verify), ("_identity", identity), ("_requests", {}), ("_references", {})):
+        object.__setattr__(authority, name, value)
+    return authority
+
+
+def _open_historical_request(request, intent, expected_authority):
+    expected_type = _HistoricalLookupRequest if intent == "lookup" else _HistoricalRevocationRequest
+    if (
+        type(request) is not expected_type
+        or type(expected_authority) is not _HistoricalRequestAuthority
+        or request._authority is not expected_authority
+    ):
+        return None
+    try:
+        return request._authority._open(request, intent)
+    except Exception:
+        return None
+
+
+__all__ = (
+    "AgentActionPrerequisiteParentInputs",
+    "AgentExecutionAuthorizationGrantAuthenticationPort",
+    "AgentExecutionDispatchAdmissionClock",
+    "AgentExecutionDispatchAdmissionCoordinator",
+    "AgentExecutionDispatchAdmissionStore",
+    "AgentExecutionDispatchAdmissionStoreAdministrationOutcome",
+    "AgentExecutionDispatchAdmissionStoreAdministrationResult",
+    "AgentExecutionDispatchAdmissionStoreOutcome",
+    "AgentExecutionDispatchAdmissionStoreResult",
+    "AgentExecutionDispatchAdmissionStoreRetryDisposition",
+    "AgentOperationToolBindingResolverPort",
+    "EffectiveExecutionModeResolverPort",
+    "FreshAgentActionPrerequisiteSourcePort",
+    "OriginalIssuerRevocationAuthenticationPort",
+    "make_agent_execution_dispatch_admission_store_administration_result",
+    "make_agent_execution_dispatch_admission_store_result",
+)
+
+
+class AgentExecutionDispatchAdmissionStoreOutcome(StrEnum):
+    """Closed operational outcomes across coordinator and store operations."""
+
+    NEWLY_ADMITTED = "newly_admitted"
+    EXISTING_EXACT_ADMISSION = "existing_exact_admission"
+    NEWLY_REVOKED = "newly_revoked"
+    EXISTING_EXACT_REVOCATION = "existing_exact_revocation"
+
+    # Authority-internal continuation used only by guarded history/load calls.
+    NO_EXISTING_ADMISSION = "no_existing_admission"
+
+    NOT_YET_CURRENT = "not_yet_current"
+    EXPIRED = "expired"
+    REVOKED = "revoked"
+    DOMAIN_MISMATCH = "domain_mismatch"
+    GRANT_IDENTITY_CONFLICT = "grant_identity_conflict"
+    BINDING_CONFLICT = "binding_conflict"
+    RUN_CONFLICT = "run_conflict"
+
+    INVALID_INPUT = "invalid_input"
+    UNAUTHENTICATED_GRANT = "unauthenticated_grant"
+    UNTRUSTED_TOOL_BINDING = "untrusted_tool_binding"
+    UNSATISFIED_PREREQUISITES = "unsatisfied_prerequisites"
+
+    STORAGE_BUSY = "storage_busy"
+    STORAGE_UNAVAILABLE = "storage_unavailable"
+    INCOMPATIBLE_SCHEMA = "incompatible_schema"
+    INTEGRITY_FAILURE = "integrity_failure"
+    CLOCK_FAILURE = "clock_failure"
+    CLOCK_REGRESSION = "clock_regression"
+    COMMIT_UNKNOWN = "commit_unknown"
+
+
+class AgentExecutionDispatchAdmissionStoreRetryDisposition(StrEnum):
+    """Typed guidance for a result; never an ambiguous retry boolean."""
+
+    NO_RETRY_NEEDED = "no_retry_needed"
+    DO_NOT_RETRY_SAME_REQUEST = "do_not_retry_same_request"
+    RETRY_EXACT_REQUEST = "retry_exact_request"
+    RETRY_AT_OR_AFTER_ISSUANCE = "retry_at_or_after_issuance"
+    RECOLLECT_FRESH_STATE = "recollect_fresh_state"
+    RETRY_AFTER_REMEDIATION = "retry_after_remediation"
+    RECONCILE_ADMINISTRATIVE_STATE = "reconcile_administrative_state"
+
+
+class AgentExecutionDispatchAdmissionStoreAdministrationOutcome(StrEnum):
+    """Administrative outcomes, separate from Admission decisions."""
+
+    PROVISIONED = "provisioned"
+    ALREADY_CURRENT = "already_current"
+    MIGRATED = "migrated"
+    FENCED = "fenced"
+    FENCED_BACKUP_CREATED = "fenced_backup_created"
+    MIGRATION_FAILURE = "migration_failure"
+    STORAGE_BUSY = "storage_busy"
+    STORAGE_UNAVAILABLE = "storage_unavailable"
+    INCOMPATIBLE_SCHEMA = "incompatible_schema"
+    INTEGRITY_FAILURE = "integrity_failure"
+    COMMIT_UNKNOWN = "commit_unknown"
+
+
+@dataclass(frozen=True)
+class AgentExecutionDispatchAdmissionStoreAdministrationResult:
+    """Typed result for an explicit backend administration operation."""
+
+    outcome: AgentExecutionDispatchAdmissionStoreAdministrationOutcome
+    retry_disposition: AgentExecutionDispatchAdmissionStoreRetryDisposition
+    detail: str
+
+
+def make_agent_execution_dispatch_admission_store_administration_result(
+    outcome: AgentExecutionDispatchAdmissionStoreAdministrationOutcome,
+    *,
+    detail: str | None = None,
+) -> AgentExecutionDispatchAdmissionStoreAdministrationResult:
+    """Build one canonical explicit-administration result."""
+
+    if (
+        type(outcome)
+        is not AgentExecutionDispatchAdmissionStoreAdministrationOutcome
+    ):
+        raise TypeError("outcome must be an exact administration outcome")
+    if detail is None:
+        detail = outcome.value
+    if type(detail) is not str or not detail:
+        raise TypeError("detail must be an exact nonempty string")
+
+    if (
+        outcome
+        is AgentExecutionDispatchAdmissionStoreAdministrationOutcome.
+        STORAGE_BUSY
+    ):
+        retry = (
+            AgentExecutionDispatchAdmissionStoreRetryDisposition.
+            RETRY_EXACT_REQUEST
+        )
+    elif (
+        outcome
+        is AgentExecutionDispatchAdmissionStoreAdministrationOutcome.
+        COMMIT_UNKNOWN
+    ):
+        retry = (
+            AgentExecutionDispatchAdmissionStoreRetryDisposition.
+            RECONCILE_ADMINISTRATIVE_STATE
+        )
+    elif outcome in (
+        AgentExecutionDispatchAdmissionStoreAdministrationOutcome.
+        MIGRATION_FAILURE,
+        AgentExecutionDispatchAdmissionStoreAdministrationOutcome.
+        STORAGE_UNAVAILABLE,
+        AgentExecutionDispatchAdmissionStoreAdministrationOutcome.
+        INCOMPATIBLE_SCHEMA,
+        AgentExecutionDispatchAdmissionStoreAdministrationOutcome.
+        INTEGRITY_FAILURE,
+    ):
+        retry = (
+            AgentExecutionDispatchAdmissionStoreRetryDisposition.
+            RETRY_AFTER_REMEDIATION
+        )
+    else:
+        retry = (
+            AgentExecutionDispatchAdmissionStoreRetryDisposition.
+            NO_RETRY_NEEDED
+        )
+    return AgentExecutionDispatchAdmissionStoreAdministrationResult(
+        outcome=outcome,
+        retry_disposition=retry,
+        detail=detail,
+    )
+
+
+@dataclass(frozen=True)
+class AgentExecutionDispatchAdmissionStoreResult:
+    """One atomic operational result with optional authoritative Admission."""
+
+    outcome: AgentExecutionDispatchAdmissionStoreOutcome
+    retry_disposition: AgentExecutionDispatchAdmissionStoreRetryDisposition
+    admission: AgentExecutionDispatchAdmission | None
+    detail: str
+
+
+_POSITIVE_ADMISSION_OUTCOMES = frozenset(
+    (
+        AgentExecutionDispatchAdmissionStoreOutcome.NEWLY_ADMITTED,
+        AgentExecutionDispatchAdmissionStoreOutcome.EXISTING_EXACT_ADMISSION,
+    )
+)
+_NO_RETRY_NEEDED_OUTCOMES = frozenset(
+    (
+        *_POSITIVE_ADMISSION_OUTCOMES,
+        AgentExecutionDispatchAdmissionStoreOutcome.NEWLY_REVOKED,
+        AgentExecutionDispatchAdmissionStoreOutcome.EXISTING_EXACT_REVOCATION,
+        AgentExecutionDispatchAdmissionStoreOutcome.NO_EXISTING_ADMISSION,
+    )
+)
+_EXACT_RETRY_OUTCOMES = frozenset(
+    (
+        AgentExecutionDispatchAdmissionStoreOutcome.STORAGE_BUSY,
+        AgentExecutionDispatchAdmissionStoreOutcome.STORAGE_UNAVAILABLE,
+        AgentExecutionDispatchAdmissionStoreOutcome.COMMIT_UNKNOWN,
+    )
+)
+_REMEDIATION_OUTCOMES = frozenset(
+    (
+        AgentExecutionDispatchAdmissionStoreOutcome.INCOMPATIBLE_SCHEMA,
+        AgentExecutionDispatchAdmissionStoreOutcome.INTEGRITY_FAILURE,
+        AgentExecutionDispatchAdmissionStoreOutcome.CLOCK_FAILURE,
+        AgentExecutionDispatchAdmissionStoreOutcome.CLOCK_REGRESSION,
+    )
+)
+
+_READ_STORE_OUTCOMES = frozenset(
+    (
+        AgentExecutionDispatchAdmissionStoreOutcome.EXISTING_EXACT_ADMISSION,
+        AgentExecutionDispatchAdmissionStoreOutcome.NO_EXISTING_ADMISSION,
+        AgentExecutionDispatchAdmissionStoreOutcome.DOMAIN_MISMATCH,
+        AgentExecutionDispatchAdmissionStoreOutcome.GRANT_IDENTITY_CONFLICT,
+        AgentExecutionDispatchAdmissionStoreOutcome.BINDING_CONFLICT,
+        AgentExecutionDispatchAdmissionStoreOutcome.RUN_CONFLICT,
+        AgentExecutionDispatchAdmissionStoreOutcome.INVALID_INPUT,
+        AgentExecutionDispatchAdmissionStoreOutcome.STORAGE_BUSY,
+        AgentExecutionDispatchAdmissionStoreOutcome.STORAGE_UNAVAILABLE,
+        AgentExecutionDispatchAdmissionStoreOutcome.INCOMPATIBLE_SCHEMA,
+        AgentExecutionDispatchAdmissionStoreOutcome.INTEGRITY_FAILURE,
+    )
+)
+_ADMIT_STORE_OUTCOMES = frozenset(
+    (
+        AgentExecutionDispatchAdmissionStoreOutcome.NEWLY_ADMITTED,
+        AgentExecutionDispatchAdmissionStoreOutcome.EXISTING_EXACT_ADMISSION,
+        AgentExecutionDispatchAdmissionStoreOutcome.NOT_YET_CURRENT,
+        AgentExecutionDispatchAdmissionStoreOutcome.EXPIRED,
+        AgentExecutionDispatchAdmissionStoreOutcome.REVOKED,
+        AgentExecutionDispatchAdmissionStoreOutcome.DOMAIN_MISMATCH,
+        AgentExecutionDispatchAdmissionStoreOutcome.GRANT_IDENTITY_CONFLICT,
+        AgentExecutionDispatchAdmissionStoreOutcome.BINDING_CONFLICT,
+        AgentExecutionDispatchAdmissionStoreOutcome.RUN_CONFLICT,
+        AgentExecutionDispatchAdmissionStoreOutcome.INVALID_INPUT,
+        AgentExecutionDispatchAdmissionStoreOutcome.STORAGE_BUSY,
+        AgentExecutionDispatchAdmissionStoreOutcome.STORAGE_UNAVAILABLE,
+        AgentExecutionDispatchAdmissionStoreOutcome.INCOMPATIBLE_SCHEMA,
+        AgentExecutionDispatchAdmissionStoreOutcome.INTEGRITY_FAILURE,
+        AgentExecutionDispatchAdmissionStoreOutcome.CLOCK_FAILURE,
+        AgentExecutionDispatchAdmissionStoreOutcome.CLOCK_REGRESSION,
+        AgentExecutionDispatchAdmissionStoreOutcome.COMMIT_UNKNOWN,
+    )
+)
+_REVOKE_STORE_OUTCOMES = frozenset(
+    (
+        AgentExecutionDispatchAdmissionStoreOutcome.NEWLY_REVOKED,
+        AgentExecutionDispatchAdmissionStoreOutcome.EXISTING_EXACT_REVOCATION,
+        AgentExecutionDispatchAdmissionStoreOutcome.DOMAIN_MISMATCH,
+        AgentExecutionDispatchAdmissionStoreOutcome.GRANT_IDENTITY_CONFLICT,
+        AgentExecutionDispatchAdmissionStoreOutcome.INVALID_INPUT,
+        AgentExecutionDispatchAdmissionStoreOutcome.STORAGE_BUSY,
+        AgentExecutionDispatchAdmissionStoreOutcome.STORAGE_UNAVAILABLE,
+        AgentExecutionDispatchAdmissionStoreOutcome.INCOMPATIBLE_SCHEMA,
+        AgentExecutionDispatchAdmissionStoreOutcome.INTEGRITY_FAILURE,
+        AgentExecutionDispatchAdmissionStoreOutcome.CLOCK_FAILURE,
+        AgentExecutionDispatchAdmissionStoreOutcome.CLOCK_REGRESSION,
+        AgentExecutionDispatchAdmissionStoreOutcome.COMMIT_UNKNOWN,
+    )
+)
+_STORE_OPERATION_OUTCOMES = {
+    "classify_guarded_history": _READ_STORE_OUTCOMES,
+    "load_authoritative_admission": _READ_STORE_OUTCOMES,
+    "admit_or_return_existing": _ADMIT_STORE_OUTCOMES,
+    "revoke_or_return_existing": _REVOKE_STORE_OUTCOMES,
+}
+
+
+def _retry_disposition_for(
+    outcome: AgentExecutionDispatchAdmissionStoreOutcome,
+) -> AgentExecutionDispatchAdmissionStoreRetryDisposition:
+    if outcome in _NO_RETRY_NEEDED_OUTCOMES:
+        return (
+            AgentExecutionDispatchAdmissionStoreRetryDisposition.
+            NO_RETRY_NEEDED
+        )
+    if outcome in _EXACT_RETRY_OUTCOMES:
+        return (
+            AgentExecutionDispatchAdmissionStoreRetryDisposition.
+            RETRY_EXACT_REQUEST
+        )
+    if outcome is AgentExecutionDispatchAdmissionStoreOutcome.NOT_YET_CURRENT:
+        return (
+            AgentExecutionDispatchAdmissionStoreRetryDisposition.
+            RETRY_AT_OR_AFTER_ISSUANCE
+        )
+    if (
+        outcome
+        is AgentExecutionDispatchAdmissionStoreOutcome.
+        UNSATISFIED_PREREQUISITES
+    ):
+        return (
+            AgentExecutionDispatchAdmissionStoreRetryDisposition.
+            RECOLLECT_FRESH_STATE
+        )
+    if outcome in _REMEDIATION_OUTCOMES:
+        return (
+            AgentExecutionDispatchAdmissionStoreRetryDisposition.
+            RETRY_AFTER_REMEDIATION
+        )
+    return (
+        AgentExecutionDispatchAdmissionStoreRetryDisposition.
+        DO_NOT_RETRY_SAME_REQUEST
+    )
+
+
+def make_agent_execution_dispatch_admission_store_result(
+    outcome: AgentExecutionDispatchAdmissionStoreOutcome,
+    *,
+    admission: AgentExecutionDispatchAdmission | None = None,
+    detail: str | None = None,
+) -> AgentExecutionDispatchAdmissionStoreResult:
+    """Build one canonical store result and enforce its atomic shape."""
+
+    if type(outcome) is not AgentExecutionDispatchAdmissionStoreOutcome:
+        raise TypeError("outcome must be an exact store outcome")
+    if detail is None:
+        detail = outcome.value
+    if type(detail) is not str or not detail:
+        raise TypeError("detail must be an exact nonempty string")
+
+    if outcome in _POSITIVE_ADMISSION_OUTCOMES:
+        if type(admission) is not AgentExecutionDispatchAdmission:
+            raise TypeError("positive Admission outcomes require an Admission")
+        if not validate_agent_execution_dispatch_admission(admission).valid:
+            raise ValueError(
+                "positive outcomes require an intrinsically valid Admission"
+            )
+    elif admission is not None:
+        raise ValueError("non-Admission outcomes must not carry an Admission")
+
+    return AgentExecutionDispatchAdmissionStoreResult(
+        outcome=outcome,
+        retry_disposition=_retry_disposition_for(outcome),
+        admission=admission,
+        detail=detail,
+    )
+
+
+def _store_result_is_canonical(
+    result: object,
+) -> bool:
+    if type(result) is not AgentExecutionDispatchAdmissionStoreResult:
+        return False
+    if (
+        type(result.outcome) is not AgentExecutionDispatchAdmissionStoreOutcome
+        or type(result.retry_disposition)
+        is not AgentExecutionDispatchAdmissionStoreRetryDisposition
+        or result.retry_disposition is not _retry_disposition_for(result.outcome)
+        or type(result.detail) is not str
+        or not result.detail
+    ):
+        return False
+    if result.outcome in _POSITIVE_ADMISSION_OUTCOMES:
+        return (
+            type(result.admission) is AgentExecutionDispatchAdmission
+            and validate_agent_execution_dispatch_admission(
+                result.admission
+            ).valid
+        )
+    return result.admission is None
+
+
+@dataclass(frozen=True)
+class AgentActionPrerequisiteParentInputs:
+    """Parent values consumed by a fresh AIO-040 composition.
+
+    Direct construction does not establish freshness.  Currency and source
+    provenance derive only from the configured fresh-source port call.
+    """
+
+    candidate_result: AgentExecutionCandidatePrerequisiteResult
+    requirement: OperationRequirement
+    capability_result: RuntimeOperationCapabilityValidationResult
+    permission_result: EnvironmentOperationPermissionValidationResult
+    authorization_result: AgentExecutionAuthorizationValidationResult
+    environment_id: str
+
+
+class AgentExecutionAuthorizationGrantAuthenticationPort(Protocol):
+    """Configured producer boundary that authenticates one presented Grant."""
+
+    def authenticate_grant(
+        self,
+        presented_grant: object,
+    ) -> AgentExecutionAuthorizationGrant | None:
+        """Return the authenticated exact Grant, or ``None`` on rejection."""
+
+
+class AgentOperationToolBindingResolverPort(Protocol):
+    """Configured trusted resolver for one immutable Tool Binding."""
+
+    def resolve_tool_binding(
+        self,
+        grant: AgentExecutionAuthorizationGrant,
+    ) -> AgentOperationToolBinding | None:
+        """Resolve one trusted non-widening Binding for the exact Grant Run."""
+
+
+class FreshAgentActionPrerequisiteSourcePort(Protocol):
+    """Configured source of newly collected AIO-040 parent values."""
+
+    def collect_fresh_parent_results(
+        self,
+        grant: AgentExecutionAuthorizationGrant,
+        tool_binding: AgentOperationToolBinding,
+    ) -> AgentActionPrerequisiteParentInputs | None:
+        """Collect current parent values; never accept a supplied AIO-040 result."""
+
+
+class EffectiveExecutionModeResolverPort(Protocol):
+    """Configured source of the freshly resolved Task-wide effective mode."""
+
+    def resolve_effective_execution_mode(
+        self,
+        grant: AgentExecutionAuthorizationGrant,
+        tool_binding: AgentOperationToolBinding,
+    ) -> str | None:
+        """Return one freshly resolved mode, or ``None`` when unresolved."""
+
+
+class OriginalIssuerRevocationAuthenticationPort(Protocol):
+    """Configured original-issuer authentication boundary for revocation."""
+
+    def authenticate_original_issuer_revocation(
+        self,
+        presented_grant: object,
+    ) -> AgentExecutionAuthorizationGrant | None:
+        """Return the exact issuer-authenticated Grant, or ``None``."""
+
+
+class AgentExecutionDispatchAdmissionClock(Protocol):
+    """Trusted clock sampled by a store only inside its serialization point."""
+
+    def now_utc(self) -> datetime:
+        """Return an aware UTC instant; backends fail closed otherwise."""
+
+
+_STORE_ACCESS_AUTHORITY = object()
+_STORE_ADMINISTRATION_ACCESS_AUTHORITY = object()
+_STORE_ACCESS_LOCK_TYPE = type(Lock())
+
+
+class _AgentExecutionDispatchAdmissionStoreAccess:
+    """Process-local, exact-identity capability for one Store construction."""
+
+    __slots__ = (
+        "_authorization_domain_id",
+        "_ledger_instance_id",
+        "_domain_generation",
+        "_authority",
+        "_claimed",
+        "_claim_lock",
+    )
+
+    def __new__(cls) -> _AgentExecutionDispatchAdmissionStoreAccess:
+        raise TypeError("operational Store access is owner-minted")
+
+    def __setattr__(self, name: str, value: object) -> None:
+        del name, value
+        raise AttributeError("operational Store access is immutable")
+
+    def __copy__(self) -> object:
+        raise TypeError("operational Store access cannot be copied")
+
+    def __deepcopy__(self, memo: object) -> object:
+        del memo
+        raise TypeError("operational Store access cannot be copied")
+
+    def __reduce__(self) -> object:
+        raise TypeError("operational Store access cannot be serialized")
+
+    def __reduce_ex__(self, protocol: object) -> object:
+        del protocol
+        raise TypeError("operational Store access cannot be serialized")
+
+
+class _AgentExecutionDispatchAdmissionStoreAdministrationAccess:
+    """Process-local capability for one explicit Store administration call."""
+
+    __slots__ = (
+        "_authorization_domain_id",
+        "_ledger_instance_id",
+        "_domain_generation",
+        "_authority",
+        "_claimed",
+        "_claim_lock",
+    )
+
+    def __new__(
+        cls,
+    ) -> _AgentExecutionDispatchAdmissionStoreAdministrationAccess:
+        raise TypeError("administrative Store access is owner-minted")
+
+    def __setattr__(self, name: str, value: object) -> None:
+        del name, value
+        raise AttributeError("administrative Store access is immutable")
+
+    def __copy__(self) -> object:
+        raise TypeError("administrative Store access cannot be copied")
+
+    def __deepcopy__(self, memo: object) -> object:
+        del memo
+        raise TypeError("administrative Store access cannot be copied")
+
+    def __reduce__(self) -> object:
+        raise TypeError("administrative Store access cannot be serialized")
+
+    def __reduce_ex__(self, protocol: object) -> object:
+        del protocol
+        raise TypeError("administrative Store access cannot be serialized")
+
+
+def _validate_store_access_identity(
+    authorization_domain_id: object,
+    ledger_instance_id: object,
+    domain_generation: object,
+) -> tuple[str, str, int]:
+    if (
+        type(authorization_domain_id) is not str
+        or not authorization_domain_id
+        or type(ledger_instance_id) is not str
+        or not ledger_instance_id
+        or type(domain_generation) is not int
+        or domain_generation <= 0
+    ):
+        raise TypeError(
+            "Store access requires exact nonempty domain and ledger IDs "
+            "and a positive integer generation"
+        )
+    return authorization_domain_id, ledger_instance_id, domain_generation
+
+
+def _mint_store_access(
+    access_type: type[object],
+    authority: object,
+    authorization_domain_id: object,
+    ledger_instance_id: object,
+    domain_generation: object,
+) -> object:
+    domain_id, ledger_id, generation = _validate_store_access_identity(
+        authorization_domain_id,
+        ledger_instance_id,
+        domain_generation,
+    )
+    access = object.__new__(access_type)
+    object.__setattr__(access, "_authorization_domain_id", domain_id)
+    object.__setattr__(access, "_ledger_instance_id", ledger_id)
+    object.__setattr__(access, "_domain_generation", generation)
+    object.__setattr__(access, "_authority", authority)
+    object.__setattr__(access, "_claimed", False)
+    object.__setattr__(access, "_claim_lock", Lock())
+    return access
+
+
+def _mint_owned_agent_execution_dispatch_admission_store_access(
+    authorization_domain_id: str,
+    ledger_instance_id: str,
+    domain_generation: int,
+) -> _AgentExecutionDispatchAdmissionStoreAccess:
+    """Mint one operational capability for a live package-owned session."""
+
+    return _mint_store_access(
+        _AgentExecutionDispatchAdmissionStoreAccess,
+        _STORE_ACCESS_AUTHORITY,
+        authorization_domain_id,
+        ledger_instance_id,
+        domain_generation,
+    )  # type: ignore[return-value]
+
+
+def _mint_owned_agent_execution_dispatch_admission_store_administration_access(
+    authorization_domain_id: str,
+    ledger_instance_id: str,
+    domain_generation: int,
+) -> _AgentExecutionDispatchAdmissionStoreAdministrationAccess:
+    """Mint one capability for a trusted package administration operation."""
+
+    return _mint_store_access(
+        _AgentExecutionDispatchAdmissionStoreAdministrationAccess,
+        _STORE_ADMINISTRATION_ACCESS_AUTHORITY,
+        authorization_domain_id,
+        ledger_instance_id,
+        domain_generation,
+    )  # type: ignore[return-value]
+
+
+def _mint_test_only_agent_execution_dispatch_admission_store_access(
+    authorization_domain_id: str,
+    ledger_instance_id: str,
+    domain_generation: int,
+) -> _AgentExecutionDispatchAdmissionStoreAccess:
+    """Mint focused AIO-047 test access; never a production authority API."""
+
+    return _mint_owned_agent_execution_dispatch_admission_store_access(
+        authorization_domain_id,
+        ledger_instance_id,
+        domain_generation,
+    )
+
+
+def _mint_test_only_agent_execution_dispatch_admission_store_administration_access(
+    authorization_domain_id: str,
+    ledger_instance_id: str,
+    domain_generation: int,
+) -> _AgentExecutionDispatchAdmissionStoreAdministrationAccess:
+    """Mint focused AIO-047 test administration access only."""
+
+    return (
+        _mint_owned_agent_execution_dispatch_admission_store_administration_access(
+            authorization_domain_id,
+            ledger_instance_id,
+            domain_generation,
+        )
+    )
+
+
+def _claim_store_access(
+    access: object,
+    authorization_domain_id: object,
+    ledger_instance_id: object,
+    domain_generation: object,
+    *,
+    administrative: bool,
+) -> None:
+    """Consume one exact capability or fail before backend access."""
+
+    if type(administrative) is not bool:
+        raise TypeError("administrative must be an exact boolean")
+    expected_identity = _validate_store_access_identity(
+        authorization_domain_id,
+        ledger_instance_id,
+        domain_generation,
+    )
+    access_type = (
+        _AgentExecutionDispatchAdmissionStoreAdministrationAccess
+        if administrative
+        else _AgentExecutionDispatchAdmissionStoreAccess
+    )
+    authority = (
+        _STORE_ADMINISTRATION_ACCESS_AUTHORITY
+        if administrative
+        else _STORE_ACCESS_AUTHORITY
+    )
+    if type(access) is not access_type:
+        raise TypeError("Store access capability has the wrong exact type")
+    try:
+        claim_lock = access._claim_lock
+    except AttributeError as error:
+        raise TypeError("Store access capability is counterfeit") from error
+    if type(claim_lock) is not _STORE_ACCESS_LOCK_TYPE:
+        raise TypeError("Store access capability is counterfeit")
+    with claim_lock:
+        try:
+            presented_identity = (
+                access._authorization_domain_id,
+                access._ledger_instance_id,
+                access._domain_generation,
+            )
+            presented_authority = access._authority
+            claimed = access._claimed
+        except AttributeError as error:
+            raise TypeError("Store access capability is counterfeit") from error
+        if presented_authority is not authority:
+            raise TypeError("Store access capability is counterfeit")
+        if type(claimed) is not bool:
+            raise TypeError("Store access capability is counterfeit")
+        if claimed:
+            raise TypeError("Store access capability was already claimed")
+        if presented_identity != expected_identity:
+            raise ValueError("Store access capability identity does not match")
+        object.__setattr__(access, "_claimed", True)
+
+
+_STORE_REQUEST_AUTHORITY = object()
+
+
+class _AuthorityInternalStoreRequest:
+    __slots__ = ()
+
+    def __new__(cls) -> _AuthorityInternalStoreRequest:
+        raise TypeError(
+            "authority-internal Store requests are coordinator-minted"
+        )
+
+
+@dataclass(frozen=True, slots=True, init=False, repr=False)
+class _AgentExecutionDispatchAdmissionHistoryRequest(
+    _AuthorityInternalStoreRequest
+):
+    expected_authorization_domain_id: str
+    grant: AgentExecutionAuthorizationGrant
+    tool_binding: AgentOperationToolBinding
+    _authority: object
+
+
+@dataclass(frozen=True, slots=True, init=False, repr=False)
+class _AgentExecutionDispatchAdmissionRequest(_AuthorityInternalStoreRequest):
+    expected_authorization_domain_id: str
+    grant: AgentExecutionAuthorizationGrant
+    tool_binding: AgentOperationToolBinding
+    expected_run: AgentExecutionRun
+    _authority: object
+
+
+@dataclass(frozen=True, slots=True, init=False, repr=False)
+class _AgentExecutionDispatchAdmissionLookupRequest(
+    _AuthorityInternalStoreRequest
+):
+    expected_authorization_domain_id: str
+    grant: AgentExecutionAuthorizationGrant
+    tool_binding: AgentOperationToolBinding
+    _authority: object
+
+
+@dataclass(frozen=True, slots=True, init=False, repr=False)
+class _AgentExecutionAuthorizationRevocationRequest(
+    _AuthorityInternalStoreRequest
+):
+    expected_authorization_domain_id: str
+    grant: AgentExecutionAuthorizationGrant
+    _authority: object
+
+
+def _mint_request(request_type: type[object], **values: object) -> object:
+    request = object.__new__(request_type)
+    for name, value in values.items():
+        object.__setattr__(request, name, value)
+    object.__setattr__(request, "_authority", _STORE_REQUEST_AUTHORITY)
+    return request
+
+
+def _mint_guarded_history_request(
+    expected_authorization_domain_id: str,
+    grant: AgentExecutionAuthorizationGrant,
+    tool_binding: AgentOperationToolBinding,
+) -> _AgentExecutionDispatchAdmissionHistoryRequest:
+    return _mint_request(
+        _AgentExecutionDispatchAdmissionHistoryRequest,
+        expected_authorization_domain_id=expected_authorization_domain_id,
+        grant=grant,
+        tool_binding=tool_binding,
+    )  # type: ignore[return-value]
+
+
+def _mint_admission_request(
+    expected_authorization_domain_id: str,
+    grant: AgentExecutionAuthorizationGrant,
+    tool_binding: AgentOperationToolBinding,
+    expected_run: AgentExecutionRun,
+) -> _AgentExecutionDispatchAdmissionRequest:
+    return _mint_request(
+        _AgentExecutionDispatchAdmissionRequest,
+        expected_authorization_domain_id=expected_authorization_domain_id,
+        grant=grant,
+        tool_binding=tool_binding,
+        expected_run=expected_run,
+    )  # type: ignore[return-value]
+
+
+def _mint_authoritative_lookup_request(
+    expected_authorization_domain_id: str,
+    grant: AgentExecutionAuthorizationGrant,
+    tool_binding: AgentOperationToolBinding,
+) -> _AgentExecutionDispatchAdmissionLookupRequest:
+    return _mint_request(
+        _AgentExecutionDispatchAdmissionLookupRequest,
+        expected_authorization_domain_id=expected_authorization_domain_id,
+        grant=grant,
+        tool_binding=tool_binding,
+    )  # type: ignore[return-value]
+
+
+def _mint_revocation_request(
+    expected_authorization_domain_id: str,
+    grant: AgentExecutionAuthorizationGrant,
+) -> _AgentExecutionAuthorizationRevocationRequest:
+    return _mint_request(
+        _AgentExecutionAuthorizationRevocationRequest,
+        expected_authorization_domain_id=expected_authorization_domain_id,
+        grant=grant,
+    )  # type: ignore[return-value]
+
+
+def _open_guarded_history_request(
+    request: object,
+) -> tuple[
+    str,
+    AgentExecutionAuthorizationGrant,
+    AgentOperationToolBinding,
+] | None:
+    if (
+        type(request) is not _AgentExecutionDispatchAdmissionHistoryRequest
+        or request._authority is not _STORE_REQUEST_AUTHORITY
+    ):
+        return None
+    return (
+        request.expected_authorization_domain_id,
+        request.grant,
+        request.tool_binding,
+    )
+
+
+def _open_admission_request(
+    request: object,
+) -> tuple[
+    str,
+    AgentExecutionAuthorizationGrant,
+    AgentOperationToolBinding,
+    AgentExecutionRun,
+] | None:
+    if (
+        type(request) is not _AgentExecutionDispatchAdmissionRequest
+        or request._authority is not _STORE_REQUEST_AUTHORITY
+    ):
+        return None
+    return (
+        request.expected_authorization_domain_id,
+        request.grant,
+        request.tool_binding,
+        request.expected_run,
+    )
+
+
+def _open_authoritative_lookup_request(
+    request: object,
+) -> tuple[
+    str,
+    AgentExecutionAuthorizationGrant,
+    AgentOperationToolBinding,
+] | None:
+    if (
+        type(request) is not _AgentExecutionDispatchAdmissionLookupRequest
+        or request._authority is not _STORE_REQUEST_AUTHORITY
+    ):
+        return None
+    return (
+        request.expected_authorization_domain_id,
+        request.grant,
+        request.tool_binding,
+    )
+
+
+def _open_revocation_request(
+    request: object,
+) -> tuple[str, AgentExecutionAuthorizationGrant] | None:
+    if (
+        type(request) is not _AgentExecutionAuthorizationRevocationRequest
+        or request._authority is not _STORE_REQUEST_AUTHORITY
+    ):
+        return None
+    return request.expected_authorization_domain_id, request.grant
+
+
+class AgentExecutionDispatchAdmissionStore(Protocol):
+    """Authority-internal backend-neutral admission-ledger protocol.
+
+    Request objects are minted only after configured trust checks.  They are
+    process-encapsulation guards, not bearer credentials or a replacement for
+    an actual process/service security boundary.
+    """
+
+    def classify_guarded_history(
+        self,
+        request: _AgentExecutionDispatchAdmissionHistoryRequest,
+    ) -> AgentExecutionDispatchAdmissionStoreResult:
+        """Classify exact committed history without sampling time or freshness."""
+
+    def admit_or_return_existing(
+        self,
+        request: _AgentExecutionDispatchAdmissionRequest,
+    ) -> AgentExecutionDispatchAdmissionStoreResult:
+        """Atomically admit once or return the exact committed Admission."""
+
+    def load_authoritative_admission(
+        self,
+        request: _AgentExecutionDispatchAdmissionLookupRequest,
+    ) -> AgentExecutionDispatchAdmissionStoreResult:
+        """Load authoritative history by the complete Grant identity/binding."""
+
+    def revoke_or_return_existing(
+        self,
+        request: _AgentExecutionAuthorizationRevocationRequest,
+    ) -> AgentExecutionDispatchAdmissionStoreResult:
+        """Serialize one immutable original-issuer revocation tombstone."""
+
+
+def _result(
+    outcome: AgentExecutionDispatchAdmissionStoreOutcome,
+    detail: str,
+) -> AgentExecutionDispatchAdmissionStoreResult:
+    return make_agent_execution_dispatch_admission_store_result(
+        outcome,
+        detail=detail,
+    )
+
+
+def _finding_detail(prefix: str, findings: tuple[object, ...]) -> str:
+    codes = tuple(
+        finding.code
+        for finding in findings
+        if type(getattr(finding, "code", None)) is str
+    )
+    if not codes:
+        return prefix
+    return f"{prefix}: {', '.join(codes)}"
+
+
+class AgentExecutionDispatchAdmissionCoordinator:
+    """Trusted orchestration boundary for Admission and revocation requests."""
+
+    def __init__(
+        self,
+        *,
+        authorization_domain_id: str,
+        store: AgentExecutionDispatchAdmissionStore,
+        grant_authentication: AgentExecutionAuthorizationGrantAuthenticationPort,
+        tool_binding_resolver: AgentOperationToolBindingResolverPort,
+        fresh_prerequisite_source: FreshAgentActionPrerequisiteSourcePort,
+        execution_mode_resolver: EffectiveExecutionModeResolverPort,
+        revocation_authentication: OriginalIssuerRevocationAuthenticationPort,
+    ) -> None:
+        if type(authorization_domain_id) is not str or not authorization_domain_id:
+            raise ValueError(
+                "authorization_domain_id must be an exact nonempty string"
+            )
+        self._authorization_domain_id = authorization_domain_id
+        self._store = store
+        self._grant_authentication = grant_authentication
+        self._tool_binding_resolver = tool_binding_resolver
+        self._fresh_prerequisite_source = fresh_prerequisite_source
+        self._execution_mode_resolver = execution_mode_resolver
+        self._revocation_authentication = revocation_authentication
+
+    def _authenticate_grant(
+        self,
+        presented_grant: object,
+        *,
+        for_revocation: bool = False,
+    ) -> tuple[
+        AgentExecutionAuthorizationGrant | None,
+        AgentExecutionDispatchAdmissionStoreResult | None,
+    ]:
+        try:
+            if for_revocation:
+                grant = (
+                    self._revocation_authentication.
+                    authenticate_original_issuer_revocation(presented_grant)
+                )
+            else:
+                grant = self._grant_authentication.authenticate_grant(
+                    presented_grant
+                )
+        except Exception:
+            grant = None
+        if grant is None:
+            return None, _result(
+                AgentExecutionDispatchAdmissionStoreOutcome.
+                UNAUTHENTICATED_GRANT,
+                "Configured Grant authentication rejected the request.",
+            )
+        if type(grant) is not AgentExecutionAuthorizationGrant:
+            return None, _result(
+                AgentExecutionDispatchAdmissionStoreOutcome.INVALID_INPUT,
+                "Configured Grant authentication returned a noncanonical value.",
+            )
+
+        grant_result = validate_agent_execution_authorization_grant(grant)
+        if not grant_result.valid:
+            return None, _result(
+                AgentExecutionDispatchAdmissionStoreOutcome.INVALID_INPUT,
+                _finding_detail(
+                    "Authenticated Grant is intrinsically invalid",
+                    grant_result.findings,
+                ),
+            )
+        if grant.authorization_domain_id != self._authorization_domain_id:
+            return None, _result(
+                AgentExecutionDispatchAdmissionStoreOutcome.DOMAIN_MISMATCH,
+                "Authenticated Grant does not belong to the configured domain.",
+            )
+        return grant, None
+
+    def _resolve_binding(
+        self,
+        grant: AgentExecutionAuthorizationGrant,
+    ) -> tuple[
+        AgentOperationToolBinding | None,
+        AgentExecutionDispatchAdmissionStoreResult | None,
+    ]:
+        try:
+            binding = self._tool_binding_resolver.resolve_tool_binding(grant)
+        except Exception:
+            binding = None
+        if binding is None:
+            return None, _result(
+                AgentExecutionDispatchAdmissionStoreOutcome.
+                UNTRUSTED_TOOL_BINDING,
+                "Configured Tool resolver did not return a trusted Binding.",
+            )
+        if type(binding) is not AgentOperationToolBinding:
+            return None, _result(
+                AgentExecutionDispatchAdmissionStoreOutcome.INVALID_INPUT,
+                "Configured Tool resolver returned a noncanonical value.",
+            )
+        binding_result = validate_agent_operation_tool_binding(binding)
+        if not binding_result.valid:
+            return None, _result(
+                AgentExecutionDispatchAdmissionStoreOutcome.INVALID_INPUT,
+                _finding_detail(
+                    "Trusted Tool Binding is intrinsically invalid",
+                    binding_result.findings,
+                ),
+            )
+        if not _is_active_tool_identity(binding.tool_id):
+            return None, _result(
+                AgentExecutionDispatchAdmissionStoreOutcome.UNTRUSTED_TOOL_BINDING,
+                "Historical Tool identity is not eligible for new work.",
+            )
+        if binding.run != grant.run:
+            return None, _result(
+                AgentExecutionDispatchAdmissionStoreOutcome.INVALID_INPUT,
+                "Authenticated Grant and trusted Tool Binding Runs differ.",
+            )
+        return binding, None
+
+    @staticmethod
+    def _checked_store_result(
+        result: object,
+        *,
+        expected_grant: AgentExecutionAuthorizationGrant | None = None,
+        expected_binding: AgentOperationToolBinding | None = None,
+    ) -> AgentExecutionDispatchAdmissionStoreResult:
+        if not _store_result_is_canonical(result):
+            return _result(
+                AgentExecutionDispatchAdmissionStoreOutcome.INTEGRITY_FAILURE,
+                "The authoritative store returned an incoherent result.",
+            )
+        assert type(result) is AgentExecutionDispatchAdmissionStoreResult
+        if result.admission is not None:
+            if (
+                expected_grant is not None
+                and result.admission.grant != expected_grant
+            ):
+                return _result(
+                    AgentExecutionDispatchAdmissionStoreOutcome.
+                    INTEGRITY_FAILURE,
+                    "The authoritative Admission Grant differs from the request.",
+                )
+            if (
+                expected_binding is not None
+                and result.admission.tool_binding != expected_binding
+            ):
+                return _result(
+                    AgentExecutionDispatchAdmissionStoreOutcome.
+                    INTEGRITY_FAILURE,
+                    "The authoritative Admission Binding differs from the request.",
+                )
+        return result
+
+    def _call_store(
+        self,
+        operation: str,
+        request: object,
+        *,
+        expected_grant: AgentExecutionAuthorizationGrant | None = None,
+        expected_binding: AgentOperationToolBinding | None = None,
+    ) -> AgentExecutionDispatchAdmissionStoreResult:
+        try:
+            method = getattr(self._store, operation)
+            result = method(request)
+        except Exception:
+            return _result(
+                AgentExecutionDispatchAdmissionStoreOutcome.STORAGE_UNAVAILABLE,
+                "The configured authoritative store operation was unavailable.",
+            )
+        checked = self._checked_store_result(
+            result,
+            expected_grant=expected_grant,
+            expected_binding=expected_binding,
+        )
+        allowed_outcomes = _STORE_OPERATION_OUTCOMES.get(operation)
+        if (
+            allowed_outcomes is None
+            or checked.outcome not in allowed_outcomes
+        ):
+            return _result(
+                AgentExecutionDispatchAdmissionStoreOutcome.INTEGRITY_FAILURE,
+                "The authoritative store returned an outcome that is "
+                f"incoherent for {operation}.",
+            )
+        return checked
+
+    def admit(
+        self,
+        presented_grant: object,
+    ) -> AgentExecutionDispatchAdmissionStoreResult:
+        """Authenticate, resolve, recover exact history, or freshly admit.
+
+        No caller-supplied AIO-040 result, decision time, trust flag, or
+        authenticated wrapper is accepted.
+        """
+
+        grant, rejection = self._authenticate_grant(presented_grant)
+        if rejection is not None:
+            return rejection
+        assert grant is not None
+
+        binding, rejection = self._resolve_binding(grant)
+        if rejection is not None:
+            return rejection
+        assert binding is not None
+
+        history_request = _mint_guarded_history_request(
+            self._authorization_domain_id,
+            grant,
+            binding,
+        )
+        history_result = self._call_store(
+            "classify_guarded_history",
+            history_request,
+            expected_grant=grant,
+            expected_binding=binding,
+        )
+        if (
+            history_result.outcome
+            is AgentExecutionDispatchAdmissionStoreOutcome.
+            EXISTING_EXACT_ADMISSION
+        ):
+            return history_result
+        if (
+            history_result.outcome
+            is not AgentExecutionDispatchAdmissionStoreOutcome.
+            NO_EXISTING_ADMISSION
+        ):
+            return history_result
+
+        try:
+            parents = (
+                self._fresh_prerequisite_source.collect_fresh_parent_results(
+                    grant,
+                    binding,
+                )
+            )
+        except Exception:
+            parents = None
+        if type(parents) is not AgentActionPrerequisiteParentInputs:
+            return _result(
+                AgentExecutionDispatchAdmissionStoreOutcome.
+                UNSATISFIED_PREREQUISITES,
+                "Fresh prerequisite parent values were not available.",
+            )
+
+        prerequisite_result = assess_agent_action_prerequisites(
+            parents.candidate_result,
+            parents.requirement,
+            parents.capability_result,
+            parents.permission_result,
+            parents.authorization_result,
+            environment_id=parents.environment_id,
+        )
+        if (
+            not prerequisite_result.valid
+            or prerequisite_result.outcome
+            is not AgentActionPrerequisiteOutcome.SATISFIED
+        ):
+            return _result(
+                AgentExecutionDispatchAdmissionStoreOutcome.
+                UNSATISFIED_PREREQUISITES,
+                _finding_detail(
+                    "Fresh AIO-040 assessment was not satisfied",
+                    prerequisite_result.findings,
+                ),
+            )
+
+        try:
+            execution_mode = (
+                self._execution_mode_resolver.resolve_effective_execution_mode(
+                    grant,
+                    binding,
+                )
+            )
+        except Exception:
+            execution_mode = None
+
+        contract_result = prepare_agent_execution_contract(
+            prerequisite_result,
+            execution_mode=execution_mode,  # type: ignore[arg-type]
+        )
+        if (
+            not contract_result.valid
+            or contract_result.contract != grant.run.contract
+        ):
+            return _result(
+                AgentExecutionDispatchAdmissionStoreOutcome.
+                UNSATISFIED_PREREQUISITES,
+                _finding_detail(
+                    "Fresh AIO-041 Contract did not match the Grant Run",
+                    contract_result.findings,
+                ),
+            )
+        assert contract_result.contract is not None
+
+        run_result = prepare_agent_execution_run(
+            contract_result.contract,
+            prerequisite_result,
+            execution_mode=execution_mode,  # type: ignore[arg-type]
+            run_id=grant.run.run_id,
+        )
+        if not run_result.valid or run_result.run is None:
+            return _result(
+                AgentExecutionDispatchAdmissionStoreOutcome.
+                UNSATISFIED_PREREQUISITES,
+                _finding_detail(
+                    "Fresh AIO-042 Run reconstruction failed",
+                    run_result.findings,
+                ),
+            )
+        expected_run = run_result.run
+        if not (
+            grant.run == binding.run == expected_run
+        ):
+            return _result(
+                AgentExecutionDispatchAdmissionStoreOutcome.
+                UNSATISFIED_PREREQUISITES,
+                "Grant, Binding, and freshly reconstructed Runs differ.",
+            )
+
+        admission_request = _mint_admission_request(
+            self._authorization_domain_id,
+            grant,
+            binding,
+            expected_run,
+        )
+        result = self._call_store(
+            "admit_or_return_existing",
+            admission_request,
+            expected_grant=grant,
+            expected_binding=binding,
+        )
+        if (
+            result.outcome
+            is AgentExecutionDispatchAdmissionStoreOutcome.
+            NO_EXISTING_ADMISSION
+        ):
+            return _result(
+                AgentExecutionDispatchAdmissionStoreOutcome.INTEGRITY_FAILURE,
+                "Admission transaction returned an internal continuation outcome.",
+            )
+        return result
+
+    def load_authoritative_admission(
+        self,
+        presented_grant: object,
+    ) -> AgentExecutionDispatchAdmissionStoreResult:
+        """Load a historical Admission only after configured Grant trust checks."""
+
+        grant, rejection = self._authenticate_grant(presented_grant)
+        if rejection is not None:
+            return rejection
+        assert grant is not None
+        binding, rejection = self._resolve_binding(grant)
+        if rejection is not None:
+            return rejection
+        assert binding is not None
+        request = _mint_authoritative_lookup_request(
+            self._authorization_domain_id,
+            grant,
+            binding,
+        )
+        return self._call_store(
+            "load_authoritative_admission",
+            request,
+            expected_grant=grant,
+            expected_binding=binding,
+        )
+
+    def revoke(
+        self,
+        presented_grant: object,
+    ) -> AgentExecutionDispatchAdmissionStoreResult:
+        """Authenticate the original issuer and serialize one revocation."""
+
+        grant, rejection = self._authenticate_grant(
+            presented_grant,
+            for_revocation=True,
+        )
+        if rejection is not None:
+            return rejection
+        assert grant is not None
+        request = _mint_revocation_request(
+            self._authorization_domain_id,
+            grant,
+        )
+        result = self._call_store(
+            "revoke_or_return_existing",
+            request,
+            expected_grant=grant,
+        )
+        if result.admission is not None:
+            return _result(
+                AgentExecutionDispatchAdmissionStoreOutcome.INTEGRITY_FAILURE,
+                "A revocation operation returned an Admission payload.",
+            )
+        return result

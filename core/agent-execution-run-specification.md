@@ -1,4 +1,4 @@
-# AI Engineering Orchestra - Agent Execution Run Specification
+# ITRU - Agent Execution Run Specification
 
 Status: Canonical for AIO-042
 
@@ -127,7 +127,7 @@ progress; this identity foundation does not.
 The canonical direct-import module is:
 
 ```text
-engineering_orchestration.agent_execution_run
+itru.agent_execution_run
 ```
 
 It defines these frozen public values:

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "AI Engineering Orchestra Project Manifest",
+  "title": "ITRU Project Manifest",
   "description": "Machine-readable schema for Project Manifest schema version 0.1.",
   "type": "object",
   "additionalProperties": false,

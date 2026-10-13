@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""AI Engineering Orchestra — Unit Tests for Task Inventory and Discovery Utility.
+"""ITRU — Unit Tests for Task Inventory and Discovery Utility.
 
 Tests cover all 16 minimum acceptance scenarios required by AIO-013:
 1. discovers multiple valid Tasks
@@ -318,7 +318,7 @@ class TestListTasks(unittest.TestCase):
     # 15. No subprocess parsing of inspect_task.py
     def test_no_subprocess_parsing_of_inspect_task(self) -> None:
         """Verify list_tasks.py does NOT spawn subprocesses or parse inspect_task stdout."""
-        script_file = REPO_ROOT / "engineering_orchestration" / "list_tasks.py"
+        script_file = REPO_ROOT / "itru" / "list_tasks.py"
         source = script_file.read_text(encoding="utf-8")
         tree = ast.parse(source)
 

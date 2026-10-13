@@ -11,9 +11,9 @@ from pathlib import Path
 import unittest
 from unittest.mock import patch
 
-import engineering_orchestration
-import engineering_orchestration.agent_execution_authorization_evidence as subject
-from engineering_orchestration.agent_execution_authorization_evidence import (
+import itru
+import itru.agent_execution_authorization_evidence as subject
+from itru.agent_execution_authorization_evidence import (
     AgentExecutionAuthorizationAuthorityKind,
     AgentExecutionAuthorizationEvidence,
     AgentExecutionAuthorizationFinding,
@@ -21,24 +21,24 @@ from engineering_orchestration.agent_execution_authorization_evidence import (
     AgentExecutionAuthorizationValidationResult,
     validate_agent_execution_authorization_evidence,
 )
-from engineering_orchestration.agent_runtime_option import (
+from itru.agent_runtime_option import (
     AgentRuntimeOptionDefinition,
 )
-from engineering_orchestration.assignment import Assignment
-from engineering_orchestration.environment_operation_permission import (
+from itru.assignment import Assignment
+from itru.environment_operation_permission import (
     EnvironmentOperationPermissionObservation,
     EnvironmentOperationPermissionState,
 )
-from engineering_orchestration.inference_option import (
+from itru.inference_option import (
     InferenceOptionDefinition,
 )
-from engineering_orchestration.operation_requirement import OperationRequirement
-from engineering_orchestration.role_catalog import RoleCatalog
-from engineering_orchestration.runtime_operation_capability import (
+from itru.operation_requirement import OperationRequirement
+from itru.role_catalog import RoleCatalog
+from itru.runtime_operation_capability import (
     RuntimeOperationCapabilityObservation,
     RuntimeOperationCapabilityState,
 )
-from engineering_orchestration.workflow_catalog import (
+from itru.workflow_catalog import (
     WorkflowCatalog,
     WorkflowDefinition,
     WorkflowStage,
@@ -278,7 +278,7 @@ class AuthorizationValueTests(AuthorizationFixture):
             "validate_agent_execution_authorization_evidence",
         )
         self.assertTrue(
-            all(not hasattr(engineering_orchestration, name) for name in public_names)
+            all(not hasattr(itru, name) for name in public_names)
         )
 
     def test_no_grant_lifecycle_or_execution_identity_fields_exist(self) -> None:
@@ -776,7 +776,7 @@ class AuthorizationInvestigationScenarioTests(AuthorizationFixture):
 class AuthorizationSafetyBoundaryTests(AuthorizationFixture):
     def test_static_module_has_no_io_clock_execution_or_policy_imports(self) -> None:
         tree = ast.parse(
-            (ROOT / "engineering_orchestration" /
+            (ROOT / "itru" /
              "agent_execution_authorization_evidence.py").read_text(
                 encoding="utf-8"
             )

@@ -1,4 +1,4 @@
-# AI Engineering Orchestra - Agent Action Prerequisite Assessment Specification
+# ITRU - Agent Action Prerequisite Assessment Specification
 
 Status: Canonical for AIO-040
 
@@ -86,7 +86,7 @@ outside this contract.
 The canonical direct-import module is:
 
 ```text
-engineering_orchestration.agent_action_prerequisite
+itru.agent_action_prerequisite
 ```
 
 It defines:

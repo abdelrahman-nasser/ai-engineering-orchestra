@@ -25,9 +25,9 @@ import unittest
 from unittest.mock import patch
 import urllib.request
 
-import engineering_orchestration
-import engineering_orchestration._read_only_execution_preparation as subject
-from engineering_orchestration._read_only_execution_preparation import (
+import itru
+import itru._read_only_execution_preparation as subject
+from itru._read_only_execution_preparation import (
     ReadOnlyExecutionAuthorizationEvidence,
     ReadOnlyExecutionAuthorizationSource,
     ReadOnlyExecutionAuthorizationState,
@@ -42,7 +42,7 @@ from engineering_orchestration._read_only_execution_preparation import (
     ReadOnlyExecutionPreparationResult,
     assess_read_only_execution_preparation,
 )
-from engineering_orchestration.agent_execution_candidate_prerequisite import (
+from itru.agent_execution_candidate_prerequisite import (
     AgentExecutionCandidatePrerequisiteFinding,
     AgentExecutionCandidatePrerequisiteOutcome,
     AgentExecutionCandidatePrerequisiteReason,
@@ -53,7 +53,7 @@ from engineering_orchestration.agent_execution_candidate_prerequisite import (
 ROOT = Path(__file__).resolve().parents[1]
 MODULE_PATH = (
     ROOT
-    / "engineering_orchestration"
+    / "itru"
     / "_read_only_execution_preparation.py"
 )
 OPERATION_ID = "repository_file_read"
@@ -492,7 +492,7 @@ class ReadOnlyExecutionPreparationContractTests(
             self.assertFalse(hasattr(subject, name))
         self.assertFalse(
             hasattr(
-                engineering_orchestration,
+                itru,
                 "assess_read_only_execution_preparation",
             )
         )
@@ -1271,13 +1271,13 @@ class ReadOnlyExecutionPreparationBoundaryTests(
             "enum",
             "typing",
             (
-                "engineering_orchestration."
+                "itru."
                 "agent_execution_candidate_prerequisite"
             ),
         }
         self.assertLessEqual(imported_modules, allowed)
         self.assertNotIn(
-            "engineering_orchestration.cli",
+            "itru.cli",
             imported_modules,
         )
         self.assertFalse(

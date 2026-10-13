@@ -41,8 +41,8 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.cli import build_parser, find_project_root, main
-from scripts.list_tasks import TaskAnomaly, TaskInventoryResult, TaskSummary
+from itru.cli import build_parser, find_project_root, main
+from itru.list_tasks import TaskAnomaly, TaskInventoryResult, TaskSummary
 
 
 def _make_inventory(
@@ -156,8 +156,8 @@ class TestTasksDelegation(unittest.TestCase):
         )
 
         captured = StringIO()
-        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), patch("scripts.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
-            with patch("scripts.list_tasks.discover_tasks", return_value=inventory):
+        with patch("itru.cli.find_project_root", return_value=Path("/fake")), patch("itru.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
+            with patch("itru.list_tasks.discover_tasks", return_value=inventory):
                 with patch("sys.stdout", captured):
                     exit_code = main(["tasks"])
 
@@ -179,8 +179,8 @@ class TestTasksStatusFilter(unittest.TestCase):
         )
 
         captured = StringIO()
-        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), patch("scripts.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
-            with patch("scripts.list_tasks.discover_tasks", return_value=inventory):
+        with patch("itru.cli.find_project_root", return_value=Path("/fake")), patch("itru.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
+            with patch("itru.list_tasks.discover_tasks", return_value=inventory):
                 with patch("sys.stdout", captured):
                     exit_code = main(["tasks", "--status", "completed"])
 
@@ -204,8 +204,8 @@ class TestTasksWorkflowFilter(unittest.TestCase):
         )
 
         captured = StringIO()
-        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), patch("scripts.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
-            with patch("scripts.list_tasks.discover_tasks", return_value=inventory):
+        with patch("itru.cli.find_project_root", return_value=Path("/fake")), patch("itru.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
+            with patch("itru.list_tasks.discover_tasks", return_value=inventory):
                 with patch("sys.stdout", captured):
                     exit_code = main(["tasks", "--workflow", "standard-change"])
 
@@ -237,8 +237,8 @@ class TestInspectByDeclaredId(unittest.TestCase):
         mock_result.schema_status = "VALID"
 
         captured = StringIO()
-        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), patch("scripts.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
-            with patch("scripts.list_tasks.discover_tasks", return_value=inventory):
+        with patch("itru.cli.find_project_root", return_value=Path("/fake")), patch("itru.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
+            with patch("itru.list_tasks.discover_tasks", return_value=inventory):
                 with patch("scripts.inspect_task.inspect_task", return_value=mock_result):
                     with patch("scripts.inspect_task.format_report", return_value="Task: TEST-001\nTitle: Alpha Task"):
                         with patch("sys.stdout", captured):
@@ -271,8 +271,8 @@ class TestDirNameDiffersFromId(unittest.TestCase):
         mock_result.schema_status = "VALID"
 
         captured = StringIO()
-        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), patch("scripts.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
-            with patch("scripts.list_tasks.discover_tasks", return_value=inventory):
+        with patch("itru.cli.find_project_root", return_value=Path("/fake")), patch("itru.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
+            with patch("itru.list_tasks.discover_tasks", return_value=inventory):
                 with patch("scripts.inspect_task.inspect_task", return_value=mock_result) as mock_inspect:
                     with patch("scripts.inspect_task.format_report", return_value="Task: LOOKUP-042\nTitle: Mismatched Dir Task"):
                         with patch("sys.stdout", captured):
@@ -301,8 +301,8 @@ class TestUnknownTaskId(unittest.TestCase):
         )
 
         captured_err = StringIO()
-        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), patch("scripts.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
-            with patch("scripts.list_tasks.discover_tasks", return_value=inventory):
+        with patch("itru.cli.find_project_root", return_value=Path("/fake")), patch("itru.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
+            with patch("itru.list_tasks.discover_tasks", return_value=inventory):
                 with patch("sys.stderr", captured_err):
                     exit_code = main(["inspect", "DOES-NOT-EXIST"])
 
@@ -318,10 +318,10 @@ class TestVerifyDelegation(unittest.TestCase):
         """Verify delegates to one aggregate path and formatter."""
         mock_result = type("Result", (), {"exit_code": 0})()
 
-        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), \
-                patch("engineering_orchestration.project_verification.verify_project",
+        with patch("itru.cli.find_project_root", return_value=Path("/fake")), \
+                patch("itru.project_verification.verify_project",
                       return_value=mock_result) as aggregate, \
-                patch("engineering_orchestration.project_verification.format_verification_output",
+                patch("itru.project_verification.format_verification_output",
                       return_value="MOCK OUTPUT"), \
                 patch("sys.stdout", new_callable=StringIO) as captured:
             exit_code = main(["verify"])
@@ -335,10 +335,10 @@ class TestVerifyDelegation(unittest.TestCase):
     def test_structure_delegates_without_execution(self):
         structural = object()
         mock_result = type("Result", (), {"structural": structural, "exit_code": 1})()
-        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), \
-                patch("engineering_orchestration.project_verification.verify_project",
+        with patch("itru.cli.find_project_root", return_value=Path("/fake")), \
+                patch("itru.project_verification.verify_project",
                       return_value=mock_result) as aggregate, \
-                patch("engineering_orchestration.project_verification.format_structural_validation_output",
+                patch("itru.project_verification.format_structural_validation_output",
                       return_value="STRUCTURE"), \
                 patch("sys.stdout", new_callable=StringIO) as captured:
             exit_code = main(["verify", "--structure"])
@@ -359,10 +359,10 @@ class TestVerifyDelegation(unittest.TestCase):
             before_execute(plan)
             return result
 
-        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), \
-                patch("engineering_orchestration.project_verification.verify_project",
+        with patch("itru.cli.find_project_root", return_value=Path("/fake")), \
+                patch("itru.project_verification.verify_project",
                       side_effect=compose), \
-                patch("engineering_orchestration.project_verification.format_verification_output",
+                patch("itru.project_verification.format_verification_output",
                       return_value="DONE"), \
                 patch("sys.stdout", new_callable=StringIO) as output:
             self.assertEqual(main(["verify"]), 0)
@@ -378,10 +378,10 @@ class TestVerifyExitCodePropagation(unittest.TestCase):
 
     def test_verify_propagates_failure_exit_code(self):
         mock_result = type("Result", (), {"exit_code": 1})()
-        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), \
-                patch("engineering_orchestration.project_verification.verify_project",
+        with patch("itru.cli.find_project_root", return_value=Path("/fake")), \
+                patch("itru.project_verification.verify_project",
                       return_value=mock_result), \
-                patch("engineering_orchestration.project_verification.format_verification_output",
+                patch("itru.project_verification.format_verification_output",
                       return_value="FAIL"), \
                 patch("sys.stdout", new_callable=StringIO):
             exit_code = main(["verify"])
@@ -390,10 +390,10 @@ class TestVerifyExitCodePropagation(unittest.TestCase):
 
     def test_verify_propagates_error_exit_code(self):
         mock_result = type("Result", (), {"exit_code": 2})()
-        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), \
-                patch("engineering_orchestration.project_verification.verify_project",
+        with patch("itru.cli.find_project_root", return_value=Path("/fake")), \
+                patch("itru.project_verification.verify_project",
                       return_value=mock_result), \
-                patch("engineering_orchestration.project_verification.format_verification_output",
+                patch("itru.project_verification.format_verification_output",
                       return_value="ERROR"), \
                 patch("sys.stdout", new_callable=StringIO):
             exit_code = main(["verify"])
@@ -401,8 +401,8 @@ class TestVerifyExitCodePropagation(unittest.TestCase):
         self.assertEqual(exit_code, 2)
 
     def test_keyboard_interrupt_maps_to_130_without_traceback(self):
-        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), \
-                patch("engineering_orchestration.project_verification.verify_project",
+        with patch("itru.cli.find_project_root", return_value=Path("/fake")), \
+                patch("itru.project_verification.verify_project",
                       side_effect=KeyboardInterrupt), \
                 patch("sys.stderr", new_callable=StringIO) as error:
             exit_code = main(["verify"])
@@ -411,8 +411,8 @@ class TestVerifyExitCodePropagation(unittest.TestCase):
         self.assertNotIn("Traceback", error.getvalue())
 
     def test_structure_keyboard_interrupt_maps_to_130_without_traceback(self):
-        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), \
-                patch("engineering_orchestration.project_verification.verify_project",
+        with patch("itru.cli.find_project_root", return_value=Path("/fake")), \
+                patch("itru.project_verification.verify_project",
                       side_effect=KeyboardInterrupt), \
                 patch("sys.stderr", new_callable=StringIO) as error:
             exit_code = main(["verify", "--structure"])
@@ -460,8 +460,8 @@ class TestSubdirectoryInvocation(unittest.TestCase):
         )
 
         captured = StringIO()
-        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), patch("scripts.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
-            with patch("scripts.list_tasks.discover_tasks", return_value=inventory):
+        with patch("itru.cli.find_project_root", return_value=Path("/fake")), patch("itru.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
+            with patch("itru.list_tasks.discover_tasks", return_value=inventory):
                 with patch("sys.stdout", captured):
                     exit_code = main(["tasks"])
 
@@ -490,7 +490,7 @@ class TestNoProjectMarker(unittest.TestCase):
 
     def test_main_no_project_exits_2(self):
         with patch(
-            "scripts.cli.find_project_root",
+            "itru.cli.find_project_root",
             side_effect=FileNotFoundError("No .ai/project.yaml found"),
         ):
             captured_err = StringIO()
@@ -526,8 +526,8 @@ class TestNoTaskDirReconstruction(unittest.TestCase):
         mock_result.schema_status = "VALID"
 
         captured = StringIO()
-        with patch("scripts.cli.find_project_root", return_value=Path("/fake")), patch("scripts.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
-            with patch("scripts.list_tasks.discover_tasks", return_value=inventory) as mock_discover:
+        with patch("itru.cli.find_project_root", return_value=Path("/fake")), patch("itru.cli.task_directory", return_value=Path("/fake/.ai/tasks")):
+            with patch("itru.list_tasks.discover_tasks", return_value=inventory) as mock_discover:
                 with patch("scripts.inspect_task.inspect_task", return_value=mock_result):
                     with patch("scripts.inspect_task.format_report", return_value="Task: FIND-ME-007"):
                         with patch("sys.stdout", captured):
@@ -545,7 +545,7 @@ class TestNoDuplicatedPreflightBattery(unittest.TestCase):
     """
 
     def test_cli_does_not_define_check_commands(self):
-        cli_source = (REPO_ROOT / "engineering_orchestration" / "cli.py").read_text(encoding="utf-8")
+        cli_source = (REPO_ROOT / "itru" / "cli.py").read_text(encoding="utf-8")
         tree = ast.parse(cli_source)
 
         # Look for CheckDefinition or DEFAULT_CHECKS in the CLI module
@@ -582,7 +582,7 @@ class TestNoNewThirdPartyDependency(unittest.TestCase):
 
     def test_cli_module_level_imports_are_stdlib_or_shared_project(self):
         """Permit only stdlib and the shared project discovery module."""
-        cli_source = (REPO_ROOT / "engineering_orchestration" / "cli.py").read_text(encoding="utf-8")
+        cli_source = (REPO_ROOT / "itru" / "cli.py").read_text(encoding="utf-8")
         tree = ast.parse(cli_source)
 
         for node in ast.iter_child_nodes(tree):
@@ -594,7 +594,7 @@ class TestNoNewThirdPartyDependency(unittest.TestCase):
                         f"Unexpected module-level import: {alias.name}"
                     )
             elif isinstance(node, ast.ImportFrom) and node.module:
-                if node.module == "engineering_orchestration.project":
+                if node.module == "itru.project":
                     continue
                 top_module = node.module.split(".")[0]
                 self.assertIn(
@@ -689,9 +689,9 @@ class TestActiveProjectIntegration(unittest.TestCase):
 
     def test_verify_receives_cwd_project_root(self):
         result = type("Result", (), {"exit_code": 0})()
-        with patch("engineering_orchestration.project_verification.verify_project",
+        with patch("itru.project_verification.verify_project",
                    return_value=result) as aggregate, \
-                patch("engineering_orchestration.project_verification.format_verification_output",
+                patch("itru.project_verification.format_verification_output",
                       return_value="PASS"):
             code, _, _ = self.invoke("verify")
         self.assertEqual(code, 0)
@@ -711,7 +711,7 @@ class TestActiveProjectIntegration(unittest.TestCase):
 
     def test_actual_wrapper_uses_external_project_from_subdirectory(self):
         proc = subprocess.run(
-            [sys.executable, "-B", str(REPO_ROOT / "aio.py"), "tasks"],
+            [sys.executable, "-B", str(REPO_ROOT / "itru.py"), "tasks"],
             cwd=self.child, capture_output=True, text=True, check=False,
         )
         self.assertEqual(proc.returncode, 0, proc.stderr)
@@ -728,7 +728,7 @@ class TestActiveProjectIntegration(unittest.TestCase):
         self.assertNotIn("Traceback", err.getvalue())
 
     def test_help_is_available_without_project_and_uses_wrapper_name(self):
-        with patch("scripts.cli.find_project_root", side_effect=AssertionError), \
+        with patch("itru.cli.find_project_root", side_effect=AssertionError), \
                 patch("sys.argv", ["rook.py"]):
             for args, expected in [
                 (["--help"], "{tasks,inspect,verify}"),
@@ -754,7 +754,7 @@ class TestBrandIsolation(unittest.TestCase):
 
     def test_cli_module_does_not_hardcode_aio(self):
         """scripts/cli.py should not contain 'aio' as a hardcoded brand reference."""
-        cli_source = (REPO_ROOT / "engineering_orchestration" / "cli.py").read_text(encoding="utf-8")
+        cli_source = (REPO_ROOT / "itru" / "cli.py").read_text(encoding="utf-8")
         tree = ast.parse(cli_source)
 
         for node in ast.walk(tree):
@@ -766,8 +766,8 @@ class TestBrandIsolation(unittest.TestCase):
                     )
 
     def test_aio_entry_point_is_thin(self):
-        """aio.py should be a thin wrapper with minimal code."""
-        aio_source = (REPO_ROOT / "aio.py").read_text(encoding="utf-8")
+        """itru.py should be a thin wrapper with minimal code."""
+        aio_source = (REPO_ROOT / "itru.py").read_text(encoding="utf-8")
         tree = ast.parse(aio_source)
 
         # Count non-import, non-docstring, non-guard statements
@@ -783,18 +783,18 @@ class TestBrandIsolation(unittest.TestCase):
 
         self.assertLessEqual(
             meaningful_stmts, 3,
-            f"aio.py has {meaningful_stmts} meaningful statements — "
+            f"itru.py has {meaningful_stmts} meaningful statements — "
             "it should be a thin wrapper"
         )
 
     def test_rename_to_rook_requires_no_domain_changes(self):
         """Verify that domain modules don't reference the brand 'aio'."""
         domain_modules = [
-            REPO_ROOT / "engineering_orchestration" / "cli.py",
-            REPO_ROOT / "engineering_orchestration" / "list_tasks.py",
-            REPO_ROOT / "engineering_orchestration" / "inspect_task.py",
-            REPO_ROOT / "engineering_orchestration" / "verify_repo.py",
-            REPO_ROOT / "engineering_orchestration" / "workflow_catalog.py",
+            REPO_ROOT / "itru" / "cli.py",
+            REPO_ROOT / "itru" / "list_tasks.py",
+            REPO_ROOT / "itru" / "inspect_task.py",
+            REPO_ROOT / "itru" / "verify_repo.py",
+            REPO_ROOT / "itru" / "workflow_catalog.py",
         ]
         for module_path in domain_modules:
             if not module_path.exists():

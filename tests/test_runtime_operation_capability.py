@@ -21,37 +21,37 @@ import unittest
 from unittest.mock import patch
 import urllib.request
 
-import engineering_orchestration
-from engineering_orchestration._operation_vocabulary import (
+import itru
+from itru._operation_vocabulary import (
     supported_core_operation_ids,
     validate_core_operation_id,
 )
-from engineering_orchestration.agent_execution_candidate_prerequisite import (
+from itru.agent_execution_candidate_prerequisite import (
     AgentExecutionCandidatePrerequisiteResult,
 )
-from engineering_orchestration.agent_runtime_option import (
+from itru.agent_runtime_option import (
     AgentRuntimeOptionDefinition,
 )
-from engineering_orchestration.operation_requirement import (
+from itru.operation_requirement import (
     OperationRequirement,
     validate_operation_requirement,
 )
-from engineering_orchestration.runtime_operation_capability import (
+from itru.runtime_operation_capability import (
     RuntimeOperationCapabilityFinding,
     RuntimeOperationCapabilityObservation,
     RuntimeOperationCapabilityState,
     RuntimeOperationCapabilityValidationResult,
     validate_runtime_operation_capability,
 )
-from engineering_orchestration.schema_resources import load_validator
+from itru.schema_resources import load_validator
 
 
 ROOT = Path(__file__).resolve().parents[1]
 CAPABILITY_MODULE = (
-    ROOT / "engineering_orchestration" / "runtime_operation_capability.py"
+    ROOT / "itru" / "runtime_operation_capability.py"
 )
 VOCABULARY_MODULE = (
-    ROOT / "engineering_orchestration" / "_operation_vocabulary.py"
+    ROOT / "itru" / "_operation_vocabulary.py"
 )
 
 
@@ -512,7 +512,7 @@ class SharedOperationVocabularyTests(unittest.TestCase):
 
     def test_operation_requirement_does_not_own_duplicate_vocabulary(self) -> None:
         source = (
-            ROOT / "engineering_orchestration" / "operation_requirement.py"
+            ROOT / "itru" / "operation_requirement.py"
         ).read_text(encoding="utf-8")
         self.assertNotIn("_OPERATION_ID_PATTERN", source)
         self.assertNotIn("_SUPPORTED_OPERATION_IDS", source)
@@ -646,8 +646,8 @@ class RuntimeOperationCapabilityPurityTests(unittest.TestCase):
                 "dataclasses",
                 "enum",
                 "typing",
-                "engineering_orchestration._operation_vocabulary",
-                "engineering_orchestration.agent_runtime_option",
+                "itru._operation_vocabulary",
+                "itru.agent_runtime_option",
             },
         )
         self.assertEqual(imports(vocabulary_tree), {"__future__", "re"})
@@ -836,10 +836,10 @@ class RuntimeOperationCapabilityBoundaryTests(unittest.TestCase):
             "validate_runtime_operation_capability",
         ):
             with self.subTest(name=name):
-                self.assertFalse(hasattr(engineering_orchestration, name))
+                self.assertFalse(hasattr(itru, name))
 
     def test_no_discovery_adapter_permission_or_execution_api_exists(self) -> None:
-        import engineering_orchestration.runtime_operation_capability as module
+        import itru.runtime_operation_capability as module
 
         forbidden = {
             "discover_capabilities",

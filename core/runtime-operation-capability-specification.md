@@ -1,9 +1,9 @@
-# AI Engineering Orchestra - Runtime Operation Capability Observation Specification
+# ITRU - Runtime Operation Capability Observation Specification
 
 Version: 0.1.0
 
 This document defines the canonical Runtime Operation Capability Observation
-contract for AI Engineering Orchestra v0.1.
+contract for ITRU v0.1.
 
 ---
 
@@ -442,7 +442,7 @@ availability-only. AIO-037 changes none of those contracts.
 
 Immutable values and pure deterministic snapshot validation are defined in:
 
-`engineering_orchestration.runtime_operation_capability`
+`itru.runtime_operation_capability`
 
 The submodule exposes:
 
@@ -485,7 +485,7 @@ root does not re-export these names.
 
 The shared package-internal vocabulary is implemented by:
 
-`engineering_orchestration._operation_vocabulary`
+`itru._operation_vocabulary`
 
 It exposes only:
 

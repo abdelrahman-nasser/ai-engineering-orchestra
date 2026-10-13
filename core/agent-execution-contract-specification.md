@@ -1,4 +1,4 @@
-# AI Engineering Orchestra - Agent Execution Contract Specification
+# ITRU - Agent Execution Contract Specification
 
 Status: Canonical for AIO-041
 
@@ -144,7 +144,7 @@ containment, permission, authorization, or readability.
 The canonical direct-import module is:
 
 ```text
-engineering_orchestration.agent_execution_contract
+itru.agent_execution_contract
 ```
 
 It defines these frozen public values:

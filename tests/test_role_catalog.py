@@ -10,8 +10,8 @@ from unittest.mock import patch
 
 import yaml
 
-from engineering_orchestration.actor_coverage import evaluate_actor_role_coverage
-from engineering_orchestration.role_catalog import (
+from itru.actor_coverage import evaluate_actor_role_coverage
+from itru.role_catalog import (
     CANONICAL_ROLE_IDS,
     RoleCatalogError,
     load_role_catalog,
@@ -71,7 +71,7 @@ class RoleCatalogTests(unittest.TestCase):
 
     def load_test_catalog(self):
         with patch(
-            "engineering_orchestration.role_catalog.find_default_roles_resource",
+            "itru.role_catalog.find_default_roles_resource",
             return_value=self.roles_dir,
         ):
             return load_role_catalog()
@@ -135,10 +135,10 @@ class RoleCatalogTests(unittest.TestCase):
     def test_missing_packaged_schema_is_infrastructure_error(self):
         self.seed_canonical()
         with patch(
-            "engineering_orchestration.role_catalog.find_default_roles_resource",
+            "itru.role_catalog.find_default_roles_resource",
             return_value=self.roles_dir,
         ), patch(
-            "engineering_orchestration.role_catalog.find_default_role_schema_path",
+            "itru.role_catalog.find_default_role_schema_path",
             return_value=None,
         ):
             catalog = load_role_catalog()
@@ -148,7 +148,7 @@ class RoleCatalogTests(unittest.TestCase):
 
     def test_missing_packaged_role_resources_is_infrastructure_error(self):
         with patch(
-            "engineering_orchestration.role_catalog.find_default_roles_resource",
+            "itru.role_catalog.find_default_roles_resource",
             return_value=None,
         ):
             catalog = load_role_catalog()
@@ -163,7 +163,7 @@ class RoleCatalogTests(unittest.TestCase):
 
     def test_raise_on_error_is_narrow_and_deterministic(self):
         with patch(
-            "engineering_orchestration.role_catalog.find_default_roles_resource",
+            "itru.role_catalog.find_default_roles_resource",
             return_value=None,
         ):
             with self.assertRaisesRegex(RoleCatalogError, "resources not found"):
@@ -207,7 +207,7 @@ class RoleCatalogTests(unittest.TestCase):
         self.assertEqual(catalog.role_ids, EXPECTED_ROLE_IDS)
 
     def test_runtime_module_contains_no_markdown_parser_path(self):
-        import engineering_orchestration.role_catalog as module
+        import itru.role_catalog as module
 
         source = inspect.getsource(module)
         self.assertNotIn(".md", source)

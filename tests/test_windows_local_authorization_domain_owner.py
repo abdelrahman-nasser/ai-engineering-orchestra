@@ -23,7 +23,7 @@ import unittest
 from unittest.mock import patch
 import uuid
 
-from engineering_orchestration.authorization_domain_ownership import (
+from itru.authorization_domain_ownership import (
     AuthorizationDomainAlreadyOwnedError,
     AuthorizationDomainOwnershipIntegrityError,
     AuthorizationDomainOwnershipStateError,
@@ -31,10 +31,10 @@ from engineering_orchestration.authorization_domain_ownership import (
     OwnedAuthorizationDomainSessionClosedError,
     OwnedAuthorizationDomainSessionLostError,
 )
-from engineering_orchestration.sqlite_agent_execution_dispatch_admission_store import (
+from itru.sqlite_agent_execution_dispatch_admission_store import (
     SqliteAgentExecutionDispatchAdmissionStoreConfiguration,
 )
-import engineering_orchestration.windows_local_authorization_domain_owner as subject
+import itru.windows_local_authorization_domain_owner as subject
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -492,7 +492,7 @@ class WindowsLocalAuthorizationDomainOwnerWin32Tests(unittest.TestCase):
                 "from pathlib import Path",
                 "import sys",
                 "sys.path.insert(0, sys.argv[2])",
-                "import engineering_orchestration.windows_local_authorization_domain_owner as subject",
+                "import itru.windows_local_authorization_domain_owner as subject",
                 "handle = subject._open_lock(Path(sys.argv[1]), subject._current_user_sid(), domain=True)",
                 "sys.stdout.buffer.write(b'locked\\n')",
                 "sys.stdout.buffer.flush()",

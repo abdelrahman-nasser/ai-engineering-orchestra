@@ -16,11 +16,12 @@ from threading import Barrier, Lock, Thread
 import unittest
 from unittest.mock import patch
 
-import engineering_orchestration.agent_execution_authorization_grant_producer as subject
-from engineering_orchestration.agent_execution_authorization_grant import (
+import itru.agent_execution_authorization_grant_producer as subject
+import itru.agent_operation_tool_registry as registry
+from itru.agent_execution_authorization_grant import (
     AgentExecutionAuthorizationGrant,
 )
-from engineering_orchestration.agent_execution_authorization_grant_producer import (
+from itru.agent_execution_authorization_grant_producer import (
     AgentExecutionAuthorizationGrantAuditMaterial,
     AgentExecutionAuthorizationGrantLifetimePolicy,
     AgentExecutionAuthorizationGrantProducer,
@@ -28,11 +29,11 @@ from engineering_orchestration.agent_execution_authorization_grant_producer impo
     AgentExecutionAuthorizationGrantProductionResult,
     AgentExecutionAuthorizationGrantRetryDisposition,
 )
-from engineering_orchestration.agent_execution_contract import (
+from itru.agent_execution_contract import (
     AgentExecutionContract,
 )
-from engineering_orchestration.agent_execution_run import AgentExecutionRun
-from engineering_orchestration.authorization_domain_ownership import (
+from itru.agent_execution_run import AgentExecutionRun
+from itru.authorization_domain_ownership import (
     AuthorizationDomainIdentity,
     AuthorizationDomainOperationLease,
     OwnedAuthorizationDomainSession,
@@ -620,6 +621,14 @@ class _Harness:
         )
         self.clock = clock or _Clock()
         self.grant_id_source = grant_id_source or _GrantIdSource()
+        built = registry._build_trusted_agent_operation_tool_registry_snapshot((
+            registry._make_itru_native_repository_file_read_registration(
+                "runtime::synthetic", "environment::synthetic",
+            ),
+        ))
+        self.new_work_gate = registry._ActiveCanonicalToolRouteGate(
+            built.snapshot, lambda run, existing: True,
+        )
         self.binding = subject._compose_agent_execution_authorization_grant_producer(
             owned_session=self.session,
             identity_adapter=self.identity_adapter,
@@ -634,6 +643,7 @@ class _Harness:
             lifetime_policy=self.lifetime_policy,
             utc_clock=self.clock,
             grant_id_source=self.grant_id_source,
+            new_work_gate=self.new_work_gate,
         )
         self.session.install_synthetic_port(self.binding.grant_authentication)
 
@@ -724,6 +734,7 @@ class _Harness:
             lifetime_policy=self.lifetime_policy,
             utc_clock=self.clock,
             grant_id_source=self.grant_id_source,
+            new_work_gate=self.new_work_gate,
         )
 
 
@@ -878,6 +889,7 @@ class ProducerContractTests(_ProducerAssertions):
                 "lifetime_policy",
                 "utc_clock",
                 "grant_id_source",
+                "new_work_gate",
             ),
         )
         self.assertTrue(
@@ -1957,3 +1969,33 @@ class ProducerPresentationTests(_ProducerAssertions):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ItruDirectGrantGateTests(unittest.TestCase):
+    def test_missing_or_retired_gate_rejects_before_entropy_or_issuance(self):
+        for mutation in ("absent", "retired", "wrong-route"):
+            with self.subTest(mutation=mutation):
+                h = _Harness()
+                exact_run = run()
+                principal = h.principal()
+                proof = h.human_proof(exact_run, principal)
+                if mutation == "absent":
+                    h.binding._state.new_work_gate = None
+                else:
+                    c = exact_run.contract
+                    registration = registry._make_itru_native_repository_file_read_registration(
+                        c.runtime_option_id if mutation == "retired" else "runtime::other", c.environment_id,
+                    )
+                    route = registry._AgentOperationToolRoute(c.runtime_option_id, c.environment_id, c.operation_id)
+                    built = registry._build_trusted_agent_operation_tool_registry_snapshot(
+                        (registration,), retired_routes=(route,) if mutation == "retired" else (),
+                    )
+                    h.binding._state.new_work_gate = registry._ActiveCanonicalToolRouteGate(
+                        built.snapshot, lambda run, existing: True,
+                    )
+                with patch.object(h.grant_id_source, "random_bytes", side_effect=AssertionError("must not allocate")):
+                    result = h.produce(exact_run, principal, proof)
+                self.assertIs(result.outcome, AgentExecutionAuthorizationGrantProductionOutcome.NOT_ENTITLED)
+                self.assertIsNone(result.presentation)
+                self.assertEqual(h.binding._state.issuances, {})
+                self.assertEqual(h.binding._state.allocated_grant_ids, set())

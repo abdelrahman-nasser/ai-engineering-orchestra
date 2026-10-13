@@ -3,24 +3,24 @@ requires = ["setuptools>=77.0.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ai-engineering-orchestra"
+name = "itru"
 version = "0.1.0"
-description = "Local CLI for AIO project inspection and declared verification"
+description = "Local CLI for ITRU project inspection and declared verification"
 requires-python = ">=3.12"
 dependencies = ["PyYAML>=6,<7", "jsonschema>=4.18,<5", "referencing>=0.28.4,<1"]
 
 [project.scripts]
-aio = "engineering_orchestration.cli:main"
+itru = "itru.cli:main"
 
 [tool.setuptools]
-packages = ["engineering_orchestration", "engineering_orchestration._schemas", "engineering_orchestration._roles", "engineering_orchestration._sqlite_admission_migrations"]
+packages = ["itru", "itru._schemas", "itru._roles", "itru._sqlite_admission_migrations"]
 include-package-data = false
 
 [tool.setuptools.package-dir]
-"engineering_orchestration._schemas" = "schemas"
-"engineering_orchestration._roles" = "roles"
+"itru._schemas" = "schemas"
+"itru._roles" = "roles"
 
 [tool.setuptools.package-data]
-"engineering_orchestration._schemas" = ["actor.schema.json", "actor-availability.schema.json", "actor-runtime-applicability.schema.json", "agent-operation-tool-binding.schema.json", "agent-execution-authorization-grant.schema.json", "agent-execution-dispatch-admission.schema.json", "agent-execution-authorization-evidence.schema.json", "agent-execution-contract.schema.json", "agent-execution-run.schema.json", "agent-runtime-option.schema.json", "agent-runtime-option-availability.schema.json", "assignment.schema.json", "environment-operation-permission.schema.json", "inference-option.schema.json", "inference-option-availability.schema.json", "operation-requirement.schema.json", "runtime-operation-capability.schema.json", "runtime-inference-compatibility.schema.json", "role.schema.json", "task.schema.json", "workflow.schema.json", "project-manifest.schema.json"]
-"engineering_orchestration._roles" = ["*.yaml"]
-"engineering_orchestration._sqlite_admission_migrations" = ["*.sql"]
+"itru._schemas" = ["actor.schema.json", "actor-availability.schema.json", "actor-runtime-applicability.schema.json", "agent-operation-tool-binding.schema.json", "agent-execution-authorization-grant.schema.json", "agent-execution-dispatch-admission.schema.json", "agent-execution-authorization-evidence.schema.json", "agent-execution-contract.schema.json", "agent-execution-run.schema.json", "agent-runtime-option.schema.json", "agent-runtime-option-availability.schema.json", "assignment.schema.json", "environment-operation-permission.schema.json", "inference-option.schema.json", "inference-option-availability.schema.json", "operation-requirement.schema.json", "runtime-operation-capability.schema.json", "runtime-inference-compatibility.schema.json", "role.schema.json", "task.schema.json", "workflow.schema.json", "project-manifest.schema.json"]
+"itru._roles" = ["*.yaml"]
+"itru._sqlite_admission_migrations" = ["*.sql"]

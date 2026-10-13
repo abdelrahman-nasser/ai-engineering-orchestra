@@ -1,9 +1,9 @@
-# AI Engineering Orchestra - Agent Runtime Option Availability Specification
+# ITRU - Agent Runtime Option Availability Specification
 
 Version: 0.1.0
 
 This document defines the canonical Agent Runtime Option Availability
-Observation contract for AI Engineering Orchestra v0.1.
+Observation contract for ITRU v0.1.
 
 ---
 
@@ -242,7 +242,7 @@ access, tools, capabilities, lifecycle, latency, region, or reasoning controls.
 
 The immutable value objects and pure snapshot validator are defined in:
 
-`engineering_orchestration.agent_runtime_option_availability`
+`itru.agent_runtime_option_availability`
 
 The API exposes `AgentRuntimeOptionAvailabilityState`,
 `AgentRuntimeOptionAvailabilityObservation`,

@@ -10,13 +10,13 @@ import unittest
 from unittest.mock import patch
 import urllib.request
 
-from engineering_orchestration.agent_runtime_option import (
+from itru.agent_runtime_option import (
     AgentRuntimeOptionDefinition,
     AgentRuntimeOptionFinding,
     AgentRuntimeOptionInventoryValidationResult,
     validate_agent_runtime_option_inventory,
 )
-from engineering_orchestration.schema_resources import load_validator
+from itru.schema_resources import load_validator
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -280,8 +280,8 @@ class AgentRuntimeOptionBoundaryTests(unittest.TestCase):
 
     def test_no_agent_definition_or_actor_runtime_compatibility_was_created(self) -> None:
         for relative in (
-            "engineering_orchestration/agent_definition.py",
-            "engineering_orchestration/actor_runtime_compatibility.py",
+            "itru/agent_definition.py",
+            "itru/actor_runtime_compatibility.py",
             "schemas/agent-definition.schema.json",
             "schemas/actor-runtime-compatibility.schema.json",
         ):

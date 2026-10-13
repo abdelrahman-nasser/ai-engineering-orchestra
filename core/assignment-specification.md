@@ -1,4 +1,4 @@
-# AI Engineering Orchestra - Assignment Specification
+# ITRU - Assignment Specification
 
 Version: 0.1.0
 
@@ -290,7 +290,7 @@ Authority is ordered as follows:
 
 1. `core/assignment-specification.md` is the semantic authority.
 2. `schemas/assignment.schema.json` is subordinate structural authority.
-3. `engineering_orchestration.assignment` provides pure semantic validation.
+3. `itru.assignment` provides pure semantic validation.
 4. `schemas/tests/validate_assignment.py` and fixtures are regression tooling.
 
 The runtime module performs no I/O, discovery, persistence, Actor selection,

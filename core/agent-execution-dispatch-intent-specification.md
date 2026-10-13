@@ -1,4 +1,4 @@
-# AI Engineering Orchestra - Agent Execution Dispatch Intent Specification
+# ITRU - Agent Execution Dispatch Intent Specification
 
 Status: Canonical semantic contract for AIO-055
 

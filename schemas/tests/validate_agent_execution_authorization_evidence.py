@@ -13,19 +13,19 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from engineering_orchestration.agent_execution_authorization_evidence import (
+from itru.agent_execution_authorization_evidence import (
     AgentExecutionAuthorizationAuthorityKind,
     AgentExecutionAuthorizationEvidence,
     AgentExecutionAuthorizationState,
     validate_agent_execution_authorization_evidence,
 )
-from engineering_orchestration.agent_runtime_option import (
+from itru.agent_runtime_option import (
     AgentRuntimeOptionDefinition,
 )
-from engineering_orchestration.assignment import Assignment
-from engineering_orchestration.inference_option import InferenceOptionDefinition
-from engineering_orchestration.role_catalog import RoleCatalog
-from engineering_orchestration.workflow_catalog import (
+from itru.assignment import Assignment
+from itru.inference_option import InferenceOptionDefinition
+from itru.role_catalog import RoleCatalog
+from itru.workflow_catalog import (
     WorkflowCatalog,
     WorkflowDefinition,
     WorkflowStage,
@@ -438,7 +438,7 @@ def semantic_result(
 
 def main() -> int:
     print(
-        "AI Engineering Orchestra - Agent Execution Authorization Evidence "
+        "ITRU - Agent Execution Authorization Evidence "
         "Validation"
     )
     print("=" * 78)

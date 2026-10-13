@@ -20,9 +20,9 @@ from unittest.mock import patch
 import urllib.request
 import uuid
 
-import engineering_orchestration
-import engineering_orchestration.agent_execution_authorization_grant as subject
-from engineering_orchestration.agent_execution_authorization_grant import (
+import itru
+import itru.agent_execution_authorization_grant as subject
+from itru.agent_execution_authorization_grant import (
     AgentExecutionAuthorizationGrant,
     AgentExecutionAuthorizationGrantCollectionValidationResult,
     AgentExecutionAuthorizationGrantFinding,
@@ -30,22 +30,22 @@ from engineering_orchestration.agent_execution_authorization_grant import (
     validate_agent_execution_authorization_grant,
     validate_agent_execution_authorization_grant_collection,
 )
-from engineering_orchestration.agent_execution_authorization_evidence import (
+from itru.agent_execution_authorization_evidence import (
     AgentExecutionAuthorizationAuthorityKind,
     AgentExecutionAuthorizationEvidence,
     AgentExecutionAuthorizationState,
 )
-from engineering_orchestration.agent_execution_contract import (
+from itru.agent_execution_contract import (
     AgentExecutionContract,
 )
-from engineering_orchestration.agent_execution_run import AgentExecutionRun
-from engineering_orchestration.schema_resources import load_validator
+from itru.agent_execution_run import AgentExecutionRun
+from itru.schema_resources import load_validator
 
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULE_PATH = (
     ROOT
-    / "engineering_orchestration"
+    / "itru"
     / "agent_execution_authorization_grant.py"
 )
 DOMAIN_ID = "authorization-domain::synthetic"
@@ -307,7 +307,7 @@ class AgentExecutionAuthorizationGrantValueTests(
         )
         for name in names:
             self.assertIn(name, vars(subject))
-            self.assertFalse(hasattr(engineering_orchestration, name))
+            self.assertFalse(hasattr(itru, name))
 
     def test_exact_grant_type_is_required_and_subclasses_are_rejected(self) -> None:
         expected = AgentExecutionAuthorizationGrantValidationResult(

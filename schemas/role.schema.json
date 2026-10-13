@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ai-engineering-orchestra.dev/schemas/role.schema.json",
-  "title": "AI Engineering Orchestra Role",
-  "description": "Structural schema for the AI Engineering Orchestra v0.1 normalized Role contract defined by core/role-specification.md.",
+  "title": "ITRU Role",
+  "description": "Structural schema for the ITRU v0.1 normalized Role contract defined by core/role-specification.md.",
   "type": "object",
   "additionalProperties": false,
   "required": [

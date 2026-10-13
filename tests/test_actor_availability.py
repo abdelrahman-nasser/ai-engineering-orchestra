@@ -10,17 +10,17 @@ import unittest
 from unittest.mock import patch
 import urllib.request
 
-from engineering_orchestration.actor_availability import (
+from itru.actor_availability import (
     ActorAvailabilityFinding,
     ActorAvailabilityObservation,
     ActorAvailabilityValidationResult,
     AvailabilityState,
     validate_actor_availability,
 )
-from engineering_orchestration.actor_coverage import evaluate_actor_role_coverage
-from engineering_orchestration.assignment import Assignment, validate_assignment
-from engineering_orchestration.role_catalog import load_role_catalog
-from engineering_orchestration.workflow_catalog import load_workflow_catalog
+from itru.actor_coverage import evaluate_actor_role_coverage
+from itru.assignment import Assignment, validate_assignment
+from itru.role_catalog import load_role_catalog
+from itru.workflow_catalog import load_workflow_catalog
 
 
 ROOT = Path(__file__).resolve().parents[1]

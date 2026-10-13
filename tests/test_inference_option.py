@@ -10,13 +10,13 @@ import unittest
 from unittest.mock import patch
 import urllib.request
 
-from engineering_orchestration.inference_option import (
+from itru.inference_option import (
     InferenceOptionDefinition,
     InferenceOptionFinding,
     InferenceOptionInventoryValidationResult,
     validate_inference_option_inventory,
 )
-from engineering_orchestration.schema_resources import load_validator
+from itru.schema_resources import load_validator
 
 
 ROOT = Path(__file__).resolve().parents[1]

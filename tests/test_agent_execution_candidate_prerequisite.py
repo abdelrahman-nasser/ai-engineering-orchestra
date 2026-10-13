@@ -10,40 +10,40 @@ from pathlib import Path
 import unittest
 from unittest.mock import patch
 
-import engineering_orchestration
-import engineering_orchestration.agent_execution_candidate_prerequisite as subject
-from engineering_orchestration.actor_availability import (
+import itru
+import itru.agent_execution_candidate_prerequisite as subject
+from itru.actor_availability import (
     ActorAvailabilityObservation,
     AvailabilityState,
 )
-from engineering_orchestration.actor_runtime_applicability import (
+from itru.actor_runtime_applicability import (
     ActorRuntimeApplicabilityEvidence,
 )
-from engineering_orchestration.agent_execution_candidate_prerequisite import (
+from itru.agent_execution_candidate_prerequisite import (
     AgentExecutionCandidatePrerequisiteFinding,
     AgentExecutionCandidatePrerequisiteOutcome,
     AgentExecutionCandidatePrerequisiteReason,
     AgentExecutionCandidatePrerequisiteResult,
     assess_agent_execution_candidate_prerequisites,
 )
-from engineering_orchestration.agent_runtime_option import (
+from itru.agent_runtime_option import (
     AgentRuntimeOptionDefinition,
 )
-from engineering_orchestration.agent_runtime_option_availability import (
+from itru.agent_runtime_option_availability import (
     AgentRuntimeOptionAvailabilityObservation,
     AgentRuntimeOptionAvailabilityState,
 )
-from engineering_orchestration.assignment import Assignment, validate_assignment
-from engineering_orchestration.inference_option import InferenceOptionDefinition
-from engineering_orchestration.inference_option_availability import (
+from itru.assignment import Assignment, validate_assignment
+from itru.inference_option import InferenceOptionDefinition
+from itru.inference_option_availability import (
     InferenceOptionAvailabilityObservation,
     InferenceOptionAvailabilityState,
 )
-from engineering_orchestration.role_catalog import load_role_catalog
-from engineering_orchestration.runtime_inference_compatibility import (
+from itru.role_catalog import load_role_catalog
+from itru.runtime_inference_compatibility import (
     RuntimeInferenceCompatibilityEvidence,
 )
-from engineering_orchestration.workflow_catalog import load_workflow_catalog
+from itru.workflow_catalog import load_workflow_catalog
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -954,7 +954,7 @@ class AgentExecutionCandidateBoundaryTests(AgentExecutionCandidateFixture):
 
     def test_module_imports_only_pure_domain_dependencies(self) -> None:
         tree = ast.parse(
-            (ROOT / "engineering_orchestration" /
+            (ROOT / "itru" /
              "agent_execution_candidate_prerequisite.py").read_text(
                 encoding="utf-8"
             )
@@ -998,13 +998,13 @@ class AgentExecutionCandidateBoundaryTests(AgentExecutionCandidateFixture):
         self.assertFalse((ROOT / ".ai" / "candidates").exists())
         self.assertFalse(
             hasattr(
-                engineering_orchestration,
+                itru,
                 "assess_agent_execution_candidate_prerequisites",
             )
         )
         self.assertNotIn(
             "candidate",
-            (ROOT / "engineering_orchestration" / "cli.py").read_text(
+            (ROOT / "itru" / "cli.py").read_text(
                 encoding="utf-8"
             ).lower(),
         )

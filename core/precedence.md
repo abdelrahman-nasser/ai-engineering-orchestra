@@ -1,4 +1,4 @@
-# AI Engineering Orchestra — Precedence Model
+# ITRU — Precedence Model
 
 Version: 0.1.0
 
@@ -8,7 +8,7 @@ This document defines how conflicting instructions, Rules, Policies, and configu
 
 ## 1. Purpose
 
-AI Engineering Orchestra may receive instructions from multiple layers.
+ITRU may receive instructions from multiple layers.
 
 A deterministic precedence model is required so Agents do not guess which instruction should win.
 
@@ -21,7 +21,7 @@ The Orchestra resolves instructions using both authority and specificity.
 Unless another protected rule explicitly applies, the following order is used from highest to lowest precedence:
 
 1. Protected security, safety, and platform Policies
-2. Orchestra Core Principles and protected Core Policies
+2. ITRU Core Principles and protected Core Policies
 3. Explicit Human instruction for the current Task
 4. Task-specific Policies
 5. Project Policies
@@ -33,7 +33,7 @@ Unless another protected rule explicitly applies, the following order is used fr
 11. Workflow Rules
 12. Role instructions
 13. Profile defaults
-14. Orchestra Core configuration defaults
+14. ITRU Core configuration defaults
 15. Provider defaults
 
 Higher-precedence instructions override lower-precedence instructions when both are valid and applicable.
@@ -46,7 +46,7 @@ This hierarchy distinguishes between:
 - Rules,
 - and configuration defaults.
 
-Orchestra Core Principles must not be interpreted as ordinary low-priority defaults.
+ITRU Core Principles must not be interpreted as ordinary low-priority defaults.
 
 Protected Policies cannot be weakened by lower-precedence configuration.
 
@@ -60,7 +60,7 @@ However, Human instructions remain subject to:
 
 - platform safety restrictions,
 - protected security and safety Policies,
-- protected Orchestra Core Policies,
+- protected ITRU Core Policies,
 - legally required restrictions,
 - explicitly defined approval procedures.
 

@@ -1,8 +1,8 @@
-# AI Engineering Orchestra — Terminology
+# ITRU — Terminology
 
 Version: 0.1.0
 
-This document defines the canonical terminology used by AI Engineering Orchestra.
+This document defines the canonical terminology used by ITRU.
 
 All Orchestra documentation, configurations, workflows, adapters, and agents must use these terms consistently.
 
@@ -10,7 +10,7 @@ All Orchestra documentation, configurations, workflows, adapters, and agents mus
 
 ## Orchestra
 
-The complete AI Engineering Orchestra framework.
+The complete ITRU framework.
 
 The Orchestra defines how AI-assisted software engineering work is structured, delegated, validated, reviewed, and controlled.
 
@@ -40,7 +40,7 @@ A Provider may supply an Agent Actor capable of fulfilling the Architect Role.
 ## Model
 
 A Provider-addressable inference capability. A model identifier is meaningful
-only within its Provider namespace; AIO v0.1 defines no global model namespace,
+only within its Provider namespace; ITRU v0.1 defines no global model namespace,
 Model contract, catalog, family, version, tier, or capability registry.
 
 Models may differ in:
@@ -454,14 +454,15 @@ The permanent historical mapping is an append-only partial function from the
 exact, case-sensitive Runtime/environment/operation route embedded in the Run
 to one canonical Tool ID. Optional aliases select complete active routes only
 before Run construction. Upgrades append a new Tool ID on a distinct route.
-Retirement blocks future pre-Run selection while retaining the permanent
-registration so historical Runs continue to resolve to the same Binding.
+Retirement blocks active selection and Binding resolution. Separate permanent
+historical facts preserve the original recorded Binding for authenticated
+evidence-only lookup and original revocation; they do not enter active indexes.
 
 The resolver preserves the exact nested Run object and never accepts a caller
 Binding, alias, Tool ID, route override, candidate list, or fallback choice.
 It performs no dynamic discovery, persistence, live availability probing,
 credential resolution, resource access, dispatch, or invocation. The initial
-`tool::aeo-native-repository-file-read::v1` registration is identity-only and
+`tool::itru-native-repository-file-read::v1` registration is identity-only and
 does not implement a callable repository reader. The canonical contract is
 defined in:
 
@@ -734,7 +735,7 @@ from the service boundary.
 
 Agent Service is distinct from Agent Runtime Option, bare model inference, and
 Inference Option. No Agent Service subtype, schema, or domain contract exists in
-AIO v0.1.
+ITRU v0.1.
 
 ---
 
@@ -764,7 +765,7 @@ state are not part of the Actor contract.
 An Agent Actor is logical identity, not an executable Agent definition. The
 latter may include instructions, tools, memory, state configuration, model
 policy, runtime binding, environment, sessions, permissions, and credentials;
-AIO v0.1 defines no canonical Agent Definition contract.
+ITRU v0.1 defines no canonical Agent Definition contract.
 
 When an Agent executes work, it may receive:
 
@@ -909,7 +910,7 @@ Future routing decisions should primarily use Capabilities instead of hardcoded 
 
 ## Task
 
-A Task is the canonical unit of scoped work managed through AI Engineering Orchestra.
+A Task is the canonical unit of scoped work managed through ITRU.
 
 Examples:
 
@@ -999,7 +1000,7 @@ A Quality Gate is not simply a recommendation.
 ## Project Verification Check
 
 A declarative project-owned definition of a mechanical repository check that can
-be executed programmatically by AIO to collect mechanical evidence.
+be executed programmatically by ITRU to collect mechanical evidence.
 **Verification Check** is the preferred short form when context is unambiguous.
 
 The declaration is owned by `core/project-manifest.md`, under
@@ -1010,7 +1011,7 @@ Execution Contract, or approval mechanism. Its ID is not a Quality Gate ID, and
 Verification Check PASS is not Quality Gate PASS. Mechanical evidence does not
 itself establish governance approval or confer execution authority.
 
-The contract, programmatic runner, and public `aio verify` composition execute
+The contract, programmatic runner, and public `itru verify` composition execute
 these declarations when the Human caller explicitly invokes full verification.
 This mechanism does not grant execution authority to Agents or establish Quality
 Gate results.
@@ -1069,7 +1070,7 @@ An instruction relevant to a project, technology, domain, or Task.
 
 Rules may originate from:
 
-- Orchestra Core
+- ITRU Core
 - Stack Module
 - organization
 - project
@@ -1141,7 +1142,7 @@ Stack Modules must not contain project-specific business Rules.
 
 ## Provider Adapter
 
-The integration layer between AI Engineering Orchestra and a specific AI Provider.
+The integration layer between ITRU and a specific AI Provider.
 
 Adapters translate Orchestra concepts into Provider-specific configuration where necessary.
 
@@ -1445,3 +1446,17 @@ Maintenance does not prohibit architectural improvement, but stability is the de
 The authoritative location for a specific category of information.
 
 Agents must prefer Sources of Truth over assumptions or duplicated documentation.
+
+## Cutover compatibility
+
+`AIO-059` preserves historical persisted
+`tool::aeo-native-repository-file-read::v1` evidence exactly. This is a legacy
+compatibility fact, absent from active registrations. Current native work uses
+only `tool::itru-native-repository-file-read::v1` on a distinct configured route.
+Active resolution rejects retired/legacy work; exact authenticated lookup and
+original revocation use the separate historical evidence boundary and cannot
+produce replacement authority. The permanent historical manifest remains
+append-only and cannot rebind a route.
+
+The [canonical cutover specification](itru-canonical-namespace-specification.md)
+supersedes predecessor historical-resolution behavior described by this document.

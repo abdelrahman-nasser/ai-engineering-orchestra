@@ -11,34 +11,34 @@ import unittest
 from unittest.mock import patch
 import urllib.request
 
-from engineering_orchestration.actor_availability import (
+from itru.actor_availability import (
     ActorAvailabilityObservation,
     AvailabilityState,
 )
-from engineering_orchestration.actor_selection import (
+from itru.actor_selection import (
     ActorSelectionOutcome,
     select_actor,
 )
-from engineering_orchestration.agent_runtime_option import (
+from itru.agent_runtime_option import (
     AgentRuntimeOptionDefinition,
 )
-from engineering_orchestration.agent_runtime_option_availability import (
+from itru.agent_runtime_option_availability import (
     AgentRuntimeOptionAvailabilityFinding,
     AgentRuntimeOptionAvailabilityObservation,
     AgentRuntimeOptionAvailabilityState,
     AgentRuntimeOptionAvailabilityValidationResult,
     validate_agent_runtime_option_availability,
 )
-from engineering_orchestration.assignment import Assignment, validate_assignment
-from engineering_orchestration.inference_option import InferenceOptionDefinition
-from engineering_orchestration.inference_option_availability import (
+from itru.assignment import Assignment, validate_assignment
+from itru.inference_option import InferenceOptionDefinition
+from itru.inference_option_availability import (
     InferenceOptionAvailabilityObservation,
     InferenceOptionAvailabilityState,
     validate_inference_option_availability,
 )
-from engineering_orchestration.role_catalog import load_role_catalog
-from engineering_orchestration.schema_resources import load_validator
-from engineering_orchestration.workflow_catalog import load_workflow_catalog
+from itru.role_catalog import load_role_catalog
+from itru.schema_resources import load_validator
+from itru.workflow_catalog import load_workflow_catalog
 
 
 ROOT = Path(__file__).resolve().parents[1]

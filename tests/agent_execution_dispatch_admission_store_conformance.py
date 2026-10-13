@@ -13,20 +13,20 @@ from datetime import datetime, timezone
 import threading
 from typing import Callable
 
-from engineering_orchestration.agent_execution_authorization_grant import (
+from itru.agent_execution_authorization_grant import (
     AgentExecutionAuthorizationGrant,
 )
-from engineering_orchestration.agent_execution_contract import (
+from itru.agent_execution_contract import (
     AgentExecutionContract,
 )
-from engineering_orchestration.agent_execution_dispatch_admission_store import (
+from itru.agent_execution_dispatch_admission_store import (
     _mint_admission_request,
     _mint_authoritative_lookup_request,
     _mint_guarded_history_request,
     _mint_revocation_request,
 )
-from engineering_orchestration.agent_execution_run import AgentExecutionRun
-from engineering_orchestration.agent_operation_tool_binding import (
+from itru.agent_execution_run import AgentExecutionRun
+from itru.agent_operation_tool_binding import (
     AgentOperationToolBinding,
 )
 

@@ -9,15 +9,15 @@ import unittest
 from unittest.mock import patch
 import urllib.request
 
-from engineering_orchestration.inference_option import InferenceOptionDefinition
-from engineering_orchestration.inference_option_availability import (
+from itru.inference_option import InferenceOptionDefinition
+from itru.inference_option_availability import (
     InferenceOptionAvailabilityFinding,
     InferenceOptionAvailabilityObservation,
     InferenceOptionAvailabilityState,
     InferenceOptionAvailabilityValidationResult,
     validate_inference_option_availability,
 )
-from engineering_orchestration.schema_resources import load_validator
+from itru.schema_resources import load_validator
 
 
 def option(

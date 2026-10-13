@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ai-engineering-orchestra.dev/schemas/agent-runtime-option-availability.schema.json",
-  "title": "AI Engineering Orchestra Agent Runtime Option Availability Observation",
-  "description": "Structural schema for the AI Engineering Orchestra v0.1 Agent Runtime Option Availability Observation contract defined by core/agent-runtime-option-availability-specification.md.",
+  "title": "ITRU Agent Runtime Option Availability Observation",
+  "description": "Structural schema for the ITRU v0.1 Agent Runtime Option Availability Observation contract defined by core/agent-runtime-option-availability-specification.md.",
   "type": "object",
   "additionalProperties": false,
   "required": [

@@ -52,7 +52,7 @@ This specification defines:
 - immutable scoped Tool identity and no-rebind rules;
 - optional pre-Run aliases to complete canonical routes;
 - new-route/new-Tool-ID upgrades;
-- retirement as pre-Run selection policy while preserving history;
+- retirement enforced by active selection/resolution, with separate preserved history;
 - deterministic restart and append-only package-upgrade resolution;
 - exact Runtime, environment, and operation applicability;
 - canonical Binding construction through the unchanged AIO-047 resolver port;
@@ -113,7 +113,8 @@ value remains AIO-047 `invalid_input`.
 | --- | --- |
 | Trusted composition root | Supply package-owned declarations, atomically build the snapshot, and inject the paired resolver |
 | Pre-Run routing | Select one active complete route, optionally through an alias, before Run construction |
-| Registry snapshot | Preserve permanent route and scoped Tool-ID mappings plus current alias and retirement policy |
+| Active registry snapshot | Resolve only eligible current routes with exact aliases and retirement policy |
+| Permanent historical manifest | Preserve original route/Tool facts without active registration |
 | AIO-051 resolver | Reconstruct one exact Binding from the Grant's complete Run and permanent mapping |
 | AIO-047 coordinator and Store | Validate the Binding, reconstruct the expected Run, classify history, consume authority, and create or return Admission |
 | Future dispatcher and adapter | Recheck retirement and availability, enforce containment and permission, and invoke |
@@ -327,17 +328,12 @@ compatibility requires:
 F_new restricted to domain(F_old) == F_old
 ```
 
-Therefore the same complete Run resolves to the same Binding across repeated
-resolution, process restart, and an append-only package upgrade. Adding a new
-route cannot alter an old result. Retirement changes only current selection
-policy and never changes `F`.
-
-This proof fails if a route is rebound, an alias supplies a Tool after Run
-creation, or an old Registration disappears. If same-route upgrade,
-post-Run alias choice, or resolver-enforced distinction between new work and
-history becomes required, implementation MUST stop for a Human architecture
-decision between durable Run-to-Tool selection state and a Run/AIO-047
-contract change. AIO-051 introduces neither.
+The permanent manifest preserves the exact original Binding identity across
+restarts and upgrades. Active resolution applies only to eligible current routes;
+retirement changes eligibility without rewriting the historical mapping. Missing
+or rebound historical declarations fail closed. A new route must be distinct;
+changing a Run ID alone never permits rebinding. Historical evidence retrieval
+is separate from active Binding production.
 
 ## Cross-release preservation and fingerprint limits
 
@@ -404,47 +400,30 @@ Admission is upgraded or mutated.
 
 ## Retirement model
 
-Retirement never deletes, changes, or rebinds a Registration. It marks the
-route nonselectable in a separate monotonic current pre-Run policy index.
+Retirement preserves permanent historical facts and never rebinds a route.
+Pre-Run selection and active Binding resolution of retired routes return
+`tool_retired` without a selected route or new Binding. Legacy Tool declarations
+are rejected by the active builder; an alias cannot reactivate them.
 
-Pre-Run selection of a retired route returns `tool_retired` and no selected
-route. An alias cannot make a retired route selectable for a new Run.
-Reactivation requires a new architecture decision.
-
-The unchanged AIO-047 port receives only the Grant and is called before both
-guarded historical lookup and new Admission work. It cannot distinguish those
-uses. The resolver therefore remains total for every retained registered route,
-including retired routes, and reconstructs the original Binding. It MUST NOT
-return `None` merely because the route is retired; otherwise exact historical
-retry/load would become unreachable.
-
-Trusted upstream composition MUST create new Runs only from active selected
-routes. AIO-051 cannot prove that a caller did not fabricate a new post-
-retirement Run because route-selection provenance is absent from the Run and
-Grant.
-
-A future dispatcher MUST perform a fresh retirement and just-in-time
-availability check before invocation and fail closed without Tool substitution.
-Historical Binding and Admission identity remain unchanged.
+Authenticated exact historical lookup and original revocation use the separate
+`_HistoricalExecutionEvidenceBoundary`, not the active resolver. The recorded
+Binding remains unchanged, including its original Tool ID. Decoding it is not
+active selection or authority. Intrinsic Binding validation remains capable of
+reading old values. Claim/renewal/Entry/invocation reject legacy work.
 
 ## Restart and package-upgrade behavior
 
-On restart, trusted composition atomically rebuilds the snapshot from the full
-package-owned historical manifest. Under the permanent-route invariant, the
-same Run resolves to the same Binding.
+Trusted composition rebuilds the active view and separate complete permanent
+historical manifest. Existing recorded Bindings are verified against historical
+facts without producing new Bindings. Eligible current routes resolve through
+the active view; historical evidence lookup uses the original durable record.
 
-A compatible upgrade may only:
-
-- append a new route and new Tool identity;
-- retire an old route while retaining its Registration; or
-- add or retarget an alias to another registered complete route for future
-  Runs.
-
-It may not remove an old Registration, change an old route mapping, reuse an
-old scoped Tool ID, reinterpret a selector, reactivate a retired route, or
-retarget an existing Run. Missing history fails closed as
-`historical_mapping_missing`; it MUST NOT consult a network, source checkout,
-prior snapshot, alternate registry, alias, or fallback Tool.
+Compatible upgrades append distinct routes and Tool identities. Retirement can
+remove active eligibility but never delete or reinterpret a historical fact.
+Aliases affect eligible future selection only. Existing Run, route, scoped Tool
+identity and implementation meaning remain permanent. Missing or rebound history
+fails closed; no alternate registry, alias, network or identity normalization
+supplies a replacement.
 
 ## Pre-Run selection
 
@@ -464,7 +443,7 @@ a fallback or infer a compatible route.
 1. require the exact `AgentExecutionAuthorizationGrant` concrete type;
 2. intrinsically validate the complete Grant;
 3. read the route only from `grant.run.contract`;
-4. perform one exact lookup in the immutable permanent historical route map;
+4. reject retired/legacy work and look up its eligible active route;
 5. fail closed on missing, contradictory, or integrity-invalid state;
 6. construct
    `AgentOperationToolBinding(run=grant.run, tool_id=registration.tool_id)`;
@@ -501,21 +480,21 @@ Physical repository-root association, symlink/junction/reparse handling,
 containment, file kind, size, encoding, time-of-check/time-of-use control,
 permission, and opening belong to a future adapter and dispatch boundary.
 
-## First Tool identity
+## Current native Tool identity
 
-The first canonical Tool ID is:
+The current canonical native Tool ID is:
 
 ```text
-tool::aeo-native-repository-file-read::v1
+tool::itru-native-repository-file-read::v1
 ```
 
 Its closed implementation selector is:
 
 ```text
-AEO_NATIVE_REPOSITORY_FILE_READ_V1
+ITRU_NATIVE_REPOSITORY_FILE_READ_V1
 ```
 
-It denotes the immutable v1 identity of an AEO-owned native Python
+It denotes the immutable v1 identity of an ITRU-owned native Python
 `repository_file_read` implementation family. Every production Registration
 still requires an exact Runtime Option, environment, and
 `repository_file_read` route. No wildcard is allowed.
@@ -573,8 +552,8 @@ integrity_failure
 ```
 
 Operation-specific result types use only coherent subsets. `tool_retired`
-belongs to pre-Run selection and future dispatch policy, never historical
-resolution. `historical_mapping_missing` identifies a route trusted
+belongs to active selection/resolution and dispatch policy, never evidence-only
+historical lookup. `historical_mapping_missing` identifies a route trusted
 composition was required to retain. No availability outcome may be fabricated
 without a prohibited availability probe.
 
@@ -650,11 +629,11 @@ Internal errors collapse to closed outcomes.
 Synthetic tests MUST prove:
 
 ```text
-same immutable snapshot + same Run -> same Binding
-restart + rebuilt identical historical manifest + same Run -> same Binding
+same immutable snapshot + eligible active same Run -> same Binding
+restart + complete permanent manifest + authenticated lookup -> original recorded Binding
 append-only package upgrade + old Run -> old tool_id and same Binding
 new route appended + new Run -> new tool_id without changing old Binding
-retired registration + historical Run -> same historical Binding
+retired registration + authenticated history lookup -> original recorded Binding
 retired route + pre-Run selection -> tool_retired and no selected route
 missing historical mapping -> fail closed, no remap
 same-route replacement attempt -> invalid snapshot or release evidence
@@ -693,12 +672,12 @@ independent. Dispatch is **No** in every scenario.
 | 20 | Tool changes after Admission | Existing Binding and Admission unchanged | No |
 | 21 | Historical mapping missing after upgrade | Stop before Store disclosure | No |
 | 22 | Package appends new Tool on new route | Old and new route-specific Bindings preserved | No |
-| 23 | Package retires old Tool | Historical resolver returns original Binding | No |
+| 23 | Package retires old Tool | Authenticated historical boundary returns recorded Binding; active resolution rejects | No |
 | 24 | Canonical route mapping changes | Rebind evidence; stop and remediate history | No |
 | 25 | First `repository_file_read` Registration | Identity-only synthetic resolution | No |
 | 26 | Same route, new `run_id`, attempted new Tool | Original identity or invalid configuration; no upgrade | No |
 | 27 | Upgrade via distinct encoded route | New Run receives new Binding; old Binding unchanged | No |
-| 28 | Retired historical exact retry/load | Same original Binding; guarded history remains reachable | No |
+| 28 | Retired historical exact retry/load | Original recorded Binding through the separate authenticated history boundary | No |
 | 29 | Resolver returns `None` or raises | AIO-047 `untrusted_tool_binding` | No |
 | 30 | Resolver returns wrong or invalid type | AIO-047 `invalid_input` | No |
 | 31 | Resolver returns Binding with different Run | AIO-047 `invalid_input` | No |
@@ -745,14 +724,27 @@ boundary.
 
 ## Foundation limitations
 
-This foundation relies on trusted package composition and append-only release
-review. It does not independently attest prior package history, authenticate
-arbitrary in-process callers, persist Run-to-Tool choices, distinguish new
-Admission work from historical lookup at the AIO-047 port, or enforce future
-dispatch retirement.
+The foundation relies on trusted package composition and permanent historical
+manifest/release review. It does not independently attest prior package history
+or turn recorded data into current execution authority. Active resolution rejects
+retired/legacy work; the separate authenticated historical boundary reads
+existing evidence and revokes exact original authority without issuance.
 
-A requirement for same-route replacement, resolver-level new-versus-history
-retirement enforcement, public/cross-process registry values, persistent
-selection, callable adapters, live discovery, availability, credentials,
-physical containment, dispatch, or invocation requires a separate Human-
-approved architecture change.
+Same-route replacement, public/cross-process registry values, persistent Tool
+selection, live discovery or expanded adapter semantics still require a separate
+Human-approved architecture change. The implemented cutover does not add these
+capabilities or widen public signatures.
+
+## Cutover compatibility
+
+`AIO-059` preserves historical persisted
+`tool::aeo-native-repository-file-read::v1` evidence exactly. This is a legacy
+compatibility fact, absent from active registrations. Current native work uses
+only `tool::itru-native-repository-file-read::v1` on a distinct configured route.
+Active resolution rejects retired/legacy work; exact authenticated lookup and
+original revocation use the separate historical evidence boundary and cannot
+produce replacement authority. The permanent historical manifest remains
+append-only and cannot rebind a route.
+
+The [canonical cutover specification](itru-canonical-namespace-specification.md)
+supersedes predecessor historical-resolution behavior described by this document.

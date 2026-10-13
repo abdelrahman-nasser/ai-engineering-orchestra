@@ -1,8 +1,8 @@
-# AI Engineering Orchestra - Actor Specification
+# ITRU - Actor Specification
 
 Version: 0.1.0
 
-This document defines the canonical Actor contract for AI Engineering Orchestra
+This document defines the canonical Actor contract for ITRU
 v0.1.
 
 ---
@@ -151,7 +151,7 @@ eligibility without changing the current Role schema.
 
 The reusable evaluator is:
 
-`engineering_orchestration.actor_coverage.evaluate_actor_role_coverage`
+`itru.actor_coverage.evaluate_actor_role_coverage`
 
 It consumes already-normalized data. It does not discover Role files, parse Role
 Markdown, scan repositories, load Actor catalogs, consult Providers, or inspect

@@ -13,10 +13,10 @@ from jsonschema import Draft202012Validator
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
-from engineering_orchestration.workflow_catalog import semantic_uniqueness_errors
+from itru.workflow_catalog import semantic_uniqueness_errors
 
-from engineering_orchestration.role_catalog import load_role_catalog
-from engineering_orchestration.schema_resources import schema_errors
+from itru.role_catalog import load_role_catalog
+from itru.schema_resources import schema_errors
 
 SCHEMA_PATH = REPO_ROOT / "schemas" / "workflow.schema.json"
 FIXTURE_DIR = REPO_ROOT / "schemas" / "tests" / "workflow"
@@ -146,7 +146,7 @@ def load_yaml(path: Path) -> Any:
 
 
 def main() -> int:
-    print("AI Engineering Orchestra - Workflow validation (repository tests only)")
+    print("ITRU - Workflow validation (repository tests only)")
     if not check_fixture_coverage():
         return 1
     try:

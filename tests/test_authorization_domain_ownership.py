@@ -10,8 +10,8 @@ from pathlib import Path
 import pickle
 import unittest
 
-import engineering_orchestration.authorization_domain_ownership as subject
-from engineering_orchestration.authorization_domain_ownership import (
+import itru.authorization_domain_ownership as subject
+from itru.authorization_domain_ownership import (
     AuthorizationDomainAlreadyOwnedError,
     AuthorizationDomainIdentity,
     AuthorizationDomainOperationLease,
@@ -31,7 +31,7 @@ from engineering_orchestration.authorization_domain_ownership import (
 ROOT = Path(__file__).resolve().parents[1]
 MODULE_PATH = (
     ROOT
-    / "engineering_orchestration"
+    / "itru"
     / "authorization_domain_ownership.py"
 )
 IDENTITY = AuthorizationDomainIdentity(

@@ -1,9 +1,9 @@
-# AI Engineering Orchestra - Runtime-to-Inference Compatibility Specification
+# ITRU - Runtime-to-Inference Compatibility Specification
 
 Version: 0.1.0
 
 This document defines the canonical Runtime-to-Inference Compatibility Evidence
-contract for AI Engineering Orchestra v0.1.
+contract for ITRU v0.1.
 
 ---
 
@@ -388,7 +388,7 @@ context.
 
 Immutable values and pure deterministic validation are defined in:
 
-`engineering_orchestration.runtime_inference_compatibility`
+`itru.runtime_inference_compatibility`
 
 The module exposes:
 

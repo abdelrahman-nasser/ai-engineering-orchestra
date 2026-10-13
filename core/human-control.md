@@ -1,4 +1,4 @@
-# AI Engineering Orchestra — Human Control Model
+# ITRU — Human Control Model
 
 Version: 0.1.0
 
@@ -8,7 +8,7 @@ This document defines how Human authority interacts with AI Agents, Workflows, Q
 
 ## 1. Purpose
 
-AI Engineering Orchestra is designed to increase engineering autonomy without removing Human control.
+ITRU is designed to increase engineering autonomy without removing Human control.
 
 The Orchestra may automate:
 

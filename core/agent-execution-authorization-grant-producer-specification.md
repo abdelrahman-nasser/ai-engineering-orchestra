@@ -994,7 +994,7 @@ exact retry disposition and must not silently switch Human/policy channels.
 The Producer is provider-neutral. Windows SID authentication, OIDC, passkeys,
 workload identity, mTLS, remote policy services, and future provider adapters
 belong behind the identity and authority ports. No provider becomes a permanent
-architectural dependency of Orchestra Core.
+architectural dependency of ITRU Core.
 
 ---
 

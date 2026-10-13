@@ -3,7 +3,7 @@
 import ast
 import hashlib
 import importlib
-import engineering_orchestration.role_catalog as role_catalog
+import itru.role_catalog as role_catalog
 from importlib.metadata import EntryPoint
 import json
 from pathlib import Path
@@ -12,14 +12,14 @@ import tomllib
 import unittest
 from unittest.mock import patch
 
-from engineering_orchestration import cli
-from engineering_orchestration.role_catalog import (
+from itru import cli
+from itru.role_catalog import (
     find_default_roles_resource,
     load_role_catalog,
 )
-from engineering_orchestration.schema_resources import load_validator, schema_resource
-from engineering_orchestration._sqlite_admission_migrations import MIGRATIONS
-from engineering_orchestration.sqlite_agent_execution_dispatch_admission_store import (
+from itru.schema_resources import load_validator, schema_resource
+from itru._sqlite_admission_migrations import MIGRATIONS
+from itru.sqlite_agent_execution_dispatch_admission_store import (
     _migration_bytes,
 )
 
@@ -66,12 +66,12 @@ class PackagingTests(unittest.TestCase):
                          {"PyYAML>=6,<7", "jsonschema>=4.18,<5",
                           "referencing>=0.28.4,<1"})
         self.assertEqual(data["project"]["scripts"],
-                         {"aio": "engineering_orchestration.cli:main"})
+                         {"itru": "itru.cli:main"})
         self.assertEqual(data["build-system"]["build-backend"], "setuptools.build_meta")
 
     def test_console_alias_loads_same_callable(self):
-        for name in ("aio", "rook"):
-            entry = EntryPoint(name=name, value="engineering_orchestration.cli:main",
+        for name in ("itru", "rook"):
+            entry = EntryPoint(name=name, value="itru.cli:main",
                                group="console_scripts")
             self.assertIs(entry.load(), cli.main)
 
@@ -79,7 +79,7 @@ class PackagingTests(unittest.TestCase):
         for name in ("cli", "list_tasks", "inspect_task", "verify_repo", "workflow_catalog"):
             with self.subTest(name=name):
                 legacy = importlib.import_module(f"scripts.{name}")
-                packaged = importlib.import_module(f"engineering_orchestration.{name}")
+                packaged = importlib.import_module(f"itru.{name}")
                 self.assertIs(legacy, packaged)
                 tree = ast.parse((ROOT / "scripts" / f"{name}.py").read_text(encoding="utf-8"))
                 self.assertFalse(any(isinstance(n, (ast.FunctionDef, ast.ClassDef))
@@ -105,37 +105,22 @@ class PackagingTests(unittest.TestCase):
             )
 
     def test_packaged_sqlite_admission_migration_is_allowlisted_and_checksummed(self):
-        self.assertEqual(len(MIGRATIONS), 1)
-        migration = MIGRATIONS[0]
+        self.assertEqual(len(MIGRATIONS), 4)
         loaded = _migration_bytes()
         self.assertIn(
-            "engineering_orchestration/_sqlite_admission_migrations/*.sql "
-            "text eol=lf",
+            "itru/_sqlite_admission_migrations/*.sql text eol=lf",
             (ROOT / ".gitattributes").read_text(encoding="utf-8").splitlines(),
         )
-        self.assertNotIn(b"\r", loaded[0][3])
-        self.assertEqual(
-            loaded,
-            ((
-                migration.migration_id,
-                migration.resource_name,
-                migration.sha256,
-                (
-                    ROOT
-                    / "engineering_orchestration"
-                    / "_sqlite_admission_migrations"
-                    / migration.resource_name
-                ).read_bytes(),
-            ),),
-        )
-        self.assertEqual(
-            hashlib.sha256(loaded[0][3]).hexdigest(),
-            migration.sha256,
-        )
+        self.assertEqual(len(loaded), 4)
+        for migration, value in zip(MIGRATIONS, loaded, strict=True):
+            source = (ROOT / "itru" / "_sqlite_admission_migrations" / migration.resource_name).read_bytes()
+            self.assertEqual(value, (migration.migration_id, migration.resource_name, migration.sha256, source))
+            self.assertNotIn(b"\r", source)
+            self.assertEqual(hashlib.sha256(source).hexdigest(), migration.sha256)
 
     def test_missing_sqlite_admission_migration_fails_without_fallback(self):
         with tempfile.TemporaryDirectory() as folder, patch(
-            "engineering_orchestration."
+            "itru."
             "sqlite_agent_execution_dispatch_admission_store.files",
             return_value=Path(folder),
         ):
@@ -203,7 +188,7 @@ class PackagingTests(unittest.TestCase):
                 (ROOT / "schemas" / "agent-execution-run.schema.json").read_bytes()
             )
             with patch(
-                "engineering_orchestration.schema_resources.files",
+                "itru.schema_resources.files",
                 return_value=resources,
             ):
                 with self.assertRaisesRegex(
@@ -228,7 +213,7 @@ class PackagingTests(unittest.TestCase):
                 encoding="utf-8",
             )
             with patch(
-                "engineering_orchestration.schema_resources.files",
+                "itru.schema_resources.files",
                 return_value=resources,
             ):
                 with self.assertRaisesRegex(ValueError, "canonical ID mismatch"):
@@ -305,7 +290,7 @@ class PackagingTests(unittest.TestCase):
                             (ROOT / "schemas" / name).read_bytes()
                         )
                 with patch(
-                    "engineering_orchestration.schema_resources.files",
+                    "itru.schema_resources.files",
                     return_value=resources,
                 ):
                     with self.assertRaisesRegex(FileNotFoundError, missing_name):
@@ -342,7 +327,7 @@ class PackagingTests(unittest.TestCase):
                         encoding="utf-8",
                     )
                 with patch(
-                    "engineering_orchestration.schema_resources.files",
+                    "itru.schema_resources.files",
                     return_value=resources,
                 ):
                     with self.assertRaisesRegex(ValueError, "canonical ID mismatch"):
@@ -426,7 +411,7 @@ class PackagingTests(unittest.TestCase):
                             (ROOT / "schemas" / name).read_bytes()
                         )
                 with patch(
-                    "engineering_orchestration.schema_resources.files",
+                    "itru.schema_resources.files",
                     return_value=resources,
                 ):
                     with self.assertRaisesRegex(FileNotFoundError, missing_name):
@@ -462,7 +447,7 @@ class PackagingTests(unittest.TestCase):
                         encoding="utf-8",
                     )
                 with patch(
-                    "engineering_orchestration.schema_resources.files",
+                    "itru.schema_resources.files",
                     return_value=resources,
                 ):
                     with self.assertRaisesRegex(ValueError, "canonical ID mismatch"):
@@ -476,22 +461,22 @@ class PackagingTests(unittest.TestCase):
 
     def test_missing_installed_schema_never_uses_checkout_fallback(self):
         with tempfile.TemporaryDirectory() as folder:
-            with patch("engineering_orchestration.schema_resources.files", return_value=Path(folder)):
+            with patch("itru.schema_resources.files", return_value=Path(folder)):
                 self.assertIsNone(schema_resource("task.schema.json"))
 
     def test_missing_installed_roles_never_use_checkout_fallback(self):
         with tempfile.TemporaryDirectory() as folder:
-            missing = ModuleNotFoundError(name="engineering_orchestration._roles")
-            with patch("engineering_orchestration.role_catalog.files", side_effect=missing), \
-                    patch("engineering_orchestration.role_catalog.__file__",
+            missing = ModuleNotFoundError(name="itru._roles")
+            with patch("itru.role_catalog.files", side_effect=missing), \
+                    patch("itru.role_catalog.__file__",
                           str(Path(folder) / "package" / "role_catalog.py")):
                 self.assertIsNone(role_catalog.find_default_roles_resource())
 
     def test_uninstalled_resource_failure_does_not_search_target(self):
         with tempfile.TemporaryDirectory() as folder:
-            missing = ModuleNotFoundError(name="engineering_orchestration._schemas")
-            with patch("engineering_orchestration.schema_resources.files", side_effect=missing), \
-                    patch("engineering_orchestration.schema_resources.__file__",
+            missing = ModuleNotFoundError(name="itru._schemas")
+            with patch("itru.schema_resources.files", side_effect=missing), \
+                    patch("itru.schema_resources.__file__",
                           str(Path(folder) / "package" / "schema_resources.py")):
                 self.assertIsNone(schema_resource("task.schema.json"))
 
@@ -507,19 +492,19 @@ class PackagingTests(unittest.TestCase):
         config = data["tool"]["setuptools"]
         self.assertFalse(config["include-package-data"])
         self.assertEqual(config["packages"],
-                         ["engineering_orchestration", "engineering_orchestration._schemas",
-                          "engineering_orchestration._roles",
-                          "engineering_orchestration._sqlite_admission_migrations"])
+                         ["itru", "itru._schemas",
+                          "itru._roles",
+                          "itru._sqlite_admission_migrations"])
         self.assertEqual(config["package-data"], {
-            "engineering_orchestration._schemas": list(PACKAGED_SCHEMAS),
-            "engineering_orchestration._roles": ["*.yaml"],
-            "engineering_orchestration._sqlite_admission_migrations": ["*.sql"],
+            "itru._schemas": list(PACKAGED_SCHEMAS),
+            "itru._roles": ["*.yaml"],
+            "itru._sqlite_admission_migrations": ["*.sql"],
         })
 
     def test_documented_scope_is_local_and_verify_is_portable(self):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
         self.assertIn("project-declared Verification Checks", readme)
-        self.assertIn("aio verify --structure", readme)
+        self.assertIn("itru verify --structure", readme)
         self.assertIn("no sandbox", readme)
         self.assertIn("No PyPI publication", readme)
         self.assertIn("does not\ncomplete the future public distribution milestone", readme)

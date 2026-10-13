@@ -1,14 +1,14 @@
-# AI Engineering Orchestra — Task Specification
+# ITRU — Task Specification
 
 Version: 0.1.0
 
-This document defines the canonical Task contract for AI Engineering Orchestra v0.1.
+This document defines the canonical Task contract for ITRU v0.1.
 
 ---
 
 ## 1. Purpose
 
-A Task is the canonical unit of scoped work managed through AI Engineering Orchestra.
+A Task is the canonical unit of scoped work managed through ITRU.
 
 A Task defines:
 
@@ -50,7 +50,7 @@ Recommended directory format:
 Example:
 
 ```text
-AIO-004-task-specification
+ITRU-060-example-task
 ```
 
 A Task directory name is a repository organization convention.
@@ -129,7 +129,7 @@ Task files own Task-specific intent and execution requirements.
 They do not own canonical definitions belonging to:
 
 - the Project Manifest
-- Orchestra Core Principles
+- ITRU Core Principles
 - Policies
 - Project Rules
 - Workflows
@@ -177,7 +177,7 @@ Unknown top-level fields are unsupported in the v0.1 Task contract unless a futu
 Example:
 
 ```yaml
-id: AIO-004
+id: ITRU-060
 ```
 
 Requirements:
@@ -573,7 +573,7 @@ Example:
 
 ```yaml
 objective: >
-  Define the canonical Task contract for AI Engineering Orchestra.
+  Define the canonical Task contract for ITRU.
 ```
 
 Requirements:
@@ -784,7 +784,7 @@ Task-specific Policies and Rules may have higher precedence than Project-level R
 However, Task configuration cannot weaken:
 
 - protected security or safety Policies
-- Orchestra Core Principles
+- ITRU Core Principles
 - protected Core Policies
 - applicable higher-precedence Policies
 
@@ -1138,3 +1138,14 @@ Current validation may be performed through:
 - independent review
 
 CLI-based Task validation remains reserved for a later Orchestra version.
+
+## Project cutover Task creation policy
+
+For this project's new Task creation after cutover closure, the first candidate
+is `ITRU-060`; later IDs use the same canonical prefix and numeric sequence.
+`AIO-001` through `AIO-059` remain exact historical references, with `AIO-059`
+the final legacy transition Task. Historical IDs do not authorize creating new
+legacy work. Examples of future candidates do not create or authorize a Task.
+The prospective validator is in `tests/test_itru_namespace.py`; it checks
+supplied IDs and directory names without enumerating the Task catalog. This
+project policy does not narrow the generic serialized Task schema.

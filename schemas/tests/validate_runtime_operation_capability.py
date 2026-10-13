@@ -13,10 +13,10 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from engineering_orchestration.agent_runtime_option import (
+from itru.agent_runtime_option import (
     AgentRuntimeOptionDefinition,
 )
-from engineering_orchestration.runtime_operation_capability import (
+from itru.runtime_operation_capability import (
     RuntimeOperationCapabilityObservation,
     RuntimeOperationCapabilityState,
     validate_runtime_operation_capability,
@@ -219,7 +219,7 @@ def semantic_result(
 
 def main() -> int:
     print(
-        "AI Engineering Orchestra - Runtime Operation Capability Validation"
+        "ITRU - Runtime Operation Capability Validation"
     )
     print("=" * 72)
     if not check_fixture_coverage():

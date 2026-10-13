@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ai-engineering-orchestra.dev/schemas/workflow.schema.json",
-  "title": "AI Engineering Orchestra Workflow",
+  "title": "ITRU Workflow",
   "description": "Structural validation of normalized v0.1 Workflow objects; semantically subordinate to core/workflow-specification.md. Schema validity does not prove governance correctness.",
   "type": "object",
   "additionalProperties": false,

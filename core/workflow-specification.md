@@ -1,8 +1,8 @@
-# AI Engineering Orchestra — Workflow Specification
+# ITRU — Workflow Specification
 
 Version: 0.1.0
 
-> Authoritative semantic contract for Workflows in AI Engineering Orchestra.
+> Authoritative semantic contract for Workflows in ITRU.
 > This specification governs Workflow semantics. If a future Workflow schema is introduced, this specification takes precedence.
 
 ---
@@ -23,7 +23,7 @@ The initial reusable Workflow definitions are maintained in that directory.
 
 ## 2. Architectural Boundary
 
-AI Engineering Orchestra enforces a strict separation of concerns across framework contracts:
+ITRU enforces a strict separation of concerns across framework contracts:
 
 | Concern | Authoritative Source | Boundary |
 | --- | --- | --- |
@@ -63,7 +63,7 @@ Requirements:
 - MUST be unique across all Workflows in the project.
 - MUST be stable — changing an ID is a breaking change.
 
-Canonical AIO Workflow definitions use kebab-case identifiers by convention (e.g., `standard-change`, `architecture-change`). This convention is not a normative identifier grammar in v0.1.
+Canonical ITRU Workflow definitions use kebab-case identifiers by convention (e.g., `standard-change`, `architecture-change`). This convention is not a normative identifier grammar in v0.1.
 
 Example:
 
@@ -154,7 +154,7 @@ Requirements:
 - MUST be unique within the Workflow's `stages` list.
 - MUST be stable within the containing Workflow.
 
-Canonical AIO Workflow definitions use kebab-case stage identifiers by convention (e.g., `understand`, `implement`, `validate`, `review`). This convention is not a normative identifier grammar in v0.1.
+Canonical ITRU Workflow definitions use kebab-case stage identifiers by convention (e.g., `understand`, `implement`, `validate`, `review`). This convention is not a normative identifier grammar in v0.1.
 
 ### `purpose`
 
@@ -221,9 +221,9 @@ human_control_checkpoint: true
 
 ## 5. Normative Workflow Invariants
 
-The following normative rules govern all Workflows in AI Engineering Orchestra:
+The following normative rules govern all Workflows in ITRU:
 
-1. **Declarative Choreography**: An AIO Workflow is declarative and SHALL NOT itself constitute an executable workflow graph.
+1. **Declarative Choreography**: An ITRU Workflow is declarative and SHALL NOT itself constitute an executable workflow graph.
 2. **Class of Work**: A Workflow defines reusable governance/process stages for a class of engineering work.
 3. **No Actor Coupling**: A Workflow SHALL NOT identify, instantiate, configure, or select an Agent or Human actor.
 4. **No Provider Coupling**: A Workflow SHALL NOT identify or configure an AI Provider or model.
@@ -240,7 +240,7 @@ The following normative rules govern all Workflows in AI Engineering Orchestra:
 
 ## 6. Stage Progression and Transition Model
 
-In AI Engineering Orchestra v0.1, Workflows use **simple ordered stages only**.
+In ITRU v0.1, Workflows use **simple ordered stages only**.
 
 ### Sequential Progression
 
@@ -324,7 +324,7 @@ Future Execution Contract
   └─ provides: runtime context, tools, and permissions to the selected actor
 ```
 
-Workflows reference Roles directly. AI Engineering Orchestra does not introduce an intermediate "responsibility requirement" taxonomy between Workflow and Role.
+Workflows reference Roles directly. ITRU does not introduce an intermediate "responsibility requirement" taxonomy between Workflow and Role.
 
 Portable validation resolves `required_roles` against the framework-owned Role
 catalog. An unresolved Role ID is semantic cross-resource failure, not a
@@ -425,7 +425,7 @@ Specifically:
 
 ## 10. Execution Mode Relationship
 
-Execution Mode (`core/task-specification.md`) and Workflow are **orthogonal** concepts in AI Engineering Orchestra v0.1:
+Execution Mode (`core/task-specification.md`) and Workflow are **orthogonal** concepts in ITRU v0.1:
 
 - **Workflow**: Defines the sequence of governance stages, required Roles, and Quality Gates for a *class of engineering work* (e.g., standard change, architecture change).
 - **Execution Mode**: Defines the Provider-neutral, Task-wide minimum depth,
@@ -468,11 +468,11 @@ In v0.1:
 
 ## 12. External-Runtime Boundary
 
-AI Engineering Orchestra governance choreography is strictly separated from executable workflow orchestration:
+ITRU governance choreography is strictly separated from executable workflow orchestration:
 
 ```text
 ┌────────────────────────────────────────────────────────┐
-│ AI Engineering Orchestra (AIO Governance Choreography) │
+│ ITRU (ITRU Governance Choreography) │
 │                                                        │
 │ - Required governance stages                           │
 │ - Sequential stage order                               │
@@ -497,7 +497,7 @@ AI Engineering Orchestra governance choreography is strictly separated from exec
 └────────────────────────────────────────────────────────┘
 ```
 
-**Normative Rule**: Without an external execution runtime, an AIO Workflow remains declarative documentation and is non-executable by itself.
+**Normative Rule**: Without an external execution runtime, an ITRU Workflow remains declarative documentation and is non-executable by itself.
 
 ---
 
@@ -547,7 +547,7 @@ A separate `documentation-change` Workflow is intentionally excluded because doc
 
 Canonical Workflow instance definitions in `workflows/` are serialized as YAML documents (`workflows/*.yaml`).
 
-- YAML is the authoritative machine-readable serialization format for Workflow instance definitions in AI Engineering Orchestra.
+- YAML is the authoritative machine-readable serialization format for Workflow instance definitions in ITRU.
 - Markdown is no longer the canonical per-Workflow data representation. Historical Markdown paths (`workflows/*.md`) are preserved solely as minimal non-authoritative compatibility stubs for historical links and task review records; they contain no workflow contract data and must not be parsed by tooling.
 - Canonical Workflow representation is declarative process choreography data and SHALL NOT imply runtime execution, scheduling, or actor dispatch.
 

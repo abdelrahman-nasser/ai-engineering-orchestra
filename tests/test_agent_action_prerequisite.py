@@ -11,39 +11,39 @@ from pathlib import Path
 import unittest
 from unittest.mock import patch
 
-import engineering_orchestration
-import engineering_orchestration.agent_action_prerequisite as subject
-from engineering_orchestration.agent_action_prerequisite import (
+import itru
+import itru.agent_action_prerequisite as subject
+from itru.agent_action_prerequisite import (
     AgentActionPrerequisiteFinding,
     AgentActionPrerequisiteOutcome,
     AgentActionPrerequisiteReason,
     AgentActionPrerequisiteResult,
     assess_agent_action_prerequisites,
 )
-from engineering_orchestration.agent_execution_authorization_evidence import (
+from itru.agent_execution_authorization_evidence import (
     AgentExecutionAuthorizationAuthorityKind,
     AgentExecutionAuthorizationEvidence,
     AgentExecutionAuthorizationFinding,
     AgentExecutionAuthorizationState,
     AgentExecutionAuthorizationValidationResult,
 )
-from engineering_orchestration.agent_execution_candidate_prerequisite import (
+from itru.agent_execution_candidate_prerequisite import (
     AgentExecutionCandidatePrerequisiteFinding,
     AgentExecutionCandidatePrerequisiteOutcome,
     AgentExecutionCandidatePrerequisiteReason,
     AgentExecutionCandidatePrerequisiteResult,
 )
-from engineering_orchestration.agent_runtime_option import (
+from itru.agent_runtime_option import (
     AgentRuntimeOptionDefinition,
 )
-from engineering_orchestration.environment_operation_permission import (
+from itru.environment_operation_permission import (
     EnvironmentOperationPermissionFinding,
     EnvironmentOperationPermissionObservation,
     EnvironmentOperationPermissionState,
     EnvironmentOperationPermissionValidationResult,
 )
-from engineering_orchestration.operation_requirement import OperationRequirement
-from engineering_orchestration.runtime_operation_capability import (
+from itru.operation_requirement import OperationRequirement
+from itru.runtime_operation_capability import (
     RuntimeOperationCapabilityFinding,
     RuntimeOperationCapabilityObservation,
     RuntimeOperationCapabilityState,
@@ -402,7 +402,7 @@ class AgentActionPrerequisiteValueTests(AgentActionPrerequisiteFixture):
             "assess_agent_action_prerequisites",
         ):
             with self.subTest(name=name):
-                self.assertFalse(hasattr(engineering_orchestration, name))
+                self.assertFalse(hasattr(itru, name))
 
 
 class AgentActionPrerequisiteScenarioTests(AgentActionPrerequisiteFixture):
@@ -1563,7 +1563,7 @@ class AgentActionPrerequisiteSafetyBoundaryTests(
         self,
     ) -> None:
         tree = ast.parse(
-            (ROOT / "engineering_orchestration" /
+            (ROOT / "itru" /
              "agent_action_prerequisite.py").read_text(encoding="utf-8")
         )
         imported_roots: set[str] = set()

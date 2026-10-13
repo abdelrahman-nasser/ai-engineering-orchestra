@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ai-engineering-orchestra.dev/schemas/agent-execution-contract.schema.json",
-  "title": "AI Engineering Orchestra Agent Execution Contract",
+  "title": "ITRU Agent Execution Contract",
   "description": "Structural schema for one Agent Execution Contract value defined by core/agent-execution-contract-specification.md.",
   "type": "object",
   "additionalProperties": false,

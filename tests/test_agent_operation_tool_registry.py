@@ -9,10 +9,10 @@ from types import MappingProxyType
 import unittest
 from unittest.mock import patch
 
-import engineering_orchestration
-import engineering_orchestration.agent_operation_tool_registry as subject
-from engineering_orchestration.agent_operation_tool_registry import (
-    _AEO_NATIVE_REPOSITORY_FILE_READ_TOOL_ID,
+import itru
+import itru.agent_operation_tool_registry as subject
+from itru.agent_operation_tool_registry import (
+    _ITRU_NATIVE_REPOSITORY_FILE_READ_TOOL_ID,
     _AgentOperationToolImplementationSelector,
     _AgentOperationToolRegistration,
     _AgentOperationToolRegistryAuditMaterial,
@@ -26,7 +26,7 @@ from engineering_orchestration.agent_operation_tool_registry import (
     _TrustedAgentOperationToolRegistrySnapshot,
     _agent_operation_tool_registry_retry_disposition,
     _build_trusted_agent_operation_tool_registry_snapshot,
-    _make_aeo_native_repository_file_read_registration,
+    _make_itru_native_repository_file_read_registration,
     _resolve_agent_operation_tool_registration,
     _select_agent_operation_tool_route,
 )
@@ -34,7 +34,7 @@ from engineering_orchestration.agent_operation_tool_registry import (
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULE_PATH = (
-    ROOT / "engineering_orchestration" / "agent_operation_tool_registry.py"
+    ROOT / "itru" / "agent_operation_tool_registry.py"
 )
 RUNTIME_ID = "runtime::synthetic"
 ENVIRONMENT_ID = "environment::synthetic"
@@ -42,7 +42,7 @@ OPERATION_ID = "repository_file_read"
 TOOL_ID = "tool::synthetic-repository-reader::v1"
 SELECTOR = (
     _AgentOperationToolImplementationSelector.
-    AEO_NATIVE_REPOSITORY_FILE_READ_V1
+    ITRU_NATIVE_REPOSITORY_FILE_READ_V1
 )
 
 
@@ -135,7 +135,7 @@ class RegistryPrivateContractTests(RegistryFixture):
     ) -> None:
         self.assertEqual(subject.__all__, ())
         self.assertFalse(
-            hasattr(engineering_orchestration, "TrustedAgentOperationToolRegistry")
+            hasattr(itru, "TrustedAgentOperationToolRegistry")
         )
         self.assertEqual(
             [item.name for item in fields(_AgentOperationToolRoute)],
@@ -223,13 +223,13 @@ class RegistryPrivateContractTests(RegistryFixture):
     def test_native_registration_factory_is_exact_identity_only_and_closed(
         self,
     ) -> None:
-        supplied = _make_aeo_native_repository_file_read_registration(
+        supplied = _make_itru_native_repository_file_read_registration(
             RUNTIME_ID,
             ENVIRONMENT_ID,
         )
         self.assertEqual(
             supplied,
-            registration(tool_id=_AEO_NATIVE_REPOSITORY_FILE_READ_TOOL_ID),
+            registration(tool_id=_ITRU_NATIVE_REPOSITORY_FILE_READ_TOOL_ID),
         )
         self.assertIs(type(supplied), _AgentOperationToolRegistration)
         self.assertIs(type(supplied.implementation_selector), type(SELECTOR))
@@ -250,7 +250,7 @@ class RegistryPrivateContractTests(RegistryFixture):
                 runtime=bad_runtime,
                 environment=bad_environment,
             ), self.assertRaises(ValueError):
-                _make_aeo_native_repository_file_read_registration(
+                _make_itru_native_repository_file_read_registration(
                     bad_runtime,  # type: ignore[arg-type]
                     bad_environment,  # type: ignore[arg-type]
                 )

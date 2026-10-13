@@ -1,8 +1,8 @@
-# AI Engineering Orchestra — Core Principles
+# ITRU — Core Principles
 
 Version: 0.1.0
 
-These principles apply to every project using AI Engineering Orchestra.
+These principles apply to every project using ITRU.
 
 ---
 

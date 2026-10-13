@@ -32,11 +32,11 @@ import unittest
 import zipfile
 from unittest import mock
 
-import engineering_orchestration.sqlite_agent_execution_dispatch_admission_store as subject
-import engineering_orchestration._local_dispatch_claim_lease as adapter
-from engineering_orchestration.authorization_domain_ownership import AuthorizationDomainIdentity
-from engineering_orchestration.agent_execution_dispatch_admission import AgentExecutionDispatchAdmission
-from engineering_orchestration.agent_execution_dispatch_admission_store import _mint_revocation_request
+import itru.sqlite_agent_execution_dispatch_admission_store as subject
+import itru._local_dispatch_claim_lease as adapter
+from itru.authorization_domain_ownership import AuthorizationDomainIdentity
+from itru.agent_execution_dispatch_admission import AgentExecutionDispatchAdmission
+from itru.agent_execution_dispatch_admission_store import _mint_revocation_request
 from tests import test_atomic_durable_dispatch_outbox as outbox
 from tests import test_sqlite_agent_execution_dispatch_admission_store as fixture
 from tests import test_local_operational_trust as integrated
@@ -1740,12 +1740,12 @@ class DispatchClaimLeaseTests(unittest.TestCase):
         import tomllib
         data = tomllib.loads((ROOT / 'pyproject.toml').read_text(encoding='utf-8'))
         self.assertEqual(data['tool']['setuptools']['packages'],
-                         ['engineering_orchestration', 'engineering_orchestration._schemas',
-                          'engineering_orchestration._roles', 'engineering_orchestration._sqlite_admission_migrations'])
-        self.assertEqual(data['tool']['setuptools']['package-data']['engineering_orchestration._sqlite_admission_migrations'], ['*.sql'])
+                         ['itru', 'itru._schemas',
+                          'itru._roles', 'itru._sqlite_admission_migrations'])
+        self.assertEqual(data['tool']['setuptools']['package-data']['itru._sqlite_admission_migrations'], ['*.sql'])
         self.assertFalse(data['tool']['setuptools']['include-package-data'])
         self.assertEqual(len(subject._migration_bytes()), 3)
-        self.assertNotIn('claim', ' '.join(data['tool']['setuptools']['package-data']['engineering_orchestration._schemas']))
+        self.assertNotIn('claim', ' '.join(data['tool']['setuptools']['package-data']['itru._schemas']))
         # Explicit P1 prerequisite, supplied only by the reviewed validation command.
         owned = Path(os.environ['AIO056_PACKAGE_EVIDENCE'])
         self.assertEqual(owned.resolve(), owned)
@@ -1754,11 +1754,11 @@ class DispatchClaimLeaseTests(unittest.TestCase):
         self.assertFalse(owned.is_symlink() or owned.is_junction())
         manifest = json.loads((owned / 'source-map.json').read_text())
         self.assertEqual((owned / '.aio056-owner').read_text(), manifest['nonce'])
-        wheel = owned / 'wheel/ai_engineering_orchestra-0.1.0-py3-none-any.whl'
+        wheel = owned / 'wheel/itru-0.1.0-py3-none-any.whl'
         with zipfile.ZipFile(wheel) as archive:
             names = archive.namelist()
             self.assertEqual(len(names), len(set(names)))
-            dist = 'ai_engineering_orchestra-0.1.0.dist-info/'
+            dist = 'itru-0.1.0.dist-info/'
             extras = {dist + name for name in ('METADATA', 'WHEEL', 'entry_points.txt', 'top_level.txt', 'RECORD')}
             self.assertEqual(set(names), set(manifest['package']) | extras)
             for name, digest in manifest['package'].items():
@@ -1766,14 +1766,14 @@ class DispatchClaimLeaseTests(unittest.TestCase):
             for relative, digest in manifest['inputs'].items():
                 self.assertEqual(hashlib.sha256((ROOT / relative).read_bytes()).hexdigest(), digest, relative)
             for _, name, digest, resource in subject._migration_bytes():
-                self.assertEqual(archive.read('engineering_orchestration/_sqlite_admission_migrations/' + name), resource)
+                self.assertEqual(archive.read('itru/_sqlite_admission_migrations/' + name), resource)
             self.assertTrue(all(not name.startswith(('experiments/', 'tests/', '.ai/')) for name in names))
 
     def test_C112_process_safety_and_no_invocation(self):
         self._child(self.configuration, 'timeout', timeout=2)
         self.assertTrue(PROCESS_EVIDENCE)
         self.assertTrue(all(closed and reaped for _, _, _, _, closed, reaped in PROCESS_EVIDENCE))
-        tree = ast.parse((ROOT / 'engineering_orchestration/_local_dispatch_claim_lease.py').read_text(encoding='utf-8'))
+        tree = ast.parse((ROOT / 'itru/_local_dispatch_claim_lease.py').read_text(encoding='utf-8'))
         imports = [n.names[0].name for n in ast.walk(tree) if isinstance(n, ast.Import)]
         self.assertEqual(imports, ['os', 'secrets', 'threading'])
         for name in ('invoke', 'launch', 'transport', 'result', 'schedule', 'execute'):

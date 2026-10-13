@@ -1,4 +1,4 @@
-# AI Engineering Orchestra - Agent Execution Dispatch Admission Specification
+# ITRU - Agent Execution Dispatch Admission Specification
 
 Status: Canonical for AIO-047
 
@@ -157,7 +157,7 @@ operation under its serial order.
 The canonical direct-import module is:
 
 ```text
-engineering_orchestration.agent_execution_dispatch_admission
+itru.agent_execution_dispatch_admission
 ```
 
 It defines these frozen public values:

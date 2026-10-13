@@ -1,8 +1,8 @@
-# AI Engineering Orchestra — Project Lifecycle
+# ITRU — Project Lifecycle
 
 Version: 0.1.0
 
-This document defines the project lifecycle concepts used by AI Engineering Orchestra.
+This document defines the project lifecycle concepts used by ITRU.
 
 ---
 

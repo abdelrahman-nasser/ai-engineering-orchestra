@@ -21,47 +21,47 @@ import unittest
 from unittest.mock import patch
 import urllib.request
 
-import engineering_orchestration
-import engineering_orchestration.environment_operation_permission as permission
-from engineering_orchestration._repository_resource import (
+import itru
+import itru.environment_operation_permission as permission
+from itru._repository_resource import (
     RepositoryResourceValidationIssue,
     validate_repository_resource,
 )
-from engineering_orchestration.agent_runtime_option import (
+from itru.agent_runtime_option import (
     AgentRuntimeOptionDefinition,
 )
-from engineering_orchestration.agent_runtime_option_availability import (
+from itru.agent_runtime_option_availability import (
     AgentRuntimeOptionAvailabilityObservation,
     AgentRuntimeOptionAvailabilityState,
     validate_agent_runtime_option_availability,
 )
-from engineering_orchestration.environment_operation_permission import (
+from itru.environment_operation_permission import (
     EnvironmentOperationPermissionFinding,
     EnvironmentOperationPermissionObservation,
     EnvironmentOperationPermissionState,
     EnvironmentOperationPermissionValidationResult,
     validate_environment_operation_permission,
 )
-from engineering_orchestration.operation_requirement import (
+from itru.operation_requirement import (
     OperationRequirement,
     validate_operation_requirement,
 )
-from engineering_orchestration.runtime_operation_capability import (
+from itru.runtime_operation_capability import (
     RuntimeOperationCapabilityObservation,
     RuntimeOperationCapabilityState,
     validate_runtime_operation_capability,
 )
-from engineering_orchestration.schema_resources import load_validator
+from itru.schema_resources import load_validator
 
 
 ROOT = Path(__file__).resolve().parents[1]
 PERMISSION_MODULE = (
     ROOT
-    / "engineering_orchestration"
+    / "itru"
     / "environment_operation_permission.py"
 )
 RESOURCE_MODULE = (
-    ROOT / "engineering_orchestration" / "_repository_resource.py"
+    ROOT / "itru" / "_repository_resource.py"
 )
 
 
@@ -1169,9 +1169,9 @@ class EnvironmentOperationPermissionPurityTests(unittest.TestCase):
                 "dataclasses",
                 "enum",
                 "typing",
-                "engineering_orchestration._operation_vocabulary",
-                "engineering_orchestration._repository_resource",
-                "engineering_orchestration.agent_runtime_option",
+                "itru._operation_vocabulary",
+                "itru._repository_resource",
+                "itru.agent_runtime_option",
             },
         )
         self.assertEqual(
@@ -1322,7 +1322,7 @@ class EnvironmentOperationPermissionBoundaryTests(unittest.TestCase):
             "validate_environment_operation_permission",
         ):
             with self.subTest(name=name):
-                self.assertFalse(hasattr(engineering_orchestration, name))
+                self.assertFalse(hasattr(itru, name))
 
     def test_no_environment_policy_authorization_or_execution_api_exists(
         self,

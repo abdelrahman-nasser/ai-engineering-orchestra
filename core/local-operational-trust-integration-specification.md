@@ -1,4 +1,4 @@
-# AI Engineering Orchestra - Local Operational Trust Integration Specification
+# ITRU - Local Operational Trust Integration Specification
 
 Status: Canonical for AIO-053
 
@@ -163,11 +163,12 @@ Trusted composition then follows this order:
 4. Construct the AIO-049 owner with the real resolver, fresh prerequisite and
    mode ports, trusted clock, and independent revocation-authentication port.
 5. Acquire one live Owned Authorization Domain Session by exact domain ID.
-6. Compose one AIO-050 Producer/paired-authentication binding for that exact
-   session.
+6. Verify stored Bindings against the separate permanent historical manifest;
+   compose the mandatory canonical route/occurrence gate and AIO-050 binding for
+   that exact session.
 7. Bind and seal the latch to that exact paired port.
-8. Publish the Local Operational Trust Coordinator only after all preceding
-   steps succeed.
+8. Pin the separate authenticated historical request authority on the store
+   once, then publish the Coordinator only after all preceding steps succeed.
 
 No partially constructed coordinator, unbound session, raw Store, or
 authentication port is published.
@@ -272,12 +273,12 @@ presentation to the owned session.
 The first integrated route uses this exact Tool identity:
 
 ```text
-tool::aeo-native-repository-file-read::v1
+tool::itru-native-repository-file-read::v1
 ```
 
 The registration has identity only. It contains no callable adapter or
 repository-read behavior. The integration constructs an immutable AIO-051
-snapshot and uses the real historical resolver to produce the canonical
+snapshot and uses the active canonical resolver to produce the canonical
 two-field Agent Operation Tool Binding.
 
 The Local Operational Trust Coordinator accepts no caller Binding, Tool ID,
@@ -285,9 +286,9 @@ alias, route override, or fallback. Unknown routes, mismatched Runtime,
 environment, operation, or resource, Tool-ID rebinding, and alternate-Tool
 selection fail at their owning boundary.
 
-Retirement applies at the AIO-051 pre-Run selection boundary. Because this
-coordinator receives an already complete Run, retained historical resolution
-remains total and is not reinterpreted as a new selection.
+Retirement applies to active selection and Binding resolution. An old or retired
+Run cannot obtain a new Binding. The separate permanent manifest preserves the
+original identity for authenticated historical lookup and original revocation.
 
 No Tool is invoked and no repository resource is opened.
 
@@ -336,7 +337,7 @@ value.
 
 ---
 
-## 11. Admission Ownership
+## 11. Positive Admission Ownership
 
 The only Admission path is:
 
@@ -344,7 +345,7 @@ The only Admission path is:
 owned_session.admit(opaque_presentation)
 ```
 
-AIO-047 remains the sole owner of:
+For the positive `admit` path, AIO-047 remains the sole owner of:
 
 - Grant authentication ordering;
 - intrinsic Grant and Binding validation;
@@ -356,14 +357,15 @@ AIO-047 remains the sole owner of:
 - AIO-042 Run reconstruction;
 - exact three-way Run equality;
 - authoritative decision time and currentness;
-- revocation ordering;
+- positive-path revocation checks;
 - atomic Grant and Run consumption; and
-- exact historical retry and persistence, including the AIO-055 same-ledger
+- positive-path exact retry and persistence, including the AIO-055 same-ledger
   atomic Intent extension and immutable legacy classification.
 
-The integration never calls the SQLite Store directly, never mints an
-AIO-047 authority-internal request, and never moves freshness work ahead of
-guarded history.
+The positive `admit` integration never calls the SQLite Store directly or mints
+an AIO-047 authority-internal request. The separate historical boundary uses
+disjoint private read/negative requests and storage leaves under the owned
+operation. This is not a positive Admission path or fresh authority source.
 
 ---
 
@@ -376,64 +378,57 @@ identical Run, authenticated principal proof, authority proof, and lifetime
 may recover AIO-050's identical opaque presentation as
 `existing_exact_issuance`. No replacement Grant or presentation is issued.
 
-### 12.2 Post-Admission exact retry
+### 12.2 Post-Admission exact historical lookup
 
-The same presentation re-enters the same live session. AIO-047
-re-authenticates it, reproduces the exact Binding, and returns exact
-authoritative history before fresh-parent collection, mode resolution, clock
-sampling, or another write.
+`load_authoritative_admission(run, authenticated_principal, authority_proof)`
+uses the private historical evidence boundary. It authenticates genuine current
+proof membership, subject, issuer, domain/ledger/generation, adapter epochs and
+validity windows under the original owned operation, with a separately configured
+history-access policy. It reads the exact recorded Admission/Grant/Binding and
+returns the original values unchanged. It never calls `produce`, the active
+resolver or a new Binding factory. Absence never creates authority.
 
 ### 12.3 Inter-lease loss
 
-If issuance succeeds but the second lease cannot be acquired, only the same
-presentation may be retried, and only while the exact session remains live.
-A closed, fenced, lost, restarted, or generation-changed session requires the
-existing AIO-050 new-session/new-Run recovery rule.
+If issuance succeeds but the Admission lease is lost, an exact live presentation
+can be retried only while its original session remains valid. Ownership drift or
+fencing cannot issue replacement authority. Durable occurrence checks reject
+reused historical Run IDs even if a nested runtime value changes.
 
 ### 12.4 Restart boundaries
 
-Before Admission, process restart loses proofs, issuance registry, Producer,
-session, and presentation. Recovery requires a new session, new Run, fresh
-authority, and new Grant.
+Process restart loses current proofs, live issuance and presentations. Existing
+durable Admission and revocation records remain exact historical evidence. Fresh
+current proofs and explicit history-access policy allow the boundary to read an
+existing exact Run/issuer occurrence after restart. This is decoding recorded
+values, not restoring a positive presentation or new-work authority.
 
-After Admission, the AIO-047 SQLite record and its AIO-055 Intent or legacy
-classification remain durable and authoritative as history,
-but the integrated path cannot reload it without the lost AIO-050
-presentation. The integration does not invent durable presentation storage.
-
-An identically reconstructed append-only AIO-051 snapshot can reproduce the
-historical Binding for an old Run and Grant. It cannot authenticate an old
-Grant or recover a lost presentation or Admission.
-
-There is no integration retry ID, presentation persistence, Producer
-persistence, or unsupported cross-restart retrieval path.
+The trusted composition requires the complete permanent route manifest and
+rejects missing or rebound historical Binding mappings. New canonical work uses
+a distinct explicitly configured route and a new occurrence. No presentation
+persistence, historical row rewrite or automatic identity normalization occurs.
 
 ---
 
-## 13. Revocation
+## 13. Exact original revocation
 
-Revocation uses an independently authenticated synthetic original-issuer
-edge. Its private revocation presentation binds:
+`revoke` retains its existing public signature/result family. The historical
+boundary locates already-existing authority and independently authenticates the
+original issuer's current revoke intent, exact stored Grant, domain and supplied
+provenance. It uses a disjoint sealed negative request, never a new Grant or
+Binding. Read permission alone cannot revoke.
 
-- the independent original-issuer proof;
-- the original opaque AIO-050 issued presentation;
-- the exact session, authorization domain, and generation;
-- explicit revocation intent; and
-- fresh provenance.
+Inside the existing serialized writer, recheck proofs, policy, ownership and
+complete record identity before appending one original revocation tombstone and
+the required monotonic decision-watermark update. Exact retry returns the
+existing tombstone; commit-unknown requires reconciliation on the same ledger.
+No recorded Grant/Binding/Admission is rewritten.
 
-Under `owned_session.revoke(...)` and its own AIO-049 operation lease, the
-revocation-authentication port validates those bindings. It then forwards the
-embedded issued presentation unchanged through the sealed latch and paired
-AIO-050 port. Only AIO-050 recovers the canonical Grant.
-
-The issuance presentation alone does not authorize revocation. The
-integration constructs or caches no raw Grant and performs no direct Store
-seeding. A missing, stale, foreign, or malformed revocation proof returns no
-authenticated Grant and leaves the Store untouched.
-
-AIO-047 owns the serialization order. Revocation before a new Admission makes
-that Admission fail as revoked. Revocation after an Admission preserves the
-immutable historical Admission while recording the tombstone.
+A revocation-only row proves no unstored Binding or Tool identity. An already
+issued current-era unadmitted Grant can be referenced through sealed live state
+without another production call. Absent historical authority is never issued
+merely to revoke it. Historical capabilities cannot enter production, active
+resolution, Admission, Claim/Entry or controlled invocation.
 
 ---
 
@@ -512,3 +507,17 @@ The path ends immediately after returning the unchanged AIO-050 non-issuance
 or AIO-047 Admission result. A successful new Admission now durably implies
 one immutable Intent; this is Store-owned persistence, not dispatch. No
 AIO-053 API, control flow, presentation persistence or architecture changes.
+
+## Cutover compatibility
+
+`AIO-059` preserves historical persisted
+`tool::aeo-native-repository-file-read::v1` evidence exactly. This is a legacy
+compatibility fact, absent from active registrations. Current native work uses
+only `tool::itru-native-repository-file-read::v1` on a distinct configured route.
+Active resolution rejects retired/legacy work; exact authenticated lookup and
+original revocation use the separate historical evidence boundary and cannot
+produce replacement authority. The permanent historical manifest remains
+append-only and cannot rebind a route.
+
+The [canonical cutover specification](itru-canonical-namespace-specification.md)
+supersedes predecessor historical-resolution behavior described by this document.

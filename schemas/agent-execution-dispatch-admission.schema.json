@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ai-engineering-orchestra.dev/schemas/agent-execution-dispatch-admission.schema.json",
-  "title": "AI Engineering Orchestra Agent Execution Dispatch Admission",
+  "title": "ITRU Agent Execution Dispatch Admission",
   "description": "Structural schema for one Agent Execution Dispatch Admission defined by core/agent-execution-dispatch-admission-specification.md. Structural validity does not establish authoritative-store provenance.",
   "type": "object",
   "additionalProperties": false,

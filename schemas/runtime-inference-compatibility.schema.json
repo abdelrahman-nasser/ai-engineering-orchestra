@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ai-engineering-orchestra.dev/schemas/runtime-inference-compatibility.schema.json",
-  "title": "AI Engineering Orchestra Runtime-to-Inference Compatibility Evidence",
-  "description": "Structural schema for the AI Engineering Orchestra v0.1 Runtime-to-Inference Compatibility Evidence contract defined by core/runtime-inference-compatibility-specification.md.",
+  "title": "ITRU Runtime-to-Inference Compatibility Evidence",
+  "description": "Structural schema for the ITRU v0.1 Runtime-to-Inference Compatibility Evidence contract defined by core/runtime-inference-compatibility-specification.md.",
   "type": "object",
   "additionalProperties": false,
   "required": [

@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ai-engineering-orchestra.dev/schemas/task.schema.json",
-  "title": "AI Engineering Orchestra Task",
-  "description": "Structural schema for the AI Engineering Orchestra v0.1 Task contract defined by core/task-specification.md.",
+  "title": "ITRU Task",
+  "description": "Structural schema for the ITRU v0.1 Task contract defined by core/task-specification.md.",
   "type": "object",
   "additionalProperties": false,
   "required": [

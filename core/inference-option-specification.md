@@ -1,9 +1,9 @@
-# AI Engineering Orchestra - Inference Option Specification
+# ITRU - Inference Option Specification
 
 Version: 0.1.0
 
 This document defines the canonical Inference Option Definition contract for
-AI Engineering Orchestra v0.1.
+ITRU v0.1.
 
 ---
 
@@ -205,7 +205,7 @@ this contract.
 
 Immutable values and pure deterministic inventory validation are defined in:
 
-`engineering_orchestration.inference_option`
+`itru.inference_option`
 
 The runtime API consumes supplied normalized values. It performs no file access,
 network access, Provider discovery, persistence, selection, or execution.

@@ -14,7 +14,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from engineering_orchestration.agent_execution_contract import (
+from itru.agent_execution_contract import (
     AgentExecutionContract,
     validate_agent_execution_contract,
 )
@@ -269,7 +269,7 @@ def semantic_result(
 
 
 def main() -> int:
-    print("AI Engineering Orchestra - Agent Execution Contract Validation")
+    print("ITRU - Agent Execution Contract Validation")
     print("=" * 68)
     if not check_fixture_coverage():
         return 1

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ai-engineering-orchestra.dev/schemas/operation-requirement.schema.json",
-  "title": "AI Engineering Orchestra Operation Requirement",
+  "title": "ITRU Operation Requirement",
   "description": "Structural schema for one Operation Requirement value defined by core/operation-requirement-specification.md.",
   "type": "object",
   "additionalProperties": false,

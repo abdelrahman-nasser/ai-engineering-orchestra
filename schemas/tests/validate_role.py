@@ -131,7 +131,7 @@ def validate_document(
 
 
 def main() -> int:
-    print("AI Engineering Orchestra - Role Schema Validation")
+    print("ITRU - Role Schema Validation")
     print("=" * 63)
     if "--test-mismatch" in sys.argv:
         print("Self-test mismatch requested: simulating unexpected validation failure.")

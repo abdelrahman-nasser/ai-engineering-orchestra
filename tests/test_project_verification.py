@@ -15,8 +15,8 @@ import tempfile
 import unittest
 from unittest.mock import MagicMock, patch
 
-from engineering_orchestration import project_verification as verification
-from engineering_orchestration.project_verification import (
+from itru import project_verification as verification
+from itru.project_verification import (
     DEFAULT_TIMEOUT_SECONDS,
     DIAGNOSTIC_EXCERPT_LIMIT,
     VerificationCheckResult,
@@ -294,8 +294,8 @@ class VerificationPlanningTests(ProjectFixture):
             self.check("valid-prefix", ["missing-prefix-tool"], cwd="valid"),
             self.check("invalid-last", [sys.executable], cwd="missing-last"),
         ])
-        with patch("engineering_orchestration.project_verification.resolve_executable") as resolve, \
-                patch("engineering_orchestration.project_verification.subprocess.Popen") as popen:
+        with patch("itru.project_verification.resolve_executable") as resolve, \
+                patch("itru.project_verification.subprocess.Popen") as popen:
             result = plan_project_checks(self.root)
         self.assertIsNone(result.plan)
         resolve.assert_not_called()
@@ -484,7 +484,7 @@ class VerificationExecutionTests(ProjectFixture):
             return real_popen(command, **kwargs)
 
         with patch(
-            "engineering_orchestration.project_verification.subprocess.Popen",
+            "itru.project_verification.subprocess.Popen",
             side_effect=tracking_popen,
         ):
             result = run_project_checks(self.ready_plan())
@@ -498,7 +498,7 @@ class VerificationExecutionTests(ProjectFixture):
         self.set_checks([self.python_check("launch", "raise SystemExit(0)")])
         plan = self.ready_plan()
         with patch(
-            "engineering_orchestration.project_verification.subprocess.Popen",
+            "itru.project_verification.subprocess.Popen",
             side_effect=OSError("launch denied"),
         ):
             result = run_project_checks(plan)
@@ -523,7 +523,7 @@ class VerificationExecutionTests(ProjectFixture):
             return original(*args, **kwargs)
 
         with patch(
-            "engineering_orchestration.project_verification.tempfile.TemporaryFile",
+            "itru.project_verification.tempfile.TemporaryFile",
             side_effect=temporary_file,
         ):
             result = run_project_checks(plan)
@@ -693,7 +693,7 @@ class VerificationExecutionTests(ProjectFixture):
 
         process = TimeoutProcess()
         with patch(
-            "engineering_orchestration.project_verification.subprocess.Popen",
+            "itru.project_verification.subprocess.Popen",
             return_value=process,
         ):
             result = run_project_checks(plan)
@@ -733,7 +733,7 @@ class VerificationExecutionTests(ProjectFixture):
 
         process = InterruptProcess()
         with patch(
-            "engineering_orchestration.project_verification.subprocess.Popen",
+            "itru.project_verification.subprocess.Popen",
             return_value=process,
         ) as popen:
             with self.assertRaises(KeyboardInterrupt):
@@ -748,7 +748,7 @@ class VerificationExecutionTests(ProjectFixture):
         process.poll.return_value = 0
         process.returncode = 0
         with patch(
-            "engineering_orchestration.project_verification.subprocess.Popen",
+            "itru.project_verification.subprocess.Popen",
             return_value=process,
         ) as popen:
             result = run_project_checks(self.ready_plan())
@@ -901,7 +901,7 @@ class VerificationExecutionTests(ProjectFixture):
             )
 
         with patch(
-            "engineering_orchestration.project_verification._execute_check",
+            "itru.project_verification._execute_check",
             side_effect=execute_then_remove_root,
         ) as execute:
             result = run_project_checks(plan)
@@ -916,7 +916,7 @@ class VerificationExecutionTests(ProjectFixture):
             self.python_check("second", "pass"),
         ])
         with patch(
-            "engineering_orchestration.project_verification.subprocess.Popen",
+            "itru.project_verification.subprocess.Popen",
             side_effect=RuntimeError("programming fault"),
         ) as popen:
             result = run_project_checks(self.ready_plan())
@@ -965,8 +965,8 @@ class VerificationBoundaryTests(ProjectFixture):
             self.assertFalse(any(forbidden in name for name in imported), imported)
 
     def test_cli_uses_project_verification_without_a_fixed_battery(self) -> None:
-        from engineering_orchestration import cli
-        from engineering_orchestration import verify_repo
+        from itru import cli
+        from itru import verify_repo
 
         source = Path(cli.__file__).read_text(encoding="utf-8")
         self.assertIn("project_verification", source)

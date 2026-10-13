@@ -23,10 +23,10 @@ from threading import Barrier, Event, Thread
 import unittest
 from unittest import mock
 
-from engineering_orchestration import _execution_entry_and_controlled_invocation as entry
-from engineering_orchestration import _native_repository_file_read as native
-from engineering_orchestration import _jit_execution_attempt_authorization as jit
-from engineering_orchestration import sqlite_agent_execution_dispatch_admission_store as store_module
+from itru import _execution_entry_and_controlled_invocation as entry
+from itru import _native_repository_file_read as native
+from itru import _jit_execution_attempt_authorization as jit
+from itru import sqlite_agent_execution_dispatch_admission_store as store_module
 from tests import test_jit_execution_attempt_authorization as predecessor
 from tests import test_dispatch_claim_lease_foundation as claims
 
@@ -129,7 +129,7 @@ def provision_hostile_fixture():
     try:
         workspace.mkdir('owned-target')
         target=workspace.file('owned-target/synthetic.bin',HOSTILE_BYTES)
-        from engineering_orchestration.windows_local_authorization_domain_owner import _apply_security_profile,_current_user_sid
+        from itru.windows_local_authorization_domain_owner import _apply_security_profile,_current_user_sid
         sid=_current_user_sid()
         for directory in (HOSTILE_ROOT,workspace.repo,workspace.outside,HOSTILE_ROOT/'owned-target'):
             _apply_security_profile(directory,sid,directory=True)
@@ -202,7 +202,7 @@ def _validate_hostile_fixture(*,require_unelevated=True):
     if HOSTILE_ROOT.parent != TEMP or str(HOSTILE_ROOT).startswith(str(ROOT)):
         raise AssertionError('external fixture containment mismatch')
     _plain_fixture(HOSTILE_ROOT,True)
-    from engineering_orchestration.windows_local_authorization_domain_owner import _current_user_sid,_validate_security_profile
+    from itru.windows_local_authorization_domain_owner import _current_user_sid,_validate_security_profile
     _validate_security_profile(HOSTILE_ROOT,_current_user_sid(),directory=True)
     marker=HOSTILE_ROOT/'fixture-contract.json'
     if _plain_fixture(marker).st_size>16384:raise AssertionError('fixture marker bound exceeded')
@@ -281,7 +281,7 @@ def cleanup_hostile_fixture():
     if HOSTILE_ROOT.parent!=TEMP or str(HOSTILE_ROOT).startswith(str(ROOT)):
         raise AssertionError('fixture cleanup ownership mismatch')
     _plain_fixture(HOSTILE_ROOT,True)
-    from engineering_orchestration.windows_local_authorization_domain_owner import _current_user_sid,_validate_security_profile
+    from itru.windows_local_authorization_domain_owner import _current_user_sid,_validate_security_profile
     _validate_security_profile(HOSTILE_ROOT,_current_user_sid(),directory=True)
     for parent in (HOSTILE_ROOT/'repo',HOSTILE_ROOT/'evidence'):
         _plain_fixture(parent,True)
@@ -479,10 +479,10 @@ class _NativeRig:
     """Genuine Windows owner/Producer/JIT chain; synthetic Run and repository."""
     def __init__(self,test,resource=FIRST_RESOURCE,data=FIRST_BYTES,external=None,hard_link=None):
         from tests import test_local_operational_trust as integrated
-        from engineering_orchestration import agent_execution_authorization_grant_producer as producer
-        from engineering_orchestration import local_operational_trust as trust
-        from engineering_orchestration import _local_dispatch_claim_lease as lease
-        from engineering_orchestration import windows_local_authorization_domain_owner as windows
+        from itru import agent_execution_authorization_grant_producer as producer
+        from itru import local_operational_trust as trust
+        from itru import _local_dispatch_claim_lease as lease
+        from itru import windows_local_authorization_domain_owner as windows
         names=('_IdentityAdapter','_HumanApprovalAdapter','_PolicyDecisionAdapter','_IssuerStateAuthority','_EntitlementPolicy')
         patches=[mock.patch.object(integrated,name,type('Cooperative'+name,(predecessor._Cooperative,getattr(integrated,name)),{})) for name in names]
         for patch in patches:patch.start()
@@ -1837,8 +1837,8 @@ class ProductionScenarios(unittest.TestCase):
                 self.assertEqual(c.execute('SELECT COUNT(*) FROM agent_execution_entries').fetchone()[0],0)
 
     def group_M(self,n):
-        paths=('engineering_orchestration/_execution_entry_and_controlled_invocation.py',
-            'engineering_orchestration/_native_repository_file_read.py')
+        paths=('itru/_execution_entry_and_controlled_invocation.py',
+            'itru/_native_repository_file_read.py')
         for path in paths:
             source=(ROOT/path).read_text(encoding='utf-8');tree=ast.parse(source)
             forbidden={'subprocess','socket','urllib','http','requests','importlib','experiments'}
@@ -1903,3 +1903,38 @@ def storage_suite():
     """Explicit interim subset, no discovery and no native target invocation."""
     names=tuple(name for name in SCENARIO_IDS if name[0] in 'ABCDFGHLM')
     return unittest.TestSuite(ProductionScenarios('test_'+name) for name in names)
+
+
+@unittest.skipUnless(os.name == "nt", "genuine owned native fixture requires Windows")
+class ItruControlledInvocationIdentityTests(unittest.TestCase):
+    def test_itru_binding_executes_the_original_chain_once(self):
+        r = _NativeRig(self)
+        self.assertEqual(r.binding_value.tool_id, "tool::itru-native-repository-file-read::v1")
+        self.assertEqual(native._IMPLEMENTATION_ID, r.binding_value.tool_id)
+        result = r.invoke(self)
+        self.assertEqual(result.entry_result.outcome, "entered")
+        self.assertEqual(result.invocation.status, "completed")
+        self.assertEqual(result.invocation.data, FIRST_BYTES)
+        self.assertEqual(_count(r), 1)
+        self.assertIsNone(r.coordinator._original)
+
+    def test_historical_capability_and_legacy_binding_cannot_enter_or_invoke(self):
+        r = _NativeRig(self)
+        from itru.agent_operation_tool_binding import AgentOperationToolBinding
+        boundary = r.h.coordinator._historical_boundary
+        reference = boundary._authority._reference(r.grant, None, "live")
+        with mock.patch.object(r.root._native, "open_component", side_effect=AssertionError("no target access")) as opening:
+            result = r.coordinator.invoke(reference, r.principal, r.decision)
+            self.assertNotEqual(result.entry_result.outcome, "entered")
+            self.assertIsNone(result.invocation)
+            self.assertEqual(_count(r), 0)
+            cap = r.cap(self)
+            original_subject = cap._cell.subject
+            legacy = AgentOperationToolBinding(r.run, "tool::aeo-native-repository-file-read::v1")
+            cap._cell.subject = replace(original_subject, binding=legacy)
+            result = r.coordinator.invoke(cap, r.principal, r.decision)
+            self.assertNotEqual(result.entry_result.outcome, "entered")
+            self.assertIsNone(result.invocation)
+            self.assertEqual(_count(r), 0)
+            opening.assert_not_called()
+        boundary._authority._references.pop(id(reference), None)

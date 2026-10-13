@@ -108,7 +108,7 @@ def validate_document(
 
 
 def main() -> int:
-    print("AI Engineering Orchestra - Actor-to-Runtime Applicability Schema Validation")
+    print("ITRU - Actor-to-Runtime Applicability Schema Validation")
     print("=" * 80)
     if not check_fixture_coverage():
         return 1

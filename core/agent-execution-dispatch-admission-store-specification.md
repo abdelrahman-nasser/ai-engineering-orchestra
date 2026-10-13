@@ -1,4 +1,4 @@
-# AI Engineering Orchestra - Agent Execution Dispatch Admission Store Specification
+# ITRU - Agent Execution Dispatch Admission Store Specification
 
 Status: Canonical for AIO-047
 

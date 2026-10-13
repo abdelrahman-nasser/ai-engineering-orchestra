@@ -7,33 +7,33 @@ from inspect import signature
 import unittest
 from unittest.mock import patch
 
-import engineering_orchestration
-import engineering_orchestration.agent_operation_tool_resolver as subject
-from engineering_orchestration.agent_execution_authorization_grant import (
+import itru
+import itru.agent_operation_tool_resolver as subject
+from itru.agent_execution_authorization_grant import (
     AgentExecutionAuthorizationGrant,
 )
-from engineering_orchestration.agent_execution_contract import (
+from itru.agent_execution_contract import (
     AgentExecutionContract,
 )
-from engineering_orchestration.agent_execution_dispatch_admission_store import (
+from itru.agent_execution_dispatch_admission_store import (
     AgentExecutionDispatchAdmissionCoordinator,
     AgentExecutionDispatchAdmissionStoreOutcome,
 )
-from engineering_orchestration.agent_execution_run import AgentExecutionRun
-from engineering_orchestration.agent_operation_tool_binding import (
+from itru.agent_execution_run import AgentExecutionRun
+from itru.agent_operation_tool_binding import (
     AgentOperationToolBinding,
 )
-from engineering_orchestration.agent_operation_tool_registry import (
-    _AEO_NATIVE_REPOSITORY_FILE_READ_TOOL_ID,
+from itru.agent_operation_tool_registry import (
+    _ITRU_NATIVE_REPOSITORY_FILE_READ_TOOL_ID,
     _AgentOperationToolImplementationSelector,
     _AgentOperationToolRegistration,
     _AgentOperationToolRegistryOutcome,
     _AgentOperationToolRegistryRetryDisposition,
     _AgentOperationToolRoute,
     _build_trusted_agent_operation_tool_registry_snapshot,
-    _make_aeo_native_repository_file_read_registration,
+    _make_itru_native_repository_file_read_registration,
 )
-from engineering_orchestration.agent_operation_tool_resolver import (
+from itru.agent_operation_tool_resolver import (
     TrustedAgentOperationToolBindingResolver,
 )
 
@@ -42,7 +42,7 @@ RUNTIME_OPTION_ID = "runtime::synthetic"
 ENVIRONMENT_ID = "environment::synthetic"
 OPERATION_ID = "repository_file_read"
 RESOURCE = "synthetic/input.txt"
-TOOL_ID = _AEO_NATIVE_REPOSITORY_FILE_READ_TOOL_ID
+TOOL_ID = _ITRU_NATIVE_REPOSITORY_FILE_READ_TOOL_ID
 
 
 def make_run(
@@ -101,7 +101,7 @@ def make_registration(
         tool_id=tool_id,
         implementation_selector=(
             _AgentOperationToolImplementationSelector.
-            AEO_NATIVE_REPOSITORY_FILE_READ_V1
+            ITRU_NATIVE_REPOSITORY_FILE_READ_V1
         ),
     )
 
@@ -130,7 +130,7 @@ def build_snapshot(
 class TrustedAgentOperationToolBindingResolverTests(unittest.TestCase):
     def setUp(self) -> None:
         self.registration = (
-            _make_aeo_native_repository_file_read_registration(
+            _make_itru_native_repository_file_read_registration(
                 RUNTIME_OPTION_ID,
                 ENVIRONMENT_ID,
             )
@@ -150,7 +150,7 @@ class TrustedAgentOperationToolBindingResolverTests(unittest.TestCase):
         )
         self.assertFalse(
             hasattr(
-                engineering_orchestration,
+                itru,
                 "TrustedAgentOperationToolBindingResolver",
             )
         )
@@ -328,7 +328,7 @@ class TrustedAgentOperationToolBindingResolverTests(unittest.TestCase):
         first = self.resolver.resolve_tool_binding(grant)
         rebuilt_snapshot = build_snapshot(
             (
-                _make_aeo_native_repository_file_read_registration(
+                _make_itru_native_repository_file_read_registration(
                     RUNTIME_OPTION_ID,
                     ENVIRONMENT_ID,
                 ),
@@ -348,7 +348,7 @@ class TrustedAgentOperationToolBindingResolverTests(unittest.TestCase):
         old_binding = self.resolver.resolve_tool_binding(old_grant)
         new_registration = make_registration(
             runtime_option_id="runtime::synthetic-v2",
-            tool_id="tool::aeo-native-repository-file-read::v2",
+            tool_id="tool::synthetic-native-repository-file-read::v2",
         )
         upgraded_snapshot = build_snapshot(
             (self.registration, new_registration),
@@ -373,7 +373,7 @@ class TrustedAgentOperationToolBindingResolverTests(unittest.TestCase):
         self.assertIs(new_binding.run, new_grant.run)
         self.assertEqual(
             new_binding.tool_id,
-            "tool::aeo-native-repository-file-read::v2",
+            "tool::synthetic-native-repository-file-read::v2",
         )
         self.assertNotEqual(new_binding, old_binding)
 
@@ -390,13 +390,10 @@ class TrustedAgentOperationToolBindingResolverTests(unittest.TestCase):
         grant = make_grant()
         binding = retired_resolver.resolve_tool_binding(grant)
 
-        self.assertIsNotNone(binding)
-        assert binding is not None
-        self.assertIs(binding.run, grant.run)
-        self.assertEqual(binding.tool_id, TOOL_ID)
+        self.assertIsNone(binding)
         self.assertIs(
             retired_resolver.resolve(grant).outcome,
-            _AgentOperationToolRegistryOutcome.RESOLVED,
+            _AgentOperationToolRegistryOutcome.TOOL_RETIRED,
         )
 
     def test_missing_history_and_alias_cannot_remap_or_fallback(self) -> None:

@@ -11,16 +11,16 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
-import engineering_orchestration
-from engineering_orchestration import execution_mode
-from engineering_orchestration.actor_availability import (
+import itru
+from itru import execution_mode
+from itru.actor_availability import (
     ActorAvailabilityObservation,
     AvailabilityState,
     validate_actor_availability,
 )
-from engineering_orchestration.actor_coverage import evaluate_actor_role_coverage
-from engineering_orchestration.assignment import Assignment
-from engineering_orchestration.execution_mode import (
+from itru.actor_coverage import evaluate_actor_role_coverage
+from itru.assignment import Assignment
+from itru.execution_mode import (
     EXECUTION_MODE_ORDER,
     execution_mode_satisfies,
 )
@@ -291,7 +291,7 @@ class TestExecutionMode(unittest.TestCase):
 
         module_names = {
             module.name
-            for module in pkgutil.iter_modules(engineering_orchestration.__path__)
+            for module in pkgutil.iter_modules(itru.__path__)
         }
         self.assertFalse(
             any(
@@ -299,8 +299,8 @@ class TestExecutionMode(unittest.TestCase):
                 for name in module_names
             )
         )
-        self.assertIsNone(find_spec("engineering_orchestration.model_tier"))
-        self.assertIsNone(find_spec("engineering_orchestration.model_routing"))
+        self.assertIsNone(find_spec("itru.model_tier"))
+        self.assertIsNone(find_spec("itru.model_routing"))
         self.assertTrue(
             {"model_tier", "routing"}.isdisjoint(vars(execution_mode))
         )

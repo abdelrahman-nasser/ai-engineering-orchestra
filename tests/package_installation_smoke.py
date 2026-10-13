@@ -29,45 +29,45 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 
 AIO053_SAFE_FILES = (
-    "engineering_orchestration/__init__.py",
-    "engineering_orchestration/_operation_vocabulary.py",
-    "engineering_orchestration/_repository_resource.py",
-    "engineering_orchestration/_responsibility.py",
-    "engineering_orchestration/_sqlite_admission_migrations/__init__.py",
-    "engineering_orchestration/_sqlite_admission_migrations/0001_initial.sql",
-    "engineering_orchestration/actor_availability.py",
-    "engineering_orchestration/actor_coverage.py",
-    "engineering_orchestration/actor_runtime_applicability.py",
-    "engineering_orchestration/agent_action_prerequisite.py",
-    "engineering_orchestration/agent_execution_authorization_evidence.py",
-    "engineering_orchestration/agent_execution_authorization_grant.py",
-    "engineering_orchestration/agent_execution_authorization_grant_producer.py",
-    "engineering_orchestration/agent_execution_candidate_prerequisite.py",
-    "engineering_orchestration/agent_execution_contract.py",
-    "engineering_orchestration/agent_execution_dispatch_admission.py",
-    "engineering_orchestration/agent_execution_dispatch_admission_store.py",
-    "engineering_orchestration/agent_execution_run.py",
-    "engineering_orchestration/agent_operation_tool_binding.py",
-    "engineering_orchestration/agent_operation_tool_registry.py",
-    "engineering_orchestration/agent_operation_tool_resolver.py",
-    "engineering_orchestration/agent_runtime_option.py",
-    "engineering_orchestration/agent_runtime_option_availability.py",
-    "engineering_orchestration/assignment.py",
-    "engineering_orchestration/authorization_domain_ownership.py",
-    "engineering_orchestration/environment_operation_permission.py",
-    "engineering_orchestration/execution_mode.py",
-    "engineering_orchestration/inference_option.py",
-    "engineering_orchestration/inference_option_availability.py",
-    "engineering_orchestration/local_operational_trust.py",
-    "engineering_orchestration/operation_requirement.py",
-    "engineering_orchestration/role_catalog.py",
-    "engineering_orchestration/runtime_inference_compatibility.py",
-    "engineering_orchestration/runtime_inference_pair_availability.py",
-    "engineering_orchestration/runtime_operation_capability.py",
-    "engineering_orchestration/schema_resources.py",
-    "engineering_orchestration/sqlite_agent_execution_dispatch_admission_store.py",
-    "engineering_orchestration/windows_local_authorization_domain_owner.py",
-    "engineering_orchestration/workflow_catalog.py",
+    "itru/__init__.py",
+    "itru/_operation_vocabulary.py",
+    "itru/_repository_resource.py",
+    "itru/_responsibility.py",
+    "itru/_sqlite_admission_migrations/__init__.py",
+    "itru/_sqlite_admission_migrations/0001_initial.sql",
+    "itru/actor_availability.py",
+    "itru/actor_coverage.py",
+    "itru/actor_runtime_applicability.py",
+    "itru/agent_action_prerequisite.py",
+    "itru/agent_execution_authorization_evidence.py",
+    "itru/agent_execution_authorization_grant.py",
+    "itru/agent_execution_authorization_grant_producer.py",
+    "itru/agent_execution_candidate_prerequisite.py",
+    "itru/agent_execution_contract.py",
+    "itru/agent_execution_dispatch_admission.py",
+    "itru/agent_execution_dispatch_admission_store.py",
+    "itru/agent_execution_run.py",
+    "itru/agent_operation_tool_binding.py",
+    "itru/agent_operation_tool_registry.py",
+    "itru/agent_operation_tool_resolver.py",
+    "itru/agent_runtime_option.py",
+    "itru/agent_runtime_option_availability.py",
+    "itru/assignment.py",
+    "itru/authorization_domain_ownership.py",
+    "itru/environment_operation_permission.py",
+    "itru/execution_mode.py",
+    "itru/inference_option.py",
+    "itru/inference_option_availability.py",
+    "itru/local_operational_trust.py",
+    "itru/operation_requirement.py",
+    "itru/role_catalog.py",
+    "itru/runtime_inference_compatibility.py",
+    "itru/runtime_inference_pair_availability.py",
+    "itru/runtime_operation_capability.py",
+    "itru/schema_resources.py",
+    "itru/sqlite_agent_execution_dispatch_admission_store.py",
+    "itru/windows_local_authorization_domain_owner.py",
+    "itru/workflow_catalog.py",
 )
 
 
@@ -150,7 +150,7 @@ def _aio053_safe_install(
 import importlib.metadata
 from pathlib import Path
 import sys
-import engineering_orchestration.local_operational_trust as target
+import itru.local_operational_trust as target
 actual = Path(target.__file__).resolve()
 expected = Path(sys.argv[1]).resolve()
 assert actual == expected, (actual, expected)
@@ -214,7 +214,7 @@ def aio053_safe_main() -> None:
             editable_wheel,
             base,
             "editable-environment",
-            ROOT / "engineering_orchestration" / "local_operational_trust.py",
+            ROOT / "itru" / "local_operational_trust.py",
             editable_distribution,
             run_env,
         )
@@ -230,7 +230,7 @@ def aio053_safe_main() -> None:
             wheel_environment
             / "Lib"
             / "site-packages"
-            / "engineering_orchestration"
+            / "itru"
             / "local_operational_trust.py"
         )
         _aio053_safe_install(
@@ -264,10 +264,10 @@ def require(condition: bool, message: str) -> None:
 
 
 def source_digest() -> dict[str, str]:
-    paths = [ROOT / "pyproject.toml", ROOT / "aio.py"]
-    paths += list((ROOT / "engineering_orchestration").glob("*.py"))
-    paths += list((ROOT / "engineering_orchestration" / "_sqlite_admission_migrations").glob("*.py"))
-    paths += list((ROOT / "engineering_orchestration" / "_sqlite_admission_migrations").glob("*.sql"))
+    paths = [ROOT / "pyproject.toml", ROOT / "itru.py"]
+    paths += list((ROOT / "itru").glob("*.py"))
+    paths += list((ROOT / "itru" / "_sqlite_admission_migrations").glob("*.py"))
+    paths += list((ROOT / "itru" / "_sqlite_admission_migrations").glob("*.sql"))
     paths += list((ROOT / "schemas").glob("*.json"))
     paths += list((ROOT / "roles").glob("*.yaml"))
     return {str(path): hashlib.sha256(path.read_bytes()).hexdigest() for path in paths}
@@ -337,13 +337,13 @@ def main() -> None:
         package_source = base / "package-source"
         package_source.mkdir()
         shutil.copy2(ROOT / "pyproject.toml", package_source / "pyproject.toml")
-        shutil.copy2(ROOT / "aio.py", package_source / "aio.py")
+        shutil.copy2(ROOT / "itru.py", package_source / "itru.py")
         for relative, pattern in (
-            ("engineering_orchestration", "*.py"),
+            ("itru", "*.py"),
             ("schemas", "*.json"),
             ("roles", "*.yaml"),
-            ("engineering_orchestration/_sqlite_admission_migrations", "*.py"),
-            ("engineering_orchestration/_sqlite_admission_migrations", "*.sql"),
+            ("itru/_sqlite_admission_migrations", "*.py"),
+            ("itru/_sqlite_admission_migrations", "*.sql"),
         ):
             destination = package_source / relative
             destination.mkdir(exist_ok=True)
@@ -354,7 +354,7 @@ def main() -> None:
             venv.EnvBuilder(with_pip=True).create(environment)
             executable_dir = environment / ("Scripts" if os.name == "nt" else "bin")
             python = executable_dir / ("python.exe" if os.name == "nt" else "python")
-            aio = executable_dir / ("aio.exe" if os.name == "nt" else "aio")
+            itru_console = executable_dir / ("itru.exe" if os.name == "nt" else "itru")
             run_env = dict(env)
             run_env["PATH"] = str(executable_dir) + os.pathsep + run_env.get("PATH", "")
             if mode == "editable":
@@ -363,10 +363,10 @@ def main() -> None:
                 wheel_dir = base / "wheels"
                 run([str(python), "-m", "pip", "wheel", "--no-deps", "--wheel-dir",
                      str(wheel_dir), str(package_source)], base, run_env)
-                wheel = next(wheel_dir.glob("ai_engineering_orchestra-*.whl"))
+                wheel = next(wheel_dir.glob("itru-*.whl"))
                 with zipfile.ZipFile(wheel) as archive:
                     names = archive.namelist()
-                    modules = {f"engineering_orchestration/{name}" for name in
+                    modules = {f"itru/{name}" for name in
                                ("__init__.py", "_operation_vocabulary.py", "_read_only_execution_preparation.py", "_repository_resource.py", "_responsibility.py", "actor_availability.py", "actor_coverage.py", "actor_runtime_applicability.py", "actor_selection.py", "agent_action_prerequisite.py", "agent_operation_tool_binding.py", "agent_operation_tool_registry.py", "agent_operation_tool_resolver.py", "local_operational_trust.py", "agent_execution_authorization_evidence.py", "agent_execution_authorization_grant.py", "agent_execution_authorization_grant_producer.py", "agent_execution_dispatch_admission.py", "agent_execution_dispatch_admission_store.py", "authorization_domain_ownership.py", "windows_local_authorization_domain_owner.py", "sqlite_agent_execution_dispatch_admission_store.py", "agent_execution_candidate_prerequisite.py", "agent_execution_contract.py", "agent_execution_run.py", "agent_runtime_option.py", "agent_runtime_option_availability.py", "assignment.py", "cli.py", "list_tasks.py", "inspect_task.py",
                                 "environment_operation_permission.py",
                                 "execution_mode.py", "inference_option.py",
@@ -377,7 +377,7 @@ def main() -> None:
                                 "runtime_inference_pair_availability.py",
                                 "verify_repo.py", "workflow_catalog.py", "role_catalog.py", "schema_resources.py",
                                 "project.py", "validation.py", "project_verification.py")}
-                    schemas = {f"engineering_orchestration/_schemas/{name}" for name in
+                    schemas = {f"itru/_schemas/{name}" for name in
                                ("actor-availability.schema.json", "actor-runtime-applicability.schema.json", "actor.schema.json",
                                 "agent-operation-tool-binding.schema.json",
                                 "agent-execution-authorization-evidence.schema.json",
@@ -394,12 +394,12 @@ def main() -> None:
                                 "runtime-inference-compatibility.schema.json",
                                 "role.schema.json", "task.schema.json", "workflow.schema.json",
                                 "project-manifest.schema.json")}
-                    roles = {f"engineering_orchestration/_roles/{name}" for name in
+                    roles = {f"itru/_roles/{name}" for name in
                              ("architect.yaml", "documentation-specialist.yaml", "reviewer.yaml",
                               "security-reviewer.yaml", "software-engineer.yaml")}
                     migrations = {
-                        "engineering_orchestration/_sqlite_admission_migrations/__init__.py",
-                        "engineering_orchestration/_sqlite_admission_migrations/0001_initial.sql",
+                        "itru/_sqlite_admission_migrations/__init__.py",
+                        "itru/_sqlite_admission_migrations/0001_initial.sql",
                     }
                     payload = {name for name in names if ".dist-info/" not in name}
                     require(payload == modules | schemas | roles | migrations,
@@ -415,7 +415,7 @@ def main() -> None:
                             archive.read(name)
                             == (
                                 ROOT
-                                / "engineering_orchestration"
+                                / "itru"
                                 / "_sqlite_admission_migrations"
                                 / Path(name).name
                             ).read_bytes(),
@@ -428,30 +428,30 @@ def main() -> None:
 import json, os, socket, subprocess, sys, time, urllib.request
 from pathlib import Path
 from unittest.mock import patch
-import engineering_orchestration.cli as cli
-import engineering_orchestration.actor_availability as actor_availability
-import engineering_orchestration.actor_coverage as actor_coverage
-import engineering_orchestration.actor_runtime_applicability as actor_runtime_applicability
-import engineering_orchestration.actor_selection as actor_selection
-import engineering_orchestration.agent_execution_candidate_prerequisite as agent_execution_candidate_prerequisite
-import engineering_orchestration.agent_runtime_option as agent_runtime_option
-import engineering_orchestration.agent_runtime_option_availability as agent_runtime_option_availability
-import engineering_orchestration.assignment as assignment
-import engineering_orchestration.execution_mode as execution_mode
-import engineering_orchestration.inference_option as inference_option
-import engineering_orchestration.inference_option_availability as inference_option_availability
-import engineering_orchestration.agent_operation_tool_registry as agent_operation_tool_registry
-import engineering_orchestration.agent_operation_tool_resolver as agent_operation_tool_resolver
-import engineering_orchestration.operation_requirement as operation_requirement
-import engineering_orchestration.runtime_operation_capability as runtime_operation_capability
-import engineering_orchestration.project_verification as project_verification
-import engineering_orchestration.role_catalog as role_catalog
-import engineering_orchestration.runtime_inference_compatibility as runtime_inference_compatibility
-import engineering_orchestration.runtime_inference_pair_availability as runtime_inference_pair_availability
-import engineering_orchestration._operation_vocabulary as operation_vocabulary
-import engineering_orchestration._read_only_execution_preparation as read_only_execution_preparation
-from engineering_orchestration.workflow_catalog import load_workflow_catalog
-from engineering_orchestration.schema_resources import schema_resource
+import itru.cli as cli
+import itru.actor_availability as actor_availability
+import itru.actor_coverage as actor_coverage
+import itru.actor_runtime_applicability as actor_runtime_applicability
+import itru.actor_selection as actor_selection
+import itru.agent_execution_candidate_prerequisite as agent_execution_candidate_prerequisite
+import itru.agent_runtime_option as agent_runtime_option
+import itru.agent_runtime_option_availability as agent_runtime_option_availability
+import itru.assignment as assignment
+import itru.execution_mode as execution_mode
+import itru.inference_option as inference_option
+import itru.inference_option_availability as inference_option_availability
+import itru.agent_operation_tool_registry as agent_operation_tool_registry
+import itru.agent_operation_tool_resolver as agent_operation_tool_resolver
+import itru.operation_requirement as operation_requirement
+import itru.runtime_operation_capability as runtime_operation_capability
+import itru.project_verification as project_verification
+import itru.role_catalog as role_catalog
+import itru.runtime_inference_compatibility as runtime_inference_compatibility
+import itru.runtime_inference_pair_availability as runtime_inference_pair_availability
+import itru._operation_vocabulary as operation_vocabulary
+import itru._read_only_execution_preparation as read_only_execution_preparation
+from itru.workflow_catalog import load_workflow_catalog
+from itru.schema_resources import schema_resource
 catalog = role_catalog.load_role_catalog()
 software_engineer = catalog.get('software-engineer')
 actor = {'id': 'installed-agent', 'kind': 'agent',
@@ -951,7 +951,7 @@ print(json.dumps({'module': cli.__file__,
         'outcome': read_only_preparation_result.outcome,
         'reasons': read_only_preparation_result.reasons},
     'read_only_preparation_public_export_absent': not hasattr(
-        sys.modules['engineering_orchestration'],
+        sys.modules['itru'],
         'assess_read_only_execution_preparation'),
     'operation_requirement_valid': {
         'valid': operation_requirement_valid.valid,
@@ -969,7 +969,7 @@ print(json.dumps({'module': cli.__file__,
                   operation_requirement_invalid_resource.findings],
         'atomic': operation_requirement_invalid_resource.requirement is None},
     'operation_requirement_public_export_absent': not hasattr(
-        sys.modules['engineering_orchestration'],
+        sys.modules['itru'],
         'validate_operation_requirement'),
     'operation_vocabulary': operation_vocabulary.supported_core_operation_ids(),
     'runtime_operation_capability_present_absent': {
@@ -1002,7 +1002,7 @@ print(json.dumps({'module': cli.__file__,
                    and not capability_unsupported_operation.
                    normalized_observations)},
     'runtime_operation_capability_public_export_absent': not hasattr(
-        sys.modules['engineering_orchestration'],
+        sys.modules['itru'],
         'validate_runtime_operation_capability'),
     'roles': [str(role_source.joinpath(name)) for name in
     ('architect.yaml', 'documentation-specialist.yaml', 'reviewer.yaml',
@@ -1037,14 +1037,14 @@ import json, os, socket, subprocess, time, urllib.request
 from contextlib import ExitStack
 from pathlib import Path
 from unittest.mock import patch
-import engineering_orchestration
-import engineering_orchestration.agent_execution_authorization_evidence as auth
-from engineering_orchestration.agent_runtime_option import AgentRuntimeOptionDefinition
-from engineering_orchestration.assignment import Assignment
-from engineering_orchestration.inference_option import InferenceOptionDefinition
-from engineering_orchestration.role_catalog import RoleCatalog
-from engineering_orchestration.schema_resources import schema_resource
-from engineering_orchestration.workflow_catalog import WorkflowCatalog, WorkflowDefinition, WorkflowStage
+import itru
+import itru.agent_execution_authorization_evidence as auth
+from itru.agent_runtime_option import AgentRuntimeOptionDefinition
+from itru.assignment import Assignment
+from itru.inference_option import InferenceOptionDefinition
+from itru.role_catalog import RoleCatalog
+from itru.schema_resources import schema_resource
+from itru.workflow_catalog import WorkflowCatalog, WorkflowDefinition, WorkflowStage
 K = auth.AgentExecutionAuthorizationAuthorityKind
 S = auth.AgentExecutionAuthorizationState
 E = auth.AgentExecutionAuthorizationEvidence
@@ -1144,7 +1144,7 @@ print(json.dumps({
         'codes': [x.code for x in human_result.findings],
         'atomic': not human_result.valid and not human_result.normalized_evidence},
     'agent_execution_authorization_public_export_absent': not hasattr(
-        engineering_orchestration,
+        itru,
         'validate_agent_execution_authorization_evidence'),
 }))
 """
@@ -1161,10 +1161,10 @@ import json, os, socket, subprocess, sys, time, urllib.request
 from contextlib import ExitStack
 from pathlib import Path
 from unittest.mock import patch
-import engineering_orchestration
-import engineering_orchestration._repository_resource as repository_resource
-import engineering_orchestration.environment_operation_permission as permission
-from engineering_orchestration.agent_runtime_option import AgentRuntimeOptionDefinition
+import itru
+import itru._repository_resource as repository_resource
+import itru.environment_operation_permission as permission
+from itru.agent_runtime_option import AgentRuntimeOptionDefinition
 P = permission.EnvironmentOperationPermissionObservation
 S = permission.EnvironmentOperationPermissionState
 options = [AgentRuntimeOptionDefinition('installed-runtime-primary'),
@@ -1253,7 +1253,7 @@ print(json.dumps({
         'atomic': (not invalid_resource.valid
                    and not invalid_resource.normalized_observations)},
     'environment_operation_permission_public_export_absent': not hasattr(
-        engineering_orchestration, 'validate_environment_operation_permission'),
+        itru, 'validate_environment_operation_permission'),
 }))
 """
             evidence.update(json.loads(run(
@@ -1266,13 +1266,13 @@ import json, os, socket, subprocess, time, urllib.request
 from contextlib import ExitStack
 from pathlib import Path
 from unittest.mock import patch
-import engineering_orchestration
-import engineering_orchestration.agent_action_prerequisite as action
-from engineering_orchestration.agent_execution_authorization_evidence import AgentExecutionAuthorizationAuthorityKind as AuthorityKind, AgentExecutionAuthorizationEvidence as AuthorizationEvidence, AgentExecutionAuthorizationState as AuthorizationState, AgentExecutionAuthorizationValidationResult as AuthorizationResult
-from engineering_orchestration.agent_execution_candidate_prerequisite import AgentExecutionCandidatePrerequisiteOutcome as CandidateOutcome, AgentExecutionCandidatePrerequisiteReason as CandidateReason, AgentExecutionCandidatePrerequisiteResult as CandidateResult
-from engineering_orchestration.environment_operation_permission import EnvironmentOperationPermissionObservation as PermissionObservation, EnvironmentOperationPermissionState as PermissionState, EnvironmentOperationPermissionValidationResult as PermissionResult
-from engineering_orchestration.operation_requirement import OperationRequirement
-from engineering_orchestration.runtime_operation_capability import RuntimeOperationCapabilityObservation as CapabilityObservation, RuntimeOperationCapabilityState as CapabilityState, RuntimeOperationCapabilityValidationResult as CapabilityResult
+import itru
+import itru.agent_action_prerequisite as action
+from itru.agent_execution_authorization_evidence import AgentExecutionAuthorizationAuthorityKind as AuthorityKind, AgentExecutionAuthorizationEvidence as AuthorizationEvidence, AgentExecutionAuthorizationState as AuthorizationState, AgentExecutionAuthorizationValidationResult as AuthorizationResult
+from itru.agent_execution_candidate_prerequisite import AgentExecutionCandidatePrerequisiteOutcome as CandidateOutcome, AgentExecutionCandidatePrerequisiteReason as CandidateReason, AgentExecutionCandidatePrerequisiteResult as CandidateResult
+from itru.environment_operation_permission import EnvironmentOperationPermissionObservation as PermissionObservation, EnvironmentOperationPermissionState as PermissionState, EnvironmentOperationPermissionValidationResult as PermissionResult
+from itru.operation_requirement import OperationRequirement
+from itru.runtime_operation_capability import RuntimeOperationCapabilityObservation as CapabilityObservation, RuntimeOperationCapabilityState as CapabilityState, RuntimeOperationCapabilityValidationResult as CapabilityResult
 candidate = CandidateResult(
     True, (), ('LOCAL-123', 'external-flow', 'external-stage',
                'software-engineer'), 'installed-agent',
@@ -1357,7 +1357,7 @@ print(json.dumps({
     'agent_action_prerequisite_denied': compact(denied),
     'agent_action_prerequisite_missing': compact(missing),
     'agent_action_prerequisite_public_export_absent': not hasattr(
-        engineering_orchestration, 'assess_agent_action_prerequisites'),
+        itru, 'assess_agent_action_prerequisites'),
 }))
 """
             evidence.update(json.loads(run(
@@ -1371,13 +1371,13 @@ from contextlib import ExitStack
 from dataclasses import asdict, fields, replace
 from pathlib import Path
 from unittest.mock import patch
-import engineering_orchestration
-import engineering_orchestration.agent_action_prerequisite as action
-import engineering_orchestration.agent_execution_contract as contract
-import engineering_orchestration.agent_execution_run as execution_run
-from engineering_orchestration.agent_action_prerequisite import AgentActionPrerequisiteOutcome as Outcome, AgentActionPrerequisiteReason as Reason, AgentActionPrerequisiteResult as PrerequisiteResult
-from engineering_orchestration.operation_requirement import OperationRequirement, validate_operation_requirement
-from engineering_orchestration.schema_resources import load_validator, schema_resource
+import itru
+import itru.agent_action_prerequisite as action
+import itru.agent_execution_contract as contract
+import itru.agent_execution_run as execution_run
+from itru.agent_action_prerequisite import AgentActionPrerequisiteOutcome as Outcome, AgentActionPrerequisiteReason as Reason, AgentActionPrerequisiteResult as PrerequisiteResult
+from itru.operation_requirement import OperationRequirement, validate_operation_requirement
+from itru.schema_resources import load_validator, schema_resource
 def prerequisite(outcome, reasons):
     return PrerequisiteResult(
         True, (), ('LOCAL-123', 'external-flow', 'external-stage',
@@ -1539,7 +1539,7 @@ print(json.dumps({
     },
     'agent_execution_contract_pure_noninvoking_probe': True,
     'agent_execution_contract_public_export_absent': all(
-        not hasattr(engineering_orchestration, name) for name in (
+        not hasattr(itru, name) for name in (
             'AgentExecutionContract',
             'prepare_agent_execution_contract',
             'validate_agent_execution_contract')),
@@ -1574,7 +1574,7 @@ print(json.dumps({
     },
     'agent_execution_run_pure_noninvoking_probe': True,
     'agent_execution_run_public_export_absent': all(
-        not hasattr(engineering_orchestration, name) for name in (
+        not hasattr(itru, name) for name in (
             'AgentExecutionRun',
             'prepare_agent_execution_run',
             'validate_agent_execution_run')),
@@ -1597,12 +1597,12 @@ from contextlib import ExitStack
 from dataclasses import asdict, fields
 from pathlib import Path
 from unittest.mock import patch
-import engineering_orchestration
-import engineering_orchestration.agent_execution_authorization_grant as grant
-import engineering_orchestration.agent_execution_authorization_grant_producer as grant_producer
-import engineering_orchestration.agent_execution_contract as contract
-import engineering_orchestration.agent_execution_run as execution_run
-from engineering_orchestration.schema_resources import load_validator, schema_resource
+import itru
+import itru.agent_execution_authorization_grant as grant
+import itru.agent_execution_authorization_grant_producer as grant_producer
+import itru.agent_execution_contract as contract
+import itru.agent_execution_run as execution_run
+from itru.schema_resources import load_validator, schema_resource
 bound_contract = contract.AgentExecutionContract(
     'LOCAL-123', 'external-flow', 'external-stage', 'software-engineer',
     'installed-agent', 'installed-runtime-primary', 'installed-primary',
@@ -1711,7 +1711,7 @@ print(json.dumps({
             'state', 'authenticated', 'consumed', 'reusable', 'signature',
             'key', 'tool_id', 'status')),
     'agent_execution_authorization_grant_public_export_absent': all(
-        not hasattr(engineering_orchestration, name) for name in (
+        not hasattr(itru, name) for name in (
             'AgentExecutionAuthorizationGrant',
             'AgentExecutionAuthorizationGrantFinding',
             'AgentExecutionAuthorizationGrantValidationResult',
@@ -1734,11 +1734,11 @@ from contextlib import ExitStack
 from dataclasses import asdict, fields
 from pathlib import Path
 from unittest.mock import patch
-import engineering_orchestration
-import engineering_orchestration.agent_execution_contract as contract
-import engineering_orchestration.agent_execution_run as execution_run
-import engineering_orchestration.agent_operation_tool_binding as tool_binding
-from engineering_orchestration.schema_resources import load_validator, schema_resource
+import itru
+import itru.agent_execution_contract as contract
+import itru.agent_execution_run as execution_run
+import itru.agent_operation_tool_binding as tool_binding
+from itru.schema_resources import load_validator, schema_resource
 bound_contract = contract.AgentExecutionContract(
     'LOCAL-123', 'external-flow', 'external-stage', 'software-engineer',
     'installed-agent', 'installed-runtime-primary', 'installed-primary',
@@ -1840,7 +1840,7 @@ print(json.dumps({
             'command', 'payload', 'arguments', 'credentials', 'grant',
             'consumed', 'admitted', 'status')),
     'agent_operation_tool_binding_public_export_absent': all(
-        not hasattr(engineering_orchestration, name) for name in (
+        not hasattr(itru, name) for name in (
             'AgentOperationToolBinding',
             'AgentOperationToolBindingFinding',
             'AgentOperationToolBindingValidationResult',
@@ -1862,18 +1862,18 @@ from datetime import datetime, timezone
 from importlib.resources import files
 from pathlib import Path
 from unittest.mock import patch
-import engineering_orchestration
-import engineering_orchestration.agent_execution_authorization_grant as grant_module
-import engineering_orchestration.agent_execution_contract as contract_module
-import engineering_orchestration.agent_execution_dispatch_admission as admission_module
-import engineering_orchestration.agent_execution_dispatch_admission_store as store_module
-import engineering_orchestration.agent_execution_run as run_module
-import engineering_orchestration.agent_operation_tool_binding as binding_module
-import engineering_orchestration.authorization_domain_ownership as ownership_module
-import engineering_orchestration.sqlite_agent_execution_dispatch_admission_store as sqlite_module
-import engineering_orchestration.windows_local_authorization_domain_owner as windows_owner_module
-from engineering_orchestration._sqlite_admission_migrations import MIGRATIONS
-from engineering_orchestration.schema_resources import load_validator, schema_resource
+import itru
+import itru.agent_execution_authorization_grant as grant_module
+import itru.agent_execution_contract as contract_module
+import itru.agent_execution_dispatch_admission as admission_module
+import itru.agent_execution_dispatch_admission_store as store_module
+import itru.agent_execution_run as run_module
+import itru.agent_operation_tool_binding as binding_module
+import itru.authorization_domain_ownership as ownership_module
+import itru.sqlite_agent_execution_dispatch_admission_store as sqlite_module
+import itru.windows_local_authorization_domain_owner as windows_owner_module
+from itru._sqlite_admission_migrations import MIGRATIONS
+from itru.schema_resources import load_validator, schema_resource
 
 contract = contract_module.AgentExecutionContract(
     'LOCAL-123', 'external-flow', 'external-stage', 'software-engineer',
@@ -1904,7 +1904,7 @@ with patch('pathlib.Path.cwd', side_effect=blocked), patch.object(
         asdict(admission))
 
 migration = files(
-    'engineering_orchestration._sqlite_admission_migrations').joinpath(
+    'itru._sqlite_admission_migrations').joinpath(
         MIGRATIONS[0].resource_name)
 migration_bytes = migration.read_bytes()
 assert hashlib.sha256(migration_bytes).hexdigest() == MIGRATIONS[0].sha256
@@ -1989,7 +1989,7 @@ assert set(windows_owner_module.__all__) == {
     'WindowsLocalAuthorizationDomainAdministration',
     'WindowsLocalAuthorizationDomainOwner'}
 
-assert all(not hasattr(engineering_orchestration, name) for name in (
+assert all(not hasattr(itru, name) for name in (
     'AgentExecutionDispatchAdmission',
     'AgentExecutionDispatchAdmissionCoordinator',
     'SqliteAgentExecutionDispatchAdmissionStore',
@@ -2759,25 +2759,25 @@ print(json.dumps({
                         (["tasks"], "AIO-016"),
                         (["inspect", "AIO-015"], "Schema: VALID"),
                     ]:
-                        output = run([str(aio), *args], cwd, run_env)
+                        output = run([str(itru_console), *args], cwd, run_env)
                         require(
                             marker in output,
                             f"Missing expected output: {marker}",
                         )
                 output = run(
-                    [str(aio), "verify", "--structure"],
+                    [str(itru_console), "verify", "--structure"],
                     ROOT / "scripts",
                     run_env,
                 )
                 require(
-                    "Supported AIO Structure" in output,
+                    "Supported ITRU Structure" in output,
                     "Installed structure mode failed",
                 )
-                output = run([str(aio), "verify"], ROOT, run_env)
+                output = run([str(itru_console), "verify"], ROOT, run_env)
                 require("Verification passed." in output and "unit-tests" in output,
                         "Installed Orchestra verification did not use Manifest checks")
             for args in (["tasks"], ["inspect", "LOCAL-123"]):
-                output = run([str(aio), *args], project / "src/nested", run_env)
+                output = run([str(itru_console), *args], project / "src/nested", run_env)
                 require("LOCAL-123" in output and "AIO-015" not in output, "Wrong active project")
                 if args[0] == "inspect":
                     require("external_gate" in output and "Resolution: RESOLVED" in output,
@@ -2786,7 +2786,7 @@ print(json.dumps({
 import json
 from pathlib import Path
 from unittest.mock import patch
-from engineering_orchestration.validation import validate_project
+from itru.validation import validate_project
 root = Path.cwd().parents[1]
 assert not any((root / name).exists() for name in ('.git', 'tests', 'schemas', 'node_modules'))
 task = root / 'governance/tasks/unrelated-directory/task.yaml'
@@ -2859,18 +2859,18 @@ try:
     check('FAIL')
 finally:
     flow.write_text(saved)
-with patch('engineering_orchestration.schema_resources.schema_resource', return_value=None):
+with patch('itru.schema_resources.schema_resource', return_value=None):
     check('ERROR')
 check('PASS')
 print('PASS: installed structural validation, custom paths, invalid data, identities, references, framework Roles, resources')
 """
             print(run([str(python), "-B", "-c", structural_probe], project / "src/nested", run_env), flush=True)
-            run([str(aio), "tasks"], base, run_env, expected=2)
-            run([str(aio), "inspect", "MISSING"], project, run_env, expected=1)
+            run([str(itru_console), "tasks"], base, run_env, expected=2)
+            run([str(itru_console), "inspect", "MISSING"], project, run_env, expected=1)
 
             marker = project / "verification-ran"
             marker.unlink(missing_ok=True)
-            output = run([str(aio), "verify"], project / "src/nested", run_env)
+            output = run([str(itru_console), "verify"], project / "src/nested", run_env)
             require(marker.exists(), "Installed verifier did not execute adopter declaration")
             require("tests" in output and "Verification passed." in output,
                     "Installed adopter verification output incomplete")
@@ -2880,7 +2880,7 @@ print('PASS: installed structural validation, custom paths, invalid data, identi
                 data["verification"]["checks"] = []
                 (project / ".ai/project.yaml").write_text(json.dumps(data), encoding="utf-8")
                 marker.unlink(missing_ok=True)
-                output = run([str(aio), "verify"], project, run_env)
+                output = run([str(itru_console), "verify"], project, run_env)
                 require("0 project checks configured" in output,
                         "Installed zero-check project did not remain empty")
                 require(not marker.exists(), "Zero-check verification executed a command")
@@ -2889,17 +2889,17 @@ print('PASS: installed structural validation, custom paths, invalid data, identi
             alias = """
 import sys
 from importlib.metadata import EntryPoint, distribution
-entry = next(e for e in distribution('ai-engineering-orchestra').entry_points if e.name == 'aio')
+entry = next(e for e in distribution('itru').entry_points if e.name == 'itru')
 assert EntryPoint(name='rook', value=entry.value, group='console_scripts').load() is entry.load()
 sys.argv = ['rook', '--help']
 entry.load()()
 """
             output = run([str(python), "-B", "-c", alias], base, run_env)
             require("rook" in output, "Alias help did not reflect caller name")
-            run([str(python), "-m", "pip", "uninstall", "-y", "ai-engineering-orchestra"], base, run_env)
-            require(not aio.exists(), "Uninstall left executable behind")
+            run([str(python), "-m", "pip", "uninstall", "-y", "itru"], base, run_env)
+            require(not itru_console.exists(), "Uninstall left executable behind")
             run([str(python), "-B", "-c",
-                 "import importlib.util; assert importlib.util.find_spec('engineering_orchestration') is None"],
+                 "import importlib.util; assert importlib.util.find_spec('itru') is None"],
                 base, run_env)
             require(before == source_digest(), "Install/uninstall modified authoritative sources")
             print(f"{mode.upper()}: commands, external project, alias and uninstall PASS", flush=True)

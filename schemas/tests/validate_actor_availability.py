@@ -113,7 +113,7 @@ def validate_document(
 
 
 def main() -> int:
-    print("AI Engineering Orchestra - Actor Availability Schema Validation")
+    print("ITRU - Actor Availability Schema Validation")
     print("=" * 76)
     if not check_fixture_coverage():
         return 1

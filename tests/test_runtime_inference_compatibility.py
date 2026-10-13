@@ -12,22 +12,22 @@ import unittest
 from unittest.mock import patch
 import urllib.request
 
-from engineering_orchestration.agent_runtime_option import (
+from itru.agent_runtime_option import (
     AgentRuntimeOptionDefinition,
     validate_agent_runtime_option_inventory,
 )
-from engineering_orchestration.inference_option import (
+from itru.inference_option import (
     InferenceOptionDefinition,
     validate_inference_option_inventory,
 )
-import engineering_orchestration.runtime_inference_compatibility as compatibility
-from engineering_orchestration.runtime_inference_compatibility import (
+import itru.runtime_inference_compatibility as compatibility
+from itru.runtime_inference_compatibility import (
     RuntimeInferenceCompatibilityEvidence,
     RuntimeInferenceCompatibilityFinding,
     RuntimeInferenceCompatibilityValidationResult,
     validate_runtime_inference_compatibility,
 )
-from engineering_orchestration.schema_resources import load_validator
+from itru.schema_resources import load_validator
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -588,7 +588,7 @@ class RuntimeInferenceCompatibilityBoundaryTests(unittest.TestCase):
 
     def test_module_imports_only_endpoint_contracts_not_adjacent_domains(self) -> None:
         tree = ast.parse(
-            (ROOT / "engineering_orchestration" /
+            (ROOT / "itru" /
              "runtime_inference_compatibility.py").read_text(encoding="utf-8")
         )
         internal_imports = {
@@ -596,13 +596,13 @@ class RuntimeInferenceCompatibilityBoundaryTests(unittest.TestCase):
             for node in ast.walk(tree)
             if isinstance(node, ast.ImportFrom)
             and node.module
-            and node.module.startswith("engineering_orchestration")
+            and node.module.startswith("itru")
         }
         self.assertEqual(
             internal_imports,
             {
-                "engineering_orchestration.agent_runtime_option",
-                "engineering_orchestration.inference_option",
+                "itru.agent_runtime_option",
+                "itru.inference_option",
             },
         )
 

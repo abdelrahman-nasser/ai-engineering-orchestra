@@ -9,28 +9,28 @@ import pickle
 import unittest
 from unittest.mock import patch
 
-import engineering_orchestration.agent_execution_dispatch_admission_store as subject
-from engineering_orchestration.agent_execution_authorization_evidence import (
+import itru.agent_execution_dispatch_admission_store as subject
+from itru.agent_execution_authorization_evidence import (
     AgentExecutionAuthorizationAuthorityKind,
     AgentExecutionAuthorizationEvidence,
     AgentExecutionAuthorizationState,
     AgentExecutionAuthorizationValidationResult,
 )
-from engineering_orchestration.agent_execution_authorization_grant import (
+from itru.agent_execution_authorization_grant import (
     AgentExecutionAuthorizationGrant,
 )
-from engineering_orchestration.agent_execution_candidate_prerequisite import (
+from itru.agent_execution_candidate_prerequisite import (
     AgentExecutionCandidatePrerequisiteOutcome,
     AgentExecutionCandidatePrerequisiteReason,
     AgentExecutionCandidatePrerequisiteResult,
 )
-from engineering_orchestration.agent_execution_contract import (
+from itru.agent_execution_contract import (
     AgentExecutionContract,
 )
-from engineering_orchestration.agent_execution_dispatch_admission import (
+from itru.agent_execution_dispatch_admission import (
     AgentExecutionDispatchAdmission,
 )
-from engineering_orchestration.agent_execution_dispatch_admission_store import (
+from itru.agent_execution_dispatch_admission_store import (
     AgentActionPrerequisiteParentInputs,
     AgentExecutionDispatchAdmissionCoordinator,
     AgentExecutionDispatchAdmissionStoreAdministrationOutcome,
@@ -40,17 +40,17 @@ from engineering_orchestration.agent_execution_dispatch_admission_store import (
     make_agent_execution_dispatch_admission_store_administration_result,
     make_agent_execution_dispatch_admission_store_result,
 )
-from engineering_orchestration.agent_execution_run import AgentExecutionRun
-from engineering_orchestration.agent_operation_tool_binding import (
+from itru.agent_execution_run import AgentExecutionRun
+from itru.agent_operation_tool_binding import (
     AgentOperationToolBinding,
 )
-from engineering_orchestration.environment_operation_permission import (
+from itru.environment_operation_permission import (
     EnvironmentOperationPermissionObservation,
     EnvironmentOperationPermissionState,
     EnvironmentOperationPermissionValidationResult,
 )
-from engineering_orchestration.operation_requirement import OperationRequirement
-from engineering_orchestration.runtime_operation_capability import (
+from itru.operation_requirement import OperationRequirement
+from itru.runtime_operation_capability import (
     RuntimeOperationCapabilityObservation,
     RuntimeOperationCapabilityState,
     RuntimeOperationCapabilityValidationResult,

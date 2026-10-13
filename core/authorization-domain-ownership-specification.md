@@ -1,4 +1,4 @@
-# AI Engineering Orchestra - Authorization Domain Ownership Specification
+# ITRU - Authorization Domain Ownership Specification
 
 Status: Canonical for AIO-049
 

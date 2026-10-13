@@ -1,4 +1,4 @@
-# AI Engineering Orchestra - Agent Execution Candidate Prerequisite Assessment Specification
+# ITRU - Agent Execution Candidate Prerequisite Assessment Specification
 
 Status: Canonical for AIO-034
 
@@ -72,7 +72,7 @@ the Actor and does not mutate or extend Assignment.
 The canonical implementation is:
 
 ```text
-engineering_orchestration.agent_execution_candidate_prerequisite
+itru.agent_execution_candidate_prerequisite
 ```
 
 It defines:

@@ -1,6 +1,6 @@
-# AI Engineering Orchestra
+# ITRU
 
-AI Engineering Orchestra is a reusable, versioned, model-agnostic framework for organizing AI-assisted software engineering.
+ITRU is a reusable, versioned, model-agnostic framework for organizing AI-assisted software engineering.
 
 It provides a common structure for:
 
@@ -31,11 +31,11 @@ From this checkout, in a virtual environment:
 
 ```powershell
 python -m pip install -e .
-aio --help
-aio tasks
-aio inspect AIO-015
-aio verify
-aio verify --structure
+itru --help
+itru tasks
+itru inspect AIO-015
+itru verify
+itru verify --structure
 ```
 
 For a normal installation, use `python -m pip install .` instead. The command is
@@ -43,7 +43,7 @@ available when the installing environment's `Scripts` (Windows) or `bin` directo
 is on PATH, usually by activating the environment. Editable installations follow
 source edits; metadata/console-name changes require reinstalling. Normal installs
 must be reinstalled to receive source changes. Uninstall with
-`python -m pip uninstall ai-engineering-orchestra`; the checkout remains intact.
+`python -m pip uninstall itru`; the checkout remains intact.
 
 Run commands from the managed project or a subdirectory. The nearest ancestor
 containing `.ai/project.yaml` determines the active project, never the installed
@@ -53,20 +53,20 @@ Manifest (default `.ai/tasks/`). Workflows remain in the target project's
 `roles/` directory is ignored because project Role extensions and overrides are
 not part of the current contract.
 
-`aio verify` validates the active project's supported AIO structure and then runs
+`itru verify` validates the active project's supported ITRU structure and then runs
 its project-declared Verification Checks from `.ai/project.yaml` in declaration
-order. Omitted or empty checks mean zero commands; AIO does not infer checks from
+order. Omitted or empty checks mean zero commands; ITRU does not infer checks from
 repository contents and has no Orchestra-specific fallback. Before execution the
-CLI names the declaration source and ordered Check IDs. `aio verify --structure`
+CLI names the declaration source and ordered Check IDs. `itru verify --structure`
 is the non-executing inspection path: it validates supported structure without
 planning, resolving, or running declared commands.
 
 Declared commands use the caller's filesystem access, network access,
-credentials, environment, and process authority. AIO provides no sandbox,
+credentials, environment, and process authority. ITRU provides no sandbox,
 filesystem or network isolation, credential isolation, purity, read-only
 guarantee, harmlessness, or full descendant containment. Bounded failure output
 is unsanitized and may enter terminal or CI logs. The inherited
-`ENGINEERING_ORCHESTRATION_VERIFY_DEPTH` marker blocks ordinary nested aggregate
+`ITRU_VERIFY_DEPTH` marker blocks ordinary nested aggregate
 verification, but wrappers can remove it and arbitrary recursion cannot be
 proven absent. Repository declarations and command availability do not authorize
 an Agent to invoke verification or grant any execution authority. Mechanical
@@ -78,15 +78,14 @@ dependencies and are not installed automatically. Verification must run from a
 supported/activated development environment where PATH-selected `python` has the
 repository's required dependencies.
 
-Source commands (`python -B aio.py ...` and `python -B scripts/list_tasks.py`,
-`scripts/inspect_task.py`, `scripts/verify_repo.py`) remain available. Normal console
-launchers may write Python bytecode; suppressing installed `__pycache__` is not a
-product requirement. Preflight Python subprocesses retain their explicit `-B`.
+The source launcher is `python -B itru.py ...`. Normal console launchers may
+write Python bytecode; suppressing installed `__pycache__` is not a product
+requirement. Preflight Python subprocesses retain their explicit `-B`.
 
-The local distribution name `ai-engineering-orchestra`, temporary console name
-`aio`, technical namespace `engineering_orchestration`, product display name,
-and historical `AIO-*` Task IDs are separate identities. Another console name can
-target the same router without changing capabilities. The static distribution
+ITRU is the single living product identity: the import package, distribution,
+and installed console are all `itru`. Historical Task identities remain exact;
+`AIO-059` is the last legacy Task, and `ITRU-060` is the first future Task after
+cutover closure. There is no legacy package or console alias. The static
 version `0.1.0` identifies installed code; Manifest `orchestra.version` expresses
 the managed project's framework expectation. No version synchronization is implied.
 
@@ -119,7 +118,7 @@ The pure relation is available to runtime consumers without a policy or routing
 engine:
 
 ```python
-from engineering_orchestration.execution_mode import execution_mode_satisfies
+from itru.execution_mode import execution_mode_satisfies
 
 assert execution_mode_satisfies("deep", "standard")
 ```
@@ -138,7 +137,7 @@ way to address a model through an operational Provider boundary. Its Definition
 contains exactly `option_id`, `provider_id`, and Provider-scoped `model_id`:
 
 ```python
-from engineering_orchestration.inference_option import (
+from itru.inference_option import (
     InferenceOptionDefinition,
     validate_inference_option_inventory,
 )
@@ -158,7 +157,7 @@ contract exists.
 Availability is separate ephemeral evidence:
 
 ```python
-from engineering_orchestration.inference_option_availability import (
+from itru.inference_option_availability import (
     InferenceOptionAvailabilityObservation,
     InferenceOptionAvailabilityState,
     validate_inference_option_availability,
@@ -194,7 +193,7 @@ execution surface through which an Agent execution can run or be delegated. Its
 Definition contains exactly `runtime_option_id`:
 
 ```python
-from engineering_orchestration.agent_runtime_option import (
+from itru.agent_runtime_option import (
     AgentRuntimeOptionDefinition,
     validate_agent_runtime_option_inventory,
 )
@@ -213,7 +212,7 @@ framework, Runtime Option type, process, session, or invocation.
 Availability is separate ephemeral evidence:
 
 ```python
-from engineering_orchestration.agent_runtime_option_availability import (
+from itru.agent_runtime_option_availability import (
     AgentRuntimeOptionAvailabilityObservation,
     AgentRuntimeOptionAvailabilityState,
     validate_agent_runtime_option_availability,
@@ -241,7 +240,7 @@ technical-support evidence for one known Runtime Option and one Core-defined
 abstract operation:
 
 ```python
-from engineering_orchestration.runtime_operation_capability import (
+from itru.runtime_operation_capability import (
     RuntimeOperationCapabilityObservation,
     RuntimeOperationCapabilityState,
     validate_runtime_operation_capability,
@@ -276,7 +275,7 @@ Actor-to-Runtime Applicability Evidence is a separate caller-supplied positive
 many-to-many relation between known Agent Actors and Runtime Options:
 
 ```python
-from engineering_orchestration.actor_runtime_applicability import (
+from itru.actor_runtime_applicability import (
     ActorRuntimeApplicabilityEvidence,
     validate_actor_runtime_applicability,
 )
@@ -310,7 +309,7 @@ Runtime-to-Inference Compatibility Evidence is a separate caller-supplied
 positive many-to-many relation:
 
 ```python
-from engineering_orchestration.runtime_inference_compatibility import (
+from itru.runtime_inference_compatibility import (
     RuntimeInferenceCompatibilityEvidence,
     validate_runtime_inference_compatibility,
 )
@@ -339,7 +338,7 @@ Runtime-to-Inference Pair Availability Assessment composes that validated
 positive relation with both normalized endpoint-availability snapshots:
 
 ```python
-from engineering_orchestration.runtime_inference_pair_availability import (
+from itru.runtime_inference_pair_availability import (
     assess_runtime_inference_pair_availability,
 )
 
@@ -376,7 +375,7 @@ contracts for one explicit external-inference Agent candidate. Its identity is
 one valid Assignment plus exact Runtime and Inference Option IDs:
 
 ```python
-from engineering_orchestration.agent_execution_candidate_prerequisite import (
+from itru.agent_execution_candidate_prerequisite import (
     assess_agent_execution_candidate_prerequisites,
 )
 
@@ -420,7 +419,7 @@ The harness validates the resource lexically. It never opens, reads, stats,
 hashes, or filesystem-resolves the target; discovers or changes permissions;
 parses historical approval prose; creates an execution request or Execution
 Contract; dispatches; or invokes anything. It is packaged only as the private
-`engineering_orchestration._read_only_execution_preparation` module, with no
+`itru._read_only_execution_preparation` module, with no
 public package export, CLI, schema, adapter, or stable Core contract. This
 evidence-consuming experiment is not the v0.2 permission-enforcement system.
 
@@ -621,7 +620,7 @@ repository-relative resource in the caller-owned evaluation context. It
 contains exactly `operation_id` and `resource`:
 
 ```python
-from engineering_orchestration.operation_requirement import (
+from itru.operation_requirement import (
     OperationRequirement,
     validate_operation_requirement,
 )
@@ -675,7 +674,7 @@ currently permits one known Runtime Option to perform one Core operation
 against one exact lexical repository-relative resource:
 
 ```python
-from engineering_orchestration.environment_operation_permission import (
+from itru.environment_operation_permission import (
     EnvironmentOperationPermissionObservation,
     EnvironmentOperationPermissionState,
     validate_environment_operation_permission,
@@ -742,7 +741,7 @@ assertion that one identified Human or policy authority granted or denied one
 exact assigned external-inference Agent action:
 
 ```python
-from engineering_orchestration.agent_execution_authorization_evidence import (
+from itru.agent_execution_authorization_evidence import (
     AgentExecutionAuthorizationAuthorityKind,
     AgentExecutionAuthorizationEvidence,
     AgentExecutionAuthorizationState,
@@ -750,7 +749,7 @@ from engineering_orchestration.agent_execution_authorization_evidence import (
 )
 
 evidence = AgentExecutionAuthorizationEvidence(
-    task_id="AIO-SYNTHETIC",
+    task_id="ITRU-060",
     workflow_id="architecture-change",
     stage_id="implement",
     role_id="software-engineer",
@@ -806,7 +805,7 @@ immutable, ephemeral, in-memory diagnostic composition for one exact assigned
 external-inference Agent action:
 
 ```python
-from engineering_orchestration.agent_action_prerequisite import (
+from itru.agent_action_prerequisite import (
     assess_agent_action_prerequisites,
 )
 
@@ -846,7 +845,7 @@ declarative intent for one exact assigned external-inference Agent action and
 one explicitly supplied, already-resolved effective Task Execution Mode:
 
 ```python
-from engineering_orchestration.agent_execution_contract import (
+from itru.agent_execution_contract import (
     prepare_agent_execution_contract,
     validate_agent_execution_contract,
 )
@@ -895,7 +894,7 @@ occurrence identity for one concrete attempt involving one exact Agent
 Execution Contract:
 
 ```python
-from engineering_orchestration.agent_execution_run import (
+from itru.agent_execution_run import (
     prepare_agent_execution_run,
     validate_agent_execution_run,
 )
@@ -937,7 +936,7 @@ artifact for one exact Agent Execution Run inside one exact authorization
 domain:
 
 ```python
-from engineering_orchestration.agent_execution_authorization_grant import (
+from itru.agent_execution_authorization_grant import (
     AgentExecutionAuthorizationGrant,
     validate_agent_execution_authorization_grant,
     validate_agent_execution_authorization_grant_collection,
@@ -991,7 +990,7 @@ configured Tool implementation identity supplied by an external trusted
 resolver:
 
 ```python
-from engineering_orchestration.agent_operation_tool_binding import (
+from itru.agent_operation_tool_binding import (
     AgentOperationToolBinding,
     validate_agent_operation_tool_binding,
 )
@@ -1043,7 +1042,7 @@ when one operationally trusted current, non-revoked Grant is atomically
 consumed for one exact trusted Tool Binding:
 
 ```python
-from engineering_orchestration.agent_execution_dispatch_admission import (
+from itru.agent_execution_dispatch_admission import (
     AgentExecutionDispatchAdmission,
     validate_agent_execution_dispatch_admission,
 )
@@ -1107,10 +1106,10 @@ and
 
 ## Installed Structural Validation
 
-The programmatic API reads the nearest active project's supported AIO structures:
+The programmatic API reads the nearest active project's supported ITRU structures:
 
 ```python
-from engineering_orchestration.validation import validate_project
+from itru.validation import validate_project
 
 result = validate_project()  # CWD, then ancestors containing .ai/project.yaml
 print(result.status)  # PASS, FAIL, or ERROR
@@ -1152,7 +1151,7 @@ are emitted.
 Canonical Role instances are machine-readable and package-owned:
 
 ```python
-from engineering_orchestration.role_catalog import load_role_catalog
+from itru.role_catalog import load_role_catalog
 
 catalog = load_role_catalog()
 role = catalog.get("software-engineer")
@@ -1174,8 +1173,8 @@ candidate with an ID, kind, and engineering competencies. The pure evaluator
 compares already-normalized Actor competencies with Role requirements:
 
 ```python
-from engineering_orchestration.actor_coverage import evaluate_actor_role_coverage
-from engineering_orchestration.role_catalog import load_role_catalog
+from itru.actor_coverage import evaluate_actor_role_coverage
+from itru.role_catalog import load_role_catalog
 
 role = load_role_catalog().get("software-engineer")
 coverage = evaluate_actor_role_coverage(actor, role)
@@ -1193,7 +1192,7 @@ Quality Gate result. The semantic contract is defined in
 Availability is a separate, ephemeral runtime observation over supplied Actors:
 
 ```python
-from engineering_orchestration.actor_availability import (
+from itru.actor_availability import (
     ActorAvailabilityObservation,
     AvailabilityState,
     validate_actor_availability,
@@ -1224,7 +1223,7 @@ Actor Selection combines one resolved Task/Workflow/Stage/Role responsibility,
 exact Actor competency coverage, and a caller-supplied availability snapshot:
 
 ```python
-from engineering_orchestration.actor_selection import select_actor
+from itru.actor_selection import select_actor
 
 result = select_actor(
     task,
@@ -1257,7 +1256,7 @@ An Assignment records one Actor selected outside the Assignment contract for one
 required Task/Workflow/Stage/Role responsibility:
 
 ```python
-from engineering_orchestration.assignment import (
+from itru.assignment import (
     Assignment,
     validate_assignment_set,
 )
@@ -1296,7 +1295,7 @@ The contract has a programmatic planner, runner, and thin aggregate composition:
 
 ```python
 from pathlib import Path
-from engineering_orchestration.project_verification import (
+from itru.project_verification import (
     plan_project_checks,
     run_project_checks,
     verify_project,
@@ -1319,3 +1318,23 @@ Only planning readiness gates project command execution, so unrelated Task or
 Workflow structural findings remain reported without suppressing a valid plan.
 Aggregate exit codes are 0 for PASS, 1 for FAIL without ERROR, 2 for any ERROR,
 and 130 when the public CLI is interrupted by the user.
+
+## Canonical namespace and historical compatibility
+
+New repository-file-read work uses
+`tool::itru-native-repository-file-read::v1`. Historical persisted
+`tool::aeo-native-repository-file-read::v1` evidence remains exact and is accessed
+only through the authenticated historical evidence boundary; it cannot select
+a Tool, mint replacement authority or invoke the native reader.
+
+Only `ITRU_VERIFY_DEPTH` controls the current verification recursion marker.
+The legacy marker is inactive. `~/.itru` is reserved for future configuration;
+no home configuration subsystem exists. Existing v1 schema URI, ledger and
+ownership-protocol identities retain their documented compatibility spellings.
+See [the canonical namespace specification](core/itru-canonical-namespace-specification.md).
+
+The prospective guard is `tests/test_itru_namespace.py`. It validates only the
+explicit living file manifest and separately supplied candidate Task identities,
+without enumerating the repository's Task or Workflow catalogs. Historical Task
+references and new Task creation have distinct policies; no new Task is created
+before this cutover closes.

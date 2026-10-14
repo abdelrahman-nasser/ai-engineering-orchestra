@@ -1,0 +1,71 @@
+id: ITRU-060
+title: Canonical Result Foundation
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: high
+execution:
+  mode: deep
+workflow: standard-change
+objective: >
+  Establish canonical terminal Result evidence for one original controlled
+  execution attempt. Phase 1 locks semantics, identity, exact Entry/Run/Tool
+  binding, diagnostics, payload, trust and serialization boundaries, validation
+  plans and six independent specialist reviews. The Human approved that design
+  and authorized Phase 2 implementation plus exact bounded F1-F3 validation;
+  the Human now authorizes fresh final specialist and separate formal independent
+  review only. Final review stopped on blocking HIGH S-H1 immutable-evidence
+  restoration-hook bypass; the Human now authorizes its bounded remediation,
+  exact F1-F3 revalidation, fresh affected reviews, Process completion and one
+  formal independent review within the recorded whitelist.
+  That remediation checkpoint now passes exact 12/29/2 validation with six fresh
+  specialist APPROVE verdicts and separate formal independent APPROVE; stop at
+  final Human Control with closure gate evaluation and final approval pending.
+  The Human now authorizes evaluation only of documentation_consistency and
+  independent_review using exact existing evidence and bounded recorded checks;
+  final Human approval and Task closure remain pending.
+  Final gate evaluation stopped: documentation_consistency failed exact C2's
+  review.md whitespace assertion after C1 passed; independent_review closure
+  evaluation did not proceed. I3/H2 remain unchecked, acceptance 16/18.
+  Bounded whitespace remediation and gate replay require Human authorization.
+  The Human approved G-L1 whitespace-only remediation and exact C1-C3 replay;
+  all three checks and both final required gates now PASS. I3 is complete,
+  acceptance 17/18; H2 final Human approval and Task closure remain pending.
+  The Human explicitly approved ITRU-060 final closure, accepted the historical
+  Medium as NON-BLOCKING and accepted S-H1/G-L1 remediation and both gate PASS
+  outcomes. Closure evidence is complete, acceptance 18/18 and status completed.
+  No Git action or next Task is authorized by this closure update.
+scope:
+  include:
+    - Phase-1 creation of the four canonical ITRU-060 Task artifacts and core/agent-execution-result-specification.md
+    - Design of immutable Result identity and terminal outcomes bound to exact committed Execution Entry, complete Run and Tool
+    - Success binary payload boundary, closed failure diagnostics, failed-before-effect and effect-ambiguous semantics
+    - Explicit persistence, schema/serialization and trusted construction decisions
+    - repository_file_read as the first and only planned producer through the existing controlled invocation boundary
+    - Bounded scenario matrix, validation-safety matrix and exact conditional future commands
+    - Six fresh independent reviews for Architect, Result/Domain, Security/Authority, Compatibility, Serialization/Schema and Process/Validation
+    - Bounded reads of directly relevant governance, execution contracts, implementation and test safety context
+    - Human-authorized Phase-2 implementation in only itru/agent_execution_result.py and itru/_execution_entry_and_controlled_invocation.py
+    - Human-authorized tests in only tests/test_agent_execution_result.py and tests/test_controlled_execution_result.py and exact retained F1-F3 validation after safety inspection
+    - Human-authorized final review phase with six fresh specialists and a separate formal independent reviewer using only the recorded exact-file read whitelist and no search tools
+    - Human-authorized S-H1 remediation within the four existing implementation/test paths, evidence updates, exact F1-F3 revalidation and fresh bounded remediation reviews
+    - Human-authorized final evaluation of documentation_consistency and independent_review using existing evidence and exact bounded recorded checks only
+  exclude:
+    - Production Result code or tests, adapter behavior changes and runtime schema implementation in Phase 1
+    - Execution Journal, persistent Task/Run state, Result persistence or restart recovery
+    - Scheduler, DAG, UI, public transport and generic Tool execution frameworks
+    - Protected target access outside explicit authorization, hostile fixture access and experiment execution
+    - Task/Workflow catalog enumeration, aggregate validators, broad lint, full test discovery and itru verify
+    - SQL migration changes, durable historical rewrites and historical Tool reactivation
+    - Staging, commits, pushes, merges, branch/remote mutation and integration
+dependencies:
+  - AIO-059
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

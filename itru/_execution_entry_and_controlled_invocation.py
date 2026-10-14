@@ -1,7 +1,8 @@
 """Private AIO-058 durable entry and original synchronous invocation.
 
 An Entry is permanent history, never a recoverable invocation credential.
-No public Result, journal, dispatch API or automatic replay is provided.
+Terminal Result is produced only on the original trusted invocation stack.
+No journal, dispatch API, serialization or automatic replay is provided.
 """
 from __future__ import annotations
 
@@ -17,7 +18,12 @@ from itru.agent_operation_tool_registry import (
     _ITRU_NATIVE_REPOSITORY_FILE_READ_TOOL_ID, _AgentOperationToolRoute,
     _AgentOperationToolImplementationSelector, _select_agent_operation_tool_route,
 )
-from itru.sqlite_agent_execution_dispatch_admission_store import _mint_dispatch_request
+from itru.sqlite_agent_execution_dispatch_admission_store import (
+    _mint_dispatch_request, SqliteAgentExecutionDispatchAdmissionStore,
+)
+from itru.agent_execution_result import (
+    AgentExecutionResult, _ResultIntegrityError, _begin_result_production,
+)
 
 __all__ = ()
 
@@ -66,12 +72,18 @@ class _InvocationOutcome:
 class _ControlledOutcome:
     entry_result: _EntryResult
     invocation: _InvocationOutcome | None = None
+    result: AgentExecutionResult | None = None
 
 
 class _EntryOperation(jit._JitAssessmentOperation):
     """Same final predicates as AIO-057, consumed inside the Entry writer."""
     def __init__(self, authorizer, cell, principal, decision):
         super().__init__(authorizer, cell, principal, decision, 'consume')
+        self._result_parent = None
+
+    def _freeze(self, parent):
+        super()._freeze(parent)
+        self._result_parent = parent
 
     def _writer_scope(self, store):
         a=self.authorizer
@@ -179,6 +191,8 @@ class _ControlledInvocationCoordinator:
         a = self._a
         entry_result = _EntryResult('not_entered')
         invoked = False
+        result_production = None
+        integrity_rejected = False
         try:
             a._live()
             cell = a._cap_cell(capability)  # No reservation lock nests with S/G/P/W.
@@ -190,9 +204,12 @@ class _ControlledInvocationCoordinator:
                 _validate_executor(cell.subject.executor, a.session)
                 with a.guard.read_scope():
                     operation = _EntryOperation(a, cell, principal, decision)
+                    result_production = _begin_result_production(self, cell)
                     entry_result = a.store._enter_execution(self._request(cell), operation)
                     if entry_result.outcome != 'entered':
+                        result_production.retire()
                         return _ControlledOutcome(entry_result)
+                    result_production.acknowledge(entry_result, operation)
                     # W and C are now released, S/G/P remain on this stack.
                     self._entry = entry_result.entry
                     self._cell = cell
@@ -220,21 +237,46 @@ class _ControlledInvocationCoordinator:
                             self._once = 'suppressed'
                         self._active = None
                         self._original = None
-            return _ControlledOutcome(entry_result, outcome)  # Disclose only after S postcheck.
         except BaseException as error:
             if 'cell' in locals():
                 with cell.lock:  # S/G/P/W have unwound, no backward acquisition.
                     if cell.state == 'CONSUMING':
                         cell._transition('UNCERTAIN')
             if not isinstance(error, Exception):
+                if result_production is not None and not result_production.closed:
+                    result_production.retire()
                 raise
-            if entry_result.outcome == 'entered':
+            if isinstance(error, _ResultIntegrityError):
+                integrity_rejected = True
+            elif entry_result.outcome == 'entered':
                 reason = ('effect_ambiguous' if invoked else
                     'guard_lost' if isinstance(error, jit._JitFailure) and error.outcome != 'ownership_lost'
                     else 'ownership_lost')
-                return _ControlledOutcome(entry_result, _InvocationOutcome(
-                    'ambiguous' if invoked else 'failed_before_content', reason))
-            return _ControlledOutcome(_EntryResult(a._failure(error).outcome))
+                outcome = _InvocationOutcome(
+                    'ambiguous' if invoked else 'failed_before_content', reason)
+            else:
+                if result_production is not None and not result_production.closed:
+                    result_production.retire()
+                return _ControlledOutcome(_EntryResult(a._failure(error).outcome))
+        if integrity_rejected:
+            if result_production is not None and not result_production.closed:
+                result_production.retire()
+            outcome = None
+            raise _ResultIntegrityError() from None
+        publication_failed = False
+        result = None
+        try:
+            result = result_production.publish(entry_result, outcome)
+        except Exception:
+            # Never return completed bytes when canonical construction rejects.
+            publication_failed = True
+        finally:
+            if result_production is not None and not result_production.closed:
+                result_production.retire()
+        if publication_failed:
+            outcome = result = None
+            raise _ResultIntegrityError() from None
+        return _ControlledOutcome(entry_result, outcome, result)
 
     def history(self, capability):
         """Same pinned ledger only. No continuation construction or target IO."""
@@ -245,3 +287,7 @@ class _ControlledInvocationCoordinator:
                 return a.store._classify_execution_entry(self._request(cell))
         except Exception as error:
             return _EntryResult(a._failure(error).outcome)
+
+
+_ORIGINAL_INVOKE_CODE = _ControlledInvocationCoordinator.invoke.__code__
+_ENTRY_WRITER = SqliteAgentExecutionDispatchAdmissionStore._enter_execution

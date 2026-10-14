@@ -5,7 +5,11 @@ import { Tone } from '../data/models';
 @Component({
   selector: 'cc-status-badge',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '[attr.data-tone]': 'tone()' },
+  host: {
+    '[attr.data-tone]': 'tone()',
+    '[class.pulse]': 'pulse()',
+    role: 'status',
+  },
   styles: `
     :host {
       --tone: var(--muted);
@@ -22,6 +26,7 @@ import { Tone } from '../data/models';
       background: var(--tone-soft);
       border: 1px solid color-mix(in srgb, var(--tone) 28%, transparent);
       border-radius: 999px;
+      transition: background-color 0.15s var(--ease), color 0.15s var(--ease);
     }
     :host::before {
       content: '';
@@ -30,6 +35,7 @@ import { Tone } from '../data/models';
       border-radius: 50%;
       background: var(--tone);
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--tone) 20%, transparent);
+      flex: none;
     }
     :host([data-tone='info']) {
       --tone: var(--info);
@@ -55,10 +61,35 @@ import { Tone } from '../data/models';
       --tone: var(--text-muted);
       --tone-soft: var(--surface-2);
     }
+
+    :host(.pulse)::before {
+      animation: badge-pulse 2s infinite ease-out;
+    }
+    @keyframes badge-pulse {
+      0% {
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--tone) 60%, transparent);
+      }
+      70% {
+        box-shadow: 0 0 0 6px transparent;
+      }
+      100% {
+        box-shadow: 0 0 0 0 transparent;
+      }
+    }
+
+    @media (forced-colors: active) {
+      :host {
+        border: 1px solid ButtonText;
+      }
+      :host::before {
+        background: ButtonText;
+      }
+    }
   `,
   template: `{{ label() }}`,
 })
 export class StatusBadge {
   readonly label = input.required<string>();
   readonly tone = input<Tone>('muted');
+  readonly pulse = input<boolean>(false);
 }

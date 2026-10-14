@@ -19,7 +19,13 @@ export type IconName =
   | 'chevron-right'
   | 'play'
   | 'pause'
-  | 'nile';
+  | 'nile'
+  | 'lock'
+  | 'help'
+  | 'slash'
+  | 'search'
+  | 'filter'
+  | 'cross-circle';
 
 /** Stroke-based 24px glyphs. Each entry is one or more SVG path `d` values. */
 const PATHS: Readonly<Record<IconName, readonly string[]>> = {
@@ -42,6 +48,12 @@ const PATHS: Readonly<Record<IconName, readonly string[]>> = {
   play: ['M7 4.500v15l12-7.500z'],
   pause: ['M8 5v14', 'M16 5v14'],
   nile: ['M2 16c4-8 6 8 10 0s6 8 10 0', 'M2 10c4-8 6 8 10 0s6 8 10 0'],
+  lock: ['M7 11V7a5 5 0 0110 0v4', 'M5 11h14v10H5z', 'M12 15v2'],
+  help: ['M12 22a10 10 0 100-20 10 10 0 000 20z', 'M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3', 'M12 17h.01'],
+  slash: ['M12 22a10 10 0 100-20 10 10 0 000 20z', 'M4.93 4.93l14.14 14.14'],
+  search: ['M11 19a8 8 0 100-16 8 8 0 000 16z', 'M21 21l-4.35-4.35'],
+  filter: ['M3 4h18l-7 8v6l-4 2v-8z'],
+  'cross-circle': ['M12 22a10 10 0 100-20 10 10 0 000 20z', 'M15 9l-6 6', 'M9 9l6 6'],
 };
 
 @Component({

@@ -276,6 +276,64 @@ const RUN_SEEDS: readonly RunSeed[] = [
     state: 'finished',
     startedLabel: 'Last week · Fri',
   },
+  // DEMO-107 — standard-change, failed validation evidence
+  {
+    runId: 'run_d82e11a9',
+    taskId: 'DEMO-107',
+    workflowId: 'standard-change',
+    stageId: 'validate',
+    roleId: 'software-engineer',
+    actorId: 'agent-forge',
+    runtimeOptionId: 'rt-local-cli',
+    optionId: 'opt-alpha-reasoning',
+    resource: 'src/io/streaming-frame-parser',
+    mode: 'deep',
+    state: 'needs-attention',
+    startedLabel: 'Today · 11:15',
+  },
+  // DEMO-108 — standard-change, multi-agent branch with long labels and paths
+  {
+    runId: 'run_m1a2b3c4',
+    taskId: 'DEMO-108',
+    workflowId: 'standard-change',
+    stageId: 'implement',
+    roleId: 'software-engineer',
+    actorId: 'agent-forge',
+    runtimeOptionId: 'rt-local-cli',
+    optionId: 'opt-alpha-reasoning',
+    resource: 'src/cluster/partition-lease-fencing-coordinator',
+    mode: 'critical',
+    state: 'in-progress',
+    startedLabel: 'Today · 13:45',
+  },
+  {
+    runId: 'run_m2b3c4d5',
+    taskId: 'DEMO-108',
+    workflowId: 'standard-change',
+    stageId: 'implement',
+    roleId: 'reviewer',
+    actorId: 'agent-lumen',
+    runtimeOptionId: 'rt-local-cli',
+    optionId: 'opt-beta-fast',
+    resource: 'config/policies/distributed-partition-fencing-rules',
+    mode: 'critical',
+    state: 'in-progress',
+    startedLabel: 'Today · 13:50',
+  },
+  {
+    runId: 'run_m3c4d5e6',
+    taskId: 'DEMO-108',
+    workflowId: 'standard-change',
+    stageId: 'implement',
+    roleId: 'security-reviewer',
+    actorId: 'agent-sentinel',
+    runtimeOptionId: 'rt-hosted-agent',
+    optionId: 'opt-alpha-reasoning',
+    resource: 'src/cluster/epoch-attestation-verifier',
+    mode: 'critical',
+    state: 'finished',
+    startedLabel: 'Today · 13:40',
+  },
 ];
 
 function toContract(seed: RunSeed): RunContractView {
@@ -424,6 +482,52 @@ export const MOCK_TASK_DETAILS: readonly TaskDetail[] = [
     runIds: [],
     stages: STANDARD_CHANGE,
   },
+  {
+    id: 'DEMO-107',
+    title: 'Harden buffer boundary validation in streaming frame parser',
+    type: 'implementation',
+    status: 'in_progress',
+    risk: 'high',
+    complexity: 'high',
+    executionMode: 'deep',
+    workflowId: 'standard-change',
+    approvalLevel: 'explicit',
+    updatedLabel: 'Today · 11:20',
+    objective:
+      'Enforce strict bounds checking during streaming frame deserialization to trap malformed frames before buffer allocation.',
+    scopeIncluded: ['Frame length validation', 'Streaming boundary assertions', 'Fuzz regression suite'],
+    scopeExcluded: ['Transport buffer reallocation'],
+    dependencies: ['DEMO-101'],
+    qualityGates: ['unit-tests', 'independent_review'],
+    runIds: ['run_d82e11a9'],
+    stages: STANDARD_CHANGE,
+  },
+  {
+    id: 'DEMO-108',
+    title:
+      'Implement distributed partition lease fencing and epoch attestation validation across isolated cluster nodes',
+    type: 'architecture',
+    status: 'in_progress',
+    risk: 'critical',
+    complexity: 'critical',
+    executionMode: 'critical',
+    workflowId: 'standard-change',
+    approvalLevel: 'protected',
+    updatedLabel: 'Today · 13:50',
+    objective:
+      'Guarantee that partitioned nodes in a multi-region deployment cannot acquire or extend execution leases once epoch fencing has committed, validating mutual exclusion across divergent network partitions.',
+    scopeIncluded: [
+      'Epoch fencing contract assertions',
+      'Cluster partition simulation harness',
+      'Attestation token verification',
+      'Telemetry audit trail',
+    ],
+    scopeExcluded: ['Physical hardware watchdog integration', 'Legacy consensus migration'],
+    dependencies: ['DEMO-102', 'DEMO-103'],
+    qualityGates: ['unit-tests', 'documentation_consistency', 'independent_review'],
+    runIds: ['run_m1a2b3c4', 'run_m2b3c4d5', 'run_m3c4d5e6'],
+    stages: STANDARD_CHANGE,
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -442,6 +546,8 @@ export const MOCK_AGENTS: readonly AgentSummary[] = [
       { taskId: 'DEMO-101', stageId: 'implement', roleId: 'software-engineer' },
       { taskId: 'DEMO-102', stageId: 'implement', roleId: 'software-engineer' },
       { taskId: 'DEMO-103', stageId: 'implement', roleId: 'software-engineer' },
+      { taskId: 'DEMO-107', stageId: 'validate', roleId: 'software-engineer' },
+      { taskId: 'DEMO-108', stageId: 'implement', roleId: 'software-engineer' },
     ],
   },
   {
@@ -460,7 +566,10 @@ export const MOCK_AGENTS: readonly AgentSummary[] = [
     roleIds: ['reviewer', 'documentation-specialist'],
     availability: 'available',
     runtimeOptionIds: ['rt-local-cli'],
-    assignments: [{ taskId: 'DEMO-102', stageId: 'review', roleId: 'reviewer' }],
+    assignments: [
+      { taskId: 'DEMO-102', stageId: 'review', roleId: 'reviewer' },
+      { taskId: 'DEMO-108', stageId: 'implement', roleId: 'reviewer' },
+    ],
   },
   {
     actorId: 'agent-sentinel',
@@ -472,6 +581,7 @@ export const MOCK_AGENTS: readonly AgentSummary[] = [
     assignments: [
       { taskId: 'DEMO-102', stageId: 'security-analysis', roleId: 'security-reviewer' },
       { taskId: 'DEMO-102', stageId: 'review', roleId: 'security-reviewer' },
+      { taskId: 'DEMO-108', stageId: 'implement', roleId: 'security-reviewer' },
     ],
   },
   {
@@ -560,6 +670,17 @@ export const MOCK_APPROVALS: readonly ApprovalItem[] = [
     authorityId: 'human-maya',
     requestedLabel: 'Yesterday · 16:42',
   },
+  {
+    id: 'apr-1006',
+    taskId: 'DEMO-108',
+    runId: 'run_m1a2b3c4',
+    stageId: 'implement',
+    level: 'protected',
+    action:
+      'repository_file_read of config/policies/distributed-partition-fencing-rules via rt-local-cli and opt-alpha-reasoning',
+    state: 'awaiting',
+    requestedLabel: 'Today · 13:45',
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -589,6 +710,19 @@ function buildTimeline(seed: RunSeed): TimelineEntry[] {
       actorId: seed.actorId,
     },
   ];
+
+  if (seed.runId === 'run_d82e11a9') {
+    entries.push({
+      id: base('t3'),
+      atLabel: seed.startedLabel,
+      kind: 'quality-gate',
+      title: 'Validation failed',
+      detail: 'unit-tests reported 1 failure; guard page offset exception not trapped.',
+      state: 'needs-attention',
+      stageId: seed.stageId,
+    });
+    return entries;
+  }
 
   if (seed.state === 'needs-attention') {
     entries.push({
@@ -638,6 +772,46 @@ function buildTimeline(seed: RunSeed): TimelineEntry[] {
 
 function buildEvidence(seed: RunSeed): EvidenceItem[] {
   const id = (suffix: string) => `${seed.runId}-${suffix}`;
+
+  if (seed.runId === 'run_d82e11a9') {
+    return [
+      {
+        id: id('e1'),
+        kind: 'command-output',
+        title: 'unit-tests',
+        summary: '1 test failed out of 14 during buffer boundary assertion checks.',
+        outcome: 'failed',
+        source: 'python -B -m unittest discover -s tests -p "test_frame_parser.py"',
+        lines: [
+          'test_frame_header_valid ... ok',
+          'test_zero_length_frame ... ok',
+          'FAIL: test_frame_overflow_boundary (test_frame_parser.TestFrameParser)',
+          'Traceback (most recent call last):',
+          '  File "tests/test_frame_parser.py", line 42, in test_frame_overflow_boundary',
+          '    self.assertRaises(GuardPageException, parse_frame, payload)',
+          'AssertionError: GuardPageException not raised when buffer offset exceeded 4096 bytes',
+          '----------------------------------------',
+          'Ran 14 tests in 0.112s — FAILED (failures=1)',
+        ],
+      },
+      {
+        id: id('e2'),
+        kind: 'quality-gate',
+        title: 'documentation_consistency',
+        summary: 'Skipped pending resolution of failing validation test.',
+        outcome: 'skipped',
+        source: 'quality-gates/documentation-consistency',
+      },
+      {
+        id: id('e3'),
+        kind: 'review-note',
+        title: 'Reviewer note',
+        summary: 'Independent review cannot proceed while validation has failing checks.',
+        outcome: 'unverified',
+        source: 'agent-sentinel',
+      },
+    ];
+  }
 
   if (seed.state === 'needs-attention') {
     return [

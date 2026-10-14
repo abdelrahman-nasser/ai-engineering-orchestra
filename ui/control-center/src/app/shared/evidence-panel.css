@@ -10,11 +10,15 @@
 }
 .count {
   --c: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   padding: 3px 10px;
   font-size: 12px;
   color: var(--text-muted);
   border: 1px solid var(--border);
   border-radius: 999px;
+  background: var(--surface-2);
 }
 .count strong {
   color: var(--c);
@@ -24,9 +28,14 @@
 }
 .count[data-outcome='failed'] {
   --c: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 35%, transparent);
 }
 .count[data-outcome='skipped'] {
   --c: var(--warning);
+  border-color: color-mix(in srgb, var(--warning) 35%, transparent);
+}
+.count[data-outcome='unverified'] {
+  --c: var(--muted);
 }
 
 .items {
@@ -42,10 +51,23 @@ details {
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  transition: border-color 0.15s var(--ease);
+  transition:
+    border-color 0.15s var(--ease),
+    box-shadow 0.15s var(--ease);
 }
 details[open] {
   border-color: var(--border-strong);
+  box-shadow: var(--shadow-sm);
+}
+
+details[data-outcome='failed'] {
+  border-left: 4px solid var(--danger);
+}
+details[data-outcome='skipped'] {
+  border-left: 4px solid var(--warning);
+}
+details[data-outcome='passed'] {
+  border-left: 4px solid var(--success);
 }
 
 summary {
@@ -56,10 +78,36 @@ summary {
   padding: var(--space-3) var(--space-4);
   cursor: pointer;
   list-style: none;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.15s var(--ease);
 }
 summary::-webkit-details-marker {
   display: none;
 }
+summary:hover {
+  background: color-mix(in srgb, var(--surface-3) 50%, transparent);
+}
+summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.summary-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.chevron {
+  color: var(--text-faint);
+  transition: transform 0.2s var(--ease);
+  flex: none;
+}
+details[open] .chevron {
+  transform: rotate(90deg);
+  color: var(--text);
+}
+
 .title {
   display: flex;
   flex-direction: column;
@@ -67,6 +115,7 @@ summary::-webkit-details-marker {
 }
 .kind {
   font-size: 10.5px;
+  font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-faint);
@@ -87,11 +136,11 @@ summary::-webkit-details-marker {
   margin: 0;
   padding: var(--space-3);
   overflow-x: auto;
+  max-height: 240px;
   color: var(--text);
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-}
-.empty {
-  padding: var(--space-3) 0;
+  font-size: 12px;
+  line-height: 1.45;
 }

@@ -190,14 +190,16 @@ export class NileFlow {
       }
       const x1 = from.x + from.r;
       const x2 = to.x - to.r;
-      const dx = Math.max(x2 - x1, 12);
-      const meander = wobble(`${edge.from}>${edge.to}`) * 9;
-      const d = [
-        `M ${x1} ${from.y}`,
-        `C ${x1 + dx * 0.5} ${from.y + meander}`,
-        `${x2 - dx * 0.5} ${to.y - meander}`,
-        `${x2} ${to.y}`,
-      ].join(' ');
+      const dx = Math.max(x2 - x1, 16);
+      const dy = to.y - from.y;
+      const meander = wobble(`${edge.from}>${edge.to}`) * 8;
+      // S-curve tangents: tributaries branch gently away from the trunk
+      const cp1x = x1 + dx * 0.44;
+      const cp2x = x2 - dx * 0.44;
+      const cp1y = from.y + dy * 0.12 + meander;
+      const cp2y = to.y - dy * 0.12 - meander;
+      const d = `M ${x1} ${from.y} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${x2} ${to.y}`;
+
       // A channel is only tinted by the Run it touches. Trunk stretches between
       // stages stay neutral so colour never suggests that flow is held up.
       const runEnd = from.node.kind === 'run' ? from.node : to.node.kind === 'run' ? to.node : undefined;

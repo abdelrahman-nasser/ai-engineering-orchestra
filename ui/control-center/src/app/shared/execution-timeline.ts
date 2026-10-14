@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { PresentationState, TimelineEntry, TimelineKind } from '../data/models';
 import { Icon, IconName } from './icon';
 import { PRESENTATION_STATE } from './presentation';
+import { StatePanel } from './state-panel';
 import { StatusBadge } from './status-badge';
 
 const KIND_ICON: Readonly<Record<TimelineKind, IconName>> = {
@@ -22,11 +23,16 @@ const KIND_ICON: Readonly<Record<TimelineKind, IconName>> = {
 @Component({
   selector: 'cc-execution-timeline',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Icon, StatusBadge],
+  imports: [Icon, StatePanel, StatusBadge],
   styleUrl: './execution-timeline.css',
   template: `
     @if (entries().length === 0) {
-      <p class="muted empty">No timeline entries to show.</p>
+      <cc-state-panel
+        kind="empty"
+        [compact]="true"
+        title="No timeline entries to show"
+        message="Recorded actions and event milestones will appear here as work progresses."
+      />
     } @else {
       <ol class="timeline" aria-label="Execution timeline">
         @for (entry of entries(); track entry.id) {

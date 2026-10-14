@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { ProvisionalResult } from '../data/models';
 import { Icon } from './icon';
+import { StatePanel } from './state-panel';
 
 /**
  * Provisional Result presentation shell.
@@ -12,17 +13,17 @@ import { Icon } from './icon';
 @Component({
   selector: 'cc-result-shell',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Icon],
+  imports: [Icon, StatePanel],
   styles: `
     :host {
       display: block;
     }
     .banner {
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: var(--space-2);
       margin-bottom: var(--space-4);
-      padding: 6px 12px;
+      padding: 6px 14px;
       font-size: 12px;
       font-weight: 600;
       color: var(--gold);
@@ -33,10 +34,12 @@ import { Icon } from './icon';
     }
     h3 {
       font-size: 17px;
+      line-height: var(--leading-snug);
       margin-bottom: var(--space-2);
     }
     .summary {
       color: var(--text-muted);
+      line-height: var(--leading-normal);
     }
     .regions {
       display: grid;
@@ -45,7 +48,7 @@ import { Icon } from './icon';
       margin-top: var(--space-4);
     }
     .region {
-      padding: var(--space-3) var(--space-4);
+      padding: var(--space-4);
       background: var(--surface-2);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
@@ -55,9 +58,7 @@ import { Icon } from './icon';
       padding-left: 18px;
       color: var(--text-muted);
       font-size: 13px;
-    }
-    .empty {
-      color: var(--text-muted);
+      line-height: 1.6;
     }
     @media (max-width: 760px) {
       .regions {
@@ -91,7 +92,12 @@ import { Icon } from './icon';
         </section>
       </div>
     } @else {
-      <p class="empty">No result has been presented for this item yet.</p>
+      <cc-state-panel
+        kind="empty"
+        [compact]="true"
+        title="No result has been presented for this item yet"
+        message="Results are presented provisionally once assigned work finishes validation."
+      />
     }
   `,
 })

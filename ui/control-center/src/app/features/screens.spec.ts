@@ -40,11 +40,11 @@ describe('Screens (mock rendering)', () => {
 
   it('Runs lists every run and filters by visual state', async () => {
     const el = await open('/runs');
-    expect(el.querySelectorAll('table[aria-label="Runs"] tbody tr')).toHaveLength(9);
+    expect(el.querySelectorAll('table[aria-label="Runs"] tbody tr')).toHaveLength(13);
 
     el.querySelector<HTMLButtonElement>('[data-testid="run-filter-needs-attention"]')!.click();
     await settle();
-    expect(el.querySelectorAll('table[aria-label="Runs"] tbody tr')).toHaveLength(2);
+    expect(el.querySelectorAll('table[aria-label="Runs"] tbody tr')).toHaveLength(3);
     expect(el.querySelector('[data-testid="run-filter-needs-attention"]')?.getAttribute('aria-pressed')).toBe('true');
   });
 
@@ -73,6 +73,15 @@ describe('Screens (mock rendering)', () => {
     expect(text(panel)).toContain('Authorization is unproven, not denied');
   });
 
+  it('Evidence surfaces failed validation checks prominently', async () => {
+    const el = await open('/runs/run_d82e11a9');
+    const panel = el.querySelector('cc-evidence-panel')!;
+    expect(text(panel.querySelector('.tally'))).toContain('1 failed');
+    expect(text(panel.querySelector('.tally'))).toContain('1 skipped');
+    expect(panel.querySelectorAll('details[open]')).toHaveLength(2);
+    expect(text(panel)).toContain('FAIL: test_frame_overflow_boundary');
+  });
+
   it('Run detail reports not found for an unknown run', async () => {
     const el = await open('/runs/run_unknown');
     expect(text(el.querySelector('cc-state-panel'))).toContain('Run not found');
@@ -80,7 +89,7 @@ describe('Screens (mock rendering)', () => {
 
   it('Tasks lists tasks with Core statuses and filters them', async () => {
     const el = await open('/tasks');
-    expect(el.querySelectorAll('table[aria-label="Tasks"] tbody tr')).toHaveLength(6);
+    expect(el.querySelectorAll('table[aria-label="Tasks"] tbody tr')).toHaveLength(8);
     const badges = Array.from(el.querySelectorAll('table tbody cc-status-badge')).map((b) => text(b));
     expect(badges).toEqual(expect.arrayContaining(['Planned', 'In progress', 'Blocked', 'Completed', 'Cancelled']));
 
@@ -95,6 +104,13 @@ describe('Screens (mock rendering)', () => {
     expect(text(el.querySelector('.notice'))).toContain('explicit Human approval');
     expect(el.querySelectorAll('table[aria-label="Runs for this task"] tbody tr')).toHaveLength(2);
     expect(text(el.querySelector('.stages'))).toContain('Human checkpoint');
+  });
+
+  it('Task detail renders multi-agent branch and long objective without overflowing', async () => {
+    const el = await open('/tasks/DEMO-108');
+    expect(el.querySelectorAll('table[aria-label="Runs for this task"] tbody tr')).toHaveLength(3);
+    expect(text(el.querySelector('h1'))).toContain('Implement distributed partition lease fencing');
+    expect(text(el.querySelector('.lede'))).toContain('divergent network partitions');
   });
 
   it('Task detail reports not found for an unknown task', async () => {
@@ -116,7 +132,7 @@ describe('Screens (mock rendering)', () => {
     const el = await open('/approvals');
     expect(text(el.querySelector('.notice'))).toContain('Read-only');
     expect(text(el.querySelector('.notice'))).toContain('not denied');
-    expect(el.querySelectorAll('li.item[data-state="awaiting"]')).toHaveLength(2);
+    expect(el.querySelectorAll('li.item[data-state="awaiting"]')).toHaveLength(3);
     expect(el.querySelectorAll('li.item[data-state="granted"]')).toHaveLength(2);
     expect(el.querySelectorAll('li.item[data-state="denied"]')).toHaveLength(1);
     expect(el.querySelectorAll('main button')).toHaveLength(0);

@@ -3,8 +3,8 @@
 }
 .attention {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: var(--space-2);
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-3);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -14,10 +14,20 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  padding: var(--space-3);
+  padding: var(--space-3) var(--space-4);
   background: var(--surface-2);
   border: 1px solid var(--border);
+  border-left: 3px solid var(--warning);
   border-radius: var(--radius-sm);
+  transition:
+    transform 0.18s var(--ease),
+    border-color 0.18s var(--ease),
+    box-shadow 0.18s var(--ease);
+}
+.attention li:hover {
+  transform: translateY(-1px);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-sm);
 }
 .attention a {
   display: flex;
@@ -28,6 +38,10 @@
 .attention a:hover {
   text-decoration: none;
   color: var(--accent);
+}
+.attention a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 .attention .muted {
   font-size: 12.5px;

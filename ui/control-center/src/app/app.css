@@ -4,18 +4,25 @@
 
 .skip-link {
   position: fixed;
-  top: 8px;
-  left: 8px;
-  z-index: 100;
-  padding: 8px 14px;
+  top: 10px;
+  left: 10px;
+  z-index: 1000;
+  padding: 10px 18px;
+  font-weight: 600;
+  font-size: 13px;
   color: var(--accent-ink);
   background: var(--accent);
-  border-radius: 8px;
-  transform: translateY(-200%);
-  transition: transform 0.15s var(--ease);
+  border: 1px solid var(--accent-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-pop);
+  transform: translateY(-220%);
+  transition: transform 0.18s var(--ease);
 }
-.skip-link:focus {
+.skip-link:focus,
+.skip-link:focus-visible {
   transform: none;
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
 }
 
 .shell {

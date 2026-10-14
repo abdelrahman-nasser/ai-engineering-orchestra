@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { EvidenceItem, EvidenceOutcome } from '../data/models';
+import { Icon } from './icon';
 import { EVIDENCE_OUTCOME } from './presentation';
+import { StatePanel } from './state-panel';
 import { StatusBadge } from './status-badge';
 
 /**
@@ -10,7 +12,7 @@ import { StatusBadge } from './status-badge';
 @Component({
   selector: 'cc-evidence-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [StatusBadge],
+  imports: [Icon, StatePanel, StatusBadge],
   styleUrl: './evidence-panel.css',
   template: `
     <div class="tally" role="group" aria-label="Evidence summary">
@@ -22,17 +24,28 @@ import { StatusBadge } from './status-badge';
     </div>
 
     @if (items().length === 0) {
-      <p class="muted empty">No evidence has been presented.</p>
+      <cc-state-panel
+        kind="no-evidence"
+        [compact]="true"
+        title="No evidence has been presented"
+        message="Validation checks and execution proof have not yet been recorded for this item."
+      />
     } @else {
       <ul class="items">
         @for (item of items(); track item.id) {
           <li>
-            <details [open]="item.outcome === 'failed' || item.outcome === 'skipped'">
+            <details
+              [open]="item.outcome === 'failed' || item.outcome === 'skipped'"
+              [attr.data-outcome]="item.outcome"
+            >
               <summary>
-                <span class="title">
-                  <span class="kind">{{ item.kind }}</span>
-                  <strong>{{ item.title }}</strong>
-                </span>
+                <div class="summary-left">
+                  <cc-icon name="chevron-right" [size]="14" class="chevron" />
+                  <span class="title">
+                    <span class="kind">{{ item.kind }}</span>
+                    <strong>{{ item.title }}</strong>
+                  </span>
+                </div>
                 <cc-status-badge [label]="outcome(item.outcome).label" [tone]="outcome(item.outcome).tone" />
               </summary>
               <div class="content">

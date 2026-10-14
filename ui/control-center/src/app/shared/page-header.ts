@@ -20,41 +20,73 @@ export interface Crumb {
       gap: var(--space-4);
       flex-wrap: wrap;
     }
+    .header-main {
+      flex: 1;
+      min-width: 0;
+    }
     .crumbs {
+      margin-bottom: var(--space-2);
+    }
+    .crumb-list {
       display: flex;
       align-items: center;
-      gap: 4px;
-      margin-bottom: var(--space-2);
+      gap: 6px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
       font-size: 12px;
       color: var(--text-faint);
     }
-    .crumbs a {
+    .crumb-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .crumb-item a {
       color: var(--text-muted);
+      border-radius: var(--radius-xs);
+    }
+    .crumb-item a:hover {
+      color: var(--accent);
+    }
+    .crumb-current {
+      color: var(--text-faint);
     }
     .lede {
       margin-top: var(--space-2);
-      max-width: 70ch;
+      max-width: 72ch;
       color: var(--text-muted);
       font-size: 14px;
+      line-height: var(--leading-normal);
     }
     .actions {
       display: flex;
       gap: var(--space-2);
       align-items: center;
+      flex-wrap: wrap;
+    }
+    @media (max-width: 640px) {
+      :host {
+        align-items: flex-start;
+      }
     }
   `,
   template: `
-    <div>
+    <div class="header-main">
       @if (crumbs().length) {
         <nav class="crumbs" aria-label="Breadcrumb">
-          @for (crumb of crumbs(); track crumb.label; let last = $last) {
-            @if (crumb.link && !last) {
-              <a [routerLink]="crumb.link">{{ crumb.label }}</a>
-              <cc-icon name="chevron-right" [size]="12" />
-            } @else {
-              <span [attr.aria-current]="last ? 'page' : null">{{ crumb.label }}</span>
+          <ol class="crumb-list">
+            @for (crumb of crumbs(); track crumb.label; let last = $last) {
+              <li class="crumb-item">
+                @if (crumb.link && !last) {
+                  <a [routerLink]="crumb.link">{{ crumb.label }}</a>
+                  <cc-icon name="chevron-right" [size]="12" />
+                } @else {
+                  <span class="crumb-current" [attr.aria-current]="last ? 'page' : null">{{ crumb.label }}</span>
+                }
+              </li>
             }
-          }
+          </ol>
         </nav>
       }
       <h1>{{ title() }}</h1>

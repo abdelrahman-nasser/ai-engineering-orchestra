@@ -45,7 +45,7 @@ describe('App shell', () => {
 
   it('shows how many approvals are awaiting evidence', async () => {
     const { el } = await createShell();
-    expect(el.querySelector('.nav-badge')?.textContent?.trim()).toBe('2');
+    expect(el.querySelector('.nav-badge')?.textContent?.trim()).toBe('3');
   });
 
   const destinations: readonly [string, string][] = [

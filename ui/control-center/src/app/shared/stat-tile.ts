@@ -1,11 +1,15 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { Tone } from '../data/models';
 
 /** Headline metric tile used on the Overview. */
 @Component({
   selector: 'cc-stat-tile',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '[attr.data-tone]': 'tone()' },
+  host: {
+    '[attr.data-tone]': 'tone()',
+    role: 'group',
+    '[attr.aria-label]': 'ariaDescription()',
+  },
   styles: `
     :host {
       --tone: var(--accent);
@@ -17,6 +21,15 @@ import { Tone } from '../data/models';
       border: 1px solid var(--border);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
+      transition:
+        transform 0.2s var(--ease),
+        border-color 0.2s var(--ease),
+        box-shadow 0.2s var(--ease);
+    }
+    :host:hover {
+      transform: translateY(-2px);
+      border-color: var(--border-strong);
+      box-shadow: var(--shadow-lg);
     }
     :host::after {
       content: '';
@@ -42,15 +55,17 @@ import { Tone } from '../data/models';
     }
     .value {
       font-family: var(--font-display);
-      font-size: 34px;
+      font-size: clamp(26px, 5vw, 34px);
       font-weight: 600;
       line-height: 1.1;
       margin-top: var(--space-2);
       color: var(--tone);
+      letter-spacing: -0.02em;
     }
     .hint {
-      margin-top: 2px;
+      margin-top: 4px;
       font-size: 12.5px;
+      line-height: var(--leading-snug);
       color: var(--text-muted);
     }
   `,
@@ -67,4 +82,9 @@ export class StatTile {
   readonly value = input.required<string | number>();
   readonly hint = input<string>();
   readonly tone = input<Tone>('accent');
+
+  protected readonly ariaDescription = computed(() => {
+    const hintText = this.hint() ? ` (${this.hint()})` : '';
+    return `${this.label()}: ${this.value()}${hintText}`;
+  });
 }

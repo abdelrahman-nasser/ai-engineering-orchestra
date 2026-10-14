@@ -204,10 +204,21 @@
 .node.selectable {
   cursor: pointer;
 }
-.node.selectable:hover .halo,
-.node.selectable:focus-visible .halo,
-.node.selected .halo {
+.node.selectable:hover .halo {
   opacity: 0.85;
+}
+.node.selectable:focus-visible .island {
+  stroke-width: 4.5px;
+  stroke: var(--accent);
+}
+.node.selectable:focus-visible .halo {
+  opacity: 1;
+  stroke: var(--accent-strong);
+  stroke-width: 3px;
+}
+.node.selected .halo {
+  opacity: 0.95;
+  stroke-width: 2.5px;
 }
 .node.selected .island {
   stroke-width: 4.5;
@@ -234,7 +245,15 @@
 .footnote {
   font-size: 12px;
   color: var(--text-faint);
+  line-height: var(--leading-normal);
 }
 .footnote strong {
   color: var(--text-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .edge .flow,
+  .node .pulse {
+    animation: none !important;
+  }
 }

@@ -1,7 +1,12 @@
 <a class="skip-link" href="#main">Skip to content</a>
 
 <div class="shell" [class.nav-open]="navOpen()">
-  <aside class="sidebar" id="primary-sidebar" aria-label="Primary">
+  <aside
+    class="sidebar"
+    id="primary-sidebar"
+    aria-label="Primary"
+    [attr.aria-modal]="navOpen() ? 'true' : null"
+  >
     <a class="brand" routerLink="/" aria-label="ITRU Control Center — Overview">
       <span class="logo" aria-hidden="true">
         <svg viewBox="0 0 32 32" width="30" height="30" fill="none">
@@ -55,7 +60,13 @@
     </div>
   </aside>
 
-  <button type="button" class="scrim" aria-label="Close navigation" tabindex="-1" (click)="closeNav()"></button>
+  <button
+    type="button"
+    class="scrim"
+    aria-label="Close navigation"
+    [attr.tabindex]="navOpen() ? 0 : -1"
+    (click)="closeNav()"
+  ></button>
 
   <div class="content">
     <header class="topbar">

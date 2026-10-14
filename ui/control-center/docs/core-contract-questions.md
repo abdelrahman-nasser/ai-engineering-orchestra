@@ -62,19 +62,40 @@ Core Task specification (`core/task-specification.md`) and Run Indexing / Ledger
 
 ---
 
-## 4. Run & Task Result Schema
+## 4. Run Result Semantics & Transport/Persistence (PARTIALLY ANSWERED BY ITRU-060)
 
 QUESTION:
-What is the formal schema and lifecycle contract for a "Result" produced by an Agent Execution Run or a completed Task?
+What is the formal contract for an Agent Execution Result produced by an Agent Execution Run, and what mechanism governs its transport, persistence, and querying?
 
 UI NEED:
-The UI needs to present the outcome of a Run or Task, including summary of work done, files created or modified, diff summaries, quality gate status, and unresolved questions or action items for human review.
+The UI needs to present the outcome of a Run, distinguishing validated completion from failures before side-effects and from uncertain effect boundaries. It needs to present bounded payload previews (for safe text vs raw binary), failure diagnostics, and exact evidence provenance (derived identity, Execution Entry, Tool binding) without inventing backend transport or persistence contracts.
 
-CURRENT MOCK ASSUMPTION:
-The UI defines a provisional presentation shell (`ProvisionalResult`) with fields `headline`, `summary`, `changedAreas`, and `openItems`. An explicit disclaimer banner informs the user that Core defines no Result contract and this is a provisional UI shell.
+STATUS & CORE CONTRACT RESOLUTION:
+- **Canonical Result Semantics: ANSWERED by ITRU-060** (`core/agent-execution-result-specification.md`, commit 55e8001).
+  Core formalizes an Agent Execution Result as immutable terminal evidence of one controlled execution attempt with a committed Execution Entry:
+  - Exactly three terminal outcomes: `succeeded`, `failed_before_effect`, `effect_ambiguous`.
+  - Closed six-field readable evidence contract: `ledger_identity`, `execution_entry`, `tool_binding`, `outcome`, `payload`, `diagnostic`.
+  - Derived Result identity: 5-part tuple `(ledger_instance_id, domain_id, issuer_kind, issuer_id, grant_id)`.
+  - Bounded binary payload on success (`RepositoryFileReadResultPayload`: `data: bytes`, `byte_count: int` <= 65,536). No inferred UTF-8 decoding in Core.
+  - Diagnostic code on unsuccessful outcomes (`AgentExecutionResultDiagnostic`: closed table of 9 canonical codes).
+  - Strict effect boundary: `failed_before_effect` proves no content-data request was issued; `effect_ambiguous` indicates content access commenced or post-read cleanup uncertainty was encountered.
+  - Permanent Entry consumption: No outcome permits automatic retry or replay.
+- **Result Transport, Persistence & Query Mechanism: UNRESOLVED**.
+  ITRU-060 intentionally specifies:
+  - NO public serialized Result schema
+  - NO Result persistence (Result disappears with its process unless retained by an authorized consumer)
+  - NO backend/API transport contract (no REST, WebSocket, or wire schema)
+  - NO Task-level Result contract
 
-CORE CONTRACT NEEDED FROM:
-Core Result specification (reserved under `core/terminology.md`).
+CURRENT UI ADAPTER ASSUMPTION:
+The UI maintains a strict boundary:
+1. It does not invent a canonical JSON Result shape or REST/WebSocket transport contract.
+2. It defines a UI-local read-model (`AgentExecutionResultReadModel`) and presentation model (`AgentExecutionResultPresentation`) mapped via a pure adapter (`adaptResultReadModel`).
+3. The Result presentation shell (`cc-result-shell`) renders the three canonical outcomes, bounded text/binary payload previews, truncation warnings, closed diagnostic codes, and derived identity tuples.
+4. An explicit disclaimer banner informs operators: *"Canonical ITRU-060 in-memory evidence · Transport & persistence uninvented"*.
+
+CORE CONTRACT STILL NEEDED FROM:
+Future Journal / Execution Store / API Transport specification (v0.2+) to define how Results are serialized, stored, and queried over the wire.
 
 ---
 

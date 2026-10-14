@@ -158,8 +158,8 @@ export interface RunDetail extends RunSummary {
   readonly taskRuns: readonly RunSummary[];
   readonly timeline: readonly TimelineEntry[];
   readonly evidence: readonly EvidenceItem[];
-  /** UI-local, provisional. `null` when the mock has nothing to show yet. */
-  readonly result: ProvisionalResult | null;
+  /** UI-local Result presentation, or null if no Result published yet. */
+  readonly result: AgentExecutionResultPresentation | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -208,19 +208,139 @@ export interface EvidenceItem {
 }
 
 // ---------------------------------------------------------------------------
-// Result (UI-local, provisional)
+// Result (UI-local, aligned with ITRU-060 canonical semantics)
 // ---------------------------------------------------------------------------
 
-/**
- * UI-local, PROVISIONAL Result presentation. Core defines no Result contract.
- * This shape exists only so the Result shell can be laid out and reviewed.
- */
-export interface ProvisionalResult {
-  readonly headline: string;
-  readonly summary: string;
-  readonly changedAreas: readonly string[];
-  readonly openItems: readonly string[];
+/** Core vocabulary: canonical Result outcome (`core/agent-execution-result-specification.md` §3, §5). */
+export type AgentExecutionResultOutcome =
+  | 'succeeded'
+  | 'failed_before_effect'
+  | 'effect_ambiguous';
+
+/** Core vocabulary: canonical Result diagnostic code (`core/agent-execution-result-specification.md` §7). */
+export type AgentExecutionResultDiagnosticCode =
+  | 'adapter_unavailable'
+  | 'containment_rejected'
+  | 'resource_missing'
+  | 'resource_changed'
+  | 'size_limit_exceeded'
+  | 'read_failure'
+  | 'guard_lost'
+  | 'ownership_lost'
+  | 'effect_ambiguous';
+
+/** Derived Result identity 5-part tuple (`core/agent-execution-result-specification.md` §3). */
+export interface ResultDerivedIdentity {
+  readonly ledgerInstanceId: string;
+  readonly authorizationDomainId: string;
+  readonly issuerKind: string;
+  readonly issuerId: string;
+  readonly grantId: string;
 }
+
+export interface ResultLedgerIdentityReadModel {
+  readonly domainId: string;
+  readonly ledgerInstanceId: string;
+  readonly domainGeneration: number;
+}
+
+export interface ResultExecutionEntryReadModel {
+  readonly claimId: string;
+  readonly executorInstanceId: string;
+  readonly leaseGeneration: number;
+  readonly entryTimeLabel: string;
+  readonly timeKey: number;
+}
+
+export interface ResultToolBindingReadModel {
+  readonly toolIdentity: string;
+  readonly configuredRoute: string;
+}
+
+export interface ResultPayloadReadModel {
+  readonly byteCount: number;
+  /** Whether the read-model explicitly certified this payload as safe text. */
+  readonly isText: boolean;
+  /** Safe text preview (when isText is true). */
+  readonly textPreview?: string;
+  /** Formatted hex sample snippet (for binary inspection). */
+  readonly bytesSampleHex?: string;
+  /** Whether this preview is bounded/truncated from the full payload. */
+  readonly isTruncated: boolean;
+  /** Number of bytes represented in this preview. */
+  readonly previewByteCount: number;
+}
+
+export interface ResultDiagnosticReadModel {
+  readonly code: AgentExecutionResultDiagnosticCode;
+}
+
+/**
+ * Read-model shape for an Agent Execution Result as delivered by a data source.
+ * NOT a Core contract; ITRU-060 defines no serialized schema or transport.
+ */
+export interface AgentExecutionResultReadModel {
+  readonly derivedIdentity: ResultDerivedIdentity;
+  readonly ledgerIdentity: ResultLedgerIdentityReadModel;
+  readonly executionEntry: ResultExecutionEntryReadModel;
+  readonly toolBinding: ResultToolBindingReadModel;
+  readonly outcome: AgentExecutionResultOutcome;
+  readonly payload?: ResultPayloadReadModel | null;
+  readonly diagnostic?: ResultDiagnosticReadModel | null;
+}
+
+export interface ResultPayloadPresentation {
+  readonly byteCount: number;
+  readonly formattedByteCount: string;
+  readonly isText: boolean;
+  readonly textPreview?: string;
+  readonly bytesSampleHex?: string;
+  readonly isTruncated: boolean;
+  readonly truncationNotice?: string;
+}
+
+export interface ResultDiagnosticPresentation {
+  readonly code: AgentExecutionResultDiagnosticCode;
+  readonly title: string;
+  readonly explanation: string;
+}
+
+export interface ResultIdentityPresentation {
+  readonly derivedIdentityFormatted: string;
+  readonly ledgerInstanceId: string;
+  readonly domainId: string;
+  readonly issuer: string;
+  readonly grantId: string;
+  readonly claimId: string;
+  readonly executorInstanceId: string;
+  readonly leaseGeneration: number;
+  readonly entryTimeLabel: string;
+  readonly timeKey: number;
+  readonly toolIdentity: string;
+  readonly configuredRoute: string;
+}
+
+export interface ResultSemanticEffectPresentation {
+  readonly headline: string;
+  readonly description: string;
+  readonly retryNotice?: string;
+}
+
+/**
+ * UI-local presentation model for an Agent Execution Result, adapted for screen rendering.
+ */
+export interface AgentExecutionResultPresentation {
+  readonly outcome: AgentExecutionResultOutcome;
+  readonly outcomeLabel: string;
+  readonly outcomeTone: Tone;
+  readonly semanticEffect: ResultSemanticEffectPresentation;
+  readonly identity: ResultIdentityPresentation;
+  readonly payload: ResultPayloadPresentation | null;
+  readonly diagnostic: ResultDiagnosticPresentation | null;
+}
+
+/** Backwards-compatible alias for provisional references. */
+export type ProvisionalResult = AgentExecutionResultPresentation;
 
 // ---------------------------------------------------------------------------
 // Agents (Actors)

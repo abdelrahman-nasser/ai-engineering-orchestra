@@ -86,7 +86,7 @@ ui/control-center/src/app/
 └── shared/
     ├── nile/                     # Nile organic branch execution river (SVG)
     ├── execution-timeline.ts     # Reusable vertical event timeline
-    ├── result-shell.ts           # Provisional Result presentation card
+    ├── result-shell.ts           # Canonical ITRU-060 Result presentation card
     ├── evidence-panel.ts         # Collapsible Quality Gate & evidence inspector
     ├── status-badge.ts           # Unified status indicator badge
     ├── stat-tile.ts              # Metric summary tile
@@ -108,8 +108,15 @@ ui/control-center/src/app/
   - Features subtle animated flow dashed strokes indicating active pipelines (respects `prefers-reduced-motion` and includes an explicit UI toggle).
   - Represents **presentation topology only**: it visually diagrams stages and roles without declaring scheduler, concurrency, or dependency semantics.
 
-- **Provisional Result Presentation Shell (`cc-result-shell`)**:
-  - Renders run results with clear visual badges indicating provisional status until Core formalizes a Result contract.
+- **Canonical ITRU-060 Result Presentation Shell (`cc-result-shell`)**:
+  - Aligned with canonical ITRU-060 in-memory Result semantics (`core/agent-execution-result-specification.md`).
+  - Distinct visual presentation for all three terminal outcomes:
+    - `succeeded`: bounded content payload preview (explicitly marked UTF-8 text vs raw binary preview, with truncation indicators for bounded samples).
+    - `failed_before_effect`: positive proof that no content-data request was issued; displays canonical diagnostic code from closed ITRU-060 table; permanent Execution Entry consumption note.
+    - `effect_ambiguous`: prominent high-visibility warning communicating that content-data access commenced or post-read cleanup uncertainty was encountered; strictly warns against automatic retry or replay.
+  - Full evidence provenance display: derived 5-part Result identity tuple `(ledger_instance_id, domain_id, issuer_kind, issuer_id, grant_id)`, Execution Entry metadata, and Tool binding route.
+  - Honest empty state when no Result has been published for an in-progress or uncompleted attempt (reflecting that absence is missing evidence, not implicit success/failure).
+  - Strictly decoupled from backend wire/storage contracts via a UI-local presentation adapter boundary (`adaptResultReadModel`).
 
 - **Evidence Panel (`cc-evidence-panel`)**:
   - Displays validation evidence, Quality Gate results, and review notes.

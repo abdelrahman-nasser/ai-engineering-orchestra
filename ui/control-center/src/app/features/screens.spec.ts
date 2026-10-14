@@ -48,20 +48,40 @@ describe('Screens (mock rendering)', () => {
     expect(el.querySelector('[data-testid="run-filter-needs-attention"]')?.getAttribute('aria-pressed')).toBe('true');
   });
 
-  it('Run detail composes river, timeline, result shell, identity and evidence', async () => {
+  it('Run detail composes river, timeline, result shell with canonical Result semantics, identity and evidence', async () => {
     const el = await open('/runs/run_a41c07e2');
     expect(el.querySelectorAll('cc-nile-flow g.node').length).toBeGreaterThan(8);
     expect(el.querySelector('cc-nile-flow g.node.selected')?.getAttribute('aria-label')).toContain('security-reviewer');
     expect(el.querySelectorAll('cc-execution-timeline li.entry').length).toBeGreaterThan(2);
-    expect(text(el.querySelector('cc-result-shell'))).toContain('Provisional presentation');
-    expect(text(el.querySelector('cc-result-shell'))).toContain('reported complete');
+    expect(text(el.querySelector('cc-result-shell'))).toContain('Canonical ITRU-060 in-memory evidence');
+    expect(text(el.querySelector('cc-result-shell'))).toContain('Effect Ambiguous');
+    expect(text(el.querySelector('cc-result-shell'))).toContain('Uncertain effect boundary');
+    expect(text(el.querySelector('cc-result-shell'))).toContain('Do NOT automatically retry or replay');
     expect(text(el.querySelector('dl[aria-label="Run identity"]'))).toContain('repository_file_read');
     expect(el.querySelectorAll('cc-evidence-panel details').length).toBeGreaterThan(0);
   });
 
+  it('Run detail surfaces succeeded outcome with bounded payload preview', async () => {
+    const el = await open('/runs/run_c19e83d6');
+    const shell = el.querySelector('cc-result-shell')!;
+    expect(text(shell)).toContain('Succeeded');
+    expect(text(shell)).toContain('Operation completed successfully');
+    expect(text(shell)).toContain('784 bytes');
+    expect(text(shell)).toContain('Release Checklist');
+  });
+
+  it('Run detail surfaces failed_before_effect with diagnostic code and permanent entry consumption', async () => {
+    const el = await open('/runs/run_m3c4d5e6');
+    const shell = el.querySelector('cc-result-shell')!;
+    expect(text(shell)).toContain('Failed Before Effect');
+    expect(text(shell)).toContain('containment_rejected');
+    expect(text(shell)).toContain('Execution Entry is permanently consumed');
+  });
+
   it('Run detail shows an honest empty Result for an unfinished run', async () => {
     const el = await open('/runs/run_e60d4b13');
-    expect(text(el.querySelector('cc-result-shell'))).toContain('No result has been presented');
+    expect(text(el.querySelector('cc-result-shell'))).toContain('No Result published yet');
+    expect(text(el.querySelector('cc-result-shell'))).toContain('absence is missing evidence');
   });
 
   it('Evidence surfaces skipped and unverified outcomes, opening skipped items', async () => {

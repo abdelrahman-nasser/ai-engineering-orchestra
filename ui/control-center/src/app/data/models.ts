@@ -166,12 +166,12 @@ export interface RunDetail extends RunSummary {
 // Timeline (UI-local; Core defines no Journal)
 // ---------------------------------------------------------------------------
 
-export type TimelineKind = 'stage' | 'agent' | 'quality-gate' | 'approval' | 'note';
+export type TimelineKind = 'stage' | 'agent' | 'quality-gate' | 'approval' | 'tool' | 'note';
 
-/** UI-local presentation entry. NOT a Journal record. */
-export interface TimelineEntry {
+/** Read-model shape for a timeline entry delivered by a data source. */
+export interface TimelineItemReadModel {
   readonly id: string;
-  /** Mock-only display label (e.g. "14:02"). No ordering semantics beyond array order. */
+  /** Mock/read-model display label (e.g. "14:02"). No ordering semantics beyond array order. */
   readonly atLabel: string;
   readonly kind: TimelineKind;
   readonly title: string;
@@ -179,33 +179,123 @@ export interface TimelineEntry {
   readonly state: PresentationState;
   readonly actorId?: string;
   readonly stageId?: string;
+  readonly toolId?: string;
+  readonly executionEntryRef?: string;
+  readonly runIdRef?: string;
+  readonly result?: AgentExecutionResultReadModel | null;
+  readonly evidence?: readonly EvidenceItemReadModel[];
 }
+
+/** UI-local presentation entry. NOT a Journal record. */
+export interface TimelineItemPresentation {
+  readonly id: string;
+  readonly atLabel: string;
+  readonly kind: TimelineKind;
+  readonly title: string;
+  readonly detail?: string;
+  readonly state: PresentationState;
+  readonly stateLabel: string;
+  readonly stateTone: Tone;
+  readonly actorId?: string;
+  readonly stageId?: string;
+  readonly toolId?: string;
+  readonly executionEntryRef?: string;
+  readonly runIdRef?: string;
+  readonly hasResult: boolean;
+  readonly result: AgentExecutionResultPresentation | null;
+  readonly evidenceCount: number;
+  readonly hasEvidence: boolean;
+  readonly hasUnavailableEvidence: boolean;
+  readonly evidence: readonly EvidenceItemPresentation[];
+}
+
+/** Backwards-compatible alias for timeline entries. */
+export type TimelineEntry = TimelineItemPresentation;
 
 // ---------------------------------------------------------------------------
 // Evidence (UI-local)
 // ---------------------------------------------------------------------------
 
-export type EvidenceKind =
+export type EvidenceCategory =
   | 'quality-gate'
   | 'command-output'
   | 'diff-summary'
   | 'review-note'
-  | 'authorization';
+  | 'authorization'
+  | 'diagnostic'
+  | 'audit-trail'
+  | 'payload-sample';
+
+/** Backwards-compatible alias for evidence categories. */
+export type EvidenceKind = EvidenceCategory;
 
 /** Outcome vocabulary mirrors AGENTS.md: report failed or skipped validation. */
 export type EvidenceOutcome = 'passed' | 'failed' | 'skipped' | 'unverified';
 
-export interface EvidenceItem {
+/** Integrity status only when explicitly supplied by the data source. */
+export type EvidenceIntegrityStatus = 'verified' | 'unverified' | 'mismatch' | 'tampered';
+
+/** Read-model shape for an evidence item delivered by a data source. */
+export interface EvidenceItemReadModel {
   readonly id: string;
-  readonly kind: EvidenceKind;
+  readonly category: EvidenceCategory;
   readonly title: string;
   readonly summary: string;
   readonly outcome: EvidenceOutcome;
-  /** Opaque source label, e.g. a gate name or command. Display only. */
+  /** Opaque source/provenance label (e.g. command, gate name, guard identity). */
   readonly source: string;
+  /** Reference or identity text supplied by read model (e.g. claim ref, file path). */
+  readonly referenceId?: string;
   /** Monospace lines (command output, diff summary...). */
   readonly lines?: readonly string[];
+  /** Bounded text preview if applicable. */
+  readonly textPreview?: string;
+  /** Whether the preview is bounded/truncated. */
+  readonly isTruncated?: boolean;
+  /** Known byte count of payload/artifact. */
+  readonly byteCount?: number;
+  /** Formatted hex sample snippet if binary/non-text. */
+  readonly binaryHexSample?: string;
+  /** Whether this evidence record is currently unavailable in the source. */
+  readonly isUnavailable?: boolean;
+  /** Reason why evidence is unavailable (when isUnavailable is true). */
+  readonly unavailableReason?: string;
+  /** Integrity status only when explicitly supplied. */
+  readonly integrityStatus?: EvidenceIntegrityStatus;
+  /** Recorded timestamp label when supplied. */
+  readonly recordedAtLabel?: string;
 }
+
+export interface EvidenceItemPresentation {
+  readonly id: string;
+  readonly category: EvidenceCategory;
+  readonly categoryLabel: string;
+  /** Backwards-compatible alias for kind. */
+  readonly kind: EvidenceCategory;
+  readonly title: string;
+  readonly summary: string;
+  readonly outcome: EvidenceOutcome;
+  readonly outcomeLabel: string;
+  readonly outcomeTone: Tone;
+  readonly source: string;
+  readonly referenceId?: string;
+  readonly lines?: readonly string[];
+  readonly textPreview?: string;
+  readonly isTruncated: boolean;
+  readonly truncationNotice?: string;
+  readonly byteCount?: number;
+  readonly formattedByteCount?: string;
+  readonly binaryHexSample?: string;
+  readonly isBinary: boolean;
+  readonly isUnavailable: boolean;
+  readonly unavailableReason?: string;
+  readonly integrityStatus?: EvidenceIntegrityStatus;
+  readonly integrityBadge?: { readonly label: string; readonly tone: Tone };
+  readonly recordedAtLabel?: string;
+}
+
+/** Backwards-compatible alias for evidence items. */
+export type EvidenceItem = EvidenceItemPresentation;
 
 // ---------------------------------------------------------------------------
 // Result (UI-local, aligned with ITRU-060 canonical semantics)

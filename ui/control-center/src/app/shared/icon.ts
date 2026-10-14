@@ -25,7 +25,10 @@ export type IconName =
   | 'slash'
   | 'search'
   | 'filter'
-  | 'cross-circle';
+  | 'cross-circle'
+  | 'tool'
+  | 'info'
+  | 'code';
 
 /** Stroke-based 24px glyphs. Each entry is one or more SVG path `d` values. */
 const PATHS: Readonly<Record<IconName, readonly string[]>> = {
@@ -54,6 +57,9 @@ const PATHS: Readonly<Record<IconName, readonly string[]>> = {
   search: ['M11 19a8 8 0 100-16 8 8 0 000 16z', 'M21 21l-4.35-4.35'],
   filter: ['M3 4h18l-7 8v6l-4 2v-8z'],
   'cross-circle': ['M12 22a10 10 0 100-20 10 10 0 000 20z', 'M15 9l-6 6', 'M9 9l6 6'],
+  tool: ['M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z'],
+  info: ['M12 22a10 10 0 100-20 10 10 0 000 20z', 'M12 16v-4', 'M12 8h.01'],
+  code: ['M16 18l6-6-6-6', 'M8 6l-6 6 6 6'],
 };
 
 @Component({

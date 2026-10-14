@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ControlCenterDataSource } from '../../data/control-center-data-source';
 import { NileNode } from '../../data/models';
@@ -74,12 +74,24 @@ import { StatusBadge } from '../../shared/status-badge';
                       <p>Presentation entries only. Core defines no Journal yet.</p>
                     </div>
                   </div>
-                  <cc-execution-timeline [entries]="r.timeline" />
+                  <cc-execution-timeline
+                    [entries]="r.timeline"
+                    [(selectedId)]="selectedTimelineId"
+                  />
                 </div>
 
                 <div class="card">
-                  <div class="card-head"><h2>Result</h2></div>
-                  <cc-result-shell [result]="r.result" />
+                  <div class="card-head">
+                    <div>
+                      <h2>Result</h2>
+                      @if (selectedTimelineEntry()?.hasResult) {
+                        <p>Linked outcome for selected event: <strong>{{ selectedTimelineEntry()?.title }}</strong></p>
+                      } @else {
+                        <p>Terminal run execution outcome</p>
+                      }
+                    </div>
+                  </div>
+                  <cc-result-shell [result]="activeResult()" />
                 </div>
               </div>
 
@@ -103,8 +115,20 @@ import { StatusBadge } from '../../shared/status-badge';
                 </div>
 
                 <div class="card">
-                  <div class="card-head"><h2>Evidence</h2></div>
-                  <cc-evidence-panel [items]="r.evidence" />
+                  <div class="card-head">
+                    <div>
+                      <h2>Evidence Explorer</h2>
+                      @if (selectedTimelineEntry(); as selected) {
+                        <p>Filtered to event: <strong>{{ selected.title }}</strong></p>
+                      } @else {
+                        <p>Run validation checks and execution proof.</p>
+                      }
+                    </div>
+                    @if (selectedTimelineId()) {
+                      <button type="button" class="btn btn-ghost" (click)="selectedTimelineId.set(null)">Show all</button>
+                    }
+                  </div>
+                  <cc-evidence-panel [items]="activeEvidence()" />
                 </div>
               </div>
             </div>
@@ -128,9 +152,34 @@ export class RunDetailPage {
   protected readonly states = PRESENTATION_STATE;
   protected readonly state = toLoadStateFor(this.runId, (id) => this.dataSource.getRun(id));
 
+  readonly selectedTimelineId = signal<string | null>(null);
+
   protected readonly run = computed(() => {
     const state = this.state();
     return state.status === 'ready' ? state.data : undefined;
+  });
+
+  protected readonly selectedTimelineEntry = computed(() => {
+    const id = this.selectedTimelineId();
+    const run = this.run();
+    if (!id || !run) return null;
+    return run.timeline.find((t) => t.id === id) ?? null;
+  });
+
+  protected readonly activeResult = computed(() => {
+    const sel = this.selectedTimelineEntry();
+    if (sel?.hasResult) {
+      return sel.result;
+    }
+    return this.run()?.result ?? null;
+  });
+
+  protected readonly activeEvidence = computed(() => {
+    const sel = this.selectedTimelineEntry();
+    if (sel && sel.hasEvidence) {
+      return sel.evidence;
+    }
+    return this.run()?.evidence ?? [];
   });
 
   protected readonly topology = computed(() => {

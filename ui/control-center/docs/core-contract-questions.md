@@ -99,19 +99,47 @@ Future Journal / Execution Store / API Transport specification (v0.2+) to define
 
 ---
 
-## 5. Execution Timeline & Journal / Event Log
+## 5. Execution Timeline & Journal / Event Log (PARTIALLY ANSWERED BY ITRU-061 PHASE 1)
 
 QUESTION:
-What is the authoritative schema for fine-grained execution events (stage transitions, agent dispatches, tool invocations, quality gate runs, human reviews) associated with a Task or Run?
+What is the canonical contract for an Execution Journal entry, and what rules govern event identity, authoritative ordering, timestamp authority, durability, persistence, query, replay, and tamper detection?
 
 UI NEED:
-The Execution Timeline component on the Run detail screen needs an ordered stream of discrete events to display step-by-step progress, duration, and error locations.
+The Execution Timeline and Evidence Explorer components need to present ordered, step-by-step operator visibility into actions, stage transitions, agent dispatches, tool invocations, quality gate results, diagnostic outputs, and linked Results. The operator needs compact chronological views, expandable event details, filtering, bounded text previews, and binary previews without inventing unfinished Core semantics.
 
-CURRENT MOCK ASSUMPTION:
-The UI defines `TimelineEntry` (`kind: 'stage' | 'agent' | 'quality-gate' | 'approval' | 'note'`, `atLabel`, `title`, `detail`, `state`). This is an arbitrary presentation model backed by static mock arrays; Core defines no Journal or event stream.
+STATUS & CORE CONTRACT RESOLUTION:
+- **Canonical Execution Journal Contract: ANSWERED & LOCKED by ITRU-061 Phase 1**:
+  Human-approved and locked Phase 1 decisions establish the canonical Journal contract:
+  - **Canonical event identity**: Two-part key tuple `(journal_id, sequence)`.
+  - **Event taxonomy**: Closed two-event taxonomy:
+    - `entry_observed`: Captures observation of a committed Execution Entry.
+    - `result_observed`: Captures observation of a terminal Agent Execution Result.
+  - **Committed-recording ordering**: Monotonic integer `sequence` orders committed Journal recordings within a Journal instance.
+  - **Timestamp authority**: Store-owned UTC timestamp represents receipt time when recorded by the trusted coordinator/Store (not agent-claimed or client clock).
+  - **Durable Journal-entry schema**: Closed, content-free Journal-entry schema exists.
+  - **Persistence decision**: Separate provisioned local SQLite Journal database (`journal.db`), operated in WAL journal mode with synchronous `FULL`. Existing v4 authorization-ledger migrations remain completely unchanged.
+  - **Replay boundary**: No automatic effect replay; no exactly-once execution claims. Journal entries are strictly historical audit recordings.
+  - **Corruption / restart / duplicate-conflict contract**: Formally defined by ITRU-061 Phase 1 (strict conflict rejection on duplicate sequence or incompatible duplicate entry recording, deterministic restart recovery).
+  - **Task/Run relationship**: The Journal records discrete event occurrences only; it does NOT establish persistent Task/Run lifecycle state or scheduling state machines.
+
+- **Operational Integration, Query & Transport: IMPLEMENTATION PENDING (ITRU-061 Phase 2)**:
+  ITRU-061 Phase 1 intentionally scopes the semantic contract, leaving operational realization to Phase 2:
+  - **Concrete runtime/query integration**: Pending ITRU-061 Phase 2 implementation.
+  - **Public transport/API contract**: UNRESOLVED (no REST, WebSocket, streaming, or wire protocol defined).
+  - **UI-to-Core query mechanism**: UNRESOLVED (no wire query API, polling, or pagination protocol defined).
+  - **Implementation-dependent runtime storage/query behavior**: Not yet finalized until Phase 2 closes.
+
+CURRENT UI ADAPTER ASSUMPTION (SCRUM-23):
+The UI maintains a strict contract-safe boundary:
+1. **Presentation inputs only**: The UI consumes generic UI-local presentation read models (`TimelineItemReadModel`, `EvidenceItemReadModel`) and presentation models (`TimelineItemPresentation`, `EvidenceItemPresentation`) mapped via pure adapters (`adaptTimelineReadModel`, `adaptEvidenceReadModel`).
+2. **Explicit order disclaimer**: The UI explicitly disclaims ordering authority with the visible banner:
+   *"Display order supplied by current data source · Core defines no canonical Journal ordering yet"*.
+3. **No invented authority**: Timestamps, agent labels, tool labels, and entry claims are rendered only when supplied by the data source. Absence of an event or timestamp carries zero authoritative meaning.
+4. **Result integration**: Reuses canonical ITRU-060 Result presentation (`cc-result-shell`) directly rather than duplicating Result semantics.
+5. **Finalization path**: The UI presentation adapter (`adaptTimelineReadModel`) will be finalized and wired to the Core Journal query mechanism once ITRU-061 Phase 2 implementation completes.
 
 CORE CONTRACT NEEDED FROM:
-Core Journal / Audit Trail specification (referenced under `core/terminology.md` as Journal).
+ITRU-061 Phase 2 (Runtime SQLite Journal realization, query integration, and transport protocol).
 
 ---
 
@@ -131,19 +159,25 @@ Core Human Control model (`core/human-control.md`) and Human Approval interactio
 
 ---
 
-## 7. Structured Quality Gate & Evidence Serialization
+## 7. Structured Quality Gate & Evidence Explorer (SCRUM-23 CONTRACT-SAFE PRESENTATION LAYER)
 
 QUESTION:
-How are Quality Gate evaluation outcomes and general execution evidence collected, serialized, and attached to Runs and Tasks?
+How are Quality Gate evaluation outcomes, diagnostic captures, command logs, diffs, and general execution evidence collected, serialized, and attached to Runs, Tasks, and Journal entries?
 
 UI NEED:
-The Evidence panel on Run detail needs structured data on gate pass/fail/skip outcomes, evaluator identity, logs/traces, and diff snippets.
+The Evidence Explorer panel on Run detail and within Timeline items needs structured data on gate pass/fail/skip outcomes, evaluator identity, bounded text previews, non-text/binary representations, unavailable evidence states, and integrity badges.
 
-CURRENT MOCK ASSUMPTION:
-The UI models `EvidenceItem` with `EvidenceOutcome` (`'passed' | 'failed' | 'skipped' | 'unverified'`) and mock text lines. Core defines Quality Gate names in `quality-gates/`, but has no runtime schema for gate execution reports or telemetry capture.
+CURRENT MOCK ASSUMPTION (SCRUM-23):
+The UI models `EvidenceItemReadModel` and `EvidenceItemPresentation` with:
+- Categories: `quality-gate`, `command-output`, `diff-summary`, `review-note`, `authorization`, `diagnostic`, `audit-trail`, `payload-sample`.
+- Bounded text preview with truncation notices for large outputs.
+- Binary hex sample representation without assuming UTF-8 decodability.
+- Explicit unavailable evidence state (`isUnavailable: true`) surfacing retention policy expiration or missing telemetry honestly.
+- Integrity status badges (`verified`, `mismatch`, `tampered`) rendered only when explicitly supplied by the data source.
+- Pure adapter boundary (`adaptEvidenceReadModel`) decouples presentation from data origin.
 
-CORE CONTRACT NEEDED FROM:
-Core Quality Gate evaluation contract and Evidence artifact schema.
+CORE CONTRACT STILL NEEDED FROM:
+ITRU-061 Phase 2 and future Core Quality Gate telemetry contract / durable evidence attachment schema.
 
 ---
 

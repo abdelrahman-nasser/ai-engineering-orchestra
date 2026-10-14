@@ -4,6 +4,7 @@ import {
   AgentSummary,
   ApprovalItem,
   EvidenceItem,
+  EvidenceItemReadModel,
   ExecutionMode,
   PresentationState,
   RunContractView,
@@ -11,9 +12,11 @@ import {
   RunSummary,
   TaskDetail,
   TimelineEntry,
+  TimelineItemReadModel,
   WorkflowStageView,
 } from '../models';
 import { adaptResultReadModel } from '../result-adapter';
+import { adaptEvidenceReadModels, adaptTimelineReadModels } from '../timeline-adapter';
 
 /**
  * MOCK DATA ONLY.
@@ -689,9 +692,26 @@ export const MOCK_APPROVALS: readonly ApprovalItem[] = [
 // Per-run presentation content (timeline / evidence / result)
 // ---------------------------------------------------------------------------
 
-function buildTimeline(seed: RunSeed): TimelineEntry[] {
+function buildTimeline(seed: RunSeed): readonly TimelineItemReadModel[] {
   const base = (suffix: string) => `${seed.runId}-${suffix}`;
-  const entries: TimelineEntry[] = [
+  const resultReadModel = MOCK_RESULT_READ_MODELS.get(seed.runId) ?? null;
+
+  // Authorization evidence item associated with initial checkpoint
+  const authEvidence: readonly EvidenceItemReadModel[] = [
+    {
+      id: `${seed.runId}-ev-auth`,
+      category: 'authorization',
+      title: 'Action Authorization Evidence',
+      summary: `Authorization evidence verified for repository_file_read on ${seed.resource}.`,
+      outcome: seed.state === 'needs-attention' ? 'unverified' : 'passed',
+      source: `policy-evaluator · ${seed.actorId}`,
+      referenceId: `auth_claim_${seed.runId.slice(4)}`,
+      integrityStatus: seed.state === 'needs-attention' ? 'unverified' : 'verified',
+      recordedAtLabel: seed.startedLabel,
+    },
+  ];
+
+  const entries: TimelineItemReadModel[] = [
     {
       id: base('t1'),
       atLabel: seed.startedLabel,
@@ -701,15 +721,18 @@ function buildTimeline(seed: RunSeed): TimelineEntry[] {
       state: 'finished',
       stageId: seed.stageId,
       actorId: seed.actorId,
+      runIdRef: seed.runId,
     },
     {
       id: base('t2'),
       atLabel: seed.startedLabel,
       kind: 'approval',
-      title: 'Authorization evidence recorded',
+      title: 'Authorization evidence evaluated',
       detail: `Exact action: repository_file_read of ${seed.resource}.`,
       state: seed.state === 'needs-attention' ? 'needs-attention' : 'finished',
       actorId: seed.actorId,
+      runIdRef: seed.runId,
+      evidence: authEvidence,
     },
   ];
 
@@ -722,6 +745,23 @@ function buildTimeline(seed: RunSeed): TimelineEntry[] {
       detail: 'unit-tests reported 1 failure; guard page offset exception not trapped.',
       state: 'needs-attention',
       stageId: seed.stageId,
+      actorId: seed.actorId,
+      toolId: 'tool::itru-native-repository-file-read::v1',
+      runIdRef: seed.runId,
+      evidence: [
+        {
+          id: `${seed.runId}-ev-fail-1`,
+          category: 'diagnostic',
+          title: 'GuardPageException Trace',
+          summary: 'AssertionError: GuardPageException not raised when buffer offset exceeded 4096 bytes',
+          outcome: 'failed',
+          source: 'python unittest runner',
+          lines: [
+            'FAIL: test_frame_overflow_boundary (test_frame_parser.TestFrameParser)',
+            'AssertionError: GuardPageException not raised when buffer offset exceeded 4096 bytes',
+          ],
+        },
+      ],
     });
     return entries;
   }
@@ -734,18 +774,51 @@ function buildTimeline(seed: RunSeed): TimelineEntry[] {
       title: 'Waiting on explicit Human approval',
       detail: 'No grant evidence has been supplied for this exact action, so authorization is unproven.',
       state: 'needs-attention',
+      actorId: seed.actorId,
+      runIdRef: seed.runId,
+      evidence: [
+        {
+          id: `${seed.runId}-ev-pending`,
+          category: 'authorization',
+          title: 'Unproven Authorization Checkpoint',
+          summary: 'Authorization checkpoint requires human review intervention.',
+          outcome: 'unverified',
+          source: 'human-control-gate',
+        },
+      ],
     });
     return entries;
   }
 
+  // Multi-agent scenario for DEMO-108 runs: add co-worker contribution
+  if (seed.taskId === 'DEMO-108' && seed.runId === 'run_m1a2b3c4') {
+    entries.push({
+      id: base('t2b'),
+      atLabel: 'Today · 13:46',
+      kind: 'agent',
+      title: 'agent-sentinel verified fencing policies',
+      detail: 'Security reviewer performed pre-flight epoch attestation check.',
+      state: 'finished',
+      actorId: 'agent-sentinel',
+      toolId: 'tool::itru-containment-fencing-checker::v1',
+      runIdRef: seed.runId,
+    });
+  }
+
+  // Controlled tool execution entry
   entries.push({
     id: base('t3'),
     atLabel: seed.startedLabel,
-    kind: 'agent',
-    title: `${seed.actorId} working`,
-    detail: 'Reading the resource and preparing findings.',
+    kind: 'tool',
+    title: `${seed.actorId} executed repository_file_read`,
+    detail: `Invoked native read route for ${seed.resource}.`,
     state: seed.state === 'in-progress' ? 'in-progress' : 'finished',
     actorId: seed.actorId,
+    toolId: 'tool::itru-native-repository-file-read::v1',
+    executionEntryRef: resultReadModel?.executionEntry.claimId ?? 'clm_1b2c3d4e',
+    runIdRef: seed.runId,
+    result: resultReadModel,
+    evidence: buildEvidence(seed),
   });
 
   if (seed.state === 'finished') {
@@ -755,8 +828,20 @@ function buildTimeline(seed: RunSeed): TimelineEntry[] {
         atLabel: seed.startedLabel,
         kind: 'quality-gate',
         title: 'Validation reported',
-        detail: 'unit-tests passed; documentation consistency not applicable.',
+        detail: 'unit-tests passed; documentation consistency verified.',
         state: 'finished',
+        actorId: seed.actorId,
+        runIdRef: seed.runId,
+        evidence: [
+          {
+            id: `${seed.runId}-ev-gate-pass`,
+            category: 'quality-gate',
+            title: 'unit-tests',
+            summary: 'Automated test suite passed without regressions.',
+            outcome: 'passed',
+            source: 'quality-gates/unit-tests',
+          },
+        ],
       },
       {
         id: base('t5'),
@@ -766,24 +851,27 @@ function buildTimeline(seed: RunSeed): TimelineEntry[] {
         detail: 'Result is presented provisionally; Human review is still required.',
         state: 'finished',
         actorId: seed.actorId,
+        runIdRef: seed.runId,
       },
     );
   }
   return entries;
 }
 
-function buildEvidence(seed: RunSeed): EvidenceItem[] {
+function buildEvidence(seed: RunSeed): readonly EvidenceItemReadModel[] {
   const id = (suffix: string) => `${seed.runId}-${suffix}`;
 
+  // DEMO-107: validation failure scenario with multiple evidence items
   if (seed.runId === 'run_d82e11a9') {
     return [
       {
         id: id('e1'),
-        kind: 'command-output',
+        category: 'command-output',
         title: 'unit-tests',
         summary: '1 test failed out of 14 during buffer boundary assertion checks.',
         outcome: 'failed',
         source: 'python -B -m unittest discover -s tests -p "test_frame_parser.py"',
+        referenceId: 'ref_cmd_d82e',
         lines: [
           'test_frame_header_valid ... ok',
           'test_zero_length_frame ... ok',
@@ -798,7 +886,7 @@ function buildEvidence(seed: RunSeed): EvidenceItem[] {
       },
       {
         id: id('e2'),
-        kind: 'quality-gate',
+        category: 'quality-gate',
         title: 'documentation_consistency',
         summary: 'Skipped pending resolution of failing validation test.',
         outcome: 'skipped',
@@ -806,7 +894,7 @@ function buildEvidence(seed: RunSeed): EvidenceItem[] {
       },
       {
         id: id('e3'),
-        kind: 'review-note',
+        category: 'review-note',
         title: 'Reviewer note',
         summary: 'Independent review cannot proceed while validation has failing checks.',
         outcome: 'unverified',
@@ -815,11 +903,164 @@ function buildEvidence(seed: RunSeed): EvidenceItem[] {
     ];
   }
 
+  // DEMO-104: Long evidence preview scenario
+  if (seed.runId === 'run_5d70b2e8') {
+    return [
+      {
+        id: id('e-long'),
+        category: 'audit-trail',
+        title: 'System verification audit log',
+        summary: 'Comprehensive repository tree scan and markdown link integrity audit log.',
+        outcome: 'passed',
+        source: 'agent-lumen · docs/release/checklist',
+        referenceId: 'ref_audit_5d70b2',
+        byteCount: 34816,
+        isTruncated: true,
+        textPreview: `# Comprehensive System Verification Audit Log
+Generated by: agent-lumen
+Target: docs/release/checklist
+Execution Run: run_5d70b2e8
+Audit Timestamp: 2026-10-09T16:45:00Z
+
+[0001] AUDIT_START: Initiating repository tree scan
+[0002] CHECKPOINT_01: Validating file mode permissions: 0644 (OK)
+[0003] CHECKPOINT_02: Inspecting UTF-8 byte order mark: None present (OK)
+[0004] CHECKPOINT_03: Line endings normalized: LF only, no CRLF (OK)
+[0005] SCAN_ENTRY: Evaluating section headers against canonical markdown spec
+[0006] SCAN_ENTRY: Header depth hierarchy: 1 -> 2 -> 3 (Consecutive, OK)
+[0007] LINK_VALIDATION: Resolving relative file anchors:
+       - core/principles.md -> FOUND (resolved at rev 55e8001)
+       - core/terminology.md -> FOUND (resolved at rev 55e8001)
+       - core/precedence.md -> FOUND (resolved at rev 55e8001)`,
+        recordedAtLabel: 'Last week · Fri 16:45',
+        integrityStatus: 'verified',
+      },
+      {
+        id: id('e-gate'),
+        category: 'quality-gate',
+        title: 'documentation_consistency',
+        summary: 'All relative anchors and terminology references verified against canonical core docs.',
+        outcome: 'passed',
+        source: 'quality-gates/documentation-consistency',
+      },
+      {
+        id: id('e-auth'),
+        category: 'authorization',
+        title: 'Policy grant evidence',
+        summary: 'Execution grant grnt_5d70_b2e8_002 issued under policy authority policy-docs-default.',
+        outcome: 'passed',
+        source: 'policy-docs-default',
+        referenceId: 'grnt_5d70_b2e8_002',
+        integrityStatus: 'verified',
+      },
+    ];
+  }
+
+  // DEMO-108 / run_m3c4d5e6: failed_before_effect with diagnostic evidence
+  if (seed.runId === 'run_m3c4d5e6') {
+    return [
+      {
+        id: id('e-diag'),
+        category: 'diagnostic',
+        title: 'Repository Containment Guard Check',
+        summary:
+          'Path containment check failed before content access: Target resource path violated repository containment boundaries.',
+        outcome: 'failed',
+        source: 'tool::itru-native-repository-file-read::v1 (containment_guard)',
+        referenceId: 'diag_containment_001',
+        lines: [
+          '[containment_guard] Verifying target path: src/cluster/epoch-attestation-verifier',
+          '[containment_guard] Canonical path resolved outside declared repository root boundary',
+          '[containment_guard] REJECT: containment_rejected (error code 0x1A)',
+          '[coordinator] Controlled execution aborted before effect; no content-data request initiated.',
+        ],
+        integrityStatus: 'verified',
+      },
+      {
+        id: id('e-audit'),
+        category: 'audit-trail',
+        title: 'Pre-flight Containment Trace',
+        summary: 'Boundary check completed prior to any content read.',
+        outcome: 'passed',
+        source: 'exec_node_worker_03',
+        recordedAtLabel: 'Today · 13:40',
+      },
+    ];
+  }
+
+  // DEMO-102 / run_a41c07e2: effect_ambiguous with warning and unavailable evidence
+  if (seed.runId === 'run_a41c07e2') {
+    return [
+      {
+        id: id('e-diag-ambiguous'),
+        category: 'diagnostic',
+        title: 'Effect Boundary Uncertainty Record',
+        summary:
+          'Content-data read request was initiated, but validated completion is unavailable; permanent entry consumption enforced.',
+        outcome: 'failed',
+        source: 'coordinator::effect_boundary_monitor',
+        referenceId: 'diag_ambiguous_002',
+        lines: [
+          '[effect_monitor] Content read request was dispatched to POSIX driver',
+          '[effect_monitor] Worker process socket closed before terminal acknowledge received',
+          '[effect_monitor] Effect status: effect_ambiguous (automatic retry strictly prohibited)',
+        ],
+      },
+      {
+        id: id('e-unavailable-trace'),
+        category: 'audit-trail',
+        title: 'Audit telemetry trace',
+        summary: 'Worker I/O trace buffer telemetry.',
+        outcome: 'unverified',
+        source: 'audit-collector',
+        isUnavailable: true,
+        unavailableReason: 'Trace telemetry stream buffer was interrupted before post-read cleanup confirmation.',
+      },
+      {
+        id: id('e-auth-grant'),
+        category: 'authorization',
+        title: 'Human Authorization Grant',
+        summary: 'Granted by human operator maya for protected security analysis.',
+        outcome: 'passed',
+        source: 'human:maya',
+        referenceId: 'grnt_a41c_07e2_005',
+        integrityStatus: 'verified',
+      },
+    ];
+  }
+
+  // DEMO-103 / run_74be2d90: binary payload sample
+  if (seed.runId === 'run_74be2d90') {
+    return [
+      {
+        id: id('e-binary'),
+        category: 'payload-sample',
+        title: 'Binary ELF payload sample',
+        summary: '4,096 bytes read from compiled target; non-text representation.',
+        outcome: 'passed',
+        source: 'native::posix_read_direct',
+        byteCount: 4096,
+        binaryHexSample: `00000000  7f 45 4c 46 02 01 01 00  00 00 00 00 00 00 00 00  |.ELF............|
+00000010  03 00 3e 00 01 00 00 00  a0 1a 00 00 00 00 00 00  |..>.............|
+00000020  40 00 00 00 00 00 00 00  18 3c 00 00 00 00 00 00  |@........<......|
+00000030  00 00 00 00 40 00 38 00  0b 00 40 00 1f 00 1e 00  |....@.8...@.....|`,
+      },
+      {
+        id: id('e-review'),
+        category: 'review-note',
+        title: 'Architect review note',
+        summary: 'ELF header boundary matches specified module partition requirements.',
+        outcome: 'passed',
+        source: 'agent-atlas',
+      },
+    ];
+  }
+
   if (seed.state === 'needs-attention') {
     return [
       {
         id: id('e1'),
-        kind: 'authorization',
+        category: 'authorization',
         title: 'Authorization evidence',
         summary:
           'No granted or denied evidence supplied for this exact action. Authorization is unproven, not denied.',
@@ -828,7 +1069,7 @@ function buildEvidence(seed: RunSeed): EvidenceItem[] {
       },
       {
         id: id('e2'),
-        kind: 'quality-gate',
+        category: 'quality-gate',
         title: 'documentation_consistency',
         summary: 'Gate could not be evaluated yet because the stage is waiting on approval.',
         outcome: 'skipped',
@@ -841,7 +1082,7 @@ function buildEvidence(seed: RunSeed): EvidenceItem[] {
   return [
     {
       id: id('e1'),
-      kind: 'command-output',
+      category: 'command-output',
       title: 'unit-tests',
       summary: pending ? 'Not yet executed for this run.' : 'All discovered tests passed.',
       outcome: pending ? 'unverified' : 'passed',
@@ -858,7 +1099,7 @@ function buildEvidence(seed: RunSeed): EvidenceItem[] {
     },
     {
       id: id('e2'),
-      kind: 'diff-summary',
+      category: 'diff-summary',
       title: 'Change summary',
       summary: pending ? 'Partial changes reported so far.' : 'Changes confined to the declared scope.',
       outcome: pending ? 'unverified' : 'passed',
@@ -867,7 +1108,7 @@ function buildEvidence(seed: RunSeed): EvidenceItem[] {
     },
     {
       id: id('e3'),
-      kind: 'review-note',
+      category: 'review-note',
       title: 'Reviewer note',
       summary: pending
         ? 'No review has been recorded yet.'
@@ -1168,8 +1409,8 @@ export function buildRunDetail(runId: string): RunDetail | undefined {
     taskTitle: task?.title ?? seed.taskId,
     stages: WORKFLOWS[seed.workflowId] ?? [],
     taskRuns: MOCK_RUNS.filter((run) => run.contract.taskId === seed.taskId),
-    timeline: buildTimeline(seed),
-    evidence: buildEvidence(seed),
+    timeline: adaptTimelineReadModels(buildTimeline(seed)),
+    evidence: adaptEvidenceReadModels(buildEvidence(seed)),
     result: buildResult(seed),
   };
 }

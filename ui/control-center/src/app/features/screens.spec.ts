@@ -107,6 +107,34 @@ describe('Screens (mock rendering)', () => {
     expect(text(el.querySelector('cc-state-panel'))).toContain('Run not found');
   });
 
+  it('Run detail allows selecting timeline items to inspect event details, result, and filtered evidence', async () => {
+    const el = await open('/runs/run_3c81f0a7');
+    const entries = el.querySelectorAll<HTMLElement>('cc-execution-timeline li.entry');
+    expect(entries.length).toBeGreaterThan(1);
+
+    // Select the tool execution entry
+    const toolEntry = Array.from(entries).find((e) => text(e).includes('executed repository_file_read'));
+    expect(toolEntry).toBeDefined();
+    toolEntry!.click();
+    await settle();
+
+    // Verify timeline inspector opened
+    const inspector = el.querySelector('.timeline-detail-pane');
+    expect(inspector).not.toBeNull();
+    expect(text(inspector)).toContain('agent-forge executed repository_file_read');
+    expect(text(inspector)).toContain('Supplied Metadata & Provenance');
+
+    // Verify Evidence Explorer updated header
+    expect(text(el)).toContain('Filtered to event');
+  });
+
+  it('Run detail surfaces unavailable evidence in the Evidence Explorer', async () => {
+    const el = await open('/runs/run_a41c07e2');
+    const panel = el.querySelector('cc-evidence-panel')!;
+    expect(text(panel)).toContain('unavailable');
+    expect(text(panel)).toContain('Trace telemetry stream buffer was interrupted');
+  });
+
   it('Tasks lists tasks with Core statuses and filters them', async () => {
     const el = await open('/tasks');
     expect(el.querySelectorAll('table[aria-label="Tasks"] tbody tr')).toHaveLength(8);

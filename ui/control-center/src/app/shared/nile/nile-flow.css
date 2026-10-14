@@ -1,0 +1,240 @@
+:host {
+  display: block;
+}
+
+.nile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.swatch {
+  --c: var(--muted);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--c);
+  background: color-mix(in srgb, var(--c) 40%, transparent);
+}
+
+[data-state='finished'] {
+  --c: var(--success);
+}
+[data-state='in-progress'] {
+  --c: var(--info);
+}
+[data-state='needs-attention'] {
+  --c: var(--warning);
+}
+[data-state='not-started'] {
+  --c: var(--text-muted);
+}
+[data-state='unknown'] {
+  --c: var(--muted);
+}
+
+.flow-toggle {
+  font-size: 12px;
+  padding: 4px 10px;
+}
+
+/* ---- River canvas ------------------------------------------------------- */
+.viewport {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background:
+    radial-gradient(600px 220px at 15% 30%, var(--nile-bg-a), transparent 70%),
+    radial-gradient(520px 260px at 85% 80%, var(--nile-bg-b), transparent 70%), var(--surface-2);
+}
+
+.river {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 720px;
+}
+
+/* ---- Channels ----------------------------------------------------------- */
+.edge path {
+  fill: none;
+  stroke-linecap: round;
+}
+.edge .glow {
+  stroke: var(--water-glow);
+  stroke-width: 16;
+  opacity: 0.55;
+}
+.edge .body {
+  stroke: var(--water-mid);
+  stroke-width: 9;
+  opacity: 0.9;
+}
+.edge .sheen {
+  stroke: var(--water-bright);
+  stroke-width: 2.5;
+  opacity: 0.55;
+}
+.edge[data-weight='tributary'] .glow {
+  stroke-width: 11;
+}
+.edge[data-weight='tributary'] .body {
+  stroke-width: 5;
+}
+.edge[data-weight='tributary'] .sheen {
+  stroke-width: 1.6;
+}
+.edge[data-state='needs-attention'] .body {
+  stroke: var(--warning);
+  opacity: 0.55;
+}
+.edge[data-state='needs-attention'] .glow {
+  stroke: color-mix(in srgb, var(--warning) 45%, transparent);
+}
+.edge[data-state='unknown'] .body,
+.edge[data-state='not-started'] .body {
+  opacity: 0.4;
+}
+
+/* Decorative flow highlight. Uniform on every channel; encodes nothing. */
+.edge .flow {
+  stroke: #ffffff;
+  stroke-width: 2;
+  opacity: 0.55;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+:host-context(:root[data-theme='light']) .edge .flow {
+  opacity: 0.8;
+}
+.edge .flow-a {
+  stroke-dasharray: 2 22;
+  animation-name: drift-a;
+  animation-duration: 2.2s;
+}
+.edge .flow-b {
+  stroke-width: 3.2;
+  stroke-dasharray: 6 42;
+  opacity: 0.3;
+  animation-name: drift-b;
+  animation-duration: 4.6s;
+}
+@keyframes drift-a {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+@keyframes drift-b {
+  to {
+    stroke-dashoffset: -48;
+  }
+}
+.paused .edge .flow,
+.paused .pulse {
+  animation-play-state: paused;
+}
+
+/* ---- Islands (nodes) ---------------------------------------------------- */
+.node {
+  outline: none;
+}
+.node .hit {
+  fill: transparent;
+}
+.node .island {
+  fill: var(--node-fill);
+  stroke: var(--c);
+  stroke-width: 3;
+  transition: stroke-width 0.2s var(--ease);
+}
+.node .core {
+  fill: var(--c);
+}
+.node .halo {
+  fill: none;
+  stroke: var(--c);
+  stroke-width: 1.5;
+  opacity: 0;
+  transition: opacity 0.2s var(--ease);
+}
+.node .pulse {
+  fill: var(--c);
+  opacity: 0.35;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pulse 2.6s ease-out infinite;
+}
+@keyframes pulse {
+  from {
+    transform: scale(1);
+    opacity: 0.35;
+  }
+  to {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+.node[data-kind='outcome'] .island,
+.node[data-kind='confluence'] .island {
+  stroke-dasharray: 4 3;
+}
+.node.selectable {
+  cursor: pointer;
+}
+.node.selectable:hover .halo,
+.node.selectable:focus-visible .halo,
+.node.selected .halo {
+  opacity: 0.85;
+}
+.node.selected .island {
+  stroke-width: 4.5;
+}
+
+.node text {
+  font-family: var(--font-sans);
+  paint-order: stroke;
+  stroke: var(--surface-2);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+.node .label {
+  font-size: 12.5px;
+  font-weight: 600;
+  fill: var(--text);
+}
+.node .sub {
+  font-size: 11px;
+  fill: var(--text-muted);
+}
+
+.footnote {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+.footnote strong {
+  color: var(--text-muted);
+}

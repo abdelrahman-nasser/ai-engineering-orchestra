@@ -1,0 +1,87 @@
+<div class="nile" [class.paused]="paused()">
+  <div class="toolbar">
+    <ul class="legend" aria-label="Legend">
+      @for (item of legend(); track item.state) {
+        <li><span class="swatch" [attr.data-state]="item.state"></span>{{ item.label }}</li>
+      }
+    </ul>
+    <button
+      type="button"
+      class="btn btn-ghost flow-toggle"
+      [attr.aria-pressed]="paused()"
+      (click)="paused.set(!paused())"
+    >
+      <cc-icon [name]="paused() ? 'play' : 'pause'" [size]="14" />
+      {{ paused() ? 'Resume flow animation' : 'Pause flow animation' }}
+    </button>
+  </div>
+
+  @if (layout(); as l) {
+    <div class="viewport" tabindex="0" role="region" [attr.aria-label]="ariaLabel() + ' (scrollable)'">
+      <svg
+        class="river"
+        [attr.viewBox]="'0 0 ' + l.width + ' ' + l.height"
+        [style.min-width.px]="l.width"
+        role="group"
+        [attr.aria-label]="ariaLabel()"
+      >
+        <defs>
+          <filter id="nile-glow" x="-20%" y="-50%" width="140%" height="200%">
+            <feGaussianBlur stdDeviation="6" />
+          </filter>
+        </defs>
+
+        <g class="edges">
+          @for (edge of l.edges; track edge.id; let i = $index) {
+            <g class="edge" [attr.data-weight]="edge.weight" [attr.data-state]="edge.state">
+              <path class="glow" [attr.d]="edge.d" filter="url(#nile-glow)" />
+              <path class="body" [attr.d]="edge.d" />
+              <path class="sheen" [attr.d]="edge.d" />
+              <path class="flow flow-a" [attr.d]="edge.d" [style.animation-delay.s]="-(i * 0.43)" />
+              <path class="flow flow-b" [attr.d]="edge.d" [style.animation-delay.s]="-(i * 0.91)" />
+            </g>
+          }
+        </g>
+
+        <g class="nodes">
+          @for (item of l.nodes; track item.node.id) {
+            <g
+              class="node"
+              [attr.data-state]="item.node.state"
+              [attr.data-kind]="item.node.kind"
+              [class.selected]="item.node.id === selectedId()"
+              [class.selectable]="item.selectable"
+              [attr.transform]="'translate(' + item.x + ' ' + item.y + ')'"
+              [attr.role]="item.selectable ? 'button' : 'img'"
+              [attr.tabindex]="item.selectable ? 0 : null"
+              [attr.aria-label]="item.aria"
+              [attr.aria-pressed]="item.selectable ? item.node.id === selectedId() : null"
+              (click)="choose(item)"
+              (keydown.enter)="choose(item)"
+              (keydown.space)="choose(item); $event.preventDefault()"
+            >
+              <title>{{ item.aria }}</title>
+              <circle class="hit" r="24" />
+              @if (item.attention) {
+                <circle class="pulse" [attr.r]="item.r" />
+              }
+              <circle class="halo" [attr.r]="item.r + 7" />
+              <circle class="island" [attr.r]="item.r" />
+              <circle class="core" [attr.r]="item.r * 0.4" />
+              <text class="label" [attr.x]="item.labelX" [attr.y]="item.labelY" [attr.text-anchor]="item.anchor">{{ item.label }}</text>
+              @if (item.sublabel) {
+                <text class="sub" [attr.x]="item.labelX" [attr.y]="item.subY" [attr.text-anchor]="item.anchor">{{ item.sublabel }}</text>
+              }
+            </g>
+          }
+        </g>
+      </svg>
+    </div>
+  }
+
+  <p class="footnote">
+    <strong>Presentation topology only.</strong>
+    Branches show which items are drawn together. They do not imply scheduling, ordering,
+    concurrency, dependency or progress rate, and the moving highlight is decorative.
+  </p>
+</div>

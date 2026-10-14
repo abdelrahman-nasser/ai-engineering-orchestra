@@ -1,0 +1,60 @@
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.group h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.count {
+  padding: 0 9px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border-radius: 999px;
+}
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.item {
+  --c: var(--border-strong);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-left: 4px solid var(--c);
+}
+.item[data-state='awaiting'] {
+  --c: var(--warning);
+}
+.item[data-state='granted'] {
+  --c: var(--success);
+}
+.item[data-state='denied'] {
+  --c: var(--danger);
+}
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.action {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.meta {
+  font-size: 13px;
+  gap: var(--space-3);
+}

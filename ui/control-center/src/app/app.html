@@ -1,0 +1,96 @@
+<a class="skip-link" href="#main">Skip to content</a>
+
+<div class="shell" [class.nav-open]="navOpen()">
+  <aside class="sidebar" id="primary-sidebar" aria-label="Primary">
+    <a class="brand" routerLink="/" aria-label="ITRU Control Center — Overview">
+      <span class="logo" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="30" height="30" fill="none">
+          <defs>
+            <linearGradient id="brand-grad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="var(--accent-strong)" />
+              <stop offset="1" stop-color="var(--lapis)" />
+            </linearGradient>
+          </defs>
+          <rect x="1" y="1" width="30" height="30" rx="9" fill="url(#brand-grad)" opacity="0.18" />
+          <path d="M5 21c4-9 6 5 11-3s7 3 11-4" stroke="url(#brand-grad)" stroke-width="2.6" stroke-linecap="round" />
+          <path d="M5 14c3-5 5 2 8-1" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" opacity="0.9" />
+        </svg>
+      </span>
+      <span class="brand-text">
+        <strong>ITRU</strong>
+        <small>Control Center</small>
+      </span>
+    </a>
+
+    <nav class="nav" aria-label="Primary navigation">
+      <ul>
+        @for (item of nav; track item.path) {
+          <li>
+            <a
+              class="nav-link"
+              [routerLink]="item.path"
+              routerLinkActive="active"
+              ariaCurrentWhenActive="page"
+              [routerLinkActiveOptions]="{ exact: item.exact }"
+              [attr.title]="item.label"
+              (click)="closeNav()"
+            >
+              <cc-icon [name]="item.icon" [size]="19" />
+              <span class="nav-label">{{ item.label }}</span>
+              @if (item.path === '/approvals' && awaitingCount() > 0) {
+                <span class="nav-badge" [attr.aria-label]="awaitingCount() + ' awaiting'">{{ awaitingCount() }}</span>
+              }
+            </a>
+          </li>
+        }
+      </ul>
+    </nav>
+
+    <div class="sidebar-foot">
+      <span class="origin" data-testid="data-origin">
+        <span class="origin-dot" aria-hidden="true"></span>
+        <span class="origin-text">{{ originLabel }}</span>
+      </span>
+      <small class="foot-note">Read-only foundation</small>
+    </div>
+  </aside>
+
+  <button type="button" class="scrim" aria-label="Close navigation" tabindex="-1" (click)="closeNav()"></button>
+
+  <div class="content">
+    <header class="topbar">
+      <button
+        type="button"
+        class="btn btn-ghost menu-btn"
+        aria-label="Toggle navigation"
+        aria-controls="primary-sidebar"
+        [attr.aria-expanded]="navOpen()"
+        (click)="toggleNav()"
+      >
+        <cc-icon [name]="navOpen() ? 'close' : 'menu'" [size]="20" />
+      </button>
+      <div class="topbar-title">
+        <span class="eyebrow">ITRU</span>
+        <span class="faint">/</span>
+        <span>Control Center</span>
+      </div>
+      <div class="topbar-actions">
+        <span class="pill-origin" title="All data on screen is fabricated for UI review">{{ originLabel }}</span>
+        <button
+          type="button"
+          class="btn theme-btn"
+          data-testid="theme-toggle"
+          [attr.aria-label]="theme.mode() === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'"
+          (click)="theme.toggle()"
+        >
+          <cc-icon [name]="theme.mode() === 'dark' ? 'sun' : 'moon'" [size]="16" />
+          <span class="theme-label">{{ theme.mode() === 'dark' ? 'Light' : 'Dark' }}</span>
+        </button>
+      </div>
+    </header>
+
+    <main id="main" tabindex="-1">
+      <router-outlet />
+    </main>
+  </div>
+</div>

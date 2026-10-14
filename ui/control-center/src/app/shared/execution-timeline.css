@@ -1,0 +1,97 @@
+:host {
+  display: block;
+}
+
+.timeline {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The spine connecting markers. */
+.timeline::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 13px;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--water-mid), var(--border));
+  opacity: 0.6;
+}
+
+.entry {
+  --c: var(--muted);
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: var(--space-3);
+  padding-bottom: var(--space-4);
+}
+.entry:last-child {
+  padding-bottom: 0;
+}
+
+.entry[data-state='finished'] {
+  --c: var(--success);
+}
+.entry[data-state='in-progress'] {
+  --c: var(--info);
+}
+.entry[data-state='needs-attention'] {
+  --c: var(--warning);
+}
+.entry[data-state='not-started'] {
+  --c: var(--text-muted);
+}
+
+.marker {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: var(--c);
+  background: var(--surface);
+  border: 2px solid var(--c);
+  border-radius: 50%;
+  z-index: 1;
+}
+
+.entry[data-state='in-progress'] .marker {
+  animation: ring 2.4s ease-out infinite;
+}
+@keyframes ring {
+  from {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--c) 45%, transparent);
+  }
+  to {
+    box-shadow: 0 0 0 10px transparent;
+  }
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.detail {
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-top: var(--space-2);
+  font-size: 12px;
+  color: var(--text-faint);
+}
+.empty {
+  padding: var(--space-4) 0;
+}

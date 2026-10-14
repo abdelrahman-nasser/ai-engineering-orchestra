@@ -1,0 +1,59 @@
+.column {
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.stages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.stages li {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: var(--space-3);
+}
+.index {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: 50%;
+}
+.stage-body p {
+  margin-top: 2px;
+  font-size: 13px;
+}
+.roles {
+  margin-top: var(--space-2);
+}
+
+.sub {
+  margin: var(--space-3) 0 var(--space-2);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.sub:first-of-type {
+  margin-top: 0;
+}
+.list {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text-muted);
+}
+a.chip:hover {
+  color: var(--accent);
+  text-decoration: none;
+}

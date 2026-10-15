@@ -239,3 +239,52 @@ The UI lane maintains a strict presentation-only, contract-safe boundary:
 
 CORE CONTRACT NEEDED FROM:
 ITRU-062 / SCRUM-19 (Core Persistent Runs, Tasks, Lifecycle, and Resumption Specification). When ITRU-062 closes, the finalized Core contract will plug directly into the `ControlCenterDataSource` / adapter boundary without redesigning the UI.
+
+---
+
+## 10. DAG & Scheduler Semantics (SCRUM-25 / UNRESOLVED PENDING ITRU-063)
+
+QUESTION:
+What are the canonical Core contracts governing task dependency graphs (DAGs), scheduler state machines, readiness evaluation, dependency satisfaction, dispatch eligibility, admission store interaction, and execution flow recovery?
+
+UI NEED:
+The operator needs an interactive Nile dependency graph and scheduler overview panel to visualize multi-stage workflows, parent/dependency relationships, fan-out/fan-in tributaries, blocking constraints, linked Results, Journal timelines, and execution evidence without inventing unfinished Core scheduler, lifecycle, or dispatch semantics.
+
+STATUS & CORE CONTRACT RESOLUTION:
+- **Locked Prior Decisions Preserved**:
+  - **ITRU-060 Canonical Results**: Terminal outcomes (`succeeded`, `failed_before_effect`, `effect_ambiguous`) and side-effect boundaries remain authoritative. Visualization never implies that graphical representation makes retry or replay safe on `effect_ambiguous` nodes. Automatic retry/replay is strictly prohibited.
+  - **ITRU-061 Phase 1 Canonical Journal**: Canonical two-event audit taxonomy (`entry_observed`, `result_observed`), monotonic sequencing, and SQLite WAL `FULL` persistence remain locked. The UI's display order disclaimer remains active: display of events or evidence provides zero proof of scheduler readiness or resume safety.
+  - **ITRU-062 Task/Run Persistence & Resumption Boundary**: Task and Run durable identities, checkpoints, and resume state machines remain unresolved pending ITRU-062.
+- **ITRU-063 Scope: NOT STARTED / COMPLETELY UNRESOLVED**:
+  The following 16 items are explicitly UNRESOLVED in Core pending ITRU-063 (SCRUM-20):
+  1. **Canonical DAG identity**: Core defines no runtime or durable identity contract for execution graphs or workflow instance topologies.
+  2. **Canonical node identity**: Core defines `AgentExecutionContract` (AIO-041) and `AgentExecutionRun` (AIO-042) as in-memory declarative intent, but defines no canonical DAG node identity, node schema, or node type taxonomy.
+  3. **Canonical edge / dependency contract**: Core Workflows (`core/workflow-specification.md`) define sequential stages only; Core defines no inter-stage edge schema, branch-join descriptor, or cross-task dependency contract.
+  4. **Dependency satisfaction rules**: Core provides no rules or algorithms determining whether an upstream dependency is satisfied (e.g. strict success vs allowable failure, payload validation, condition predicates).
+  5. **Scheduler lifecycle / state machine**: Core defines zero scheduler lifecycle states, transitions, or queue states (e.g. queued, ready, running, blocked, complete, cancelled).
+  6. **Readiness rules**: Core defines no rules determining when a node transitions from queued/blocked to ready for dispatch.
+  7. **Scheduling authority**: What component, process, policy, or Human authority makes scheduling decisions, assigns priorities, or triggers dispatches is undefined in Core.
+  8. **Dispatch / admission interaction**: How the scheduler coordinates with the Dispatch Admission Store (AIO-045 / ITRU-046) and consumes Grants without race conditions is undefined.
+  9. **Concurrency semantics**: Core defines no limits or semantics for parallel branch execution, worker pool limits, or global/local execution concurrency.
+  10. **Fairness policy**: No queueing discipline, priority weighting, starvation avoidance, or multi-task fairness policy exists in Core.
+  11. **Retry / failover policy**: Core defines no retry policies, backoff mechanisms, worker failover, or transient fault handling for scheduled DAG nodes.
+  12. **Graph persistence**: No database schema, migration, or storage technology has been selected or specified for persisting DAG structures.
+  13. **Scheduler persistence**: How active scheduler state, queue positions, and in-flight lease reservations survive process restarts is completely undefined.
+  14. **Query / index / pagination model**: Core defines no query protocol, cursor pagination, or index layout for querying graph topologies or scheduler queues.
+  15. **Cycle handling**: Core defines no cycle detection, validation, or rejection algorithm for dependency graphs.
+  16. **Cancellation semantics and scheduler recovery after restart**: How ongoing or downstream DAG branches are aborted upon task cancellation, and how a restarted scheduler reconstructs in-flight execution flow, is completely unspecified.
+
+CURRENT UI ADAPTER ASSUMPTION (SCRUM-25):
+The UI lane maintains a strict presentation-only, contract-safe boundary:
+1. **Presentation inputs only**: All graph structures and scheduler fields (`DagGraphReadModel`, `DagNodeReadModel`, `DagEdgeReadModel`, `SchedulerSummaryReadModel`) are UI-local read-models supplied by `ControlCenterDataSource`. They carry ZERO Core scheduler or lifecycle authority.
+2. **Prominent scheduler disclaimer**: The operator panel displays the prominent notice:
+   *"Scheduler state supplied by current data source · Core scheduler semantics pending ITRU-063."*
+3. **Prominent dependency disclaimer**: The dependency inspector displays the notice:
+   *"Dependency relations supplied by presentation data source · Core readiness algorithm & dispatch eligibility pending ITRU-063."*
+4. **No invented algorithms**: The UI evaluates no readiness algorithms, computes no dispatch eligibility, triggers no state mutations, and defines no canonical scheduler enums.
+5. **Nile visual metaphor**: Trunk represents principal execution path; tributaries represent dependent sub-agent work; convergence represents joins. Animated water highlights are purely decorative (`prefers-reduced-motion` supported).
+6. **Strict effect_ambiguous handling**: Any node associated with an `effect_ambiguous` outcome renders distinct hazard markings (striped borders, warning icons) and surfaces the strict notice that automatic retry or replay is prohibited.
+7. **Clean adapter decoupling**: Mapped through `adaptDagGraphReadModel` in `dag-adapter.ts`. When ITRU-063 formalizes the canonical Core scheduler and DAG contracts, they will connect through data-source presentation adapters without requiring UI redesign.
+
+CORE CONTRACT NEEDED FROM:
+ITRU-063 / SCRUM-20 (Core DAG, Dependency Resolution, and Scheduler Specification).

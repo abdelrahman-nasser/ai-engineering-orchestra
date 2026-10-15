@@ -1401,7 +1401,7 @@ Audit Timestamp: 2026-10-09T16:45:00Z
   ];
 }
 
-const MOCK_RESULT_READ_MODELS = new Map<string, AgentExecutionResultReadModel>([
+export const MOCK_RESULT_READ_MODELS = new Map<string, AgentExecutionResultReadModel>([
   [
     'run_c19e83d6',
     {

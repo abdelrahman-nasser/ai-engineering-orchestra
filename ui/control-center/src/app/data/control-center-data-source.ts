@@ -2,6 +2,8 @@ import { Observable } from 'rxjs';
 import {
   AgentSummary,
   ApprovalItem,
+  DagGraphReadModel,
+  DagScenarioInfo,
   OverviewPresentation,
   RunDetail,
   RunSummary,
@@ -36,4 +38,7 @@ export abstract class ControlCenterDataSource {
   abstract listAgents(): Observable<readonly AgentSummary[]>;
 
   abstract listApprovals(): Observable<readonly ApprovalItem[]>;
+
+  abstract listDagScenarios(): Observable<readonly DagScenarioInfo[]>;
+  abstract getDagGraph(scenarioId?: string): Observable<DagGraphReadModel | undefined>;
 }

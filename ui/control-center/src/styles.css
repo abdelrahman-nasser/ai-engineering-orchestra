@@ -64,6 +64,7 @@
   --bg-glow-1: rgba(35, 190, 175, 0.1);
   --bg-glow-2: rgba(227, 185, 92, 0.06);
   --surface: #0e1a20;
+  --surface-1: #0e1a20;
   --surface-2: #132229;
   --surface-3: #1a2c34;
   --surface-glass: rgba(14, 26, 32, 0.82);
@@ -111,6 +112,7 @@
   --bg-glow-1: rgba(14, 124, 123, 0.08);
   --bg-glow-2: rgba(200, 150, 40, 0.09);
   --surface: #ffffff;
+  --surface-1: #ffffff;
   --surface-2: #f8f6f0;
   --surface-3: #eee8d8;
   --surface-glass: rgba(255, 255, 255, 0.85);
@@ -157,6 +159,11 @@
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
 }
 
 html {
@@ -507,6 +514,20 @@ a:hover {
   border-radius: 999px;
   white-space: nowrap;
 }
+
+.swatch {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1.5px solid var(--c, var(--muted));
+  background: color-mix(in srgb, var(--c, var(--muted)) 40%, transparent);
+}
+.swatch[data-tone='info'] { --c: var(--info); }
+.swatch[data-tone='warning'] { --c: var(--warning); }
+.swatch[data-tone='danger'] { --c: var(--danger); }
+.swatch[data-tone='success'] { --c: var(--success); }
+.swatch[data-tone='muted'] { --c: var(--text-muted); }
 
 /* ---- Skeleton / states ------------------------------------------------- */
 .skeleton {

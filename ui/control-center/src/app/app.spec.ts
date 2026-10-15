@@ -30,11 +30,11 @@ describe('App shell', () => {
     expect(el.querySelectorAll('main')).toHaveLength(1);
   });
 
-  it('shows the five primary destinations in order', async () => {
+  it('shows the primary destinations in order', async () => {
     const { el } = await createShell();
     const labels = Array.from(el.querySelectorAll('nav a.nav-link .nav-label')).map((n) => n.textContent?.trim());
-    expect(labels).toEqual(['Overview', 'Runs', 'Tasks', 'Agents', 'Approvals']);
-    expect(PRIMARY_NAV.map((item) => item.path)).toEqual(['/', '/runs', '/tasks', '/agents', '/approvals']);
+    expect(labels).toEqual(['Overview', 'Flow', 'Runs', 'Tasks', 'Agents', 'Approvals']);
+    expect(PRIMARY_NAV.map((item) => item.path)).toEqual(['/', '/flow', '/runs', '/tasks', '/agents', '/approvals']);
   });
 
   it('labels the data origin as mock in the shell', async () => {
@@ -50,6 +50,7 @@ describe('App shell', () => {
 
   const destinations: readonly [string, string][] = [
     ['/', 'Overview'],
+    ['/flow', 'Nile Flow & Scheduler'],
     ['/runs', 'Runs'],
     ['/tasks', 'Tasks'],
     ['/agents', 'Agents'],
@@ -58,6 +59,7 @@ describe('App shell', () => {
     ['/tasks/DEMO-102', 'Rework authentication token refresh'],
     ['/nowhere', 'Page not found'],
   ];
+
 
   for (const [url, heading] of destinations) {
     it(`renders ${url} with a single h1 "${heading}"`, async () => {

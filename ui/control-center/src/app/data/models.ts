@@ -611,3 +611,173 @@ export interface NileTopology {
   readonly nodes: readonly NileNode[];
   readonly edges: readonly NileEdge[];
 }
+
+// ---------------------------------------------------------------------------
+// DAG & Scheduler (SCRUM-25: UI-local, presentation read-models only)
+// ---------------------------------------------------------------------------
+
+/**
+ * UI-local presentation state for the scheduler operator panel.
+ *
+ * IMPORTANT: This is NOT a canonical Core scheduler enum (pending ITRU-063).
+ * It represents purely how a node appears to the operator based on current
+ * data-source presentation inputs.
+ */
+export type SchedulerPresentationState =
+  | 'queued'
+  | 'ready-looking'
+  | 'active-looking'
+  | 'blocked-looking'
+  | 'completed-looking'
+  | 'attention';
+
+export type DagNodeKind =
+  | 'task'
+  | 'stage'
+  | 'run'
+  | 'subagent'
+  | 'join'
+  | 'outcome'
+  | 'checkpoint';
+
+/** UI-local read-model for a single node in a DAG visualization. */
+export interface DagNodeReadModel {
+  readonly id: string;
+  readonly label: string;
+  readonly sublabel?: string;
+  readonly kind: DagNodeKind;
+  readonly column: number;
+  readonly lane: number;
+  readonly taskId?: string;
+  readonly runId?: string;
+  readonly roleId?: string;
+  readonly actorId?: string;
+  readonly stageId?: string;
+  readonly workflowId?: string;
+  readonly toolId?: string;
+  readonly isMainFlow?: boolean;
+  readonly schedulerState: SchedulerPresentationState;
+  readonly attentionReason?: string;
+  readonly upstreamNodeIds: readonly string[];
+  readonly downstreamNodeIds: readonly string[];
+  readonly blockedByNodeIds?: readonly string[];
+  readonly hasResult?: boolean;
+  readonly resultOutcome?: AgentExecutionResultOutcome;
+  readonly hasJournal?: boolean;
+  readonly hasEvidence?: boolean;
+  readonly evidenceCount?: number;
+  readonly hasContinuation?: boolean;
+  readonly continuationState?: ContinuationStatus;
+  readonly continuationBlockedReason?: string;
+  readonly linkedResult?: AgentExecutionResultReadModel;
+  readonly linkedTimeline?: readonly TimelineItemReadModel[];
+  readonly linkedEvidence?: readonly EvidenceItemReadModel[];
+  readonly linkedContinuation?: RunContinuationReadModel;
+}
+
+/** UI-local read-model for an edge between DAG nodes. */
+export interface DagEdgeReadModel {
+  readonly id: string;
+  readonly from: string;
+  readonly to: string;
+  readonly label?: string;
+  readonly isTributary?: boolean;
+  readonly state?: PresentationState | 'neutral';
+}
+
+/** UI-local summary of scheduler counts across a DAG graph. */
+export interface SchedulerSummaryReadModel {
+  readonly queuedCount: number;
+  readonly readyLookingCount: number;
+  readonly activeLookingCount: number;
+  readonly blockedLookingCount: number;
+  readonly completedLookingCount: number;
+  readonly attentionCount: number;
+  readonly dataSourceNotice: string;
+}
+
+/** UI-local metadata describing an available DAG scenario. */
+export interface DagScenarioInfo {
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly nodeCount: number;
+  readonly edgeCount: number;
+}
+
+/** Complete UI-local read-model for a DAG graph scenario. */
+export interface DagGraphReadModel {
+  readonly id: string;
+  readonly name: string;
+  readonly scenario: string;
+  readonly description: string;
+  readonly updatedLabel: string;
+  readonly isStale?: boolean;
+  readonly nodes: readonly DagNodeReadModel[];
+  readonly edges: readonly DagEdgeReadModel[];
+  readonly schedulerSummary: SchedulerSummaryReadModel;
+}
+
+/** UI-local presentation model for a DAG node adapted for rendering. */
+export interface DagNodePresentation {
+  readonly id: string;
+  readonly label: string;
+  readonly sublabel?: string;
+  readonly kind: DagNodeKind;
+  readonly column: number;
+  readonly lane: number;
+  readonly taskId?: string;
+  readonly runId?: string;
+  readonly roleId?: string;
+  readonly actorId?: string;
+  readonly stageId?: string;
+  readonly workflowId?: string;
+  readonly toolId?: string;
+  readonly isMainFlow: boolean;
+  readonly schedulerState: SchedulerPresentationState;
+  readonly schedulerStateLabel: string;
+  readonly schedulerTone: Tone;
+  readonly attentionReason?: string;
+  readonly upstreamNodeIds: readonly string[];
+  readonly downstreamNodeIds: readonly string[];
+  readonly blockedByNodeIds: readonly string[];
+  readonly hasResult: boolean;
+  readonly resultOutcome?: AgentExecutionResultOutcome;
+  readonly isEffectAmbiguous: boolean;
+  readonly hasJournal: boolean;
+  readonly hasEvidence: boolean;
+  readonly evidenceCount: number;
+  readonly hasContinuation: boolean;
+  readonly continuationState?: ContinuationStatus;
+  readonly continuationBlockedReason?: string;
+  readonly linkedResult?: AgentExecutionResultPresentation;
+  readonly linkedTimeline?: readonly TimelineEntry[];
+  readonly linkedEvidence?: readonly EvidenceItem[];
+  readonly linkedContinuation?: RunContinuationPresentation;
+  readonly presentationState: PresentationState;
+}
+
+/** UI-local presentation model for a DAG edge. */
+export interface DagEdgePresentation {
+  readonly id: string;
+  readonly from: string;
+  readonly to: string;
+  readonly label?: string;
+  readonly isTributary: boolean;
+  readonly weight: 'main' | 'tributary';
+  readonly state: PresentationState | 'neutral';
+}
+
+/** Complete UI-local presentation model for a DAG graph. */
+export interface DagGraphPresentation {
+  readonly id: string;
+  readonly name: string;
+  readonly scenario: string;
+  readonly description: string;
+  readonly updatedLabel: string;
+  readonly isStale: boolean;
+  readonly nodes: readonly DagNodePresentation[];
+  readonly edges: readonly DagEdgePresentation[];
+  readonly schedulerSummary: SchedulerSummaryReadModel;
+  readonly nodeMap: ReadonlyMap<string, DagNodePresentation>;
+}

@@ -1,0 +1,314 @@
+<div class="dag-flow-container" [class.paused]="paused()">
+  <div class="dag-toolbar">
+    <div class="toolbar-group view-mode-group" role="group" aria-label="View mode">
+      <button
+        type="button"
+        class="btn btn-ghost"
+        [class.btn-primary]="viewMode() === 'river'"
+        [attr.aria-pressed]="viewMode() === 'river'"
+        (click)="setViewMode('river')"
+      >
+        <cc-icon name="nile" [size]="15" />
+        <span>River view</span>
+      </button>
+      <button
+        type="button"
+        class="btn btn-ghost"
+        [class.btn-primary]="viewMode() === 'list'"
+        [attr.aria-pressed]="viewMode() === 'list'"
+        (click)="setViewMode('list')"
+      >
+        <cc-icon name="tasks" [size]="15" />
+        <span>List view</span>
+      </button>
+    </div>
+
+    <ul class="legend" aria-label="Node status legend">
+      <li><span class="swatch" data-tone="info"></span>Active / Ready</li>
+      <li><span class="swatch" data-tone="warning"></span>Blocked</li>
+      <li><span class="swatch" data-tone="danger"></span>Needs Attention / Hazard</li>
+      <li><span class="swatch" data-tone="success"></span>Completed</li>
+      <li><span class="swatch" data-tone="muted"></span>Queued</li>
+    </ul>
+
+    <div class="toolbar-group nav-controls">
+      <button
+        type="button"
+        class="btn btn-ghost"
+        [attr.aria-pressed]="paused()"
+        (click)="paused.set(!paused())"
+        title="Toggle water flow animation"
+      >
+        <cc-icon [name]="paused() ? 'play' : 'pause'" [size]="14" />
+        <span>{{ paused() ? 'Resume flow' : 'Pause flow' }}</span>
+      </button>
+    </div>
+  </div>
+
+  @if (viewMode() === 'river') {
+    @if (layout(); as l) {
+      <div
+        #viewport
+        class="viewport"
+        tabindex="0"
+        role="region"
+        aria-label="Interactive Nile dependency river (drag to pan, keyboard arrows to traverse)"
+        (mousedown)="startPan($event)"
+        (mousemove)="onPan($event)"
+        (mouseup)="endPan()"
+        (mouseleave)="endPan()"
+      >
+        <div class="floating-controls" role="toolbar" aria-label="Canvas zoom and pan controls">
+          <button
+            type="button"
+            class="btn-icon"
+            (click)="zoomIn()"
+            title="Zoom in (+)"
+            aria-label="Zoom in"
+          >
+            <cc-icon name="tool" [size]="14" />
+          </button>
+          <span class="zoom-level" aria-live="polite">{{ (zoom() * 100).toFixed(0) }}%</span>
+          <button
+            type="button"
+            class="btn-icon"
+            (click)="zoomOut()"
+            title="Zoom out (-)"
+            aria-label="Zoom out"
+          >
+            <cc-icon name="slash" [size]="14" />
+          </button>
+          <button
+            type="button"
+            class="btn-icon"
+            (click)="resetView()"
+            title="Reset zoom & pan (1:1)"
+            aria-label="Reset view"
+          >
+            <cc-icon name="clock" [size]="14" />
+          </button>
+          <button
+            type="button"
+            class="btn-icon"
+            (click)="fitGraph()"
+            title="Fit entire graph to window"
+            aria-label="Fit graph"
+          >
+            <cc-icon name="overview" [size]="14" />
+          </button>
+          @if (selectedNodeId()) {
+            <button
+              type="button"
+              class="btn-icon"
+              (click)="focusSelected()"
+              title="Center view on selected node"
+              aria-label="Center on selected node"
+            >
+              <cc-icon name="branch" [size]="14" />
+            </button>
+          }
+        </div>
+
+        <svg
+          class="river-svg"
+          [attr.viewBox]="'0 0 ' + l.width + ' ' + l.height"
+          [style.width.px]="l.width * zoom()"
+          [style.height.px]="l.height * zoom()"
+          [style.transform]="'translate(' + panX() + 'px, ' + panY() + 'px)'"
+          role="group"
+          aria-label="Nile dependency graph"
+        >
+          <defs>
+            <filter id="dag-nile-glow" x="-20%" y="-50%" width="140%" height="200%">
+              <feGaussianBlur stdDeviation="6" />
+            </filter>
+          </defs>
+
+          <!-- Channels / Edges -->
+          <g class="edges">
+            @for (edge of l.edges; track edge.edge.id; let i = $index) {
+              <g
+                class="edge"
+                [attr.data-weight]="edge.weight"
+                [attr.data-state]="edge.state"
+                [class.upstream-path]="edge.isUpstreamPath"
+                [class.downstream-path]="edge.isDownstreamPath"
+                [class.dimmed]="edge.isDimmed"
+              >
+                <path class="glow" [attr.d]="edge.d" filter="url(#dag-nile-glow)" />
+                <path class="body" [attr.d]="edge.d" />
+                <path class="sheen" [attr.d]="edge.d" />
+                <path class="flow flow-a" [attr.d]="edge.d" [style.animation-delay.s]="-(i * 0.43)" />
+                <path class="flow flow-b" [attr.d]="edge.d" [style.animation-delay.s]="-(i * 0.91)" />
+              </g>
+            }
+          </g>
+
+          <!-- Islands / Nodes -->
+          <g class="nodes">
+            @for (item of l.nodes; track item.node.id) {
+              <g
+                class="node"
+                [attr.data-kind]="item.node.kind"
+                [attr.data-state]="item.node.schedulerState"
+                [class.selected]="item.isSelected"
+                [class.upstream-highlight]="item.isUpstream"
+                [class.downstream-highlight]="item.isDownstream"
+                [class.dimmed]="item.isDimmed"
+                [class.effect-ambiguous]="item.node.isEffectAmbiguous"
+                [style.--node-color]="item.color"
+                [attr.transform]="'translate(' + item.x + ' ' + item.y + ')'"
+                role="button"
+                tabindex="0"
+                [attr.aria-label]="item.aria"
+                [attr.aria-pressed]="item.isSelected"
+                (click)="chooseNode(item.node)"
+                (keydown.enter)="chooseNode(item.node)"
+                (keydown.space)="chooseNode(item.node); $event.preventDefault()"
+              >
+                <title>{{ item.aria }}</title>
+                <circle class="hit" r="28" />
+
+                @if (item.hasPulse) {
+                  <circle class="pulse" [attr.r]="item.r" />
+                }
+
+                @if (item.node.isEffectAmbiguous) {
+                  <circle class="hazard-ring" [attr.r]="item.r + 10" />
+                }
+
+                <circle class="halo" [attr.r]="item.r + 7" />
+                <circle class="island" [attr.r]="item.r" />
+                <circle class="core" [attr.r]="item.r * 0.45" />
+
+                <!-- Badges on node -->
+                @if (item.node.isEffectAmbiguous) {
+                  <text class="badge-icon badge-hazard" x="0" y="4" text-anchor="middle">⚠</text>
+                } @else if (item.node.hasResult) {
+                  <text class="badge-icon badge-result" x="0" y="3.5" text-anchor="middle">✓</text>
+                }
+
+                <!-- Labels -->
+                <text class="label" [attr.x]="item.labelX" [attr.y]="item.labelY" [attr.text-anchor]="item.anchor">
+                  {{ item.label }}
+                </text>
+                @if (item.sublabel) {
+                  <text class="sub" [attr.x]="item.labelX" [attr.y]="item.subY" [attr.text-anchor]="item.anchor">
+                    {{ item.sublabel }}
+                  </text>
+                }
+              </g>
+            }
+          </g>
+        </svg>
+      </div>
+    }
+  } @else {
+    <!-- Structured List View Fallback -->
+    <div class="list-view-container" role="region" aria-label="Structured node and dependency list">
+      <table class="list-table">
+        <thead>
+          <tr>
+            <th>Node</th>
+            <th>Kind</th>
+            <th>Scheduler State</th>
+            <th>Actor / Role</th>
+            <th>Upstream (Depends on)</th>
+            <th>Blocked by</th>
+            <th>Downstream (Unblocks)</th>
+            <th>Artifacts</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (node of graph()?.nodes ?? []; track node.id) {
+            <tr
+              [class.selected]="node.id === selectedNodeId()"
+              (click)="chooseNode(node)"
+            >
+              <td>
+                <button type="button" class="node-btn-cell">
+                  <span
+                    class="swatch"
+                    [attr.data-tone]="node.schedulerTone"
+                    aria-hidden="true"
+                  ></span>
+                  <div>
+                    <strong>{{ node.label }}</strong>
+                    @if (node.sublabel) {
+                      <div class="muted small">{{ node.sublabel }}</div>
+                    }
+                  </div>
+                </button>
+              </td>
+              <td><span class="chip">{{ node.kind }}</span></td>
+              <td>
+                <span class="badge" [attr.data-tone]="node.schedulerTone">
+                  {{ node.schedulerStateLabel }}
+                </span>
+                @if (node.attentionReason) {
+                  <div class="danger small">{{ node.attentionReason }}</div>
+                }
+              </td>
+              <td>
+                @if (node.actorId) {
+                  <div><code>{{ node.actorId }}</code></div>
+                  <small class="muted">{{ node.roleId }}</small>
+                } @else {
+                  <span class="muted">—</span>
+                }
+              </td>
+              <td>
+                @if (node.upstreamNodeIds.length > 0) {
+                  @for (up of node.upstreamNodeIds; track up) {
+                    <span class="dep-chip">{{ up }}</span>
+                  }
+                } @else {
+                  <span class="muted">—</span>
+                }
+              </td>
+              <td>
+                @if (node.blockedByNodeIds.length > 0) {
+                  @for (blk of node.blockedByNodeIds; track blk) {
+                    <span class="dep-chip blocked">{{ blk }}</span>
+                  }
+                } @else {
+                  <span class="muted">—</span>
+                }
+              </td>
+              <td>
+                @if (node.downstreamNodeIds.length > 0) {
+                  @for (down of node.downstreamNodeIds; track down) {
+                    <span class="dep-chip">{{ down }}</span>
+                  }
+                } @else {
+                  <span class="muted">—</span>
+                }
+              </td>
+              <td>
+                <div class="row gap-1">
+                  @if (node.isEffectAmbiguous) {
+                    <span class="badge danger" title="effect_ambiguous outcome">⚠ Ambiguous</span>
+                  } @else if (node.hasResult) {
+                    <span class="badge success" title="Terminal Result available">Result</span>
+                  }
+                  @if (node.hasEvidence) {
+                    <span class="badge info" title="Evidence items attached">E ({{ node.evidenceCount }})</span>
+                  }
+                  @if (node.hasContinuation) {
+                    <span class="badge" title="Continuation metadata present">Continuation</span>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <p class="footnote">
+    <strong>Presentation topology only.</strong>
+    Branches and river channels represent visual connectivity without canonical scheduling, ordering,
+    or readiness authority. Moving highlights are decorative. Core scheduler semantics pending ITRU-063.
+  </p>
+</div>

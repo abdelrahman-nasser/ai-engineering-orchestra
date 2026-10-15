@@ -79,4 +79,24 @@ describe('MockControlCenterDataSource', () => {
       }
     }
   });
+
+  it('lists DAG scenarios and loads default and custom graphs', async () => {
+    const scenarios = await firstValueFrom(source.listDagScenarios());
+    expect(scenarios.length).toBeGreaterThan(5);
+    expect(scenarios.some((s) => s.id === 'fan-out-fan-in')).toBe(true);
+    expect(scenarios.some((s) => s.id === 'large-mesh-24')).toBe(true);
+
+    const defaultGraph = await firstValueFrom(source.getDagGraph());
+    expect(defaultGraph).toBeDefined();
+    expect(defaultGraph!.nodes.length).toBeGreaterThan(0);
+    expect(defaultGraph!.edges.length).toBeGreaterThan(0);
+    expect(defaultGraph!.schedulerSummary).toBeDefined();
+
+    const largeMesh = await firstValueFrom(source.getDagGraph('large-mesh-24'));
+    expect(largeMesh).toBeDefined();
+    expect(largeMesh!.nodes.length).toBeGreaterThanOrEqual(20);
+
+    const unknown = await firstValueFrom(source.getDagGraph('non-existent'));
+    expect(unknown).toBeUndefined();
+  });
 });

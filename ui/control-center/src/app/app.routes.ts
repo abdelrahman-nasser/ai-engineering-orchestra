@@ -38,6 +38,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/approvals/approvals').then((m) => m.Approvals),
   },
   {
+    path: 'flow',
+    title: 'Flow & Scheduler · ITRU Control Center',
+    loadComponent: () => import('./features/flow/flow').then((m) => m.Flow),
+  },
+
+  {
     path: '**',
     title: 'Not found · ITRU Control Center',
     loadComponent: () => import('./features/not-found/not-found').then((m) => m.NotFound),

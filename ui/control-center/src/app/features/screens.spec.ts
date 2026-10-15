@@ -227,4 +227,15 @@ describe('Screens (mock rendering)', () => {
     expect(el.querySelectorAll('li.item[data-state="denied"]')).toHaveLength(1);
     expect(el.querySelectorAll('main button')).toHaveLength(0);
   });
+
+  it('Flow screen renders scheduler panel, Nile DAG graph, filters, and inspector', async () => {
+    const el = await open('/flow');
+    expect(text(el.querySelector('h1'))).toContain('Nile Flow & Scheduler');
+    expect(el.querySelector('cc-scheduler-panel')).not.toBeNull();
+    expect(text(el.querySelector('[data-testid="scheduler-disclaimer"]'))).toContain(
+      'Core scheduler semantics pending ITRU-063',
+    );
+    expect(el.querySelectorAll('cc-dag-flow svg g.node').length).toBeGreaterThan(5);
+    expect(el.querySelector('cc-dag-node-inspector')).not.toBeNull();
+  });
 });

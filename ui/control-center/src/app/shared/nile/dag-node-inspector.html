@@ -1,0 +1,198 @@
+@if (node(); as n) {
+  <aside class="inspector-card" aria-label="Node Detail Inspector">
+    <div class="inspector-head">
+      <div class="title-group">
+        <h3>{{ n.label }}</h3>
+        <div class="meta-row">
+          <span class="chip">{{ n.kind }}</span>
+          <cc-status-badge
+            [label]="n.schedulerStateLabel"
+            [tone]="n.schedulerTone"
+          />
+          @if (n.sublabel) {
+            <span class="muted small">{{ n.sublabel }}</span>
+          }
+        </div>
+      </div>
+      <button
+        type="button"
+        class="close-btn"
+        (click)="dismiss()"
+        aria-label="Close inspector"
+        title="Close inspector"
+      >
+        <cc-icon name="close" [size]="18" />
+      </button>
+    </div>
+
+    <!-- Hazard Warning for effect_ambiguous -->
+    @if (n.isEffectAmbiguous) {
+      <div class="hazard-box" role="alert" data-testid="effect-ambiguous-warning">
+        <cc-icon name="alert" [size]="20" />
+        <div>
+          <strong>Strict Side-Effect Boundary Alert</strong>
+          <p>{{ effectAmbiguousWarning }}</p>
+        </div>
+      </div>
+    }
+
+    <!-- Attention Reason Alert -->
+    @if (n.attentionReason && !n.isEffectAmbiguous) {
+      <div class="alert-box" role="note">
+        <cc-icon name="alert" [size]="16" />
+        <div><strong>Attention Reason:</strong> {{ n.attentionReason }}</div>
+      </div>
+    }
+
+    <!-- Metadata Grid -->
+    <div class="meta-grid">
+      @if (n.taskId) {
+        <div class="meta-item">
+          <div class="meta-label">Task Link</div>
+          <div class="meta-val">
+            <a [routerLink]="['/tasks', n.taskId]">{{ n.taskId }}</a>
+          </div>
+        </div>
+      }
+      @if (n.runId) {
+        <div class="meta-item">
+          <div class="meta-label">Run Link</div>
+          <div class="meta-val">
+            <a [routerLink]="['/runs', n.runId]">{{ n.runId }}</a>
+          </div>
+        </div>
+      }
+      @if (n.actorId) {
+        <div class="meta-item">
+          <div class="meta-label">Actor</div>
+          <div class="meta-val"><code>{{ n.actorId }}</code></div>
+        </div>
+      }
+      @if (n.roleId) {
+        <div class="meta-item">
+          <div class="meta-label">Role</div>
+          <div class="meta-val">{{ n.roleId }}</div>
+        </div>
+      }
+      @if (n.stageId) {
+        <div class="meta-item">
+          <div class="meta-label">Stage</div>
+          <div class="meta-val">{{ n.stageId }}</div>
+        </div>
+      }
+      @if (n.toolId) {
+        <div class="meta-item">
+          <div class="meta-label">Tool Route</div>
+          <div class="meta-val"><code>{{ n.toolId }}</code></div>
+        </div>
+      }
+    </div>
+
+    <!-- Dependencies & Blocking Relations -->
+    <div class="dep-section" aria-label="Node dependencies">
+      <h4>Dependency Relationships</h4>
+      <div class="dep-notice" role="note">
+        {{ dependencyNotice }}
+      </div>
+
+      <!-- Blocked by -->
+      @if (blockedByNodes().length > 0 || (n.blockedByNodeIds && n.blockedByNodeIds.length > 0)) {
+        <div class="dep-group">
+          <span class="dep-group-title">Blocked by:</span>
+          <div class="dep-chips">
+            @for (blk of blockedByNodes(); track blk.id) {
+              <button
+                type="button"
+                class="dep-btn-chip blocked-tag"
+                (click)="selectRelated(blk)"
+                [title]="'Select blocking node ' + blk.label"
+              >
+                <cc-icon name="lock" [size]="12" />
+                <span>{{ blk.label }}</span>
+              </button>
+            }
+            @if (blockedByNodes().length === 0 && n.blockedByNodeIds) {
+              @for (id of n.blockedByNodeIds; track id) {
+                <span class="dep-btn-chip blocked-tag">{{ id }}</span>
+              }
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Depends on (Upstream) -->
+      <div class="dep-group">
+        <span class="dep-group-title">Depends on (Upstream):</span>
+        <div class="dep-chips">
+          @for (up of upstreamNodes(); track up.id) {
+            <button
+              type="button"
+              class="dep-btn-chip"
+              (click)="selectRelated(up)"
+              [title]="'Select upstream dependency ' + up.label"
+            >
+              <cc-icon name="branch" [size]="12" />
+              <span>{{ up.label }}</span>
+            </button>
+          }
+          @if (upstreamNodes().length === 0) {
+            <span class="muted small">No upstream dependencies (Root node)</span>
+          }
+        </div>
+      </div>
+
+      <!-- Unblocks (Downstream) -->
+      <div class="dep-group">
+        <span class="dep-group-title">Unblocks (Downstream):</span>
+        <div class="dep-chips">
+          @for (down of downstreamNodes(); track down.id) {
+            <button
+              type="button"
+              class="dep-btn-chip"
+              (click)="selectRelated(down)"
+              [title]="'Select downstream dependent ' + down.label"
+            >
+              <cc-icon name="chevron-right" [size]="12" />
+              <span>{{ down.label }}</span>
+            </button>
+          }
+          @if (downstreamNodes().length === 0) {
+            <span class="muted small">No downstream dependents (Terminal reach)</span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Continuation Affordance (SCRUM-24 Integration) -->
+    @if (n.linkedContinuation) {
+      <div class="section-box">
+        <cc-continuation-shell [continuation]="n.linkedContinuation" />
+      </div>
+    }
+
+    <!-- Result Presentation (SCRUM-22 Integration) -->
+    @if (n.linkedResult) {
+      <div class="section-box">
+        <cc-result-shell [result]="n.linkedResult" />
+      </div>
+    }
+
+    <!-- Journal Execution Timeline (SCRUM-23 Integration) -->
+    @if (n.linkedTimeline && n.linkedTimeline.length > 0) {
+      <div class="section-box">
+        <cc-execution-timeline [entries]="n.linkedTimeline" />
+      </div>
+    }
+
+    <!-- Evidence Explorer (SCRUM-23 Integration) -->
+    @if (n.linkedEvidence && n.linkedEvidence.length > 0) {
+      <div class="section-box">
+        <cc-evidence-panel [items]="n.linkedEvidence" />
+      </div>
+    }
+  </aside>
+} @else {
+  <div class="empty-inspector" role="status">
+    <p>Select any node or island on the graph to inspect its details, dependencies, linked Result, and evidence.</p>
+  </div>
+}

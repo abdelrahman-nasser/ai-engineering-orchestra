@@ -16,6 +16,7 @@ interface NavItem {
 /** Primary navigation. Order is the order shown in the sidebar. */
 export const PRIMARY_NAV: readonly NavItem[] = [
   { label: 'Overview', path: '/', icon: 'overview', exact: true },
+  { label: 'Flow', path: '/flow', icon: 'nile', exact: false },
   { label: 'Runs', path: '/runs', icon: 'runs', exact: false },
   { label: 'Tasks', path: '/tasks', icon: 'tasks', exact: false },
   { label: 'Agents', path: '/agents', icon: 'agents', exact: false },

@@ -4,6 +4,8 @@ import { ControlCenterDataSource } from '../control-center-data-source';
 import {
   AgentSummary,
   ApprovalItem,
+  DagGraphReadModel,
+  DagScenarioInfo,
   OverviewPresentation,
   RunDetail,
   RunSummary,
@@ -17,6 +19,7 @@ import {
   MOCK_TASK_DETAILS,
   buildRunDetail,
 } from './mock-data';
+import { MOCK_DAG_SCENARIOS, getMockDagGraph } from './mock-dag-data';
 
 /** Simulated latency (ms) so loading states are exercised. Tests set this to 0. */
 export const MOCK_LATENCY_MS = new InjectionToken<number>('MOCK_LATENCY_MS', {
@@ -97,5 +100,13 @@ export class MockControlCenterDataSource extends ControlCenterDataSource {
 
   listApprovals(): Observable<readonly ApprovalItem[]> {
     return this.respond(MOCK_APPROVALS);
+  }
+
+  listDagScenarios(): Observable<readonly DagScenarioInfo[]> {
+    return this.respond(MOCK_DAG_SCENARIOS);
+  }
+
+  getDagGraph(scenarioId?: string): Observable<DagGraphReadModel | undefined> {
+    return this.respond(getMockDagGraph(scenarioId));
   }
 }

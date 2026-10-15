@@ -1,0 +1,51 @@
+<section class="scheduler-panel" aria-label="Operator Scheduler Panel">
+  <div class="notice-banner" role="note" data-testid="scheduler-disclaimer">
+    <cc-icon name="info" [size]="15" />
+    <span><strong>Notice:</strong> {{ disclaimerNotice }}</span>
+  </div>
+
+  <div class="scheduler-header">
+    <div class="scheduler-title-group">
+      <h2>Scheduler Overview</h2>
+      <p>Presentation states observed across graph nodes. Click a filter to isolate nodes.</p>
+    </div>
+
+    <div class="stat-pills" role="toolbar" aria-label="Scheduler filters">
+      @for (pill of pills(); track pill.id) {
+        <button
+          type="button"
+          class="stat-pill"
+          [class.active]="activeStateFilter() === pill.id"
+          [attr.data-tone]="pill.tone"
+          [attr.aria-pressed]="activeStateFilter() === pill.id"
+          (click)="setFilter(pill.id)"
+        >
+          <span>{{ pill.label }}</span>
+          <span class="count">{{ pill.count }}</span>
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (activeOrAttentionNodes().length > 0) {
+    <div class="active-queue-strip" aria-label="Active and attention execution items">
+      <div class="queue-label">Immediate Operator Focus ({{ activeOrAttentionNodes().length }})</div>
+      <div class="queue-items" role="list">
+        @for (node of activeOrAttentionNodes(); track node.id) {
+          <button
+            type="button"
+            class="queue-chip"
+            [class.selected]="node.id === selectedNodeId()"
+            [attr.data-tone]="node.schedulerTone"
+            [attr.title]="node.label + ': ' + node.schedulerStateLabel + (node.attentionReason ? ' - ' + node.attentionReason : '')"
+            (click)="selectNode(node)"
+          >
+            <span class="dot" aria-hidden="true"></span>
+            <strong>{{ node.label }}</strong>
+            <span class="chip-state muted">({{ node.schedulerStateLabel }})</span>
+          </button>
+        }
+      </div>
+    </div>
+  }
+</section>

@@ -1,0 +1,153 @@
+<section class="page flow-page" aria-labelledby="flow-title">
+  <cc-page-header
+    title="Nile Flow & Scheduler"
+    lede="Visual dependency graph and scheduler-looking execution flow driven by presentation read-models."
+  />
+
+  <!-- Scenario Selector & Metadata Bar -->
+  <div class="scenario-bar">
+    <div class="scenario-select-group">
+      <label for="scenario-dropdown">Scenario:</label>
+      <select
+        id="scenario-dropdown"
+        class="scenario-select"
+        [ngModel]="selectedScenarioId()"
+        (ngModelChange)="changeScenario($event)"
+      >
+        @for (scenario of scenarios(); track scenario.id) {
+          <option [value]="scenario.id">
+            {{ scenario.name }} ({{ scenario.nodeCount }} nodes)
+          </option>
+        }
+      </select>
+    </div>
+
+    @if (graph(); as g) {
+      <div class="scenario-meta">
+        <span class="muted">{{ g.description }}</span>
+        <span class="dot-separator">·</span>
+        <span class="pill-origin">{{ g.updatedLabel }}</span>
+      </div>
+    }
+  </div>
+
+  <!-- Stale Snapshot Banner -->
+  @if (graph()?.isStale) {
+    <div class="stale-banner" role="alert" data-testid="stale-banner">
+      <cc-icon name="alert" [size]="16" />
+      <div>
+        <strong>Stale Presentation Snapshot:</strong> The current data source indicates this graph was last observed {{ graph()?.updatedLabel }}.
+      </div>
+    </div>
+  }
+
+  @switch (state().status) {
+    @case ('loading') {
+      <cc-state-panel kind="loading" />
+    }
+    @case ('error') {
+      <cc-state-panel
+        kind="error"
+        title="Could not load execution graph"
+        description="The selected presentation scenario could not be retrieved from the data source."
+      />
+    }
+    @default {
+      @if (graph(); as g) {
+        <!-- Scheduler Presentation Panel -->
+        <cc-scheduler-panel
+          [summary]="g.schedulerSummary"
+          [nodes]="g.nodes"
+          [selectedNodeId]="selectedNodeId()"
+          [activeStateFilter]="activeStateFilter()"
+          (filterChange)="onStateFilterChange($event)"
+          (nodeSelect)="onNodeSelect($event)"
+        />
+
+        <!-- Filtering & Search Toolbar -->
+        <div class="filters-bar" role="toolbar" aria-label="Graph filtering options">
+          <div class="search-box">
+            <cc-icon name="search" [size]="15" />
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Search nodes, roles, tools, actors…"
+              [ngModel]="searchQuery()"
+              (ngModelChange)="searchQuery.set($event)"
+              aria-label="Filter nodes by text search"
+            />
+          </div>
+
+          <div class="filter-dropdowns">
+            <select
+              class="filter-select"
+              [ngModel]="featureFilter()"
+              (ngModelChange)="featureFilter.set($event)"
+              aria-label="Filter by artifacts"
+            >
+              <option value="all">All Artifacts</option>
+              <option value="has-result">Has Result</option>
+              <option value="has-evidence">Has Evidence</option>
+              <option value="has-continuation">Has Continuation</option>
+            </select>
+
+            @if (availableActors().length > 0) {
+              <select
+                class="filter-select"
+                [ngModel]="actorFilter()"
+                (ngModelChange)="actorFilter.set($event)"
+                aria-label="Filter by actor"
+              >
+                <option value="all">All Actors</option>
+                @for (actor of availableActors(); track actor) {
+                  <option [value]="actor">{{ actor }}</option>
+                }
+              </select>
+            }
+
+            @if (searchQuery() || activeStateFilter() !== 'all' || featureFilter() !== 'all' || actorFilter() !== 'all') {
+              <button
+                type="button"
+                class="btn btn-ghost btn-sm"
+                (click)="resetFilters()"
+              >
+                Reset filters
+              </button>
+            }
+          </div>
+        </div>
+
+        @if (filteredGraph(); as fg) {
+          @if (fg.nodes.length === 0) {
+            <cc-state-panel
+              kind="empty"
+              title="No nodes match your filter criteria"
+              description="Adjust search query or filter selections above to reveal nodes."
+            />
+          } @else {
+            <div class="flow-content-grid">
+              <div class="main-column">
+                <cc-dag-flow
+                  [graph]="fg"
+                  [selectedNodeId]="selectedNodeId()"
+                  [viewMode]="viewMode()"
+                  (nodeSelect)="onNodeSelect($event)"
+                  (viewModeChange)="viewMode.set($event)"
+                />
+              </div>
+
+              <div class="aside-column">
+                <cc-dag-node-inspector
+                  [node]="selectedNode()"
+                  [graph]="g"
+                  (close)="closeInspector()"
+                  (nodeSelect)="onNodeSelect($event)"
+                />
+              </div>
+            </div>
+          }
+        }
+      }
+    }
+  }
+</section>

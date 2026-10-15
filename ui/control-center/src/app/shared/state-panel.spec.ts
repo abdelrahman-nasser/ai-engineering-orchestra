@@ -9,6 +9,7 @@ import { StatePanel, StatePanelKind } from './state-panel';
       [kind]="kind()"
       [title]="customTitle()"
       [message]="customMessage()"
+      [description]="customDescription()"
       [compact]="compact()"
     >
       <button type="button" class="btn">Retry Action</button>
@@ -19,6 +20,7 @@ class TestHost {
   readonly kind = signal<StatePanelKind>('empty');
   readonly customTitle = signal<string | undefined>(undefined);
   readonly customMessage = signal<string | undefined>(undefined);
+  readonly customDescription = signal<string | undefined>(undefined);
   readonly compact = signal<boolean>(false);
 }
 
@@ -96,6 +98,14 @@ describe('StatePanel', () => {
     expect(el.querySelector('h2')?.textContent).toContain('Custom empty headline');
     expect(el.querySelector('p')?.textContent).toContain('Detailed explanation of why this is empty.');
     expect(el.querySelector('button.btn')?.textContent).toContain('Retry Action');
+  });
+
+  it('supports description input as alias when message is not supplied', async () => {
+    const { fixture, host, el } = await createHost();
+    host.kind.set('empty');
+    host.customDescription.set('Description text used as fallback.');
+    await fixture.whenStable();
+    expect(el.querySelector('p')?.textContent).toContain('Description text used as fallback.');
   });
 
   it('supports compact mode for dense embedded presentation', async () => {

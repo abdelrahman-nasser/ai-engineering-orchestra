@@ -2,7 +2,9 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
+  input,
   signal,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -23,7 +25,6 @@ import { toLoadStateFor } from '../../shared/load-state';
 import { PageHeader } from '../../shared/page-header';
 import { StatePanel } from '../../shared/state-panel';
 
-
 @Component({
   selector: 'cc-flow',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -40,6 +41,11 @@ import { StatePanel } from '../../shared/state-panel';
   styleUrl: './flow.css',
 })
 export class Flow {
+  /** Bound from query params (e.g. `/flow?scenario=blocked-branch`). */
+  readonly scenario = input<string>();
+  /** Bound from query params (e.g. `/flow?node=fo-sub-api`). */
+  readonly node = input<string>();
+
   private readonly dataSource = inject(ControlCenterDataSource);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -55,6 +61,21 @@ export class Flow {
   protected readonly actorFilter = signal<string>('all');
   protected readonly viewMode = signal<'river' | 'list'>('river');
   protected readonly selectedNodeId = signal<string | undefined>(undefined);
+
+  constructor() {
+    effect(() => {
+      const s = this.scenario();
+      if (s && s !== this.selectedScenarioId()) {
+        this.selectedScenarioId.set(s);
+      }
+    });
+    effect(() => {
+      const n = this.node();
+      if (n && n !== this.selectedNodeId()) {
+        this.selectedNodeId.set(n);
+      }
+    });
+  }
 
   protected readonly state = toLoadStateFor(this.selectedScenarioId, (scenarioId) =>
     this.dataSource.getDagGraph(scenarioId).pipe(map((readModel) => adaptDagGraphReadModel(readModel))),
@@ -155,6 +176,11 @@ export class Flow {
   protected changeScenario(scenarioId: string): void {
     this.selectedScenarioId.set(scenarioId);
     this.selectedNodeId.set(undefined);
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { scenario: scenarioId, node: null },
+      queryParamsHandling: 'merge',
+    });
   }
 
   protected onStateFilterChange(filterId: string): void {
@@ -163,10 +189,20 @@ export class Flow {
 
   protected onNodeSelect(node: DagNodePresentation): void {
     this.selectedNodeId.set(node.id);
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { node: node.id },
+      queryParamsHandling: 'merge',
+    });
   }
 
   protected closeInspector(): void {
     this.selectedNodeId.set(undefined);
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { node: null },
+      queryParamsHandling: 'merge',
+    });
   }
 
   protected resetFilters(): void {

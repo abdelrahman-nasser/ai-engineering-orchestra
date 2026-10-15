@@ -209,20 +209,21 @@
       <table class="list-table">
         <thead>
           <tr>
-            <th>Node</th>
-            <th>Kind</th>
-            <th>Scheduler State</th>
-            <th>Actor / Role</th>
-            <th>Upstream (Depends on)</th>
-            <th>Blocked by</th>
-            <th>Downstream (Unblocks)</th>
-            <th>Artifacts</th>
+            <th scope="col">Node</th>
+            <th scope="col">Kind</th>
+            <th scope="col">Scheduler State</th>
+            <th scope="col">Actor / Role</th>
+            <th scope="col">Upstream (Depends on)</th>
+            <th scope="col">Blocked by</th>
+            <th scope="col">Downstream (Unblocks)</th>
+            <th scope="col">Artifacts</th>
           </tr>
         </thead>
         <tbody>
           @for (node of graph()?.nodes ?? []; track node.id) {
             <tr
               [class.selected]="node.id === selectedNodeId()"
+              [attr.aria-selected]="node.id === selectedNodeId()"
               (click)="chooseNode(node)"
             >
               <td>

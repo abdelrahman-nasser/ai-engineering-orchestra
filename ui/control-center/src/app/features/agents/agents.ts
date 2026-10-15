@@ -132,7 +132,7 @@ type KindFilter = 'all' | ActorKind;
       border-radius: 14px;
     }
     .avatar[data-kind='human'] {
-      background: linear-gradient(135deg, var(--gold), #d9824a);
+      background: linear-gradient(135deg, var(--gold), color-mix(in srgb, var(--gold) 65%, var(--warning)));
       border-radius: 50%;
     }
     .assignments {

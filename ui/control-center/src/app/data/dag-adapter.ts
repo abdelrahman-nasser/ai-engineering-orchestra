@@ -62,7 +62,8 @@ export const EFFECT_AMBIGUOUS_DAG_WARNING =
 
 /** Pure adapter transforming a single DAG node read-model into a presentation model. */
 export function adaptDagNodeReadModel(node: DagNodeReadModel): DagNodePresentation {
-  const isEffectAmbiguous = node.resultOutcome === 'effect_ambiguous';
+  const outcome = node.resultOutcome ?? node.linkedResult?.outcome;
+  const isEffectAmbiguous = outcome === 'effect_ambiguous';
   const config = SCHEDULER_STATE_CONFIG[node.schedulerState] ?? {
     label: node.schedulerState,
     tone: 'muted',
@@ -77,7 +78,7 @@ export function adaptDagNodeReadModel(node: DagNodeReadModel): DagNodePresentati
     ? adaptEvidenceReadModels(node.linkedEvidence)
     : undefined;
   const linkedContinuation = node.linkedContinuation
-    ? adaptContinuationReadModel(node.linkedContinuation, node.resultOutcome)
+    ? adaptContinuationReadModel(node.linkedContinuation, outcome)
     : undefined;
 
   // effect_ambiguous always visually overrides tone to danger and presentation state to needs-attention

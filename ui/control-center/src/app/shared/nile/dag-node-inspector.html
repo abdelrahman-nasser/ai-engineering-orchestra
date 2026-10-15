@@ -166,7 +166,11 @@
     <!-- Continuation Affordance (SCRUM-24 Integration) -->
     @if (n.linkedContinuation) {
       <div class="section-box">
-        <cc-continuation-shell [continuation]="n.linkedContinuation" />
+        <cc-continuation-shell
+          [continuation]="n.linkedContinuation"
+          [runId]="n.runId"
+          [resultOutcome]="n.resultOutcome"
+        />
       </div>
     }
 

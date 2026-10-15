@@ -46,6 +46,7 @@ import { AVAILABILITY, PRESENTATION_STATE, TASK_STATUS } from '../../shared/pres
                     <h2>Workspace river</h2>
                     <p>Active Tasks and their Runs, drawn as tributaries. Select an island to open it.</p>
                   </div>
+                  <a routerLink="/flow" class="btn btn-ghost">Open Flow &amp; Scheduler &rarr;</a>
                 </div>
                 <cc-nile-flow
                   [topology]="v.topology"

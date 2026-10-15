@@ -168,8 +168,8 @@ const DEFAULT_TITLES: Readonly<Record<StatePanelKind, string>> = {
             <cc-icon [name]="resolvedIcon()" [size]="compact() ? 20 : 26" />
           </div>
           <h2>{{ resolvedTitle() }}</h2>
-          @if (message()) {
-            <p>{{ message() }}</p>
+          @if (resolvedMessage(); as msg) {
+            <p>{{ msg }}</p>
           }
           <div class="panel-actions">
             <ng-content />
@@ -183,9 +183,11 @@ export class StatePanel {
   readonly kind = input<StatePanelKind>('empty');
   readonly title = input<string>();
   readonly message = input<string>();
+  readonly description = input<string>();
   readonly icon = input<IconName>();
   readonly compact = input<boolean>(false);
 
   protected readonly resolvedTitle = computed(() => this.title() ?? DEFAULT_TITLES[this.kind()]);
   protected readonly resolvedIcon = computed(() => this.icon() ?? KIND_ICON[this.kind()]);
+  protected readonly resolvedMessage = computed(() => this.message() ?? this.description());
 }

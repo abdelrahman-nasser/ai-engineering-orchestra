@@ -38,6 +38,7 @@
               ariaCurrentWhenActive="page"
               [routerLinkActiveOptions]="{ exact: item.exact }"
               [attr.title]="item.label"
+              [attr.aria-label]="item.label"
               (click)="closeNav()"
             >
               <cc-icon [name]="item.icon" [size]="19" />

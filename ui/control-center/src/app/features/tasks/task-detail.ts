@@ -1,22 +1,37 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { of } from 'rxjs';
 import { ControlCenterDataSource } from '../../data/control-center-data-source';
+import { ContinuationShell } from '../../shared/continuation-shell';
+import { EvidencePanel } from '../../shared/evidence-panel';
+import { ExecutionTimeline } from '../../shared/execution-timeline';
 import { toLoadState, toLoadStateFor } from '../../shared/load-state';
 import { PageHeader } from '../../shared/page-header';
 import {
   APPROVAL_LEVEL,
+  CONTINUATION_STATUS,
   LEVEL,
   PRESENTATION_STATE,
   TASK_STATUS,
   humanize,
 } from '../../shared/presentation';
+import { ResultShell } from '../../shared/result-shell';
 import { StatePanel } from '../../shared/state-panel';
 import { StatusBadge } from '../../shared/status-badge';
 
 @Component({
   selector: 'cc-task-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, PageHeader, StatePanel, StatusBadge],
+  imports: [
+    RouterLink,
+    PageHeader,
+    StatePanel,
+    StatusBadge,
+    ContinuationShell,
+    ResultShell,
+    ExecutionTimeline,
+    EvidencePanel,
+  ],
   styleUrl: './task-detail.css',
   template: `
     <section class="page">
@@ -77,39 +92,151 @@ import { StatusBadge } from '../../shared/status-badge';
                   </ol>
                 </div>
 
-                <div class="card card-flush">
+                <div class="card">
                   <div class="card-head">
                     <div>
-                      <h2>Runs</h2>
-                      <p>Runs the data source associates with this Task.</p>
+                      <h2>Task Run History</h2>
+                      <p>Associated runs for this Task. Select a run to inspect its continuation, result, timeline, and evidence.</p>
                     </div>
                   </div>
                   @if (runs().length === 0) {
                     <cc-state-panel kind="empty" title="No runs yet" message="Nothing has been run for this Task." />
                   } @else {
-                    <div class="table-wrap">
-                      <table class="table" aria-label="Runs for this task">
-                        <thead>
-                          <tr>
-                            <th scope="col">Run</th><th scope="col">Stage</th><th scope="col">Role</th>
-                            <th scope="col">Actor</th><th scope="col">Visual state</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          @for (run of runs(); track run.runId) {
-                            <tr>
-                              <td><a class="row-link mono" [routerLink]="['/runs', run.runId]">{{ run.runId }}</a></td>
-                              <td>{{ run.contract.stageId }}</td>
-                              <td>{{ run.contract.roleId }}</td>
-                              <td class="mono">{{ run.contract.actorId }}</td>
-                              <td><cc-status-badge [label]="presentation[run.presentationState].label" [tone]="presentation[run.presentationState].tone" /></td>
-                            </tr>
+                    <div class="run-tree-wrapper">
+                      <div class="run-tree" role="tree" [attr.aria-label]="'Runs for task ' + t.id">
+                        <div class="tree-root">
+                          <span class="mono tree-root-id">{{ t.id }}</span>
+                          <span class="badge-count">{{ runs().length }} run{{ runs().length === 1 ? '' : 's' }}</span>
+                        </div>
+                        <div class="tree-children" role="group">
+                          @for (run of runs(); track run.runId; let last = $last) {
+                            <div
+                              class="tree-item"
+                              role="treeitem"
+                              [class.active]="activeRunId() === run.runId"
+                              [attr.aria-selected]="activeRunId() === run.runId"
+                              [attr.data-testid]="'run-tree-item-' + run.runId"
+                              tabindex="0"
+                              (click)="selectRun(run.runId)"
+                              (keydown.enter)="selectRun(run.runId)"
+                              (keydown.space)="selectRun(run.runId); $event.preventDefault()"
+                            >
+                              <div class="tree-branch-glyph" aria-hidden="true">{{ last ? '└─' : '├─' }}</div>
+                              <div class="tree-node-main">
+                                <div class="tree-node-header">
+                                  <span class="mono run-id-label">{{ run.runId }}</span>
+                                  <cc-status-badge
+                                    [label]="presentation[run.presentationState].label"
+                                    [tone]="presentation[run.presentationState].tone"
+                                  />
+                                  @if (run.continuation) {
+                                    <cc-status-badge
+                                      [label]="continuationStatus[run.continuation.status].label"
+                                      [tone]="continuationStatus[run.continuation.status].tone"
+                                    />
+                                  }
+                                  @if (run.hasResult) {
+                                    <span
+                                      class="chip-sm"
+                                      [class.info]="run.resultOutcome === 'succeeded'"
+                                      [class.danger]="run.resultOutcome === 'failed_before_effect'"
+                                    >
+                                      Result: {{ run.resultOutcome || 'published' }}
+                                    </span>
+                                  }
+                                  @if (run.evidenceCount && run.evidenceCount > 0) {
+                                    <span class="chip-sm faint">{{ run.evidenceCount }} evidence</span>
+                                  }
+                                </div>
+                                <div class="tree-node-meta muted text-xs">
+                                  <span>Stage: <strong>{{ run.contract.stageId }}</strong></span>
+                                  <span>Role: <strong>{{ run.contract.roleId }}</strong></span>
+                                  <span>Actor: <code class="mono">{{ run.contract.actorId }}</code></span>
+                                  @if (run.lastActivityLabel) {
+                                    <span>Activity: {{ run.lastActivityLabel }}</span>
+                                  }
+                                </div>
+                              </div>
+                              <div class="tree-node-actions">
+                                <a
+                                  class="btn-subtle"
+                                  [routerLink]="['/runs', run.runId]"
+                                  (click)="$event.stopPropagation()"
+                                  [attr.aria-label]="'Open dedicated Run Detail page for ' + run.runId"
+                                >
+                                  Detail &rarr;
+                                </a>
+                              </div>
+                            </div>
                           }
-                        </tbody>
-                      </table>
+                        </div>
+                      </div>
                     </div>
                   }
                 </div>
+
+                @if (selectedRun(); as sel) {
+                  <div class="card run-inspector" [attr.aria-label]="'Inspection for run ' + sel.runId" data-testid="run-inspection-card">
+                    <div class="card-head">
+                      <div>
+                        <div class="inspector-badge-row">
+                          <span class="inspector-tag">Selected Run</span>
+                          <h2 class="mono">{{ sel.runId }}</h2>
+                        </div>
+                        <p>
+                          Viewing Run in context of Task {{ t.id }}.
+                          <a class="row-link" [routerLink]="['/runs', sel.runId]">Open full Run Detail page &rarr;</a>
+                        </p>
+                      </div>
+                      <cc-status-badge
+                        [label]="presentation[sel.presentationState].label"
+                        [tone]="presentation[sel.presentationState].tone"
+                      />
+                    </div>
+
+                    <div class="inspector-sections">
+                      <section class="inspector-block" aria-labelledby="heading-continuation">
+                        <div class="block-header">
+                          <h3 id="heading-continuation">Continuation &amp; Recovery</h3>
+                          <p class="muted text-xs">Presentation of source-supplied continuation affordances. Core defines no resume semantics yet.</p>
+                        </div>
+                        <cc-continuation-shell
+                          [continuation]="sel.continuation"
+                          [runId]="sel.runId"
+                          [resultOutcome]="sel.result?.outcome"
+                        />
+                      </section>
+
+                      @if (sel.result) {
+                        <section class="inspector-block" aria-labelledby="heading-result">
+                          <div class="block-header">
+                            <h3 id="heading-result">Execution Result</h3>
+                          </div>
+                          <cc-result-shell [result]="sel.result" />
+                        </section>
+                      }
+
+                      @if (sel.timeline && sel.timeline.length > 0) {
+                        <section class="inspector-block" aria-labelledby="heading-timeline">
+                          <div class="block-header">
+                            <h3 id="heading-timeline">Execution Timeline</h3>
+                            <p class="muted text-xs">Presentation entries only. Core defines no Journal yet.</p>
+                          </div>
+                          <cc-execution-timeline [entries]="sel.timeline" />
+                        </section>
+                      }
+
+                      @if (sel.evidence && sel.evidence.length > 0) {
+                        <section class="inspector-block" aria-labelledby="heading-evidence">
+                          <div class="block-header">
+                            <h3 id="heading-evidence">Evidence Explorer</h3>
+                          </div>
+                          <cc-evidence-panel [items]="sel.evidence" />
+                        </section>
+                      }
+                    </div>
+                  </div>
+                }
               </div>
 
               <div class="stack column">
@@ -179,10 +306,13 @@ export class TaskDetailPage {
   protected readonly level = LEVEL;
   protected readonly approval = APPROVAL_LEVEL;
   protected readonly presentation = PRESENTATION_STATE;
+  protected readonly continuationStatus = CONTINUATION_STATUS;
   protected readonly humanize = humanize;
 
   protected readonly state = toLoadStateFor(this.taskId, (id) => this.dataSource.getTask(id));
   private readonly runState = toLoadState(this.dataSource.listRuns());
+
+  readonly selectedRunId = signal<string | null>(null);
 
   protected readonly task = computed(() => {
     const state = this.state();
@@ -197,4 +327,26 @@ export class TaskDetailPage {
     }
     return state.data.filter((run) => run.contract.taskId === task.id);
   });
+
+  protected readonly activeRunId = computed(() => {
+    const current = this.selectedRunId();
+    if (current) {
+      return current;
+    }
+    const list = this.runs();
+    return list.length > 0 ? list[list.length - 1].runId : '';
+  });
+
+  protected readonly selectedRunState = toLoadStateFor(this.activeRunId, (id) =>
+    id ? this.dataSource.getRun(id) : of(undefined),
+  );
+
+  protected readonly selectedRun = computed(() => {
+    const s = this.selectedRunState();
+    return s.status === 'ready' ? s.data : undefined;
+  });
+
+  selectRun(runId: string): void {
+    this.selectedRunId.set(runId);
+  }
 }

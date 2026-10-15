@@ -1,14 +1,32 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ControlCenterDataSource } from '../../data/control-center-data-source';
-import { PresentationState } from '../../data/models';
+import { AgentExecutionResultOutcome, PresentationState, Tone } from '../../data/models';
 import { toLoadState } from '../../shared/load-state';
 import { PageHeader } from '../../shared/page-header';
 import { PRESENTATION_STATE } from '../../shared/presentation';
 import { StatePanel } from '../../shared/state-panel';
 import { StatusBadge } from '../../shared/status-badge';
 
-type RunFilter = 'all' | PresentationState;
+type RunFilter =
+  | 'all'
+  | 'in-progress'
+  | 'needs-attention'
+  | 'finished'
+  | 'has-result'
+  | 'has-evidence'
+  | 'continuation-available';
+
+function formatResult(outcome: AgentExecutionResultOutcome): { label: string; tone: Tone } {
+  switch (outcome) {
+    case 'succeeded':
+      return { label: 'Succeeded', tone: 'success' };
+    case 'failed_before_effect':
+      return { label: 'Failed before effect', tone: 'neutral' };
+    case 'effect_ambiguous':
+      return { label: 'Effect ambiguous', tone: 'warning' };
+  }
+}
 
 @Component({
   selector: 'cc-runs',
@@ -19,7 +37,7 @@ type RunFilter = 'all' | PresentationState;
     <section class="page">
       <cc-page-header
         title="Runs"
-        lede="Each Run is one assigned action: one Stage, one Role, one Actor. The visual state shown here is a UI-local presentation, not a Core status."
+        lede="Historical and active runs across the workspace. Each Run represents one assigned action. Visual states, last activity, and continuation affordances are supplied by the current data source."
       />
 
       @switch (state().status) {
@@ -30,7 +48,7 @@ type RunFilter = 'all' | PresentationState;
           <cc-state-panel kind="error" title="Could not load Runs" />
         }
         @default {
-          <div class="filters" role="group" aria-label="Filter runs by visual state">
+          <div class="filters" role="group" aria-label="Filter runs by status or affordance">
             @for (option of filters; track option.value) {
               <button
                 type="button"
@@ -54,12 +72,13 @@ type RunFilter = 'all' | PresentationState;
                     <tr>
                       <th scope="col">Run</th>
                       <th scope="col">Task</th>
-                      <th scope="col">Stage</th>
-                      <th scope="col">Role</th>
-                      <th scope="col">Actor</th>
-                      <th scope="col">Mode</th>
+                      <th scope="col">Stage &amp; Workflow</th>
+                      <th scope="col">Role &amp; Actor</th>
                       <th scope="col">Visual state</th>
-                      <th scope="col">Started</th>
+                      <th scope="col">Result</th>
+                      <th scope="col">Evidence</th>
+                      <th scope="col">Continuation</th>
+                      <th scope="col">Last activity</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -67,12 +86,44 @@ type RunFilter = 'all' | PresentationState;
                       <tr>
                         <td><a class="row-link mono" [routerLink]="['/runs', run.runId]">{{ run.runId }}</a></td>
                         <td><a [routerLink]="['/tasks', run.contract.taskId]">{{ run.contract.taskId }}</a></td>
-                        <td>{{ run.contract.stageId }}</td>
-                        <td>{{ run.contract.roleId }}</td>
-                        <td class="mono">{{ run.contract.actorId }}</td>
-                        <td><span class="chip">{{ run.contract.executionMode }}</span></td>
-                        <td><cc-status-badge [label]="states[run.presentationState].label" [tone]="states[run.presentationState].tone" /></td>
-                        <td class="muted nowrap">{{ run.startedLabel }}</td>
+                        <td>
+                          <div>{{ run.contract.stageId }}</div>
+                          <div class="muted text-xs">{{ run.contract.workflowId }}</div>
+                        </td>
+                        <td>
+                          <div>{{ run.contract.roleId }}</div>
+                          <div class="mono muted text-xs">{{ run.contract.actorId }}</div>
+                        </td>
+                        <td>
+                          <cc-status-badge [label]="states[run.presentationState].label" [tone]="states[run.presentationState].tone" />
+                          @if (run.statusLabel && run.statusLabel !== states[run.presentationState].label) {
+                            <div class="text-xs muted">{{ run.statusLabel }}</div>
+                          }
+                        </td>
+                        <td>
+                          @if (run.resultOutcome) {
+                            <cc-status-badge [label]="formatResult(run.resultOutcome).label" [tone]="formatResult(run.resultOutcome).tone" />
+                          } @else if (run.hasResult) {
+                            <cc-status-badge label="Published" tone="info" />
+                          } @else {
+                            <span class="muted text-xs">—</span>
+                          }
+                        </td>
+                        <td>
+                          @if (run.evidenceCount) {
+                            <span class="chip">{{ run.evidenceCount }} item{{ run.evidenceCount === 1 ? '' : 's' }}</span>
+                          } @else {
+                            <span class="muted text-xs">—</span>
+                          }
+                        </td>
+                        <td>
+                          @if (run.continuation) {
+                            <cc-status-badge [label]="run.continuation.statusLabel" [tone]="run.continuation.statusTone" />
+                          } @else {
+                            <span class="muted text-xs">—</span>
+                          }
+                        </td>
+                        <td class="muted nowrap text-xs">{{ run.lastActivityLabel || run.startedLabel }}</td>
                       </tr>
                     }
                   </tbody>
@@ -91,12 +142,16 @@ export class Runs {
   protected readonly states = PRESENTATION_STATE;
   protected readonly state = toLoadState(this.dataSource.listRuns());
   protected readonly filter = signal<RunFilter>('all');
+  protected readonly formatResult = formatResult;
 
   protected readonly filters: readonly { value: RunFilter; label: string }[] = [
     { value: 'all', label: 'All' },
     { value: 'in-progress', label: 'In progress' },
     { value: 'needs-attention', label: 'Needs attention' },
     { value: 'finished', label: 'Finished' },
+    { value: 'has-result', label: 'Has Result' },
+    { value: 'has-evidence', label: 'Has evidence' },
+    { value: 'continuation-available', label: 'Continuation available' },
   ];
 
   private readonly runs = computed(() => {
@@ -106,15 +161,35 @@ export class Runs {
 
   protected readonly rows = computed(() => {
     const filter = this.filter();
-    return filter === 'all' ? this.runs() : this.runs().filter((run) => run.presentationState === filter);
+    const all = this.runs();
+    switch (filter) {
+      case 'all':
+        return all;
+      case 'in-progress':
+        return all.filter((r) => r.presentationState === 'in-progress');
+      case 'needs-attention':
+        return all.filter((r) => r.presentationState === 'needs-attention');
+      case 'finished':
+        return all.filter((r) => r.presentationState === 'finished');
+      case 'has-result':
+        return all.filter((r) => r.hasResult || r.resultOutcome !== undefined);
+      case 'has-evidence':
+        return all.filter((r) => Boolean(r.evidenceCount && r.evidenceCount > 0));
+      case 'continuation-available':
+        return all.filter((r) => Boolean(r.continuation?.isAvailable && r.resultOutcome !== 'effect_ambiguous'));
+    }
   });
 
   protected readonly counts = computed(() => {
     const runs = this.runs();
-    const tally: Record<string, number> = { all: runs.length };
-    for (const option of this.filters.slice(1)) {
-      tally[option.value] = runs.filter((run) => run.presentationState === option.value).length;
-    }
-    return tally;
+    return {
+      all: runs.length,
+      'in-progress': runs.filter((r) => r.presentationState === 'in-progress').length,
+      'needs-attention': runs.filter((r) => r.presentationState === 'needs-attention').length,
+      finished: runs.filter((r) => r.presentationState === 'finished').length,
+      'has-result': runs.filter((r) => r.hasResult || r.resultOutcome !== undefined).length,
+      'has-evidence': runs.filter((r) => Boolean(r.evidenceCount && r.evidenceCount > 0)).length,
+      'continuation-available': runs.filter((r) => Boolean(r.continuation?.isAvailable && r.resultOutcome !== 'effect_ambiguous')).length,
+    };
   });
 }

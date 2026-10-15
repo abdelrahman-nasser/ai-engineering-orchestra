@@ -2,6 +2,7 @@ import {
   ApprovalLevel,
   ApprovalPresentationState,
   AvailabilityState,
+  ContinuationStatus,
   EvidenceOutcome,
   Level,
   PresentationState,
@@ -14,6 +15,16 @@ export interface Descriptor {
   readonly label: string;
   readonly tone: Tone;
 }
+
+export const CONTINUATION_STATUS: Readonly<Record<ContinuationStatus, Descriptor>> = {
+  available: { label: 'Continuation available', tone: 'success' },
+  unavailable: { label: 'Not resumable', tone: 'muted' },
+  blocked: { label: 'Continuation blocked', tone: 'warning' },
+  interrupted: { label: 'Interrupted', tone: 'danger' },
+  completed: { label: 'Completed run', tone: 'neutral' },
+  missing: { label: 'No continuation info', tone: 'muted' },
+  stale: { label: 'Stale observation', tone: 'warning' },
+};
 
 export const TASK_STATUS: Readonly<Record<TaskStatus, Descriptor>> = {
   planned: { label: 'Planned', tone: 'neutral' },

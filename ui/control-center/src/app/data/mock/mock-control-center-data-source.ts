@@ -25,6 +25,12 @@ export const MOCK_LATENCY_MS = new InjectionToken<number>('MOCK_LATENCY_MS', {
 });
 
 function toTaskSummary(task: TaskDetail): TaskSummary {
+  const runs = MOCK_RUNS.filter((run) => run.contract.taskId === task.id);
+  const latestRun = runs[runs.length - 1];
+  const hasResult = runs.some((r) => r.hasResult);
+  const continuationAvailable = Boolean(
+    latestRun?.continuation?.isAvailable && latestRun?.resultOutcome !== 'effect_ambiguous',
+  );
   return {
     id: task.id,
     title: task.title,
@@ -36,6 +42,12 @@ function toTaskSummary(task: TaskDetail): TaskSummary {
     workflowId: task.workflowId,
     approvalLevel: task.approvalLevel,
     updatedLabel: task.updatedLabel,
+    runCount: runs.length,
+    latestRunId: latestRun?.runId,
+    latestRunState: latestRun?.presentationState,
+    hasResult,
+    continuationAvailable,
+    lastActivityLabel: latestRun?.lastActivityLabel ?? task.updatedLabel,
   };
 }
 

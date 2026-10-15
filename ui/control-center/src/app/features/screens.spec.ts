@@ -38,14 +38,18 @@ describe('Screens (mock rendering)', () => {
     expect(TestBed.inject(Router).url).toMatch(/^\/runs\/run_/);
   });
 
-  it('Runs lists every run and filters by visual state', async () => {
+  it('Runs lists every run and filters by visual state and continuation affordances', async () => {
     const el = await open('/runs');
-    expect(el.querySelectorAll('table[aria-label="Runs"] tbody tr')).toHaveLength(13);
+    expect(el.querySelectorAll('table[aria-label="Runs"] tbody tr')).toHaveLength(19);
 
     el.querySelector<HTMLButtonElement>('[data-testid="run-filter-needs-attention"]')!.click();
     await settle();
-    expect(el.querySelectorAll('table[aria-label="Runs"] tbody tr')).toHaveLength(3);
+    expect(el.querySelectorAll('table[aria-label="Runs"] tbody tr')).toHaveLength(4);
     expect(el.querySelector('[data-testid="run-filter-needs-attention"]')?.getAttribute('aria-pressed')).toBe('true');
+
+    el.querySelector<HTMLButtonElement>('[data-testid="run-filter-continuation-available"]')!.click();
+    await settle();
+    expect(el.querySelectorAll('table[aria-label="Runs"] tbody tr').length).toBeGreaterThan(0);
   });
 
   it('Run detail composes river, timeline, result shell with canonical Result semantics, identity and evidence', async () => {
@@ -137,28 +141,66 @@ describe('Screens (mock rendering)', () => {
 
   it('Tasks lists tasks with Core statuses and filters them', async () => {
     const el = await open('/tasks');
-    expect(el.querySelectorAll('table[aria-label="Tasks"] tbody tr')).toHaveLength(8);
+    expect(el.querySelectorAll('table[aria-label="Tasks"] tbody tr')).toHaveLength(10);
     const badges = Array.from(el.querySelectorAll('table tbody cc-status-badge')).map((b) => text(b));
     expect(badges).toEqual(expect.arrayContaining(['Planned', 'In progress', 'Blocked', 'Completed', 'Cancelled']));
 
     el.querySelector<HTMLButtonElement>('[data-testid="task-filter-blocked"]')!.click();
     await settle();
     expect(el.querySelectorAll('table[aria-label="Tasks"] tbody tr')).toHaveLength(1);
+
+    el.querySelector<HTMLButtonElement>('[data-testid="task-filter-continuation-available"]')!.click();
+    await settle();
+    expect(el.querySelectorAll('table[aria-label="Tasks"] tbody tr').length).toBeGreaterThan(0);
   });
 
-  it('Task detail shows workflow stages, runs, scope and a blocked reason', async () => {
+  it('Task detail shows workflow stages, runs tree, scope and a blocked reason', async () => {
     const el = await open('/tasks/DEMO-103');
     expect(el.querySelectorAll('ol.stages > li')).toHaveLength(5);
     expect(text(el.querySelector('.notice'))).toContain('explicit Human approval');
-    expect(el.querySelectorAll('table[aria-label="Runs for this task"] tbody tr')).toHaveLength(2);
+    expect(el.querySelectorAll('.run-tree .tree-item')).toHaveLength(2);
     expect(text(el.querySelector('.stages'))).toContain('Human checkpoint');
   });
 
   it('Task detail renders multi-agent branch and long objective without overflowing', async () => {
     const el = await open('/tasks/DEMO-108');
-    expect(el.querySelectorAll('table[aria-label="Runs for this task"] tbody tr')).toHaveLength(3);
+    expect(el.querySelectorAll('.run-tree .tree-item')).toHaveLength(3);
     expect(text(el.querySelector('h1'))).toContain('Implement distributed partition lease fencing');
     expect(text(el.querySelector('.lede'))).toContain('divergent network partitions');
+  });
+
+  it('Task detail allows selecting a run from the history tree to inspect its continuation, result and evidence', async () => {
+    const el = await open('/tasks/DEMO-110');
+    expect(el.querySelectorAll('.run-tree .tree-item')).toHaveLength(5);
+
+    // Initial inspection card displays a run
+    const inspection = el.querySelector('[data-testid="run-inspection-card"]')!;
+    expect(inspection).not.toBeNull();
+    expect(text(inspection)).toContain('run_h5_current');
+
+    // Click on run_h4_fail in the tree
+    const runH4Item = el.querySelector<HTMLElement>('[data-testid="run-tree-item-run_h4_fail"]')!;
+    expect(runH4Item).not.toBeNull();
+    runH4Item.click();
+    await settle();
+    await settle();
+
+    // Verify inspection card switched to run_h4_fail with interrupted continuation notice
+    const updatedInspection = el.querySelector('[data-testid="run-inspection-card"]')!;
+    expect(text(updatedInspection)).toContain('run_h4_fail');
+    expect(text(updatedInspection)).toContain('Continuation availability supplied by current data source');
+    expect(text(updatedInspection)).toContain('Runner VM preempted');
+  });
+
+  it('Run detail strictly prohibits retry/replay on effect_ambiguous run', async () => {
+    const el = await open('/runs/run_a41c07e2');
+    const contShell = el.querySelector('cc-continuation-shell')!;
+    expect(contShell).not.toBeNull();
+    expect(text(contShell)).toContain('CRITICAL EFFECT UNCERTAINTY');
+    expect(text(contShell)).toContain('strictly prohibit automated retry, replay, or continuation');
+    // Ensure no resume/retry button is rendered for effect_ambiguous
+    const resumeButton = contShell.querySelector('[data-testid="continuation-resume-button"]');
+    expect(resumeButton).toBeNull();
   });
 
   it('Task detail reports not found for an unknown task', async () => {

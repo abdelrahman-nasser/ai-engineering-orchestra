@@ -71,12 +71,12 @@ describe('buildPortfolioTopology', () => {
 
   it('includes only active Tasks that have Runs', () => {
     const taskNodes = topology.nodes.filter((node) => node.kind === 'task').map((node) => node.id);
-    expect(taskNodes.sort()).toEqual(['DEMO-101', 'DEMO-102', 'DEMO-103', 'DEMO-107', 'DEMO-108']);
+    expect(taskNodes.sort()).toEqual(['DEMO-101', 'DEMO-102', 'DEMO-103', 'DEMO-107', 'DEMO-108', 'DEMO-110']);
   });
 
   it('merges every Run into one confluence', () => {
     const runs = topology.nodes.filter((node) => node.kind === 'run');
-    expect(runs).toHaveLength(11);
+    expect(runs).toHaveLength(16);
     for (const run of runs) {
       expect(topology.edges).toContainEqual({ from: run.id, to: 'confluence' });
     }

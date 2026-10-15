@@ -7,6 +7,7 @@ import {
   EvidenceItemReadModel,
   ExecutionMode,
   PresentationState,
+  RunContinuationReadModel,
   RunContractView,
   RunDetail,
   RunSummary,
@@ -15,6 +16,7 @@ import {
   TimelineItemReadModel,
   WorkflowStageView,
 } from '../models';
+import { adaptContinuationReadModel } from '../continuation-adapter';
 import { adaptResultReadModel } from '../result-adapter';
 import { adaptEvidenceReadModels, adaptTimelineReadModels } from '../timeline-adapter';
 
@@ -148,6 +150,9 @@ interface RunSeed {
   readonly mode: ExecutionMode;
   readonly state: PresentationState;
   readonly startedLabel: string;
+  readonly lastActivityLabel?: string;
+  readonly statusLabel?: string;
+  readonly continuation?: RunContinuationReadModel;
 }
 
 const RUN_SEEDS: readonly RunSeed[] = [
@@ -165,8 +170,17 @@ const RUN_SEEDS: readonly RunSeed[] = [
     mode: 'standard',
     state: 'in-progress',
     startedLabel: 'Today · 14:02',
+    lastActivityLabel: 'Today · 14:05',
+    statusLabel: 'In progress',
+    continuation: {
+      state: 'available',
+      isAvailable: true,
+      label: 'Resume stage execution',
+      reason: 'Active action underway in implement stage.',
+      lastKnownActivity: 'Today · 14:05',
+    },
   },
-  // DEMO-102 — security-sensitive-change, review stage reached
+  // DEMO-102 — security-sensitive-change, review stage reached (Task with multiple prior Runs)
   {
     runId: 'run_a41c07e2',
     taskId: 'DEMO-102',
@@ -180,6 +194,14 @@ const RUN_SEEDS: readonly RunSeed[] = [
     mode: 'deep',
     state: 'finished',
     startedLabel: 'Yesterday · 16:40',
+    lastActivityLabel: 'Yesterday · 16:40',
+    statusLabel: 'Effect Ambiguous',
+    continuation: {
+      state: 'blocked',
+      blockedReason:
+        'Result outcome was effect_ambiguous. Core semantics strictly prohibit automated continuation, replay, or retry.',
+      lastKnownActivity: 'Yesterday · 16:40',
+    },
   },
   {
     runId: 'run_b9d2e5f1',
@@ -194,6 +216,13 @@ const RUN_SEEDS: readonly RunSeed[] = [
     mode: 'deep',
     state: 'finished',
     startedLabel: 'Yesterday · 18:15',
+    lastActivityLabel: 'Yesterday · 18:20',
+    statusLabel: 'Succeeded',
+    continuation: {
+      state: 'completed',
+      reason: 'Historical execution completed with validated result.',
+      lastKnownActivity: 'Yesterday · 18:20',
+    },
   },
   {
     runId: 'run_e60d4b13',
@@ -208,6 +237,15 @@ const RUN_SEEDS: readonly RunSeed[] = [
     mode: 'deep',
     state: 'in-progress',
     startedLabel: 'Today · 09:30',
+    lastActivityLabel: 'Today · 09:30',
+    statusLabel: 'In progress',
+    continuation: {
+      state: 'available',
+      isAvailable: true,
+      label: 'Continue review inspection',
+      reason: 'Review stage evaluation in progress.',
+      lastKnownActivity: 'Today · 09:30',
+    },
   },
   {
     runId: 'run_f27a9c58',
@@ -222,6 +260,15 @@ const RUN_SEEDS: readonly RunSeed[] = [
     mode: 'deep',
     state: 'needs-attention',
     startedLabel: 'Today · 09:34',
+    lastActivityLabel: 'Today · 09:35',
+    statusLabel: 'Blocked on approval',
+    continuation: {
+      state: 'blocked',
+      blockedReason:
+        'Human checkpoint approval required before continuation in security-sensitive workflow.',
+      label: 'Resume security review',
+      lastKnownActivity: 'Today · 09:35',
+    },
   },
   // DEMO-103 — architecture-change, blocked on design checkpoint
   {
@@ -237,6 +284,13 @@ const RUN_SEEDS: readonly RunSeed[] = [
     mode: 'deep',
     state: 'finished',
     startedLabel: 'Mon · 11:20',
+    lastActivityLabel: 'Mon · 11:25',
+    statusLabel: 'Succeeded',
+    continuation: {
+      state: 'completed',
+      reason: 'Design stage successfully completed.',
+      lastKnownActivity: 'Mon · 11:25',
+    },
   },
   {
     runId: 'run_08d5c6a4',
@@ -251,6 +305,16 @@ const RUN_SEEDS: readonly RunSeed[] = [
     mode: 'deep',
     state: 'needs-attention',
     startedLabel: 'Tue · 10:05',
+    lastActivityLabel: 'Tue · 10:14',
+    statusLabel: 'Interrupted (Lease Timeout)',
+    continuation: {
+      state: 'interrupted',
+      isAvailable: true,
+      label: 'Resume from implement stage',
+      interruptionNotice: 'Worker lease expired; execution paused at checkpoint.',
+      reason: 'Worker runner recovered; continuation affordance supplied.',
+      lastKnownActivity: 'Tue · 10:14',
+    },
   },
   // DEMO-104 — standard-change, completed
   {
@@ -266,6 +330,13 @@ const RUN_SEEDS: readonly RunSeed[] = [
     mode: 'lite',
     state: 'finished',
     startedLabel: 'Last week · Thu',
+    lastActivityLabel: 'Last week · Thu',
+    statusLabel: 'Succeeded',
+    continuation: {
+      state: 'completed',
+      reason: 'Historical release checklist generated.',
+      lastKnownActivity: 'Last week · Thu',
+    },
   },
   {
     runId: 'run_5d70b2e8',
@@ -280,8 +351,12 @@ const RUN_SEEDS: readonly RunSeed[] = [
     mode: 'lite',
     state: 'finished',
     startedLabel: 'Last week · Fri',
+    lastActivityLabel: 'Last week · Fri',
+    statusLabel: 'Finished',
+    // No continuation metadata (demonstrates missing continuation info)
+    continuation: undefined,
   },
-  // DEMO-107 — standard-change, failed validation evidence
+  // DEMO-107 — standard-change, failed validation evidence (stale observation scenario)
   {
     runId: 'run_d82e11a9',
     taskId: 'DEMO-107',
@@ -295,6 +370,15 @@ const RUN_SEEDS: readonly RunSeed[] = [
     mode: 'deep',
     state: 'needs-attention',
     startedLabel: 'Today · 11:15',
+    lastActivityLabel: 'Today · 11:15',
+    statusLabel: 'Validation Failed (Stale)',
+    continuation: {
+      stale: true,
+      staleNotice: 'Observation was last updated 3 hours ago; runner status unconfirmed.',
+      label: 'Retry validation',
+      reason: 'Failing test trapped by guard.',
+      lastKnownActivity: 'Today · 11:15',
+    },
   },
   // DEMO-108 — standard-change, multi-agent branch with long labels and paths
   {
@@ -310,6 +394,14 @@ const RUN_SEEDS: readonly RunSeed[] = [
     mode: 'critical',
     state: 'in-progress',
     startedLabel: 'Today · 13:45',
+    lastActivityLabel: 'Today · 13:45',
+    statusLabel: 'In progress',
+    continuation: {
+      state: 'available',
+      isAvailable: true,
+      label: 'Continue lease fencing implementation',
+      lastKnownActivity: 'Today · 13:45',
+    },
   },
   {
     runId: 'run_m2b3c4d5',
@@ -324,6 +416,14 @@ const RUN_SEEDS: readonly RunSeed[] = [
     mode: 'critical',
     state: 'in-progress',
     startedLabel: 'Today · 13:50',
+    lastActivityLabel: 'Today · 13:50',
+    statusLabel: 'In progress',
+    continuation: {
+      state: 'available',
+      isAvailable: true,
+      label: 'Continue fencing rules review',
+      lastKnownActivity: 'Today · 13:50',
+    },
   },
   {
     runId: 'run_m3c4d5e6',
@@ -338,6 +438,142 @@ const RUN_SEEDS: readonly RunSeed[] = [
     mode: 'critical',
     state: 'finished',
     startedLabel: 'Today · 13:40',
+    lastActivityLabel: 'Today · 13:40',
+    statusLabel: 'Failed Before Effect',
+    continuation: {
+      state: 'unavailable',
+      reason:
+        'Execution terminated before effect due to containment rejection. Execution Entry permanently consumed.',
+      lastKnownActivity: 'Today · 13:40',
+    },
+  },
+  // DEMO-109 — completed historical Task with exactly ONE Run
+  {
+    runId: 'run_c84a1e90',
+    taskId: 'DEMO-109',
+    workflowId: 'standard-change',
+    stageId: 'implement',
+    roleId: 'software-engineer',
+    actorId: 'agent-forge',
+    runtimeOptionId: 'rt-local-cli',
+    optionId: 'opt-beta-fast',
+    resource: 'src/telemetry/metrics-manifest',
+    mode: 'lite',
+    state: 'finished',
+    startedLabel: '3 days ago',
+    lastActivityLabel: '3 days ago',
+    statusLabel: 'Completed',
+    continuation: undefined,
+  },
+  // DEMO-110 — Task with long run history (5 sequential/branch attempts)
+  {
+    runId: 'run_h1_init',
+    taskId: 'DEMO-110',
+    workflowId: 'architecture-change',
+    stageId: 'understand',
+    roleId: 'architect',
+    actorId: 'agent-atlas',
+    runtimeOptionId: 'rt-hosted-agent',
+    optionId: 'opt-alpha-reasoning',
+    resource: 'src/consensus/state-machine',
+    mode: 'critical',
+    state: 'finished',
+    startedLabel: 'Yesterday · 09:00',
+    lastActivityLabel: 'Yesterday · 09:30',
+    statusLabel: 'Finished',
+    continuation: {
+      state: 'completed',
+      reason: 'Context acquisition completed.',
+      lastKnownActivity: 'Yesterday · 09:30',
+    },
+  },
+  {
+    runId: 'run_h2_design',
+    taskId: 'DEMO-110',
+    workflowId: 'architecture-change',
+    stageId: 'design',
+    roleId: 'architect',
+    actorId: 'agent-atlas',
+    runtimeOptionId: 'rt-hosted-agent',
+    optionId: 'opt-alpha-reasoning',
+    resource: 'docs/architecture/consensus-protocol',
+    mode: 'critical',
+    state: 'finished',
+    startedLabel: 'Yesterday · 10:15',
+    lastActivityLabel: 'Yesterday · 11:45',
+    statusLabel: 'Finished',
+    continuation: {
+      state: 'completed',
+      reason: 'Architecture specification drafted and approved.',
+      lastKnownActivity: 'Yesterday · 11:45',
+    },
+  },
+  {
+    runId: 'run_h3_proto',
+    taskId: 'DEMO-110',
+    workflowId: 'architecture-change',
+    stageId: 'implement',
+    roleId: 'software-engineer',
+    actorId: 'agent-forge',
+    runtimeOptionId: 'rt-local-cli',
+    optionId: 'opt-beta-fast',
+    resource: 'src/consensus/election-handler',
+    mode: 'critical',
+    state: 'finished',
+    startedLabel: 'Today · 08:30',
+    lastActivityLabel: 'Today · 10:15',
+    statusLabel: 'Finished',
+    continuation: {
+      state: 'completed',
+      reason: 'Prototype implementation merged for validation.',
+      lastKnownActivity: 'Today · 10:15',
+    },
+  },
+  {
+    runId: 'run_h4_fail',
+    taskId: 'DEMO-110',
+    workflowId: 'architecture-change',
+    stageId: 'validate',
+    roleId: 'software-engineer',
+    actorId: 'agent-forge',
+    runtimeOptionId: 'rt-local-cli',
+    optionId: 'opt-alpha-reasoning',
+    resource: 'tests/consensus/fuzz-matrix',
+    mode: 'critical',
+    state: 'needs-attention',
+    startedLabel: 'Today · 11:00',
+    lastActivityLabel: 'Today · 11:35',
+    statusLabel: 'Interrupted (Runner Preempted)',
+    continuation: {
+      state: 'interrupted',
+      isAvailable: true,
+      label: 'Resume consensus validation',
+      interruptionNotice: 'Runner VM preempted during fuzz regression run.',
+      reason: 'New execution candidate provisioned.',
+      lastKnownActivity: 'Today · 11:35',
+    },
+  },
+  {
+    runId: 'run_h5_current',
+    taskId: 'DEMO-110',
+    workflowId: 'architecture-change',
+    stageId: 'validate',
+    roleId: 'software-engineer',
+    actorId: 'agent-forge',
+    runtimeOptionId: 'rt-local-cli',
+    optionId: 'opt-beta-fast',
+    resource: 'tests/consensus/regression-suite',
+    mode: 'critical',
+    state: 'in-progress',
+    startedLabel: 'Today · 14:00',
+    lastActivityLabel: 'Today · 15:20',
+    statusLabel: 'In progress',
+    continuation: {
+      state: 'available',
+      isAvailable: true,
+      label: 'Continue active regression validation',
+      lastKnownActivity: 'Today · 15:20',
+    },
   },
 ];
 
@@ -357,12 +593,6 @@ function toContract(seed: RunSeed): RunContractView {
   };
 }
 
-export const MOCK_RUNS: readonly RunSummary[] = RUN_SEEDS.map((seed) => ({
-  runId: seed.runId,
-  contract: toContract(seed),
-  presentationState: seed.state,
-  startedLabel: seed.startedLabel,
-}));
 
 // ---------------------------------------------------------------------------
 // Tasks
@@ -533,6 +763,51 @@ export const MOCK_TASK_DETAILS: readonly TaskDetail[] = [
     runIds: ['run_m1a2b3c4', 'run_m2b3c4d5', 'run_m3c4d5e6'],
     stages: STANDARD_CHANGE,
   },
+  // DEMO-109 — completed historical Task with exactly ONE Run
+  {
+    id: 'DEMO-109',
+    title: 'Update telemetry metric definitions',
+    type: 'documentation',
+    status: 'completed',
+    risk: 'low',
+    complexity: 'low',
+    executionMode: 'lite',
+    workflowId: 'standard-change',
+    approvalLevel: 'review',
+    updatedLabel: '3 days ago',
+    objective: 'Standardize telemetry metric naming schemas across internal collectors.',
+    scopeIncluded: ['Metric name schema specification', 'Documentation examples'],
+    scopeExcluded: ['Collector implementation updates'],
+    dependencies: [],
+    qualityGates: ['documentation_consistency'],
+    runIds: ['run_c84a1e90'],
+    stages: STANDARD_CHANGE,
+  },
+  // DEMO-110 — Task with long run history (5 sequential/branch attempts)
+  {
+    id: 'DEMO-110',
+    title: 'Migrate consensus protocol state machine',
+    type: 'architecture',
+    status: 'in_progress',
+    risk: 'critical',
+    complexity: 'critical',
+    executionMode: 'critical',
+    workflowId: 'architecture-change',
+    approvalLevel: 'protected',
+    updatedLabel: 'Today · 15:20',
+    objective:
+      'Evolve cluster consensus election handling through multi-stage historical validation.',
+    scopeIncluded: [
+      'Consensus transition matrix',
+      'State verification harness',
+      'Simulation suite',
+    ],
+    scopeExcluded: ['Wire protocol changes'],
+    dependencies: ['DEMO-108'],
+    qualityGates: ['unit-tests', 'documentation_consistency', 'independent_review'],
+    runIds: ['run_h1_init', 'run_h2_design', 'run_h3_proto', 'run_h4_fail', 'run_h5_current'],
+    stages: ARCHITECTURE_CHANGE,
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -553,6 +828,9 @@ export const MOCK_AGENTS: readonly AgentSummary[] = [
       { taskId: 'DEMO-103', stageId: 'implement', roleId: 'software-engineer' },
       { taskId: 'DEMO-107', stageId: 'validate', roleId: 'software-engineer' },
       { taskId: 'DEMO-108', stageId: 'implement', roleId: 'software-engineer' },
+      { taskId: 'DEMO-109', stageId: 'implement', roleId: 'software-engineer' },
+      { taskId: 'DEMO-110', stageId: 'implement', roleId: 'software-engineer' },
+      { taskId: 'DEMO-110', stageId: 'validate', roleId: 'software-engineer' },
     ],
   },
   {
@@ -562,7 +840,11 @@ export const MOCK_AGENTS: readonly AgentSummary[] = [
     roleIds: ['architect'],
     availability: 'available',
     runtimeOptionIds: ['rt-hosted-agent'],
-    assignments: [{ taskId: 'DEMO-103', stageId: 'design', roleId: 'architect' }],
+    assignments: [
+      { taskId: 'DEMO-103', stageId: 'design', roleId: 'architect' },
+      { taskId: 'DEMO-110', stageId: 'understand', roleId: 'architect' },
+      { taskId: 'DEMO-110', stageId: 'design', roleId: 'architect' },
+    ],
   },
   {
     actorId: 'agent-lumen',
@@ -1384,6 +1666,47 @@ export function validateRefreshToken(token: string): boolean {
       diagnostic: null,
     },
   ],
+  [
+    'run_c84a1e90',
+    {
+      derivedIdentity: {
+        ledgerInstanceId: 'ledg_inst_482a9f10',
+        authorizationDomainId: 'auth_dom_orchestra_core',
+        issuerKind: 'policy',
+        issuerId: 'policy-docs-default',
+        grantId: 'grnt_c84a_1e90_001',
+      },
+      ledgerIdentity: {
+        domainId: 'auth_dom_orchestra_core',
+        ledgerInstanceId: 'ledg_inst_482a9f10',
+        domainGeneration: 1,
+      },
+      executionEntry: {
+        claimId: 'clm_9a8b7c6d',
+        executorInstanceId: 'exec_node_worker_01',
+        leaseGeneration: 1,
+        entryTimeLabel: '3 days ago · 11:00',
+        timeKey: 1728644400,
+      },
+      toolBinding: {
+        toolIdentity: 'tool::itru-native-repository-file-read::v1',
+        configuredRoute: 'native::posix_read_direct',
+      },
+      outcome: 'succeeded',
+      payload: {
+        byteCount: 384,
+        isText: true,
+        isTruncated: false,
+        previewByteCount: 384,
+        textPreview: `export const TELEMETRY_METRIC_SCHEMA = {
+  namespace: 'itru.execution',
+  fields: ['run_id', 'task_id', 'timestamp_utc', 'duration_ms'],
+  version: '1.0.0',
+};`,
+      },
+      diagnostic: null,
+    },
+  ],
 ]);
 
 function buildResult(seed: RunSeed): AgentExecutionResultPresentation | null {
@@ -1393,6 +1716,29 @@ function buildResult(seed: RunSeed): AgentExecutionResultPresentation | null {
   const readModel = MOCK_RESULT_READ_MODELS.get(seed.runId);
   return adaptResultReadModel(readModel);
 }
+
+export const MOCK_RUNS: readonly RunSummary[] = RUN_SEEDS.map((seed) => {
+  const resultReadModel = MOCK_RESULT_READ_MODELS.get(seed.runId);
+  const evidence = buildEvidence(seed);
+  return {
+    runId: seed.runId,
+    contract: toContract(seed),
+    presentationState: seed.state,
+    startedLabel: seed.startedLabel,
+    statusLabel:
+      seed.statusLabel ??
+      (seed.state === 'in-progress'
+        ? 'In progress'
+        : seed.state === 'finished'
+          ? 'Finished'
+          : 'Needs attention'),
+    lastActivityLabel: seed.lastActivityLabel ?? seed.startedLabel,
+    hasResult: Boolean(resultReadModel),
+    resultOutcome: resultReadModel?.outcome,
+    evidenceCount: evidence.length,
+    continuation: adaptContinuationReadModel(seed.continuation, resultReadModel?.outcome),
+  };
+});
 
 const SEED_BY_ID = new Map(RUN_SEEDS.map((seed) => [seed.runId, seed] as const));
 
@@ -1412,5 +1758,6 @@ export function buildRunDetail(runId: string): RunDetail | undefined {
     timeline: adaptTimelineReadModels(buildTimeline(seed)),
     evidence: adaptEvidenceReadModels(buildEvidence(seed)),
     result: buildResult(seed),
+    continuation: summary.continuation,
   };
 }

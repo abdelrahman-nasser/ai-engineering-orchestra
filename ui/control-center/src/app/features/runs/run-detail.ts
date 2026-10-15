@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, signal } f
 import { Router, RouterLink } from '@angular/router';
 import { ControlCenterDataSource } from '../../data/control-center-data-source';
 import { NileNode } from '../../data/models';
+import { ContinuationShell } from '../../shared/continuation-shell';
 import { EvidencePanel } from '../../shared/evidence-panel';
 import { ExecutionTimeline } from '../../shared/execution-timeline';
 import { toLoadStateFor } from '../../shared/load-state';
@@ -22,6 +23,7 @@ import { StatusBadge } from '../../shared/status-badge';
     StatePanel,
     StatusBadge,
     NileFlow,
+    ContinuationShell,
     ExecutionTimeline,
     EvidencePanel,
     ResultShell,
@@ -67,6 +69,20 @@ import { StatusBadge } from '../../shared/status-badge';
 
             <div class="grid grid-main-aside">
               <div class="stack column">
+                <div class="card">
+                  <div class="card-head">
+                    <div>
+                      <h2>Continuation &amp; Recovery</h2>
+                      <p>Presentation of source-supplied continuation affordances. Core defines no resume semantics yet.</p>
+                    </div>
+                  </div>
+                  <cc-continuation-shell
+                    [continuation]="r.continuation"
+                    [runId]="r.runId"
+                    [resultOutcome]="activeResult()?.outcome"
+                  />
+                </div>
+
                 <div class="card">
                   <div class="card-head">
                     <div>

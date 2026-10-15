@@ -194,3 +194,48 @@ Core Workflows (`core/workflow-specification.md`) define stages as a strictly se
 
 CORE CONTRACT NEEDED FROM:
 Core Workflow specification (`core/workflow-specification.md`) if parallel stage branching is ever introduced.
+
+---
+
+## 9. Persistent Runs, Tasks & Resume UX (SCRUM-24 / UNRESOLVED PENDING ITRU-062)
+
+QUESTION:
+What are the canonical Core contracts governing Task persistence, Run persistence, lifecycle state machines, continuation/resume eligibility, checkpoint identity, restart recovery, durability, and operational resumption?
+
+UI NEED:
+The operator needs to browse historical and active Tasks and Runs, inspect the hierarchical relationship (`Task ├─ Run A ├─ Run B └─ Run C`), filter by execution status and continuation affordance, review source-supplied continuation availability or blocked reasons, and safely inspect linked Results and Journal evidence without misleading operators into unsafe replay or assuming Core eligibility.
+
+STATUS & CORE CONTRACT RESOLUTION:
+- **Locked Prior Decisions Preserved**:
+  - ITRU-060 canonical terminal Result outcomes (`succeeded`, `failed_before_effect`, `effect_ambiguous`) and strict side-effect boundaries remain authoritative. Specifically, `effect_ambiguous` strictly prohibits automated retry, replay, or continuation.
+  - ITRU-061 Phase 1 canonical Journal model (two-event taxonomy `entry_observed` and `result_observed`, SQLite WAL `FULL` persistence, monotonic sequencing, and audit-only boundary) remains authoritative. Display of Journal entries or evidence does not prove resume safety.
+- **ITRU-062 Scope: NOT STARTED / COMPLETELY UNRESOLVED**:
+  The following 13 items are explicitly unresolved in Core pending ITRU-062 (SCRUM-19):
+  1. **Canonical Task identity & persistence contract**: Core defines declarative tasks (`.ai/tasks/*.yaml`), but defines no runtime or durable identity contract, storage layout, or database schema.
+  2. **Canonical Run identity & persistence contract**: Core defines `AgentExecutionRun` (`run_id`, `AgentExecutionContract`) as in-memory declarative intent, but has no durable runtime identity or storage schema.
+  3. **Task & Run lifecycle state machines**: Neither Tasks nor Runs have authoritative lifecycle states, valid state transitions, terminal conditions, or cancellation state machines in Core.
+  4. **Continuation / resume eligibility**: Core defines no rules determining whether a Run or Task is resumable, who decides eligibility, or under what conditions continuation is safe.
+  5. **Checkpoint & continuation identity**: Core has no concept of execution checkpoints, snapshot identities, continuation tokens, or resume capabilities.
+  6. **Restart recovery semantics**: How a crashed, pre-empted, or interrupted worker/process recovers state or re-establishes execution context is completely unspecified.
+  7. **State reconstruction rules**: Whether state is reconstructed from Journal replay, filesystem artifacts, SQLite transactions, or external state stores is undefined.
+  8. **Persistence schema & storage technology**: No schema, migrations, or database technology (SQLite, PostgreSQL, file ledger) has been selected or specified for Tasks and Runs.
+  9. **Task↔Run durability & association rules**: How parent Tasks durably track execution Runs, branch attempts, retry sequences, or historical runs across process boundaries is undefined.
+  10. **Resume authority**: What role, policy, or Human approval is required to authorize continuation/resumption, and whether a dedicated Grant is required, is undefined.
+  11. **Query API, indexing & pagination**: No query API, sorting, cursor pagination, or filtering protocol exists for retrieving Tasks or Runs across workspace boundaries.
+  12. **Concurrency & lease semantics**: No distributed or local concurrency controls, fencing tokens, or execution leases exist to prevent concurrent conflicting runs of the same Task.
+  13. **Interrupted, abandoned, & stale execution definitions**: Core provides no heartbeat, timeout, or criteria for declaring a Run interrupted, abandoned, orphaned, or stale.
+
+CURRENT UI ADAPTER ASSUMPTION (SCRUM-24):
+The UI lane maintains a strict presentation-only, contract-safe boundary:
+1. **Presentation inputs only**: All Task and Run history fields (`runCount`, `latestRunId`, `hasResult`, `statusLabel`, `lastActivityLabel`, `continuation`) are modeled as UI-local read models (`TaskSummary`, `RunSummary`, `RunDetail`, `RunContinuationReadModel`) supplied by `ControlCenterDataSource`.
+2. **Generic presentation models**: Mapped via a pure presentation adapter (`adaptContinuationReadModel`) to `RunContinuationPresentation`.
+3. **Explicit source attribution**: Every continuation affordance is framed with the prominent notice:
+   *"Continuation availability supplied by current data source · Core defines no canonical continuation/resume contract yet (pending ITRU-062)"*.
+4. **No fake mutations**: All resume actions are presentation-only / disabled demo controls (`[disabled]="true"`, `aria-disabled="true"`). Zero backend mutations or mock state modifications are executed.
+5. **Strict effect_ambiguous prohibition**: If a Run ended in `effect_ambiguous`, continuation is unconditionally blocked, danger alerts are rendered, and resume controls are strictly omitted.
+6. **No Journal safety proofs**: The UI explicitly alerts operators:
+   *"Notice: Display of Journal entries or evidence does not prove continuation safety · Core defines no resume safety proofs."*
+7. **Task Run tree hierarchy**: The Task detail view displays the full hierarchical history (`Task ├─ Run A ├─ Run B └─ Run C`) with selectable prior runs and embedded inspection of continuation affordances, ResultShell (SCRUM-22), ExecutionTimeline (SCRUM-23), and EvidencePanel (SCRUM-23).
+
+CORE CONTRACT NEEDED FROM:
+ITRU-062 / SCRUM-19 (Core Persistent Runs, Tasks, Lifecycle, and Resumption Specification). When ITRU-062 closes, the finalized Core contract will plug directly into the `ControlCenterDataSource` / adapter boundary without redesigning the UI.

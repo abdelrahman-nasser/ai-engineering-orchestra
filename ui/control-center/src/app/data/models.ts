@@ -82,6 +82,18 @@ export interface TaskSummary {
   readonly approvalLevel: ApprovalLevel;
   /** UI-local, mock-only label (Core Tasks carry no timestamp). */
   readonly updatedLabel: string;
+  /** UI-local, mock-only: total runs count associated with this task. */
+  readonly runCount?: number;
+  /** UI-local, mock-only: latest run id. */
+  readonly latestRunId?: string;
+  /** UI-local, mock-only: latest run visual state. */
+  readonly latestRunState?: PresentationState;
+  /** UI-local, mock-only: whether any associated run has a Result. */
+  readonly hasResult?: boolean;
+  /** UI-local, mock-only: whether continuation is available in latest run. */
+  readonly continuationAvailable?: boolean;
+  /** UI-local, mock-only: last activity label. */
+  readonly lastActivityLabel?: string;
 }
 
 export interface TaskDetail extends TaskSummary {
@@ -148,6 +160,18 @@ export interface RunSummary {
   readonly presentationState: PresentationState;
   /** UI-local, mock-only. Core Runs carry no timestamp. */
   readonly startedLabel: string;
+  /** UI-local, mock/read-model: source-supplied status label when available. */
+  readonly statusLabel?: string;
+  /** UI-local, mock/read-model: last activity label or timestamp. */
+  readonly lastActivityLabel?: string;
+  /** UI-local, mock/read-model: whether this run published a Result. */
+  readonly hasResult?: boolean;
+  /** UI-local, mock/read-model: Result outcome when published. */
+  readonly resultOutcome?: AgentExecutionResultOutcome;
+  /** UI-local, mock/read-model: recorded evidence count. */
+  readonly evidenceCount?: number;
+  /** UI-local, mock/read-model: source-supplied continuation info. */
+  readonly continuation?: RunContinuationPresentation;
 }
 
 export interface RunDetail extends RunSummary {
@@ -160,6 +184,65 @@ export interface RunDetail extends RunSummary {
   readonly evidence: readonly EvidenceItem[];
   /** UI-local Result presentation, or null if no Result published yet. */
   readonly result: AgentExecutionResultPresentation | null;
+  /** UI-local Continuation presentation. */
+  readonly continuation?: RunContinuationPresentation;
+}
+
+// ---------------------------------------------------------------------------
+// Continuation & Resume Affordances (UI-local; Core defines none pending ITRU-062)
+// ---------------------------------------------------------------------------
+
+export type ContinuationStatus =
+  | 'available'
+  | 'unavailable'
+  | 'blocked'
+  | 'interrupted'
+  | 'completed'
+  | 'missing'
+  | 'stale';
+
+/**
+ * Read-model shape for continuation / resume metadata delivered by a data source.
+ *
+ * IMPORTANT:
+ * This is a UI-local presentation assumption.
+ * Core defines NO canonical continuation, checkpoint identity, resume authority,
+ * or restart recovery semantics in v0.1.x Foundation (pending ITRU-062).
+ */
+export interface RunContinuationReadModel {
+  readonly state?: ContinuationStatus;
+  readonly isAvailable?: boolean;
+  readonly label?: string;
+  readonly reason?: string;
+  readonly blockedReason?: string;
+  readonly lastKnownActivity?: string;
+  readonly interruptionNotice?: string;
+  readonly stale?: boolean;
+  readonly staleNotice?: string;
+}
+
+/**
+ * UI-local presentation model for continuation / resume affordances.
+ */
+export interface RunContinuationPresentation {
+  readonly status: ContinuationStatus;
+  readonly statusLabel: string;
+  readonly statusTone: Tone;
+  readonly isAvailable: boolean;
+  readonly isBlocked: boolean;
+  readonly isInterrupted: boolean;
+  readonly isCompleted: boolean;
+  readonly isStale: boolean;
+  readonly isMissing: boolean;
+  readonly label?: string;
+  readonly reason?: string;
+  readonly blockedReason?: string;
+  readonly lastKnownActivity?: string;
+  readonly interruptionNotice?: string;
+  readonly staleNotice?: string;
+  readonly disclaimer: string;
+  readonly actionDisabled: boolean;
+  readonly actionDisabledReason?: string;
 }
 
 // ---------------------------------------------------------------------------

@@ -1,0 +1,59 @@
+id: ITRU-064
+title: Developer Alpha Release
+type: implementation
+status: completed
+version_target: "0.1.0a1"
+complexity: high
+risk: high
+execution:
+  mode: deep
+workflow: standard-change
+objective: >
+  SCRUM-21: deliver an installable local Developer Alpha by composing the
+  unchanged ITRU-060/061/062/063 foundations. Execute the locked implementation,
+  audit, validation, artifact verification, fresh specialist reviews and evidence
+  cycle, then STOP AT HUMAN CONTROL before final Quality Gates or closure.
+  Implementation and affected validation pass: 122 tests and 27 release smoke
+  assertions, zero skips. SEC-M1 Medium remedy is independently resolved in
+  source and affected release evidence. All five independent product reviews
+  APPROVE current fingerprints; specialist Task publication readback PASS.
+  Human subsequently authorized APPROVE ITRU-064 LOCKED FINAL QUALITY GATES ONLY.
+  Exact frozen FQ-DC-1 documentation_consistency PASS followed by FQ-IR-1
+  independent_review PASS. G01 complete; pre-closure acceptance was 22/23.
+  Frozen procedures and evidence bindings unchanged; publication readback PASS
+  (3f5ec8). Human subsequently authorized APPROVE ITRU-064 FINAL HUMAN RELEASE
+  CLOSURE ONLY on 2026-10-16. H01 COMPLETE; acceptance 23/23; Task completed and
+  CLOSED. Only the five existing Task evidence/status files were updated;
+  original implementation-stage scope exclusions below remain historical.
+  All retained validation, smoke, install, concurrency, specialist, final-gate,
+  product-hash and artifact/readback evidence remains current and preserved.
+  No validation, smoke, review, final-gate or artifact generation was rerun.
+  No Git mutation, release publication or post-Alpha work is authorized.
+  No further authorization is needed for closure; any further action requires
+  a new explicitly scoped Human instruction. STOP AT HUMAN CONTROL.
+scope:
+  include:
+    - Exact implementation, read, validation and review whitelists in context.md
+    - Windows local CLI, closed configuration/work input and BYO provider boundary
+    - Controlled repository reads, original Results, Journal and durable lifecycle
+    - Explicit approval, eligible fresh-run resume, DAG and bounded agent workers
+    - Reproducible wheel, offline install bundle, examples and release smoke
+  exclude:
+    - Changes to ITRU-060/061/062/063 semantics or persistence migrations
+    - Arbitrary tools, shell execution, automatic retry or uncertainty override
+    - UI integration, parked SCRUM-81 code, remote/distributed administration
+    - Catalog enumeration, workflows/README.md, broad repository traversal
+    - Final gates, final closure, staging, commit, pull, push, merge or publication
+dependencies:
+  - ITRU-060
+  - ITRU-061
+  - ITRU-062
+  - ITRU-063
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

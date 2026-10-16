@@ -152,6 +152,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Repository CLI — unified entry point for repository tooling.",
     )
+    from itru import __version__
+    parser.add_argument('--version', action='version', version='itru ' + __version__)
     subparsers = parser.add_subparsers(
         dest="command",
         title="commands",
@@ -207,6 +209,27 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
+    alpha = subparsers.add_parser('alpha', help='Local Developer Alpha controlled read workflows')
+    commands = alpha.add_subparsers(dest='alpha_command', required=True)
+    init = commands.add_parser('init', help='Create a new private Windows local workspace')
+    init.add_argument('directory')
+    for name in ('load', 'plan', 'run', 'resume', 'complete', 'stop', 'history'):
+        p = commands.add_parser(name)
+        p.add_argument('--config', required=True)
+        if name == 'load':
+            p.add_argument('--work', required=True)
+        if name == 'history':
+            p.add_argument('--after', type=int, default=0, help='Journal sequence cursor; pages contain at most 100 records')
+        if name in ('resume', 'complete', 'stop'):
+            p.add_argument('--task', required=True)
+        if name in ('run', 'resume', 'complete'):
+            p.add_argument('--approve')
+        if name in ('complete', 'stop'):
+            p.add_argument('--reference', required=True)
+        if name == 'plan':
+            p.add_argument('--action', choices=('run', 'resume', 'complete'), default='run')
+            p.add_argument('--task')
+            p.add_argument('--reference')
     return parser
 
 
@@ -228,6 +251,20 @@ def main(argv: list[str] | None = None) -> int:
     if args.command is None:
         parser.print_help()
         return 2
+
+    if args.command == 'alpha':
+        import json
+        from itru.developer_alpha import command
+        try:
+            result = command(args)
+            print(json.dumps(result, sort_keys=True))
+            return 1 if result.get('status') == 'attention_required' else 0
+        except KeyboardInterrupt:
+            print('Alpha interrupted; inspect state before any continuation.', file=sys.stderr)
+            return 130
+        except Exception as exc:
+            print(json.dumps({'status': 'rejected', 'reason': str(exc)}), file=sys.stderr)
+            return 2
 
     # Discover project root from caller's working directory
     try:

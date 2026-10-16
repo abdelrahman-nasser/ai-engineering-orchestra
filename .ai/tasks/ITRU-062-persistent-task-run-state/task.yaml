@@ -1,0 +1,113 @@
+id: ITRU-062
+title: Persistent Task and Run State and Resume
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: high
+execution:
+  mode: deep
+workflow: standard-change
+objective: >
+  SCRUM-19: persist canonical Task and Run lifecycle state with explicit
+  recovery, evidence-only reconciliation and freshly authorized continuation.
+  Complete the authorized bounded implementation, safety audit, exact validation
+  and seven independent specialist reviews, then stop at Human Control before
+  final Quality Gates, Task closure or Git mutation.
+  Historically the Human authorized exact retained final Quality Gates only.
+  FQ-B1 blocks that execution: the evidence retains gate names but no exact
+  final-gate procedures. No procedure was invented or substituted, no gate
+  executed, and acceptance remains 28/30. Stop at Human Control for explicit
+  authorization to define and lock the missing bounded procedures.
+  The Human has now authorized final-gate procedure definition and lock only.
+  FQ-DC-1 and FQ-IR-1 are locked in context.md; FQ-B1 is resolved by the complete
+  procedure definitions. Neither gate was executed or evaluated. Acceptance is
+  still 28/30 with final gates and Human closure pending. Stop at Human Control
+  for fresh authorization to execute those exact retained procedures only.
+  Current final-gate-only authorization was received and the locked DC-C1..DC-C5
+  completed. All nine fingerprints matched and DC-01..DC-07 initially passed.
+  IR-C1 then exposed changed context evidence: two entries disappeared from the
+  historical fourteen-path whitelist between the exact DC-C1 and IR-C1 reads.
+  FQ-B2 blocks publication: FQ-DC-1 FAIL, FQ-IR-1 FAIL/incomplete mandatory stop.
+  No cause is inferred or repair attempted. G01/H01 remain unchecked, acceptance
+  28/30, unresolved B/H/M/L 1/0/0/0. Stop at Human Control for evidence-drift
+  investigation/reconciliation only; gate rerun and final closure are not authorized.
+  The Human subsequently authorized evidence-drift investigation/reconciliation
+  only. The locked IR-C1 five-file whitelist and commands are intact; the two
+  absent historical whitelist lines occur in the retained cbf344 receipt, not
+  in the IR procedure. Current context already has all fourteen change paths.
+  Exact originating cause of the stale/partial receipt cannot be established
+  from the five permitted files. Prior file-drift inference is qualified in the
+  new evidence receipt without deleting the failed/partial gate chronology.
+  FQ-DC-1 semantics changed NO; FQ-IR-1 semantics changed NO; evidence-only YES.
+  FQ-B2 remains OPEN; Task blocked; acceptance 28/30; G01/H01 pending;
+  unresolved B/H/M/L 1/0/0/0. Stop at Human Control for a Human-named exact
+  receipt-provenance source/read scope, without gate rerun or closure.
+  The Human next authorized only the exact failed IR-C1 transcript segment.
+  Its literal receipt proves a false identical-description annotation despite
+  a false equality value; the adjacent comparison identifies two missing lines.
+  Neither proves the originating omission mechanism. Earlier stale/partial
+  classification remains provisional; capture loss, staleness, execution defect
+  and transient file change cannot be distinguished from that segment alone.
+  FQ-B2 remains OPEN; blocked, 1/0/0/0, 28/30, G01/H01 pending. Both gate
+  semantics remain unchanged. Only evidence provenance wording is corrected;
+  no repository read, further history access, gate/runtime rerun or new review.
+  Stop for a Human-named exact corroborating provenance source; no cause inferred.
+  The Human now accepts FQ-B2 provenance as INDETERMINATE but NON-SEMANTIC
+  and dispositions it as an accepted LOW / NON-BLOCKING process-evidence anomaly.
+  The FQ-B2 Blocker/investigation requirement is resolved by Human disposition;
+  accepted anomaly inventory 0/0/0/1, unresolved findings 0/0/0/0. Historical
+  provenance investigations and the incorrect identical annotation remain intact.
+  Both gate semantics and canonical five-file IR-C1 are unchanged; implementation,
+  spec, schema and runtime receipts remain unaffected. The Human authorizes exact
+  FQ-DC-1 replay, then FQ-IR-1 only if DC passes, with existing-evidence updates.
+  Current Task in_progress; acceptance 28/30; G01/H01 unchecked pending replay.
+  Stop at Human Control after replay; no Task closure or Git mutation authorized.
+  The authorized replay now records FQ-DC-1 PASS and FQ-IR-1 PASS with all
+  nine pinned hashes matching, all five IR-C1 reads and all required comparisons
+  supported. G01 COMPLETE; acceptance 29/30; H01 PENDING; Task in_progress.
+  Accepted FQ-B2 remains LOW / NON-BLOCKING, provenance INDETERMINATE and
+  NON-SEMANTIC by Human disposition; anomaly inventory 0/0/0/1, unresolved
+  findings 0/0/0/0. Both gate semantics/canonical IR-C1 are unchanged.
+  Final exact DC-C1 readback must verify the published evidence; contradiction
+  fails DC and restores unchecked G01/28 of 30. Then stop at Human Control.
+  Exact next authorization: APPROVE ITRU-062 FINAL HUMAN CLOSURE ONLY.
+  The Human has now explicitly authorized FINAL HUMAN CLOSURE ONLY and
+  accepts final evidence and FQ-B2 as a LOW / NON-BLOCKING historical anomaly.
+  H01 COMPLETE; G01 COMPLETE; acceptance 30/30; Task completed and closed.
+  The retained 116-test/97-root/7-review basis, both final gate PASS results and
+  ITRU-060/061 preservation remain valid. Unresolved findings 0/0/0/0; accepted
+  FQ-B2 historical anomaly 0/0/0/1, provenance INDETERMINATE/NON-SEMANTIC.
+  All earlier objective checkpoints and closure holds remain historical; this
+  final Human approval supersedes the earlier hold for Task closure only.
+  No validation/review/gate rerun or Git mutation; ITRU-063 not started.
+  No further authorization needed for this closure. Stop at Human Control.
+scope:
+  include:
+    - Exact fourteen-path change whitelist and design lock in context.md
+    - Dedicated local persistence, deterministic state transitions and read models
+    - Fresh continuation authority boundary and bounded conflict protection
+    - Original Result observation and descriptive Journal reconciliation
+    - Exact V1-V5 validation after source and fixture safety audit
+    - Seven fresh independent specialist reviews and bounded Medium/Low remediation
+    - Final-gate-only authorization receipt and FQ-B1 missing-procedure stop evidence
+    - Definition-only lock of FQ-DC-1 and FQ-IR-1 in existing Task evidence; no gate execution
+    - Authorized locked final-gate receipts and FQ-B2 evidence-drift mandatory stop
+  exclude:
+    - Changes to locked ITRU-060 Result or ITRU-061 Journal semantics
+    - Existing Journal or authorization-ledger schemas and migrations
+    - Scheduler, DAG, ITRU-063, automatic replay, retry policy or failover
+    - Budgets, cost routing, remote workers, UI and multi-tenant concerns
+    - Task or Workflow catalog enumeration and broad Markdown traversal
+    - workflows/README.md, aggregate validation and unretained or substituted final-gate procedures
+    - Staging, commit, push, merge and Task closure
+dependencies:
+  - ITRU-061
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

@@ -1149,3 +1149,14 @@ legacy work. Examples of future candidates do not create or authorize a Task.
 The prospective validator is in `tests/test_itru_namespace.py`; it checks
 supplied IDs and directory names without enumerating the Task catalog. This
 project policy does not narrow the generic serialized Task schema.
+
+## Optional persistent operational lifecycle
+
+ITRU-062 defines explicit Task enrollment in a dedicated durable lifecycle Store
+in `core/task-run-state-specification.md`. Enrolled Tasks keep the same declared
+ID and five states. The Store owns their operational lifecycle; task.yaml retains
+intent, requirements and governance closure evidence, with status maintained as
+an explicitly reconciled mirror. Neither source silently overrides the other.
+The Store does not evaluate Quality Gates, prove Human approval or edit Task
+files. Completion still requires every closure obligation in this specification.
+Unenrolled Tasks continue to use task.yaml as their lifecycle Source of Truth.

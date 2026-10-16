@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-engineering-orchestra.dev/schemas/task-run-state-event.schema.json",
+  "title": "ITRU durable Task and Run lifecycle event v1",
+  "description": "Accepted lifecycle history, never a Result or execution authority. Full semantic history validation is also required.",
+  "type": "object", "additionalProperties": false,
+  "required": ["format_version", "sequence", "task_id", "revision", "operation", "data"],
+  "properties": {
+    "format_version": {"const": 1, "type": "integer"},
+    "sequence": {"$ref": "#/$defs/positive"},
+    "task_id": {"$ref": "#/$defs/text"},
+    "revision": {"$ref": "#/$defs/positive"},
+    "operation": {"enum": ["enroll", "register", "continue", "block", "cancel", "complete", "stop", "start", "result", "recover"]},
+    "data": {"type": "object"}
+  },
+  "allOf": [
+    {"if": {"properties": {"operation": {"const": "enroll"}}}, "then": {"properties": {"data": {"$ref": "#/$defs/enroll"}}}},
+    {"if": {"properties": {"operation": {"const": "register"}}}, "then": {"properties": {"data": {"$ref": "#/$defs/register"}}}},
+    {"if": {"properties": {"operation": {"const": "continue"}}}, "then": {"properties": {"data": {"$ref": "#/$defs/continue"}}}},
+    {"if": {"properties": {"operation": {"enum": ["block", "cancel", "complete", "stop"]}}}, "then": {"properties": {"data": {"$ref": "#/$defs/reference"}}}},
+    {"if": {"properties": {"operation": {"const": "start"}}}, "then": {"properties": {"data": {"$ref": "#/$defs/start"}}}},
+    {"if": {"properties": {"operation": {"const": "result"}}}, "then": {"properties": {"data": {"$ref": "#/$defs/result"}}}},
+    {"if": {"properties": {"operation": {"const": "recover"}}}, "then": {"properties": {"data": {"type": "object", "additionalProperties": false}}}}
+  ],
+  "$defs": {
+    "text": {"type": "string", "minLength": 1},
+    "positive": {"type": "integer", "minimum": 1, "maximum": 9223372036854775807},
+    "subject": {
+      "type": "object", "additionalProperties": false, "required": ["binding", "ledger_identity"],
+      "properties": {
+        "binding": {"$ref": "https://ai-engineering-orchestra.dev/schemas/agent-operation-tool-binding.schema.json"},
+        "ledger_identity": {
+          "type": "object", "additionalProperties": false,
+          "required": ["authorization_domain_id", "ledger_instance_id", "domain_generation"],
+          "properties": {
+            "authorization_domain_id": {"$ref": "#/$defs/text"},
+            "ledger_instance_id": {"$ref": "#/$defs/text"},
+            "domain_generation": {"type": "integer", "minimum": 1}
+          }
+        }
+      }
+    },
+    "approval": {
+      "type": "object", "additionalProperties": false,
+      "required": ["session_nonce", "request_nonce", "authority_kind", "authority_id", "reference"],
+      "properties": {
+        "session_nonce": {"$ref": "#/$defs/text"}, "request_nonce": {"$ref": "#/$defs/text"},
+        "authority_kind": {"enum": ["human", "policy"]},
+        "authority_id": {"$ref": "#/$defs/text"}, "reference": {"$ref": "#/$defs/text"}
+      }
+    },
+    "enroll": {"type": "object", "additionalProperties": false, "required": ["definition_reference"], "properties": {"definition_reference": {"$ref": "#/$defs/text"}}},
+    "register": {"type": "object", "additionalProperties": false, "required": ["subject"], "properties": {"subject": {"$ref": "#/$defs/subject"}}},
+    "continue": {
+      "type": "object", "additionalProperties": false, "required": ["subject", "approval", "reason"],
+      "properties": {"subject": {"$ref": "#/$defs/subject"}, "approval": {"$ref": "#/$defs/approval"}, "reason": {"$ref": "#/$defs/text"}}
+    },
+    "reference": {"type": "object", "additionalProperties": false, "required": ["reference"], "properties": {"reference": {"$ref": "#/$defs/text"}}},
+    "start": {"type": "object", "additionalProperties": false, "required": ["run_id"], "properties": {"run_id": {"$ref": "#/$defs/text"}}},
+    "result": {
+      "type": "object", "additionalProperties": false, "required": ["run_id", "outcome", "result_identity"],
+      "properties": {
+        "run_id": {"$ref": "#/$defs/text"}, "outcome": {"enum": ["succeeded", "failed_before_effect", "effect_ambiguous"]},
+        "result_identity": {"type": "array", "minItems": 5, "maxItems": 5, "items": {"$ref": "#/$defs/text"}}
+      }
+    }
+  }
+}

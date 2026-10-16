@@ -1,0 +1,278 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-engineering-orchestra.dev/schemas/agent-execution-journal-entry.schema.json",
+  "title": "ITRU Agent Execution Journal Entry",
+  "description": "Phase-1 closed durable observation contract. Structural validation establishes neither trusted provenance, semantic binding, canonical encoding nor execution authority. See core/agent-execution-journal-specification.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format_version",
+    "journal_id",
+    "sequence",
+    "recorded_at",
+    "ledger_identity",
+    "execution_entry",
+    "admission",
+    "event_kind",
+    "provenance",
+    "result_summary"
+  ],
+  "properties": {
+    "format_version": {
+      "const": 1,
+      "type": "integer"
+    },
+    "journal_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9223372036854775807
+    },
+    "recorded_at": {
+      "type": "string",
+      "pattern": "^(?!0000)[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])T(?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{6}Z(?![\\s\\S])"
+    },
+    "ledger_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authorization_domain_id",
+        "ledger_instance_id",
+        "domain_generation"
+      ],
+      "properties": {
+        "authorization_domain_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ledger_instance_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "domain_generation": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "execution_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "identity",
+        "claim_id",
+        "executor_instance_id",
+        "lease_generation",
+        "entry_time",
+        "entry_time_key"
+      ],
+      "properties": {
+        "identity": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "enum": [
+                "human",
+                "policy"
+              ]
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            }
+          ],
+          "items": false,
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "claim_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "executor_instance_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lease_generation": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        "entry_time": {
+          "type": "string",
+          "pattern": "^(?!0000)[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])T(?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{6}Z(?![\\s\\S])"
+        },
+        "entry_time_key": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 315537897599999999
+        }
+      }
+    },
+    "admission": {
+      "$ref": "https://ai-engineering-orchestra.dev/schemas/agent-execution-dispatch-admission.schema.json"
+    },
+    "event_kind": {
+      "enum": [
+        "entry_observed",
+        "result_observed"
+      ]
+    },
+    "provenance": {
+      "enum": [
+        "original_controlled_invocation",
+        "authoritative_entry_history"
+      ]
+    },
+    "result_summary": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/result_summary"
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "event_kind": {
+            "const": "entry_observed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "result_summary": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_kind": {
+            "const": "result_observed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "result_summary": {
+            "$ref": "#/$defs/result_summary"
+          },
+          "provenance": {
+            "const": "original_controlled_invocation"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "result_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "outcome",
+        "diagnostic_code",
+        "byte_count"
+      ],
+      "properties": {
+        "outcome": {
+          "enum": [
+            "succeeded",
+            "failed_before_effect",
+            "effect_ambiguous"
+          ]
+        },
+        "diagnostic_code": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "byte_count": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "outcome": {
+              "const": "succeeded"
+            },
+            "diagnostic_code": {
+              "type": "null"
+            },
+            "byte_count": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 65536
+            }
+          }
+        },
+        {
+          "properties": {
+            "outcome": {
+              "const": "failed_before_effect"
+            },
+            "diagnostic_code": {
+              "enum": [
+                "adapter_unavailable",
+                "containment_rejected",
+                "resource_missing",
+                "resource_changed",
+                "size_limit_exceeded",
+                "read_failure",
+                "guard_lost",
+                "ownership_lost"
+              ]
+            },
+            "byte_count": {
+              "type": "null"
+            }
+          }
+        },
+        {
+          "properties": {
+            "outcome": {
+              "const": "effect_ambiguous"
+            },
+            "diagnostic_code": {
+              "enum": [
+                "adapter_unavailable",
+                "containment_rejected",
+                "resource_missing",
+                "resource_changed",
+                "size_limit_exceeded",
+                "read_failure",
+                "effect_ambiguous"
+              ]
+            },
+            "byte_count": {
+              "type": "null"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

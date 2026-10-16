@@ -9,6 +9,7 @@ from __future__ import annotations
 from contextlib import contextmanager
 from dataclasses import dataclass
 import os
+import sys
 from threading import get_ident
 
 from itru import _jit_execution_attempt_authorization as jit
@@ -73,6 +74,7 @@ class _ControlledOutcome:
     entry_result: _EntryResult
     invocation: _InvocationOutcome | None = None
     result: AgentExecutionResult | None = None
+    journal_receipt: object | None = None
 
 
 class _EntryOperation(jit._JitAssessmentOperation):
@@ -117,14 +119,19 @@ class _ControlledInvocationCoordinator:
     Root provisioning precedes publication. Its teardown is coordinated outside
     the S/G/P operation; neither native traversal nor cleanup reenters the Store.
     """
-    def __init__(self, authorizer, root):
+    def __init__(self, authorizer, root, *, journal=None):
         from itru import _native_repository_file_read as native
         if type(authorizer) is not jit._JitAuthorizer or type(root) is not native._TrustedRoot:
             raise TypeError('exact private composition required')
         if not root._available(authorizer.session, root._environment):
             raise ValueError('root/session mismatch')
         authorizer._live()
+        if journal is not None:
+            from itru.agent_execution_journal import ExecutionJournalRecorder
+            if type(journal) is not ExecutionJournalRecorder or journal._ledger is not authorizer.store:
+                raise TypeError('exact metadata-authorized Journal composition required')
         self._a, self._root = authorizer, root
+        self._journal = journal
         self._reader = native._invoke_repository_file_read
         self._implementation = self._reader
         self._pid = os.getpid()
@@ -187,12 +194,37 @@ class _ControlledInvocationCoordinator:
                 and a.snapshot._registrations_by_route[route.route].implementation_selector == _AgentOperationToolImplementationSelector.ITRU_NATIVE_REPOSITORY_FILE_READ_V1
                 and route.tool_id == cell.subject.binding.tool_id)
 
+    def _record_journal(self, entry, admission, result):
+        """Observation only, after S/G/P/W/C unwind; no earlier-lock reentry."""
+        if self._journal is None or entry is None:
+            return None
+        from itru.agent_execution_journal import JournalReceipt, JournalIntegrityError, JournalMetadataLimit
+        if sys._getframe(1).f_code is not _ORIGINAL_INVOKE_CODE:
+            raise JournalIntegrityError()
+        identity = (self._a.state.identity.ledger_instance_id, *entry.identity)
+        kinds = ('entry_observed', 'result_observed') if result is not None else ('entry_observed',)
+        try:
+            if (getattr(self._a.guard.thread, 'read', False)
+                    or getattr(self._a.guard.thread, 'leaf', False)
+                    or self._a.session._thread_operations.get(get_ident(), 0) != 0):
+                raise JournalIntegrityError()
+            if result is not None:
+                return self._journal.observe_result(result)
+            return self._journal._observe_original_entry(self, entry, admission)
+        except JournalMetadataLimit:
+            return JournalReceipt('metadata_limit', identity, kinds)
+        except JournalIntegrityError:
+            return JournalReceipt('integrity_failure', identity, kinds)
+        except Exception:
+            return JournalReceipt('storage_unavailable', identity, kinds)
+
     def invoke(self, capability, principal, decision):
         a = self._a
         entry_result = _EntryResult('not_entered')
         invoked = False
         result_production = None
         integrity_rejected = False
+        journal_entry = journal_admission = None
         try:
             a._live()
             cell = a._cap_cell(capability)  # No reservation lock nests with S/G/P/W.
@@ -210,6 +242,7 @@ class _ControlledInvocationCoordinator:
                         result_production.retire()
                         return _ControlledOutcome(entry_result)
                     result_production.acknowledge(entry_result, operation)
+                    journal_entry, journal_admission = entry_result.entry, operation._result_parent
                     # W and C are now released, S/G/P remain on this stack.
                     self._entry = entry_result.entry
                     self._cell = cell
@@ -243,6 +276,11 @@ class _ControlledInvocationCoordinator:
                     if cell.state == 'CONSUMING':
                         cell._transition('UNCERTAIN')
             if not isinstance(error, Exception):
+                try:
+                    self._record_journal(journal_entry, journal_admission, None)
+                except BaseException:
+                    # An observer interruption cannot replace the original fatal.
+                    pass
                 if result_production is not None and not result_production.closed:
                     result_production.retire()
                 raise
@@ -262,6 +300,7 @@ class _ControlledInvocationCoordinator:
             if result_production is not None and not result_production.closed:
                 result_production.retire()
             outcome = None
+            self._record_journal(journal_entry, journal_admission, None)
             raise _ResultIntegrityError() from None
         publication_failed = False
         result = None
@@ -275,8 +314,10 @@ class _ControlledInvocationCoordinator:
                 result_production.retire()
         if publication_failed:
             outcome = result = None
+            self._record_journal(journal_entry, journal_admission, None)
             raise _ResultIntegrityError() from None
-        return _ControlledOutcome(entry_result, outcome, result)
+        receipt = self._record_journal(journal_entry, journal_admission, result)
+        return _ControlledOutcome(entry_result, outcome, result, receipt)
 
     def history(self, capability):
         """Same pinned ledger only. No continuation construction or target IO."""
@@ -291,3 +332,4 @@ class _ControlledInvocationCoordinator:
 
 _ORIGINAL_INVOKE_CODE = _ControlledInvocationCoordinator.invoke.__code__
 _ENTRY_WRITER = SqliteAgentExecutionDispatchAdmissionStore._enter_execution
+_JOURNAL_RECORD_CODE = _ControlledInvocationCoordinator._record_journal.__code__

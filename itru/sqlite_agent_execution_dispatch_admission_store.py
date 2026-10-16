@@ -2443,6 +2443,43 @@ class SqliteAgentExecutionDispatchAdmissionStore:
                     or (revoked is not None and _parse_decision_time(revoked.revocation_time)[1] < key)):
                 raise SqliteAdmissionStoreIntegrityError("Execution Entry history/time is inconsistent")
 
+    def _read_execution_journal_history(self, dispatch_identity):
+        """Audited passive history; no executor recovery, watermark or writes.
+
+        One read-only SQLite snapshot verifies the existing v4 ledger and binds
+        the exact stored Entry/Admission to its original configured generation.
+        This method produces observation provenance, never effect authority.
+        """
+        from itru.authorization_domain_ownership import AuthorizationDomainIdentity
+        from itru.agent_execution_journal import _mint_history
+        dispatch_identity = _dispatch_identity(dispatch_identity)
+        configuration = _validate_configuration(self.configuration, require_file=True)
+        connection = sqlite3.connect(configuration.database_path.as_uri() + '?mode=ro',
+            uri=True, isolation_level=None, timeout=configuration.busy_timeout_ms / 1000)
+        try:
+            connection.row_factory = sqlite3.Row
+            connection.execute('PRAGMA query_only=ON')
+            connection.execute('PRAGMA foreign_keys=ON')
+            connection.execute('BEGIN')
+            metadata = self._verify_authoritative_connection(connection, allow_fenced=True)
+            if dispatch_identity[0] != configuration.authorization_domain_id:
+                raise SqliteAdmissionStoreIntegrityError('Journal history domain mismatch')
+            entry = self._find_execution_entry(connection, dispatch_identity)
+            row = connection.execute(
+                'SELECT * FROM agent_execution_dispatch_admissions WHERE authorization_domain_id=? '
+                'AND issuer_kind=? AND issuer_id=? AND grant_id=?', dispatch_identity).fetchone()
+            admission = self._admission_from_row(row) if row is not None else None
+            if entry is not None and admission is None:
+                raise SqliteAdmissionStoreIntegrityError('Journal Entry lacks Admission')
+            # The full metadata audit compares stored identity/generation with
+            # this pinned configuration; _LedgerMetadata carries time/version only.
+            identity = AuthorizationDomainIdentity(configuration.authorization_domain_id,
+                configuration.ledger_instance_id, configuration.domain_generation)
+            return _mint_history(self, identity, dispatch_identity, entry, admission)
+        finally:
+            _safe_rollback(connection)
+            connection.close()
+
     def _enter_execution(self, request, operation):
         """S/G/P held by original caller; W->C reservation, atomic Entry+watermark.
 
@@ -3317,3 +3354,6 @@ class SqliteAgentExecutionDispatchAdmissionStore:
                 # Publication uses an atomic hard link.  If a racing owner
                 # created the path, it is not ours and is deliberately kept.
                 pass
+
+
+_JOURNAL_HISTORY_READER = SqliteAgentExecutionDispatchAdmissionStore._read_execution_journal_history.__code__

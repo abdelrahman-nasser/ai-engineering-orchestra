@@ -1,0 +1,78 @@
+id: ITRU-061
+title: Execution Journal Foundation
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: high
+execution:
+  mode: deep
+workflow: standard-change
+objective: >
+  SCRUM-18 Phase 1 only: define the minimum durable Execution Journal for
+  controlled execution history, exact identity and evidence binding, ordering,
+  provenance, serialization and restart reconciliation. Preserve ITRU-060
+  immutable Result semantics. Obtain six fresh independent design reviews and
+  stop at Human Control before production behavior or Phase 2 authorization.
+  The Human has now explicitly approved Phase 1, locked its contract and
+  conditionally authorized Phase 2 within the exact retained context whitelist
+  and F1-F4 commands. Required preimplementation source/import/fixture audit
+  stopped on SA-1: F1-F3 target modules and new Journal sources do not yet exist,
+  so their behavior cannot be inspected before implementation. No production
+  file or runner changed or executed; stop at Human Control for an explicit
+  audit-sequencing authorization. Task closure is not authorized.
+  The Human now approves SA-1 sequencing remediation only. Drafts exist inside
+  the unchanged whitelist and the actual bounded static safety audit passes
+  all six required answers for each exact F1-F4. SA-1 is resolved, with history
+  retained; only those exact runners are released. Fresh Phase-2 reviews and
+  final implementation gates/closure remain pending.
+  On 2026-10-15 F1 passed 16 tests with zero skips. F2 ran 18 tests but had two
+  SQLite fixture cleanup errors and zero skips. The mandatory failure STOP is
+  active as SA-2; F3/F4, fresh reviews and final gates were not run. SA-1 remains
+  resolved. No repair, rerun or cleanup was performed. Complete report content
+  is prepared in review.md; a separate report destination requires Human approval.
+  The Human subsequently approved the fixture-only SA-2 repair, affected re-audit,
+  exact retained cleanup and exact completion-report export path. The connection
+  lifetime repair and affected static re-audit pass; SA-2 is resolved with history
+  intact. The retained cleanup command then failed before deletion with access
+  denied on the first exact directory; the second was not attempted. SA-3 is an
+  open Human-control hold. No F1-F4 replay or fresh review started. Acceptance is
+  22/29; report exported to the approved completion-report.md. Final gates,
+  staging, commit, push, merge, closure and ITRU-062 remain unauthorized.
+  The preceding checkpoint narrative is historical. On 2026-10-16 the final
+  documentation_consistency and independent_review gates passed; G2 and R7 are
+  complete, ARCH-M1 and ARCH-M2 are resolved, and all SA/ARCH/PV history remains
+  retained in the existing evidence. The Human then explicitly approved final
+  Task closure (H2) only and accepted the final evidence and PV-L1 as Low and
+  non-blocking. H2 is complete, acceptance is 29/29, and ITRU-061 is completed.
+  No validation, review or Quality Gate was rerun during closure. Git mutation
+  and ITRU-062 remain unauthorized. Stop at Human Control.
+scope:
+  include:
+    - Four canonical ITRU-061 Task artifacts
+    - core/agent-execution-journal-specification.md
+    - schemas/agent-execution-journal-entry.schema.json because durable entries require a serialized contract
+    - Exact change and review whitelists, validation-safety matrix, future commands and bounded scenarios recorded before validation
+    - Bounded read-only investigation of directly relevant predecessor and persistence boundaries
+    - Fresh Architect, Journal/Domain, Security/Authority, Persistence/Storage, Serialization/Schema and Process/Validation reviews
+    - Phase-1 documentation_consistency and independent_review evaluation only
+    - Human-authorized bounded Phase-2 source/import/fixture safety audit and truthful audit-stop evidence
+    - Conditional Phase-2 implementation and F1-F4 only under the exact retained context whitelist and commands after the required safety audit passes
+  exclude:
+    - Runtime provisioning, migration or validation execution before the required safety audit passes; draft source creation is authorized by SA-1 sequencing remediation
+    - Result mutation, Result transport or payload persistence, exactly-once claims and automatic effect replay
+    - Persistent Task/Run lifecycle state and resume implementation
+    - DAG, scheduler, retry/failover policy, budget/cost, adaptive routing, UI and distributed workers
+    - Task catalog enumeration, Workflow catalog enumeration, broad repository searches and recursive Markdown traversal
+    - workflows/README.md access, aggregate validators, broad lint, full test discovery and itru verify
+    - Staging, commit, push, merge and other Git mutations
+dependencies:
+  - ITRU-060
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

@@ -1,0 +1,60 @@
+id: ITRU-063
+title: Minimal DAG and Scheduler Foundation
+type: implementation
+status: completed
+version_target: "0.1.0"
+complexity: high
+risk: high
+execution:
+  mode: deep
+workflow: standard-change
+objective: >
+  SCRUM-20: add the minimum canonical Task dependency DAG and deterministic,
+  persisted-state-aware bounded scheduler for Developer Alpha. Complete design
+  lock, implementation, static audit, exact validation, fresh specialist reviews
+  and evidence updates, then STOP AT HUMAN CONTROL before final Quality Gates.
+  Implementation cycle is complete: V1 37 and V2 59 passing
+  tests, zero skips; V3/V4 pass; five fresh independent specialists APPROVE the
+  same current product fingerprints. Three Medium findings were minimally
+  remediated, affected validation passed and independent reassessment resolved
+  them. Unresolved findings 0/0/0/0. The Human authorized LOCKED FINAL QUALITY
+  GATES ONLY. Exact FQ-DC-1 documentation_consistency PASS, then FQ-IR-1
+  independent_review PASS. Acceptance 21/22; G01 complete, H01 pending.
+  Only the five existing Task evidence/status files are updated; all frozen
+  procedure definitions and product fingerprints remain unchanged. Task remains
+  in_progress and OPEN. STOP AT HUMAN CONTROL. Exact next authorization needed:
+  APPROVE ITRU-063 FINAL HUMAN CLOSURE ONLY.
+  The Human has now explicitly authorized FINAL HUMAN CLOSURE ONLY and accepts
+  the retained final basis. Final Human closure COMPLETE; H01 COMPLETE;
+  acceptance 22/22; Task completed and closed. Both final gates and publication
+  readback remain PASS; 96 passing tests and 5/5 independent approvals remain
+  current. Unresolved findings 0/0/0/0; ITRU-060/061/062 and persistence migrations
+  preserved. Earlier OPEN, 21/22 and closure-pending wording is historical and
+  superseded by this explicit Human closure. No validation, review or gate rerun;
+  no product or persistence change; no Git mutation or ITRU-064 start.
+  No further Human authorization is needed for ITRU-063 closure.
+  STOP AT HUMAN CONTROL.
+scope:
+  include:
+    - Exact ten-path implementation and evidence whitelist in context.md
+    - Closed dependency identity, cycle rejection and ready/blocked evaluation
+    - Pure deterministic bounded selection over supplied persisted snapshots
+    - Descriptive Assignment handoff into the unchanged execution authority chain
+    - Locked validation, specialist reviews and future final-gate procedures
+  exclude:
+    - Changes to ITRU-060/061/062 contracts, persistence or migrations
+    - Automatic continuation, replay, retry, failover or adaptive routing
+    - Authority issuance, invocation, distributed scheduling or remote workers
+    - Cost/budget optimization, UI, CLI and repository catalog discovery
+    - workflows/README.md and broad repository or Markdown traversal
+    - Final Quality Gate execution, closure, staging, commit, pull, push or merge
+dependencies:
+  - ITRU-062
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

@@ -1,5 +1,9 @@
 # ITRU Developer Alpha 0.1.0a1
 
+Start with the [first-Run operator card](developer-alpha-first-run.md) for the
+short offline install, explicit-work and Human approval sequence. The card is
+provided in this repository; the existing local offline ZIP predates it.
+
 This local Windows/Python 3.12 Alpha runs explicit read workflows using your
 configured model. Its controlled Tool is the bounded native repository file
 reader (maximum 64 KiB). Model plans are advisory text. Task governance completion

@@ -1,5 +1,22 @@
 # Developer Alpha usability roadmap
 
+## Current documentation disposition — October 17, 2026
+
+The separately authorized [first-Run operator card](developer-alpha-first-run.md)
+now documents the existing Alpha journey; it adds no CLI/runtime features.
+The 31 feasibility artifacts are preserved in the
+[quarantined evidence archive](architecture/control-center/evidence/README.md),
+committed as `f287678b9709a9b04ac62b990361c0dcfb4374de` after independent review.
+The [later Human authorization](architecture/control-center/human-decisions.md#october-17-2026--evidence-archival-and-first-run-documentation-authorization)
+covers only that archive and this documentation slice. Every other proposed
+slice still requires separate authorization; S0 remains closed at NO-GO.
+
+All remaining assessment text below is retained from the prior roadmap. Its
+untracked-evidence and proposed-first-card statements describe that earlier
+checkpoint and are superseded by this dated documentation disposition.
+
+## Original assessment and proposals (historical checkpoint)
+
 Date: October 17, 2026.
 Status: assessment and proposed roadmap; implementation is not authorized.
 

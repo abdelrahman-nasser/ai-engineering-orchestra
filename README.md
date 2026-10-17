@@ -23,6 +23,11 @@ The framework is designed to work independently of any specific AI Provider, mod
 0.1.0
 ```
 
+This is the framework version. The local Developer Alpha package/console version
+is **0.1.0a1**. Start with the [first-Run operator card](docs/developer-alpha-first-run.md)
+for the existing offline Windows read workflow; the [full Alpha guide](docs/developer-alpha.md)
+contains configuration and recovery details. Core Alpha remains CLI-only.
+
 ## Local CLI Installation
 
 Python 3.12 or newer is required for the locally installable CLI. AIO-016
@@ -86,7 +91,7 @@ ITRU is the single living product identity: the import package, distribution,
 and installed console are all `itru`. Historical Task identities remain exact;
 `AIO-059` is the last legacy Task, and `ITRU-060` is the first future Task after
 cutover closure. There is no legacy package or console alias. The static
-version `0.1.0` identifies installed code; Manifest `orchestra.version` expresses
+version `0.1.0a1` identifies installed code; Manifest `orchestra.version` expresses
 the managed project's framework expectation. No version synchronization is implied.
 
 This is an explicitly authorized local-installability experiment. It does not

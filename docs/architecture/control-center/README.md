@@ -4,7 +4,10 @@ This directory is the permanent, version-controlled source of truth for the
 approved Core application boundary architecture and its Human approval record.
 The architecture baseline is **ITRU Core Application Boundary Design v2**,
 including **P01–P10**, approved on **October 17, 2026** for architecture and
-subsequent implementation planning. Implementation remains unauthorized.
+subsequent implementation planning. The completed implementation plan is now
+Human-approved. A separate October 17, 2026 instruction authorizes only S0
+synthetic feasibility, subject to repository governance; later implementation
+slices and operational integration remain unauthorized.
 
 ## Canonical documents
 
@@ -17,9 +20,11 @@ All paths below are relative to the Core repository root.
 | [docs/architecture/control-center/reconciliation-addendum.md](reconciliation-addendum.md) | Preserved reconciliation corrections and constraints incorporated into v2. Its historical approval wording is unchanged. |
 | [docs/architecture/control-center/application-boundary-v2.md](application-boundary-v2.md) | Exact approved v2 technical baseline, including P01–P10. Historical candidate and approval-pending labels remain verbatim; read the later Human decision alongside it. |
 | [docs/architecture/control-center/human-decisions.md](human-decisions.md) | Separate record of the actual October 17, 2026 Human approval, its exact document identity, scope, and exclusions. |
+| [docs/architecture/control-center/integration-implementation-plan.md](integration-implementation-plan.md) | Exact Human-approved S0–S8 planning baseline. Historical authorization and unresolved-H2 statements are preserved; the subsequent Human decision accepts H2 and authorizes S0 only, subject to governance. |
 
-The **implementation plan is pending**. No implementation-plan document has
-been created by this consolidation.
+The **implementation plan is approved and archived**. This does not authorize
+S1–S8, operational-store access, transport/authentication selection, or UI work.
+Read the later decisions below alongside the preserved plan.
 
 ## Preserved original identities
 
@@ -38,6 +43,41 @@ the corresponding repository files and Git blobs.
 These hashes establish document byte identity against the supplied expected
 values. They are not cryptographic signatures, runtime integrity evidence,
 operational authorization, or Quality Gate results.
+
+## Approved implementation-plan identity
+
+The completed report was recovered from its original temporary location and
+copied byte-for-byte, without reconstruction from conversation text:
+
+`C:\Users\Abdelrahman\AppData\Local\Temp\itru-read-only-planning-2026-10-17\ITRU_Read_Only_Integration_Implementation_Plan.md`
+
+| Identity | Value |
+| --- | --- |
+| Original title / filename | `ITRU_Read_Only_Integration_Implementation_Plan.md` |
+| Canonical path | [docs/architecture/control-center/integration-implementation-plan.md](integration-implementation-plan.md) |
+| SHA-256 | `93241792fa9a0313e9bee28c6542cbe9d5dd16a4f6599c0b6e0892340f48ee9d` |
+| Human approval date | October 17, 2026 |
+
+The exact archived plan is the planning baseline. Its historical statements
+that implementation was unauthorized and H2 unresolved remain unchanged.
+The subsequent Human instruction recorded in `human-decisions.md` accepts H2:
+historical integrity/event replay may use `continuation_eligible` internally;
+neither query may assess or expose current continuation eligibility. First-slice
+eligibility remains `unassessed` and continuation controls remain disabled.
+
+S0 may prepare isolated source/policy/budget definitions, synthetic fixtures,
+tests and feasibility evidence within the separately authorized paths. It may
+not modify existing production runtime/store/scheduler modules, database
+schemas, UI source or canonical approved architecture. Operational data access,
+audience grants, authentication/transport selection, S1–S8, downloads,
+dependency installation, network/diagnostic probes and D6-E/B1 execution remain
+excluded. No synthetic result establishes operational acceptance.
+
+The authorization requires stopping if repository governance needs an assigned
+Task ID or a different approved workflow before implementation; no Task ID may
+be invented. S0 implementation changes must remain unstaged and uncommitted
+until separate Human final review. A P07 safety property that cannot be
+established requires a NO-GO recommendation, without relaxing the profile.
 
 ## Authority and document relationship
 
@@ -79,13 +119,13 @@ is authorized here.
 
 ## Instructions for future Codex sessions
 
-Before Core and Control Center integration planning:
+Before planning revisions or separately authorized integration work:
 
 1. Read repository `AGENTS.md`, the current Task, and applicable governance.
 2. Read this index and `human-decisions.md` to establish approval scope.
-3. Verify the three preserved technical documents against the SHA-256 values
-   above. A mismatch requires investigation and Human resolution; do not
-   substitute a draft or reconstruct a missing specification.
+3. Verify the three preserved technical documents and the archived plan against
+   the SHA-256 values above. A mismatch requires investigation and Human
+   resolution; do not substitute a draft or reconstruct a missing document.
 4. Read the complete `application-boundary-v2.md`, including P01–P10, alongside
    the complete investigation and reconciliation addendum. Use the recorded
    approval for current status while preserving historical document wording.
@@ -95,6 +135,10 @@ Before Core and Control Center integration planning:
    Planning may proceed only within the applicable Human instruction; code
    changes require separate authorization. Do not automatically begin planning
    as a consequence of this archive task.
+7. Read the complete archived implementation plan and subsequent Human decisions.
+   The current implementation scope is S0 only, subject to its governance
+   prerequisites and explicit synthetic-only restrictions. Later slices require
+   separate authorization.
 
 The approved first slice contains exactly `InspectRun` and `ReadRunJournal`.
 It remains read-only and content-free, with Core-authoritative lifecycle, DAG,
@@ -103,6 +147,10 @@ transport/authentication decisions, runtime validation, and operational-store
 access require their own scoped authorization. Execution, approval,
 cancellation, and continuation controls remain disabled.
 
-**Human Control:** Stop after the authorized documentation-only local commit
-and report its identity. No push, merge, tag, PR, publication, implementation,
-or automatic progression to integration planning is authorized.
+**Human Control:** The October 17, 2026 instruction authorizes one local
+documentation-only plan-archive commit, followed by a dedicated S0 branch and
+S0 synthetic feasibility only if repository governance permits. Stop at any
+required governance prerequisite; otherwise stop after S0 for Human review.
+Do not stage or commit S0 implementation changes. No push, merge, tag, PR,
+publication, external-system modification or automatic progression to S1–S8
+is authorized.

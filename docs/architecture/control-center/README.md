@@ -4,10 +4,18 @@ This directory is the permanent, version-controlled source of truth for the
 approved Core application boundary architecture and its Human approval record.
 The architecture baseline is **ITRU Core Application Boundary Design v2**,
 including **P01–P10**, approved on **October 17, 2026** for architecture and
-subsequent implementation planning. The completed implementation plan is now
-Human-approved. A separate October 17, 2026 instruction authorizes only S0
-synthetic feasibility, subject to repository governance; later implementation
-slices and operational integration remain unauthorized.
+subsequent implementation planning. The implementation plan remains approved.
+On October 17, 2026 the Human **accepted Option D - DEFER READER ADMISSION**:
+**S0 is closed at NO-GO; S1-S8 are not authorized.** Architecture v2, P01-P10
+and P07 remain unchanged. Core Developer Alpha stays CLI-only; Control Center
+stays mock-backed. A/B redesign and transport selection are deferred.
+
+The [latest Human decision](human-decisions.md)
+supersedes the earlier S0 execution authorization. Earlier S0 instructions below
+are historical context, not permission to resume experiments or implementation.
+The [Developer Alpha usability roadmap](../../developer-alpha-usability-roadmap.md)
+is the current planning deliverable; none of its proposed slices is authorized
+for implementation. All 31 feasibility artifacts remain preserved and uncommitted.
 
 ## Canonical documents
 
@@ -19,7 +27,7 @@ All paths below are relative to the Core repository root.
 | [docs/architecture/control-center/boundary-investigation.md](boundary-investigation.md) | Preserved static investigation and evidence base. Its historical observations and proposals are not implementation authorization. |
 | [docs/architecture/control-center/reconciliation-addendum.md](reconciliation-addendum.md) | Preserved reconciliation corrections and constraints incorporated into v2. Its historical approval wording is unchanged. |
 | [docs/architecture/control-center/application-boundary-v2.md](application-boundary-v2.md) | Exact approved v2 technical baseline, including P01–P10. Historical candidate and approval-pending labels remain verbatim; read the later Human decision alongside it. |
-| [docs/architecture/control-center/human-decisions.md](human-decisions.md) | Separate record of the actual October 17, 2026 Human approval, its exact document identity, scope, and exclusions. |
+| [docs/architecture/control-center/human-decisions.md](human-decisions.md) | Architecture/plan approvals, historical S0 authorization and latest Option D decision closing S0 at NO-GO. |
 | [docs/architecture/control-center/integration-implementation-plan.md](integration-implementation-plan.md) | Exact Human-approved S0–S8 planning baseline. Historical authorization and unresolved-H2 statements are preserved; the subsequent Human decision accepts H2 and authorizes S0 only, subject to governance. |
 
 The **implementation plan is approved and archived**. This does not authorize
@@ -135,10 +143,11 @@ Before planning revisions or separately authorized integration work:
    Planning may proceed only within the applicable Human instruction; code
    changes require separate authorization. Do not automatically begin planning
    as a consequence of this archive task.
-7. Read the complete archived implementation plan and subsequent Human decisions.
-   The current implementation scope is S0 only, subject to its governance
-   prerequisites and explicit synthetic-only restrictions. Later slices require
-   separate authorization.
+7. Read the complete archived implementation plan and latest Human decision.
+   Option D closes S0 at NO-GO. Earlier S0-only instructions are historical;
+   no experiment, A/B redesign or later implementation slice is currently
+   authorized. Preserve all 31 uncommitted feasibility artifacts pending a
+   separate archival disposition.
 
 The approved first slice contains exactly `InspectRun` and `ReadRunJournal`.
 It remains read-only and content-free, with Core-authoritative lifecycle, DAG,
@@ -147,10 +156,10 @@ transport/authentication decisions, runtime validation, and operational-store
 access require their own scoped authorization. Execution, approval,
 cancellation, and continuation controls remain disabled.
 
-**Human Control:** The October 17, 2026 instruction authorizes one local
-documentation-only plan-archive commit, followed by a dedicated S0 branch and
-S0 synthetic feasibility only if repository governance permits. Stop at any
-required governance prerequisite; otherwise stop after S0 for Human review.
-Do not stage or commit S0 implementation changes. No push, merge, tag, PR,
-publication, external-system modification or automatic progression to S1–S8
-is authorized.
+**Current Human Control:** The October 17, 2026 Option D decision defers reader
+admission and closes S0 at NO-GO. The current authorization permits recording
+that decision, preparing the Developer Alpha usability roadmap, and one reviewed
+local documentation-only commit. Do not stage or commit the 31 feasibility
+artifacts or implement the roadmap. Stop after the documentation report. No
+push, merge, tag, PR, release change, external-system modification, A/B redesign,
+transport selection or progression to S1–S8 is authorized.

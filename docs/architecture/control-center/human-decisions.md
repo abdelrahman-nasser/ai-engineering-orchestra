@@ -184,3 +184,55 @@ Human final review. Stop and report any new blocking finding, scope deviation
 or governance conflict.
 
 **STOP AT HUMAN CONTROL** after Phase A and S0.
+
+## October 17, 2026 — Option D: defer reader admission
+
+**Source:** Explicit Human instruction titled
+`ITRU — Record Option D & Prepare Developer Alpha Usability Roadmap`.
+
+**Decision: ACCEPT Option D — DEFER READER ADMISSION.**
+
+- **S0: Closed at NO-GO.** Successful synthetic examples do not establish all
+  required cancellation, cleanup and complete native/working-memory guarantees.
+- **S1–S8: Not authorized.** No reader admission, runtime integration or UI
+  connection follows from this decision.
+- **Architecture v2, P01–P10 and P07: Unchanged.** No numerical limit, integrity
+  requirement, ownership or authority boundary is relaxed.
+- **Core Developer Alpha remains CLI-only.** Its existing operational commands
+  retain their current governance and execution boundaries.
+- **Control Center remains mock-backed.** UI baseline and parked SCRUM-81 are
+  preserved; no transfer or implementation is authorized.
+- **A/B redesign and transport selection are deferred.** The immutable-revision
+  candidate remains unapproved; no architecture amendment is adopted.
+
+This later decision closes the earlier S0-only authorization. Historical
+architecture, planning and Phase A decisions above remain verbatim. The approved
+v2 SHA-256 remains
+`c15ac0c1cf6838e48c32cb42931138ee167902cc2eb27207486a178c06785062`;
+the archived plan remains
+`93241792fa9a0313e9bee28c6542cbe9d5dd16a4f6599c0b6e0892340f48ee9d`.
+S0-D and the A-versus-B decision report were delivered in the conversation;
+no reconstructed repository report is claimed as their verified original.
+
+**Current documentation authorization:** Record this decision, update the index
+as needed, and prepare the [Developer Alpha usability roadmap](../../developer-alpha-usability-roadmap.md)
+from actual source, documentation, configuration and existing tests. The roadmap
+is a proposal, not implementation authorization. No Task ID is created.
+
+After independent documentation/governance review and successful scoped checks,
+the Human authorizes one local documentation-only commit:
+
+`docs: record reader deferral and Developer Alpha usability roadmap`
+
+Stage only the decision record, necessary index changes and the roadmap. No
+product-code changes, releases, branch switches, push, PR, merge, external-system
+updates or automatic roadmap implementation are authorized.
+
+**Evidence preservation:** All 31 existing S0/S0-R/S0-C artifacts remain
+byte-for-byte preserved, untracked and unstaged. This includes prior failed
+receipts, source prototypes and measurements. Their paths, current SHA-256 values
+and uncommitted status must be reported. This decision does not authorize staging,
+committing, moving or deleting them. A separate archival disposition may be
+proposed for Human review; none is executed here.
+
+**STOP AT HUMAN CONTROL** after documentation closure and the roadmap report.

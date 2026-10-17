@@ -128,8 +128,11 @@ def make_plan(cfg, store, action='run', task_id=None, reference=None):
         raise ValueError('invalid plan subject')
     subject = {'config': cfg, 'work': work, 'snapshot': asdict(snapshot), 'action': action,
                'selected': list(selected), 'reference': reference}
+    tasks = {task['id']: task for task in work['tasks']}
     return {'status': 'approval_required' if selected else 'no_runnable_tasks',
         'action': action, 'selected': list(selected), 'approval': digest(subject) if selected else None,
+        'selected_subjects': [{'task_id': key, 'objective': tasks[key]['objective'],
+                               'resource': tasks[key]['resource']} for key in selected],
         'tasks': [asdict(e) for e in decision.evaluations],
         'workers': cfg['max_concurrency'], 'tool_execution': 'serialized',
         'reference': reference}

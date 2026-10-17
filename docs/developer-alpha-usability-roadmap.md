@@ -8,12 +8,19 @@ The 31 feasibility artifacts are preserved in the
 [quarantined evidence archive](architecture/control-center/evidence/README.md),
 committed as `f287678b9709a9b04ac62b990361c0dcfb4374de` after independent review.
 The [later Human authorization](architecture/control-center/human-decisions.md#october-17-2026--evidence-archival-and-first-run-documentation-authorization)
-covers only that archive and this documentation slice. Every other proposed
-slice still requires separate authorization; S0 remains closed at NO-GO.
+covers only that archive and this documentation slice. S0 remains closed at NO-GO.
+
+Under a subsequent scoped Human authorization, the current checkout now adds
+`selected_subjects` to the existing approval plan: exact Task ID, objective and
+resource in selection order, without changing the approval subject or digest.
+See the [Alpha guide](developer-alpha.md#explicit-work-approval-restart-and-history).
+The existing offline ZIP predates this preview. Remaining proposed slices still
+require separate authorization.
 
 All remaining assessment text below is retained from the prior roadmap. Its
 untracked-evidence and proposed-first-card statements describe that earlier
-checkpoint and are superseded by this dated documentation disposition.
+checkpoint and are superseded by this dated documentation disposition, as is
+the assessment's missing-subject-display statement and preview proposal.
 
 ## Original assessment and proposals (historical checkpoint)
 

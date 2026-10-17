@@ -100,8 +100,12 @@ On a clean demo, the plan should report `approval_required`, selected IDs
 `read-a`/`read-b`, two workers and serialized Tool execution. `read-c` is blocked
 pending prerequisite governance closure. The JSON `approval` field binds the
 current config, complete work, action, selected subjects and lifecycle snapshot.
-Inspect local `alpha.json`, and join every selected ID to its **exact objective
-and resource in `work.json`**: plan JSON does not display those texts.
+Inspect local `alpha.json` and every `selected_subjects` entry's exact `task_id`,
+`objective` and `resource`. The current checkout displays complete loaded strings
+in `selected` order; it does not normalize or truncate them. If your terminal
+clips long JSON, inspect the complete output before approving. **The existing
+offline ZIP predates this preview:** if `selected_subjects` is absent, join every
+selected ID to its exact objective and resource in `work.json`.
 
 **Operational boundary:** `load`, `plan` and `history` open the lifecycle owner;
 startup recovery can cancel pending Runs or mark running Runs interrupted.
@@ -113,6 +117,8 @@ Stop for inspection if an unexpected existing history appears.
 Only after reviewing the current subjects and deciding to authorize this exact
 read, manually replace the quoted placeholder with the plan's current `approval`
 value. Do not pipe plan output into execution or reuse approval after changes.
+Any config, work or lifecycle change requires a fresh plan and Human review.
+The preview leaves the approval subject, digest and explicit approval unchanged.
 
 **This block initiates governed execution**, including BYO inference if configured:
 

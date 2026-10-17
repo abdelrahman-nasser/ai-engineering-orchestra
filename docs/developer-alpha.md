@@ -2,7 +2,8 @@
 
 Start with the [first-Run operator card](developer-alpha-first-run.md) for the
 short offline install, explicit-work and Human approval sequence. The card is
-provided in this repository; the existing local offline ZIP predates it.
+provided in this repository; the existing local offline ZIP predates both the
+card and the approval preview described below.
 
 This local Windows/Python 3.12 Alpha runs explicit read workflows using your
 configured model. Its controlled Tool is the bounded native repository file
@@ -47,9 +48,10 @@ itru alpha plan --config $cfg
 ```
 
 init defaults to an explicitly labelled deterministic offline demo adapter,
-which performs no model inference. Inspect plan JSON and the exact selected
-resources/objectives in work.json. To approve these current subjects, copy the
-approval digest from plan and invoke:
+which performs no model inference. Inspect plan JSON, including each exact Task
+ID, objective and resource in `selected_subjects`, and the local configuration.
+To approve these current subjects, manually copy the approval digest from plan
+and invoke:
 
 ```powershell
 itru alpha run --config $cfg --approve <digest-from-plan>
@@ -116,6 +118,18 @@ can supply control-plane intent. Model/config/Journals never supply approval.
 No unattended policy-grant mode exists. Every invocation requires a new Run,
 fresh authenticated proofs, admission, claim and JIT checks. Reusing an old
 digest after state changes fails. Terminal evidence cannot dispatch work.
+
+In this checkout, `alpha plan` adds `selected_subjects` for run, resume and
+completion plans. Each entry contains `task_id`, `objective` and `resource`,
+in exactly the same order as `selected`; no selection produces an empty array
+and no approval digest. These are exact loaded strings, without normalization
+or truncation. Existing limits still apply: input files at most 1 MiB, each
+subject string at most 4096 characters, and at most two selected Tasks. If your
+terminal clips the JSON, inspect the complete output before approving. This
+display adds no authority and does not change the approval subject or digest.
+Any config, work or lifecycle change requires a fresh plan and Human review;
+loaded work remains immutable. With the older offline ZIP, which lacks this
+field, join every selected ID to its exact objective/resource in `work.json`.
 
 Each command opens and closes the process-owned Store. On restart, pending Runs
 recover as cancelled and running Runs as interrupted. History preserves these

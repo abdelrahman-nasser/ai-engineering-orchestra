@@ -1,0 +1,33 @@
+id: developer-alpha-usability-p0
+title: Clarify Developer Alpha Human approval subjects
+type: implementation
+status: in_progress
+complexity: medium
+risk: medium
+execution:
+  mode: standard
+workflow: standard-change
+objective: >
+  Add exact selected Task subjects to the existing Human approval preview,
+  preserving approval digests, explicit authorization and governance semantics.
+  One local checkpoint commit is explicitly Human-authorized; broader validation
+  is not green and final Task acceptance and closure remain pending.
+scope:
+  include:
+    - Additive selected-subject preview in itru/developer_alpha.py
+    - Focused in-memory preview regressions and affected Developer Alpha guides
+    - Current Task scope, validation and independent-review evidence
+    - One Human-approved local checkpoint and minimal scope/audit updates
+  exclude:
+    - Approval authority, automatic approvals and execution endpoints
+    - Core-to-UI reader architecture, archived S0 and historical release evidence
+    - Unrelated baseline fixes, original-tree changes and additional commits
+    - Push, merge, PR, tag, release, publication and automatic Task completion
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

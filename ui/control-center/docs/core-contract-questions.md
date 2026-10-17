@@ -2,6 +2,16 @@
 
 This document tracks unresolved Core dependencies encountered while building the ITRU Control Center UI foundation (SCRUM-17).
 
+**Historical mock design record:** The questions and assumptions below describe
+the original prototype and are not current Core contract definitions. Core now
+owns Task/Run lifecycle, continuation safety, Task dependencies and advisory
+scheduling. The separately approved application boundary v2 supplies exact
+content-free inspection projections. Its UI-only synthetic preparation is
+documented in [application v1.0 preparation](application-v1-preparation.md).
+Existing mock payload previews, rich fields and continuation demonstrations
+must not be carried into a future real source. The current app remains mock-backed;
+this record does not authorize a connection or select a transport.
+
 ## Strict Boundary Principles
 
 1. The UI lane MUST NOT invent Core contracts, lifecycle transitions, scheduler semantics, or transport protocols.

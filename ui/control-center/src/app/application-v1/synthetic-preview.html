@@ -1,0 +1,299 @@
+<header class="preview-header">
+  <p class="eyebrow">Synthetic fixtures · Application v1.0</p>
+  <h1>Application boundary preview</h1>
+  <p>
+    No operational source is connected. These fabricated observations exercise the approved v2
+    response contract.
+  </p>
+  <a routerLink="/">Return to existing mock demonstrations</a>
+</header>
+
+<section class="notice" aria-label="Preview boundary">
+  <strong>SYNTHETIC DATA ONLY</strong>
+  <p>
+    Existing mock demonstrations use separate models. This preview has no Core adapter, transport,
+    runtime or operational action paths.
+  </p>
+  <p data-testid="approval-count">Approvals: {{ unsupported.approvals }}</p>
+</section>
+
+<div class="toolbar">
+  <label for="application-scenario">Synthetic scenario</label>
+  <select id="application-scenario" [value]="selected()" (change)="choose($event)">
+    @for (scenario of scenarios; track scenario[0]) {
+      <option [value]="scenario[0]">{{ scenario[1] }}</option>
+    }
+  </select>
+</div>
+
+<section class="card" aria-label="Operational controls">
+  <p>
+    {{ unsupported.continuation }}. No displayed selection, Grant or Admission confers authority.
+  </p>
+  <div class="controls">
+    <button type="button" disabled>Execute</button><button type="button" disabled>Approve</button>
+    <button type="button" disabled>Cancel</button><button type="button" disabled>Resume</button>
+  </div>
+</section>
+
+<div class="panels">
+  <section class="card" aria-label="Lifecycle observation">
+    <h2>Lifecycle observation</h2>
+    <p class="state" data-testid="lifecycle-status">{{ session().inspection.status }}</p>
+    @if (session().inspection.failure; as failure) {
+      <p role="status">{{ failure.error.safe_message }} ({{ failure.error.code }})</p>
+    }
+    @if (session().inspection.status === 'stale') {
+      <p class="notice">
+        Historical lifecycle observation, same still-entitled context. Original time retained.
+      </p>
+    }
+    @if (inspection(); as value) {
+      <dl>
+        <dt>Source / revision</dt>
+        <dd>{{ value.source_id }} / {{ value.source_revision }}</dd>
+        <dt>Project / store</dt>
+        <dd>{{ value.source_observation.project_id }} / {{ value.source_observation.store_id }}</dd>
+        <dt>Observed at</dt>
+        <dd>{{ value.source_observation.observed_at }}</dd>
+        <dt>Inspection expires at</dt>
+        <dd>{{ value.expires_at }}</dd>
+        <dt>Task</dt>
+        <dd>{{ value.lifecycle.task_id }}</dd>
+        <dt>Task lifecycle</dt>
+        <dd data-testid="task-state">
+          {{ taskLabels[value.lifecycle.task_state] }} ({{ value.lifecycle.task_state }})
+        </dd>
+        <dt>Task revision</dt>
+        <dd>{{ value.lifecycle.task_revision }}</dd>
+        <dt>Run</dt>
+        <dd>{{ value.lifecycle.binding.run.run_id }}</dd>
+        <dt>Run lifecycle</dt>
+        <dd data-testid="run-state">
+          {{ runLabels[value.lifecycle.run_state] }} ({{ value.lifecycle.run_state }})
+        </dd>
+        <dt>Run revision</dt>
+        <dd>{{ value.lifecycle.run_revision }}</dd>
+        <dt>Accepted Result identity</dt>
+        <dd>
+          {{
+            value.lifecycle.accepted_result_identity?.join(' / ') ??
+              'Unavailable — no accepted identity in this observation'
+          }}
+        </dd>
+        <dt>Tool ID</dt>
+        <dd>{{ value.lifecycle.binding.tool_id }}</dd>
+        <dt>configuredRoute</dt>
+        <dd data-testid="configured-route">{{ unsupported.configuredRoute }}</dd>
+        <dt>Ledger / domain / generation</dt>
+        <dd>
+          {{ value.lifecycle.ledger_identity.ledger_instance_id }} /
+          {{ value.lifecycle.ledger_identity.authorization_domain_id }} /
+          {{ value.lifecycle.ledger_identity.domain_generation }}
+        </dd>
+        <dt>Definition reference</dt>
+        <dd>{{ value.lifecycle.definition_reference }}</dd>
+        <dt>Rich definition metadata</dt>
+        <dd>Unavailable — not_in_first_slice</dd>
+      </dl>
+      <details>
+        <summary>Exact Contract fields</summary>
+        <dl>
+          @for (entry of contractEntries(); track entry[0]) {
+            <dt>{{ entry[0] }}</dt>
+            <dd>{{ entry[1] }}</dd>
+          }
+        </dl>
+      </details>
+      <h3>Task Run history · registration order</h3>
+      <p data-testid="latest-run">
+        Latest registered Run: {{ value.task_run_history.latest_run_id }}
+      </p>
+      <ol>
+        @for (entry of value.task_run_history.entries; track entry.run_id) {
+          <li>{{ entry.run_id }} · {{ entry.state }} · revision {{ entry.revision }}</li>
+        }
+      </ol>
+      <h3>Task dependencies and scheduler observation</h3>
+      <p data-testid="scheduler-state">
+        {{ schedulerLabels[value.scheduling.state] }} ({{ value.scheduling.state }}) · configured
+        concurrency {{ value.scheduling.max_concurrency }}
+      </p>
+      <p>
+        Advisory selection: {{ value.scheduling.selected_task_ids.join(', ') || 'None supplied' }}.
+        Selection reserves nothing and authorizes nothing.
+      </p>
+      <p>
+        Occupied Runs, including disconnected capacity consumers:
+        {{ value.scheduling.occupied_run_ids.join(', ') || 'None supplied' }}
+      </p>
+      <p>
+        Missing Task observations:
+        {{ value.scheduling.snapshot_coverage.missing_task_ids.join(', ') || 'None supplied' }}
+      </p>
+      <p>Canonical topological order: {{ value.graph.topological_order.join(' → ') }}</p>
+      <ul aria-label="Canonical dependency edges">
+        @for (edge of value.graph.dependencies; track $index) {
+          <li>{{ edge.task_id }} waits for {{ edge.prerequisite_task_id }}</li>
+        }
+      </ul>
+      <div class="table-scroll">
+        <table aria-label="Supplied scheduler evaluations">
+          <thead>
+            <tr>
+              <th>Task</th>
+              <th>Evaluation</th>
+              <th>Dependencies</th>
+              <th>Unsatisfied Tasks</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (evaluation of value.scheduling.evaluations; track evaluation.task_id) {
+              <tr>
+                <td>{{ evaluation.task_id }}</td>
+                <td>{{ evaluation.state }}</td>
+                <td>{{ evaluation.dependencies.state }}</td>
+                <td>
+                  {{ evaluation.dependencies.unsatisfied_task_ids.join(', ') || 'None supplied' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Core-supplied decision fields are displayed unchanged. Workflow Stage progress and Quality
+        Gate outcomes are unavailable.
+      </p>
+    } @else {
+      <p>No lifecycle observation is displayed.</p>
+    }
+  </section>
+
+  <section class="card" aria-label="Journal observation">
+    <h2>Journal observation</h2>
+    <p class="state" data-testid="journal-status">{{ session().journal.status }}</p>
+    @if (session().journal.failure; as failure) {
+      <p role="status">
+        {{ failure.error.safe_message }} ({{ failure.error.code }}) ·
+        {{ failure.error.retry_advice }}
+      </p>
+    }
+    @if (session().journal.status === 'stale') {
+      <p class="notice">
+        Historical Journal observation after refresh failure. Original scope and time retained under
+        continuing entitlement.
+      </p>
+    }
+    @if (journal(); as value) {
+      <p>
+        Journal snapshot semantically validated — synthetic assertion from the response. Scope:
+        {{ value.journal_observation.validation_scope }}.
+      </p>
+      <dl>
+        <dt>Journal</dt>
+        <dd>{{ value.journal_observation.journal_id }}</dd>
+        <dt>Observed interval</dt>
+        <dd>
+          {{ value.journal_observation.started_at }} / {{ value.journal_observation.completed_at }}
+        </dd>
+        <dt>Ledger observation</dt>
+        <dd>{{ value.journal_observation.ledger_observation }}</dd>
+        <dt>Frozen high water / current high water</dt>
+        <dd>
+          {{ value.traversal.high_water }} / {{ value.journal_observation.current_high_water }}
+        </dd>
+        <dt>Global last scanned sequence</dt>
+        <dd>{{ value.traversal.last_scanned_sequence }}</dd>
+        <dt>Cumulative scanned / matched</dt>
+        <dd>{{ value.traversal.scanned_count }} / {{ value.traversal.matched_count }}</dd>
+        <dt>Traversal coverage / stop reason</dt>
+        <dd>{{ value.comparison.coverage }} / {{ value.traversal.stop_reason }}</dd>
+        <dt>Next page reference</dt>
+        <dd>
+          {{
+            value.traversal.next_cursor === null
+              ? 'None — high water reached'
+              : 'Present — further traversal required'
+          }}
+        </dd>
+      </dl>
+      @if (!value.traversal.complete) {
+        <p class="notice" data-testid="coverage-notice">
+          Partial traversal. Absence, agreement and subject uniqueness remain unproven. An empty
+          page can still require continuation.
+        </p>
+      } @else if (value.traversal.matched_count === '0') {
+        <p class="notice" data-testid="coverage-notice">
+          Complete with no matching recorded evidence in this Journal at this high water. This does
+          not establish absence of invocation, effects, lost Results or evidence elsewhere.
+        </p>
+      }
+      <h3>Independent comparison</h3>
+      <p>
+        Lifecycle at inspection: {{ value.comparison.lifecycle_state_at_inspection }} · Run revision
+        {{ value.comparison.lifecycle_revision_at_inspection }}
+      </p>
+      <p>
+        Core reconciliation:
+        {{ value.comparison.core_reconciliation?.state ?? 'Unavailable until complete traversal' }}
+      </p>
+      <ul aria-label="Supplied discrepancies">
+        @for (code of value.comparison.discrepancies; track code) {
+          <li class="discrepancy">{{ code }}</li>
+        }
+      </ul>
+      <p>
+        Separate observations may disagree. No winner, lifecycle promotion, repair or continuation
+        eligibility is inferred.
+      </p>
+      <h3>Recorded evidence · current page</h3>
+      @for (record of value.records; track record.sequence) {
+        <article class="record" data-testid="journal-record">
+          <h4>{{ record.event_kind }} · sequence {{ record.sequence }}</h4>
+          <dl>
+            <dt>Recorded at</dt>
+            <dd>{{ record.recorded_at }}</dd>
+            <dt>Provenance</dt>
+            <dd>{{ record.provenance }}</dd>
+            <dt>Physical Result identity (ledger / domain / issuer kind / issuer / Grant)</dt>
+            <dd>{{ physicalIdentity(record).join(' / ') }}</dd>
+            <dt>Entry time / exact time key</dt>
+            <dd>
+              {{ record.execution_entry.entry_time }} / {{ record.execution_entry.entry_time_key }}
+            </dd>
+            <dt>Lease generation</dt>
+            <dd>{{ record.execution_entry.lease_generation }}</dd>
+            <dt>Admission decision time</dt>
+            <dd>{{ record.admission.decision_time }}</dd>
+            <dt>Grant issued / expires</dt>
+            <dd>
+              {{ record.admission.grant.issued_at }} / {{ record.admission.grant.expires_at }}
+            </dd>
+            <dt>Grant provenance reference</dt>
+            <dd>{{ record.admission.grant.provenance_reference }}</dd>
+          </dl>
+          @if (record.result_summary; as result) {
+            <p data-testid="recorded-outcome">Recorded outcome: {{ result.outcome }}</p>
+            <p>
+              Diagnostic: {{ result.diagnostic_code ?? 'None (explicit null)' }} · byte count:
+              {{ result.byte_count ?? 'Unavailable (explicit null)' }}
+            </p>
+          } @else {
+            <p>Entry observed; completion and effect outcome unproven.</p>
+          }
+        </article>
+      } @empty {
+        <p>No matching records on this page. See traversal coverage above.</p>
+      }
+    } @else {
+      <p>
+        No Journal records from this request are displayed; absence of evidence remains unproven.
+      </p>
+    }
+    <p>
+      Payload: {{ unsupported.payload }}. Historical content is unavailable. Recorded metadata does
+      not reconstruct a live Result.
+    </p>
+  </section>
+</div>

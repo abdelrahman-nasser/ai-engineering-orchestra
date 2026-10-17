@@ -48,6 +48,18 @@ describe('App shell', () => {
     expect(el.querySelector('.nav-badge')?.textContent?.trim()).toBe('3');
   });
 
+  it('separates the synthetic application preview from mock approval counts', async () => {
+    const ctx = await createShell();
+    await go(ctx, '/application-v1-preview#evidence');
+    expect(ctx.el.querySelector('.nav-badge')?.textContent?.trim()).toBe('—');
+    expect(ctx.el.querySelector('.nav-badge')?.getAttribute('aria-label')).toContain('unavailable');
+    expect(ctx.el.querySelector('.pill-origin')?.textContent).toContain('Synthetic application v1.0');
+    expect(ctx.el.querySelector('h1')?.textContent).toContain('Application boundary preview');
+    await go(ctx, '/');
+    expect(ctx.el.querySelector('.nav-badge')?.textContent?.trim()).toBe('3');
+    expect(ctx.el.querySelector('.pill-origin')?.textContent).toContain('Mock data');
+  });
+
   const destinations: readonly [string, string][] = [
     ['/', 'Overview'],
     ['/flow', 'Nile Flow & Scheduler'],

@@ -44,6 +44,11 @@ export const routes: Routes = [
   },
 
   {
+    path: 'application-v1-preview',
+    title: 'Synthetic application v1.0 preview · ITRU Control Center',
+    loadComponent: () => import('./application-v1/synthetic-preview').then((m) => m.SyntheticPreview),
+  },
+  {
     path: '**',
     title: 'Not found · ITRU Control Center',
     loadComponent: () => import('./features/not-found/not-found').then((m) => m.NotFound),

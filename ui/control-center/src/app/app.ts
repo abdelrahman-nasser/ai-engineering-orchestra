@@ -39,6 +39,13 @@ export class App {
 
   protected readonly nav = PRIMARY_NAV;
   protected readonly originLabel = this.dataSource.originLabel;
+  private readonly routeUrl = toSignal(this.router.events.pipe(
+    filter((event) => event instanceof NavigationEnd),
+    map((event) => event.urlAfterRedirects),
+  ), { initialValue: this.router.url });
+  protected readonly applicationPreview = computed(
+    () => this.routeUrl().split(/[?#;]/)[0].replace(/\/+$/, '') === '/application-v1-preview',
+  );
   protected readonly navOpen = signal(false);
 
   private readonly approvals = toSignal(this.dataSource.listApprovals(), { initialValue: [] });

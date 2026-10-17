@@ -43,7 +43,9 @@
             >
               <cc-icon [name]="item.icon" [size]="19" />
               <span class="nav-label">{{ item.label }}</span>
-              @if (item.path === '/approvals' && awaitingCount() > 0) {
+              @if (item.path === '/approvals' && applicationPreview()) {
+                <span class="nav-badge" aria-label="Approval count unavailable in application v1.0" title="Approval count unavailable; this link opens a separate mock demonstration">—</span>
+              } @else if (item.path === '/approvals' && awaitingCount() > 0) {
                 <span class="nav-badge" [attr.aria-label]="awaitingCount() + ' awaiting'">{{ awaitingCount() }}</span>
               }
             </a>
@@ -55,9 +57,11 @@
     <div class="sidebar-foot">
       <span class="origin" data-testid="data-origin">
         <span class="origin-dot" aria-hidden="true"></span>
-        <span class="origin-text">{{ originLabel }}</span>
+        <span class="origin-text">{{ applicationPreview() ? 'Synthetic application v1.0' : originLabel }}</span>
       </span>
       <small class="foot-note">Read-only foundation</small>
+      <a routerLink="/application-v1-preview">Synthetic application v1.0 preview</a>
+      @if (applicationPreview()) { <small class="foot-note">Primary navigation opens separate mock demonstrations.</small> }
     </div>
   </aside>
 
@@ -87,7 +91,7 @@
         <span>Control Center</span>
       </div>
       <div class="topbar-actions">
-        <span class="pill-origin" title="All data on screen is fabricated for UI review">{{ originLabel }}</span>
+        <span class="pill-origin" title="All data on screen is fabricated for UI review">{{ applicationPreview() ? 'Synthetic application v1.0' : originLabel }}</span>
         <button
           type="button"
           class="btn theme-btn"

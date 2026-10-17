@@ -4,6 +4,14 @@ ITRU Control Center is the operator-facing desktop web interface for AI Engineer
 
 This application provides visibility into Tasks, Agent Execution Runs, Workflow progression, Actor availability, Quality Gate evidence, and Human Approval checkpoints.
 
+The application remains **mock-backed**. Existing screens are mock demonstrations;
+their rich fields, payload previews and historical contract assumptions are not
+real-source behavior. A separate **synthetic application v1.0 preview** is available
+at `/application-v1-preview` (also linked in the sidebar). It uses isolated, closed
+response decoders for the future `InspectRun` and `ReadRunJournal` reads and has
+no operational connection. See [integration preparation](docs/application-v1-preparation.md)
+for scope, evidence, validation and remaining review requirements.
+
 ---
 
 ## Getting Started
@@ -47,17 +55,20 @@ The UI lane operates under a **strict boundary contract**:
 
 2. **No Invented Core Contracts**:
    - The UI **MUST NOT** invent REST endpoints, WebSocket protocols, scheduler semantics, lifecycle state transitions, Result schemas, or Journal contracts.
-   - Where the UI requires presentation data that Core does not yet specify (e.g. Run lifecycle status, approval queueing, event timeline), these concepts are modeled strictly as **UI-local presentation models** in `src/app/data/models.ts`.
-   - All unresolved Core dependencies are cataloged in [`docs/core-contract-questions.md`](./docs/core-contract-questions.md).
+   - The original mock screens use **UI-local presentation models** in `src/app/data/models.ts`. Their required rich fields do not become application v1.0 fields.
+   - Historical prototype questions are preserved in [`docs/core-contract-questions.md`](./docs/core-contract-questions.md); current preparation follows the approved v2 contract described below.
 
-3. **Status of Core Specifications (Developer Alpha)**:
+3. **Historical mock prototype references (not current integration contracts)**:
    - **ALREADY LOCKED**:
      - **ITRU-060 Result Semantics** (`core/agent-execution-result-specification.md`): Three terminal outcomes (`succeeded`, `failed_before_effect`, `effect_ambiguous`), derived 5-part identity tuple `(ledger_instance_id, domain_id, issuer_kind, issuer_id, grant_id)`, bounded content payload, closed diagnostic error table, permanent Execution Entry consumption.
      - **ITRU-061 Phase-1 Journal Semantics**: Sequential event progression, proof linkage, integrity assertions, non-synthetic timestamps.
-   - **STILL CORE-DEPENDENT (Unresolved in Core v0.1.x Foundation)**:
-     - **ITRU-062 Persistence & Resume Runtime Semantics**: Checkpoint identifiers, recovery authority, restart mechanics, and transaction boundary rules.
-     - **ITRU-063 Canonical Scheduler & DAG Semantics**: Dispatch algorithm, DAG schema, readiness evaluation, and queue transition rules.
-     - **ITRU-064 Developer Alpha Runtime & API Packaging**: REST/WebSocket transports, remote worker protocol, and packaging integration.
+   - Current Core already owns Task/Run lifecycle, continuation safety, Task DAG
+     validation and advisory scheduler decisions. Older mock comments/questions
+     about absent contracts describe prototype assumptions, not current Core.
+   - The approved application boundary v2 defines content-free projections for
+     exactly two semantic reads; it does not authorize operational reader admission.
+     S0 is closed at NO-GO and S1–S8 remain unauthorized. This standalone synthetic
+     preparation does not resume that implementation plan or select a transport.
 
 4. **Core Vocabulary Reuse**:
    - Where Core has already established canonical terminology, the UI mirrors those values faithfully:
@@ -79,6 +90,7 @@ ui/control-center/src/app/
 ├── app.ts / app.html / app.css   # Application shell with primary nav & header
 ├── app.routes.ts                 # Declarative lazy route configuration
 ├── app.config.ts                 # Application DI providers (router, data source)
+├── application-v1/               # Isolated closed projections and synthetic preview
 ├── data/
 │   ├── models.ts                 # UI-local presentation models & Core vocabulary
 │   ├── control-center-data-source.ts # Abstract data-source contract & InjectionToken
@@ -118,10 +130,18 @@ ui/control-center/src/app/
 ### Key Architectural Patterns
 
 - **`ControlCenterDataSource`**:
-  - The sole abstraction boundary between screens and data.
+  - The abstraction boundary for the existing mock demonstration screens.
   - Returns `Observable<T>` streams to support future streaming or remote backends without altering feature components.
   - Implemented currently by `MockControlCenterDataSource`, injectable via the `ControlCenterDataSource` token.
   - In tests, simulated latency is removed via `MOCK_LATENCY_MS` set to `0`.
+
+- **`application-v1/` synthetic preparation**:
+  - Separate closed models, decoders, presentation state and fixtures; never
+    routed through the existing mock adapters or their incompatible fields.
+  - Preserves exact numeric strings, timestamp text, identities, canonical
+    lifecycle/scheduler values and independent Journal coverage/comparison.
+  - No payload previews, authority badges or operational action paths. Approval
+    counts and configured routes are unavailable; continuation stays unassessed.
 
 - **Interactive Nile Flow & DAG Scheduler Workbench (`cc-dag-flow`, `cc-dag-node-inspector`, `cc-scheduler-panel`)**:
   - Visualizes multi-agent execution graphs, fan-out/fan-in tributaries, dependencies, and join points.
@@ -159,9 +179,11 @@ ui/control-center/src/app/
 
 1. **Clear Labeling**:
    - All mock items use distinct identifiers prefixed with `DEMO-` (e.g., `DEMO-101`, `run_f27a9c58`) to prevent confusion with production or repository tasks.
-   - The shell displays an explicit **"Mock data"** status pill in the header at all times.
+   - Existing mock screens display a **"Mock data"** header pill; the separate
+     application preview displays **"Synthetic application v1.0"**.
 2. **Deterministic & Realistic**:
    - Mock data reflects real Core workflows (`standard-change`, `security-sensitive-change`, `architecture-change`) and actual Role definitions (`software-engineer`, `security-reviewer`, `system-architect`).
    - Represents diverse lifecycle states (planned, in progress, blocked, completed, cancelled) and edge cases (unverified authorization, skipped gates).
 3. **Non-Invasive**:
-   - Mock datasets are confined to `src/app/data/mock/` and do not generate side-effects or touch external APIs.
+   - Original mock datasets stay in `src/app/data/mock/`; isolated application
+     fixtures stay in `src/app/application-v1/fixtures.ts`. Neither touches external APIs.

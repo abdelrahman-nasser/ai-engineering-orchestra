@@ -1,0 +1,398 @@
+"""S0-C cooperative, synthetic coordination model; never a Core owner.
+
+No storage, registry, authentication, query or operational resource is opened.
+The one-second numbers are checked deadlines, not a Python/OS preemption claim.
+An uncooperative body or close callback can overrun: that is recorded failure,
+not completed cancellation. Leases remain live until their context really exits.
+"""
+
+from collections import deque
+from contextlib import contextmanager
+from dataclasses import dataclass
+import math
+import threading
+import time
+
+
+class ModelError(RuntimeError):
+    pass
+
+
+class AdmissionRejected(ModelError):
+    pass
+
+
+class CoordinationCancelled(ModelError):
+    pass
+
+
+class CoordinationTimeout(ModelError):
+    pass
+
+
+class CaptureDeadlineExceeded(ModelError):
+    pass
+
+
+class OwnerClosing(ModelError):
+    pass
+
+
+class OwnershipLost(ModelError):
+    pass
+
+
+class LeaseReleased(ModelError):
+    pass
+
+
+class ShutdownTimeout(ModelError):
+    pass
+
+
+class ShutdownFailure(ModelError):
+    pass
+
+
+def _seconds(value, name, *, positive=False):
+    if type(value) not in (int, float) or not math.isfinite(value):
+        raise ValueError(name + " must be a finite number")
+    if value < 0 or value > 1 or (positive and value == 0):
+        raise ValueError(name + " must be within the approved one-second cap")
+    return float(value)
+
+
+def _cancelled(cancel):
+    return cancel is not None and cancel.is_set()
+
+
+@dataclass(frozen=True)
+class QueryPermit:
+    source: str
+    principal: str
+
+
+@dataclass(frozen=True)
+class AdmissionSnapshot:
+    active: int
+    sources: tuple
+    principals: tuple
+
+
+class Admission:
+    """Exact synthetic labels, immediate caps, no pending query queue.
+
+    These principal labels are not authenticated identities or authorization.
+    The short Python lock itself has no hard real-time scheduling guarantee.
+    """
+
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._sources = set()
+        self._principals = set()
+
+    @contextmanager
+    def query(self, source, principal):
+        if type(source) is not str or not source:
+            raise ValueError("source must be an exact nonempty string")
+        if type(principal) is not str or not principal:
+            raise ValueError("principal must be an exact nonempty string")
+        with self._lock:
+            if (source in self._sources or principal in self._principals
+                    or len(self._sources) >= 2):
+                raise AdmissionRejected("synthetic active-query cap")
+            self._sources.add(source)
+            self._principals.add(principal)
+        try:
+            yield QueryPermit(source, principal)
+        finally:
+            with self._lock:
+                self._sources.remove(source)
+                self._principals.remove(principal)
+
+    def snapshot(self):
+        with self._lock:
+            return AdmissionSnapshot(len(self._sources),
+                                     tuple(sorted(self._sources)),
+                                     tuple(sorted(self._principals)))
+
+
+@dataclass(frozen=True)
+class CoordinationSnapshot:
+    readers: int
+    writer: bool
+    waiting_readers: int
+    waiting_writers: int
+    closing: bool
+    lost: bool
+    closed: bool
+    close_in_progress: bool
+    hold_overruns: int
+
+
+@dataclass(frozen=True)
+class ShutdownResult:
+    closed: bool
+    elapsed_seconds: float
+
+
+class _Lease:
+    def __init__(self, coordinator, kind, cancel, acquired_at, deadline=None,
+                 *, acquired_perf_ns):
+        self._coordinator = coordinator
+        self._kind = kind
+        self._cancel = cancel
+        self._thread = threading.get_ident()
+        self._acquired_at = acquired_at
+        self._deadline = deadline
+        self._released_at = None
+        self._acquired_perf_ns = acquired_perf_ns
+        self._released_perf_ns = None
+
+    @property
+    def acquired_at(self):
+        return self._acquired_at
+
+    @property
+    def deadline(self):
+        return self._deadline
+
+    @property
+    def released_at(self):
+        return self._released_at
+
+    @property
+    def acquired_perf_ns(self):
+        return self._acquired_perf_ns
+
+    @property
+    def released_perf_ns(self):
+        return self._released_perf_ns
+
+    @property
+    def elapsed_ns(self):
+        """Higher-resolution hold observation, independent of deadline checks.
+
+        monotonic() resolution may be coarse on the selected runtime. A small
+        monotonic duration is not proof that this perf-counter hold meets P07.
+        """
+        end = (self._released_perf_ns if self._released_perf_ns is not None
+               else time.perf_counter_ns())
+        return end - self._acquired_perf_ns
+
+    @property
+    def elapsed_seconds(self):
+        end = self.released_at if self.released_at is not None else time.monotonic()
+        return end - self.acquired_at
+
+    def check(self):
+        """Cooperative checkpoint; a raised error does not release the lease.
+
+        The caller must unwind its transaction/resources before leaving the
+        context. This model cannot abort a blocking operation on its behalf.
+        """
+        self._coordinator._check_lease(self)
+
+
+class ReadLease(_Lease):
+    pass
+
+
+class WriteLease(_Lease):
+    pass
+
+
+class Coordinator:
+    """FIFO writer priority and resource lifetime for synthetic bodies only.
+
+    Writer/shutdown entry blocks later readers. Multiple simultaneous readers
+    are allowed by this guard; Admission independently enforces query caps.
+    close_callback must be synthetic, cooperative and must not reenter shutdown.
+    Its runtime cannot be safely hard-bounded by threading.Condition.
+    """
+
+    _POLL = 0.005
+
+    def __init__(self, close_callback=None):
+        if close_callback is not None and not callable(close_callback):
+            raise TypeError("close_callback must be callable")
+        self._condition = threading.Condition()
+        self._readers = set()
+        self._writer = None
+        self._writers = deque()
+        self._waiting_readers = 0
+        self._closing = False
+        self._lost = False
+        self._closed = False
+        self._close_in_progress = False
+        self._close_failed = False
+        self._close_callback = close_callback
+        self._hold_overruns = 0
+
+    def snapshot(self):
+        with self._condition:
+            return CoordinationSnapshot(
+                len(self._readers), self._writer is not None,
+                self._waiting_readers, len(self._writers), self._closing,
+                self._lost, self._closed, self._close_in_progress,
+                self._hold_overruns)
+
+    def _available(self, cancel):
+        if self._lost:
+            raise OwnershipLost("synthetic ownership lost")
+        if self._closing or self._closed:
+            raise OwnerClosing("synthetic owner closing")
+        if _cancelled(cancel):
+            raise CoordinationCancelled("synthetic cancellation requested")
+
+    def _wait(self, deadline):
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise CoordinationTimeout("synthetic coordination wait expired")
+        self._condition.wait(min(remaining, self._POLL))
+
+    def _check_lease(self, lease):
+        with self._condition:
+            if lease.released_at is not None:
+                raise LeaseReleased("synthetic lease already released")
+            if lease._thread != threading.get_ident():
+                raise ModelError("synthetic lease used from another thread")
+            live = (lease in self._readers if lease._kind == "read"
+                    else self._writer is lease)
+            if not live:
+                raise LeaseReleased("synthetic lease not active")
+            self._available(lease._cancel)
+            if lease.deadline is not None and time.monotonic() >= lease.deadline:
+                raise CaptureDeadlineExceeded("synthetic capture hold expired")
+
+    @contextmanager
+    def read(self, wait_seconds=1.0, hold_seconds=1.0, cancel=None):
+        wait_seconds = _seconds(wait_seconds, "wait_seconds")
+        hold_seconds = _seconds(hold_seconds, "hold_seconds", positive=True)
+        wait_deadline = time.monotonic() + wait_seconds
+        with self._condition:
+            self._waiting_readers += 1
+            try:
+                while True:
+                    self._available(cancel)
+                    if self._writer is None and not self._writers:
+                        acquired_perf_ns = time.perf_counter_ns()
+                        acquired = time.monotonic()
+                        if wait_seconds > 0 and acquired > wait_deadline:
+                            raise CoordinationTimeout("synthetic coordination wait expired")
+                        lease = ReadLease(self, "read", cancel, acquired,
+                                          acquired + hold_seconds,
+                                          acquired_perf_ns=acquired_perf_ns)
+                        self._readers.add(lease)
+                        break
+                    self._wait(wait_deadline)
+            finally:
+                self._waiting_readers -= 1
+                self._condition.notify_all()
+        failed = False
+        try:
+            lease.check()
+            yield lease
+            lease.check()
+        except BaseException:
+            failed = True
+            raise
+        finally:
+            with self._condition:
+                self._readers.remove(lease)
+                lease._released_perf_ns = time.perf_counter_ns()
+                lease._released_at = time.monotonic()
+                overrun = lease.released_at > lease.deadline
+                if overrun:
+                    self._hold_overruns += 1
+                self._condition.notify_all()
+            if overrun and not failed:
+                raise CaptureDeadlineExceeded("synthetic capture release exceeded hold")
+
+    @contextmanager
+    def write(self, cancel=None, wait_seconds=1.0):
+        wait_seconds = _seconds(wait_seconds, "wait_seconds")
+        deadline = time.monotonic() + wait_seconds
+        ticket = object()
+        with self._condition:
+            self._available(cancel)
+            self._writers.append(ticket)
+            self._condition.notify_all()
+            try:
+                while True:
+                    self._available(cancel)
+                    if (self._writers[0] is ticket and not self._readers
+                            and self._writer is None):
+                        if wait_seconds > 0 and time.monotonic() > deadline:
+                            raise CoordinationTimeout("synthetic coordination wait expired")
+                        acquired_perf_ns = time.perf_counter_ns()
+                        lease = WriteLease(self, "write", cancel, time.monotonic(),
+                                           acquired_perf_ns=acquired_perf_ns)
+                        self._writer = lease
+                        break
+                    self._wait(deadline)
+            finally:
+                self._writers.remove(ticket)
+                self._condition.notify_all()
+        try:
+            lease.check()
+            yield lease
+            lease.check()
+        finally:
+            with self._condition:
+                self._writer = None
+                lease._released_perf_ns = time.perf_counter_ns()
+                lease._released_at = time.monotonic()
+                self._condition.notify_all()
+
+    def lose_ownership(self):
+        """Synthetic loss marker: bar entry and invalidate active checkpoints."""
+        with self._condition:
+            self._lost = True
+            self._closing = True
+            self._condition.notify_all()
+
+    def shutdown(self, timeout=1.0):
+        """Bar entry, request cooperative abort, drain, then close exactly once.
+
+        A timeout is explicit failure; active resources remain open. Concurrent
+        callers may wait for one safe closer, never close beneath a lease.
+        """
+        timeout = _seconds(timeout, "timeout")
+        started = time.monotonic()
+        deadline = started + timeout
+        with self._condition:
+            self._closing = True
+            self._condition.notify_all()
+            while (self._readers or self._writer is not None
+                   or self._close_in_progress):
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise ShutdownTimeout("synthetic drain incomplete; resources remain open")
+                self._condition.wait(min(remaining, self._POLL))
+            if self._close_failed:
+                raise ShutdownFailure("synthetic close previously failed")
+            if self._closed:
+                elapsed = time.monotonic() - started
+                if elapsed > timeout:
+                    raise ShutdownTimeout("synthetic close observed after shutdown bound")
+                return ShutdownResult(True, elapsed)
+            self._close_in_progress = True
+        try:
+            if self._close_callback is not None:
+                self._close_callback()
+        except BaseException:
+            with self._condition:
+                self._close_failed = True
+            raise
+        else:
+            with self._condition:
+                self._closed = True
+        finally:
+            with self._condition:
+                self._close_in_progress = False
+                self._condition.notify_all()
+        elapsed = time.monotonic() - started
+        if elapsed > timeout:
+            raise ShutdownTimeout("synthetic close finished safely but exceeded shutdown bound")
+        return ShutdownResult(True, elapsed)

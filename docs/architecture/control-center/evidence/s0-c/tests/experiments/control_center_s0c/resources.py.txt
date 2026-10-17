@@ -1,0 +1,205 @@
+"""S0-C synthetic resource helpers; no operational owner or native-memory claim.
+
+All writes and SQLite resources belong to newly allocated S0-C scratch. The
+original S0 helper module is an immutable reference for data/process helpers;
+its scratch/receipt functions are deliberately never called here.
+"""
+from contextlib import contextmanager
+import importlib.util
+import json
+import math
+import os
+from pathlib import Path
+import re
+import shutil
+import sqlite3
+import stat
+import sys
+import tempfile
+import uuid
+
+
+REPOSITORY = Path(__file__).resolve().parents[3]
+ROOT = REPOSITORY / 'tests/fixtures/control_center/s0c'
+SCRATCH = ROOT / 'scratch'
+DATABASE_LIMIT_BYTES = 64 * 1024 ** 2
+if str(REPOSITORY) not in sys.path:
+    sys.path.insert(0, str(REPOSITORY))
+_spec = importlib.util.spec_from_file_location('_s0c_original_helpers',
+    REPOSITORY / 'tests/test_control_center_feasibility.py')
+helpers = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(helpers)
+
+
+class ResourceIdentityChanged(ValueError):
+    """A controlled fixture no longer has its expected filesystem identity."""
+
+
+class DatabasePreflightLimit(ValueError):
+    def __init__(self, observed_bytes):
+        self.observed_bytes = observed_bytes
+        self.limit_bytes = DATABASE_LIMIT_BYTES
+        super().__init__('S0-C database exceeds the approved base-file limit')
+
+
+def guarded(path):
+    """Require exact S0-C containment and reject existing reparse ancestors."""
+    path = Path(path)
+    if not path.is_absolute() or not path.is_relative_to(ROOT) or path.resolve() != path:
+        raise ValueError('S0-C path must be exact and contained')
+    for candidate in (path, *path.parents):
+        if candidate.exists() or candidate.is_symlink():
+            info = candidate.lstat()
+            if candidate.is_symlink() or getattr(info, 'st_file_attributes', 0) & 0x400:
+                raise ValueError('S0-C reparse/symlink rejected')
+    return path
+
+
+def _scratch_path(path):
+    path = guarded(path)
+    if not path.is_relative_to(SCRATCH):
+        raise ValueError('S0-C resource must remain in designated scratch')
+    return path
+
+
+def pinned_file_identity(path):
+    info = _scratch_path(path).lstat()
+    if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
+        raise ValueError('S0-C requires a regular singly linked fixture file')
+    return info.st_dev, info.st_ino
+
+
+@contextmanager
+def owned_scratch(parent=None):
+    """Remove only this newly created marked directory after containment checks.
+
+    This is cooperative experiment containment, not atomic adversarial pinning.
+    A failed cleanup propagates; it is never acknowledged as successful drain.
+    """
+    parent = _scratch_path(Path(parent) if parent is not None else SCRATCH)
+    parent.mkdir(parents=True, exist_ok=True)
+    guarded(parent)
+    parent_identity = (parent.stat().st_dev, parent.stat().st_ino)
+    root = guarded(Path(tempfile.mkdtemp(prefix='s0c-owned-', dir=parent)))
+    root_identity = (root.stat().st_dev, root.stat().st_ino)
+    token = uuid.uuid4().hex
+    with (root / 'ownership-marker').open('x', encoding='ascii') as marker:
+        marker.write(token)
+    try:
+        yield root
+    finally:
+        guarded(root)
+        if ((parent.stat().st_dev, parent.stat().st_ino) != parent_identity
+                or (root.stat().st_dev, root.stat().st_ino) != root_identity
+                or root.parent != parent or not root.name.startswith('s0c-owned-')
+                or (root / 'ownership-marker').read_text('ascii') != token):
+            raise AssertionError('S0-C cleanup identity/ownership failure')
+        for directory, folders, files in os.walk(root, followlinks=False):
+            for name in (*folders, *files):
+                item = guarded(Path(directory) / name)
+                info = item.lstat()
+                if not item.is_relative_to(root) or (item.is_file() and info.st_nlink != 1):
+                    raise AssertionError('S0-C cleanup rejected a foreign object')
+        guarded(root)
+        if ((root.stat().st_dev, root.stat().st_ino) != root_identity
+                or (parent.stat().st_dev, parent.stat().st_ino) != parent_identity):
+            raise AssertionError('S0-C cleanup target changed before removal')
+        shutil.rmtree(root)
+
+
+def write_receipt(value, label='evidence'):
+    if type(label) is not str or re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]*', label) is None:
+        raise ValueError('S0-C receipt label must be a simple fixed name')
+    guarded(ROOT)
+    path = guarded(ROOT / f'{label}-{uuid.uuid4().hex}.json')
+    with path.open('x', encoding='utf-8', newline='\n') as output:
+        json.dump(value, output, ensure_ascii=True, indent=2)
+        output.write('\n')
+    return path
+
+
+def database_envelope(path, *, expected_identity=None):
+    """Observe the base file and sidecars; sizes do not prove native/I/O bounds."""
+    path = _scratch_path(path)
+    identity = pinned_file_identity(path)
+    if expected_identity is not None and identity != expected_identity:
+        raise ResourceIdentityChanged('S0-C fixture identity changed')
+    sizes = {}
+    for suffix in ('', '-wal', '-shm', '-journal'):
+        candidate = _scratch_path(Path(str(path) + suffix))
+        if candidate.exists():
+            pinned_file_identity(candidate)
+            sizes[suffix or 'database'] = candidate.stat().st_size
+        else:
+            sizes[suffix or 'database'] = None
+    return dict(identity=list(identity), files=sizes,
+        database_limit_bytes=DATABASE_LIMIT_BYTES,
+        within_database_limit=sizes['database'] <= DATABASE_LIMIT_BYTES,
+        qualification='Logical file sizes only; native/resident/sidecar growth bounds unproved.')
+
+
+def require_database_envelope(path, *, expected_identity=None):
+    observed = database_envelope(path, expected_identity=expected_identity)
+    if not observed['within_database_limit']:
+        raise DatabasePreflightLimit(observed['files']['database'])
+    return observed
+
+
+def open_passive(path, *, timeout_seconds=0.02, check_same_thread=True,
+                 expected_identity=None):
+    """Open an existing synthetic file read-only, after base-file preflight.
+
+    Setup is explicit; future capture tests establish this connection before
+    admission. Path checks are not proof of native-handle identity pinning or
+    absence of SQLite shared-memory bookkeeping. No retry/reconnection exists.
+    """
+    if (type(timeout_seconds) not in (int, float) or not 0 <= timeout_seconds <= 1
+            or not math.isfinite(timeout_seconds) or type(check_same_thread) is not bool):
+        raise ValueError('bounded timeout and exact thread-check boolean required')
+    path = _scratch_path(path)
+    observed = require_database_envelope(path, expected_identity=expected_identity)
+    connection = sqlite3.connect(path.as_uri() + '?mode=ro', uri=True,
+        isolation_level=None, timeout=timeout_seconds, check_same_thread=check_same_thread)
+    try:
+        connection.row_factory = sqlite3.Row
+        connection.execute('PRAGMA query_only=ON')
+        if list(pinned_file_identity(path)) != observed['identity']:
+            raise ResourceIdentityChanged('S0-C fixture changed during passive setup')
+        return connection
+    except BaseException:
+        connection.close()
+        raise
+
+
+def create_fixture(path, mode='DELETE'):
+    """Create a new tiny synthetic database; never reuse an existing file."""
+    if mode not in ('DELETE', 'WAL'):
+        raise ValueError('only fixed synthetic SQLite modes are allowed')
+    path = _scratch_path(path)
+    if path.exists():
+        raise FileExistsError('S0-C fixture already exists')
+    connection = sqlite3.connect(path, isolation_level=None, timeout=0.02)
+    try:
+        selected = connection.execute(f'PRAGMA journal_mode={mode}').fetchone()[0]
+        if selected.upper() != mode:
+            raise RuntimeError('requested synthetic journal mode unavailable')
+        if mode == 'WAL':
+            connection.execute('PRAGMA wal_autocheckpoint=0')
+        connection.execute('CREATE TABLE fixture(value INTEGER NOT NULL)')
+        connection.execute('INSERT INTO fixture VALUES(0)')
+        return connection
+    except BaseException:
+        connection.close()
+        raise
+
+
+def process_memory():
+    """Existing whole-current-process counters; not query-native attribution."""
+    return helpers.process_memory()
+
+
+def native_sqlite_status():
+    """Decline unsafe library guessing rather than report unrelated counters."""
+    return dict(status='UNAVAILABLE', exact_backing_library_status_api_established=False,
+        reason='No safely established status interface for the exact SQLite library backing Python.',
+        unrelated_library_loaded=False, query_native_peak_verified=False)

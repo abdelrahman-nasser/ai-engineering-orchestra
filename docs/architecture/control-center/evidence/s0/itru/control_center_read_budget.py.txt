@@ -1,0 +1,172 @@
+"""Isolated S0 P07 definitions and synthetic accounting helpers.
+
+These values do not admit queries, retain contexts, enforce memory/deadlines,
+authenticate readers or grant authority. Work counters describe one inspection:
+both traversals, cursor branches/replays, restarts and admitted failed attempts
+must share them. There is no caller-selected replacement budget profile.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass, field, fields
+import json
+
+
+_KIB = 1024
+_MIB = 1024 * _KIB
+_SECOND_NS = 1_000_000_000
+
+
+@dataclass(frozen=True, slots=True)
+class P07BudgetProfile:
+    """The complete approved v2 P07 numerical profile, without runtime policy."""
+
+    active_queries_per_source: int = field(default=1, init=False)
+    active_queries_per_principal: int = field(default=1, init=False)
+    active_queries_application: int = field(default=2, init=False)
+    pending_queries: int = field(default=0, init=False)
+    request_envelope_bytes: int = field(default=16 * _KIB, init=False)
+    graph_tasks: int = field(default=1000, init=False)
+    graph_dependencies: int = field(default=10000, init=False)
+    lifecycle_events: int = field(default=10000, init=False)
+    lifecycle_metadata_bytes: int = field(default=16 * _MIB, init=False)
+    lifecycle_event_bytes: int = field(default=_MIB, init=False)
+    journal_records_per_request: int = field(default=10000, init=False)
+    journal_metadata_bytes_per_request: int = field(default=16 * _MIB, init=False)
+    journal_record_bytes: int = field(default=_MIB, init=False)
+    journal_scan_records_per_page: int = field(default=1000, init=False)
+    journal_default_matches_per_page: int = field(default=50, init=False)
+    journal_min_matches_per_page: int = field(default=1, init=False)
+    journal_max_matches_per_page: int = field(default=100, init=False)
+    response_metadata_bytes: int = field(default=2 * _MIB, init=False)
+    database_file_bytes: int = field(default=64 * _MIB, init=False)
+    active_memory_bytes_per_query: int = field(default=64 * _MIB, init=False)
+    active_memory_bytes_application: int = field(default=128 * _MIB, init=False)
+    coordination_wait_ns: int = field(default=_SECOND_NS, init=False)
+    lifecycle_capture_hold_ns: int = field(default=_SECOND_NS, init=False)
+    whole_query_ns: int = field(default=10 * _SECOND_NS, init=False)
+    inspection_lifetime_ns: int = field(default=15 * 60 * _SECOND_NS, init=False)
+    inspections_per_principal_source: int = field(default=8, init=False)
+    inspections_application: int = field(default=64, init=False)
+    retained_bytes_per_inspection: int = field(default=2 * _MIB, init=False)
+    traversals_per_inspection: int = field(default=2, init=False)
+    attempts_per_inspection: int = field(default=128, init=False)
+    validated_records_per_inspection: int = field(default=1000000, init=False)
+    source_metadata_bytes_per_inspection: int = field(default=256 * _MIB, init=False)
+    response_metadata_bytes_per_inspection: int = field(default=64 * _MIB, init=False)
+    active_time_ns_per_inspection: int = field(default=120 * _SECOND_NS, init=False)
+
+
+APPROVED_P07 = P07BudgetProfile()
+
+
+def _logical_json(value):
+    """Reject values outside JSON's exact scalar/container vocabulary."""
+    if value is None or type(value) in (bool, int):
+        return
+    if type(value) is str:
+        value.encode('utf-8', 'strict')  # Reject every unpaired surrogate.
+        return
+    if type(value) is list:
+        for item in value:
+            _logical_json(item)
+        return
+    if type(value) is dict:
+        for key, item in value.items():
+            if type(key) is not str:
+                raise ValueError('quota JSON requires string object keys')
+            _logical_json(key)
+            _logical_json(item)
+        return
+    raise ValueError('quota JSON requires exact JSON values and no floats')
+
+
+def quota_json_bytes(value):
+    """Encode the P07 deterministic logical JSON quota representation.
+
+    Python sorts valid Unicode strings in scalar-value order. Its ASCII JSON
+    encoding uses the required short/control escapes, lowercase hex escapes,
+    surrogate pairs for supplementary scalars and unescaped solidus.
+
+    This generic helper neither validates closed application objects nor turns
+    canonical Core integers into application decimal strings. Callers supply
+    those already validated projections. It materializes the encoding for S0
+    measurement; it is not a bounded streaming production encoder or proof of
+    request-before-parse, memory, deadline or response-quota enforcement.
+    """
+    try:
+        _logical_json(value)
+        return json.dumps(value, ensure_ascii=True, sort_keys=True,
+                          separators=(',', ':'), allow_nan=False).encode('ascii')
+    except (UnicodeError, RecursionError):
+        raise ValueError('invalid Unicode or recursive quota JSON') from None
+
+
+def quota_json_size(value):
+    """Size of quota_json_bytes, with the same materialization limitations."""
+    return len(quota_json_bytes(value))
+
+
+def _nonnegative_integer(value):
+    if type(value) is not int or value < 0:
+        raise ValueError('work counters require exact nonnegative integers')
+
+
+@dataclass(frozen=True, slots=True)
+class InspectionWork:
+    """Monotonic cumulative charged work; logical scan positions are separate."""
+
+    attempts: int = 0
+    validated_records: int = 0
+    source_metadata_bytes: int = 0
+    response_metadata_bytes: int = 0
+    active_time_ns: int = 0
+
+    def __post_init__(self):
+        for item in fields(self):
+            _nonnegative_integer(getattr(self, item.name))
+
+
+@dataclass(frozen=True, slots=True)
+class BudgetAssessment:
+    """Descriptive result, not query admission, a reservation or authority."""
+
+    work: InspectionWork
+    exceeded: tuple[str, ...]
+
+    @property
+    def within_limits(self):
+        return not self.exceeded
+
+
+def assess_inspection_work(work):
+    """Compare all cumulative dimensions to the unchanged inclusive P07 caps."""
+    if type(work) is not InspectionWork:
+        raise ValueError('exact InspectionWork required')
+    limits = (
+        ('attempts', APPROVED_P07.attempts_per_inspection),
+        ('validated_records', APPROVED_P07.validated_records_per_inspection),
+        ('source_metadata_bytes', APPROVED_P07.source_metadata_bytes_per_inspection),
+        ('response_metadata_bytes', APPROVED_P07.response_metadata_bytes_per_inspection),
+        ('active_time_ns', APPROVED_P07.active_time_ns_per_inspection),
+    )
+    exceeded = tuple(sorted(name for name, limit in limits
+                            if getattr(work, name) > limit))
+    return BudgetAssessment(work, exceeded)
+
+
+def charge_inspection_work(work, charge):
+    """Return totals after adding nonnegative work, even on budget exhaustion.
+
+    Assess a known prospective charge before performing work. For actual work,
+    keep the returned totals even when exhausted: admitted failed attempts and
+    partial validation/time charges are not refunded. This pure function has
+    no context registry; the caller is responsible for sharing one inspection's
+    totals across both traversals and every replay, branch and restart.
+    """
+    if type(work) is not InspectionWork or type(charge) is not InspectionWork:
+        raise ValueError('exact InspectionWork values required')
+    updated = InspectionWork(**{
+        item.name: getattr(work, item.name) + getattr(charge, item.name)
+        for item in fields(InspectionWork)
+    })
+    return assess_inspection_work(updated)

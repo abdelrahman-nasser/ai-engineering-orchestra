@@ -1,0 +1,59 @@
+{
+    "head":  "19a321fc0876e73b9f83109f2a58528c9d54e331",
+    "branch":  "feature/control-center-s0-feasibility",
+    "staged_paths":  [
+
+                     ],
+    "tracked_changes":  [
+
+                        ],
+    "original_artifacts":  [
+                               {
+                                   "path":  "docs/architecture/control-center/s0-feasibility-report.md",
+                                   "sha256":  "50e55b23c176d3f3456c2b9ff3bf1f251eef9d5ac12badc113492834529349f3",
+                                   "matches_initial":  true
+                               },
+                               {
+                                   "path":  "itru/control_center_read_source.py",
+                                   "sha256":  "47741c408433dca4de7267d3d368ed42270bd38b1cfe87aacfcb1a6deee8ce8d",
+                                   "matches_initial":  true
+                               },
+                               {
+                                   "path":  "itru/control_center_read_budget.py",
+                                   "sha256":  "c87524e8a00887ba11be2b5959c56640266c2839f453bda7434b7730fb3efaba",
+                                   "matches_initial":  true
+                               },
+                               {
+                                   "path":  "tests/test_control_center_feasibility.py",
+                                   "sha256":  "64c9fb7fa006f97147338caa5610a17492391320ff2356fca30d08f851d13f37",
+                                   "matches_initial":  true
+                               },
+                               {
+                                   "path":  "tests/fixtures/control_center/application-v1-cases.json",
+                                   "sha256":  "68639e7b09fe2cbf7dd6135768c6b515cc42d9a40913e4b379a15d56b623d987",
+                                   "matches_initial":  true
+                               },
+                               {
+                                   "path":  "tests/fixtures/control_center/s0-measurements-4d7e21c5cadd42359380a5627c8e5617.json",
+                                   "sha256":  "1b8931eb383840794b99b2c57f050df0645da302716e74b5193459730c0eadc2",
+                                   "matches_initial":  true
+                               },
+                               {
+                                   "path":  "tests/fixtures/control_center/s0-measurements-a3ee3d159d7347ea98f5be26e7c3b40f.json",
+                                   "sha256":  "e2a95c1666eeeb2971314f5758b296e2c12ca6e22a6cf7928a82c12a5ff65acb",
+                                   "matches_initial":  true
+                               },
+                               {
+                                   "path":  "tests/fixtures/control_center/s0-measurements-1938337ad1624a0e8cb9169a543584d5.json",
+                                   "sha256":  "35a9cc5e3e892a5f2905e9c3cdf51ba69d587f3dfad5368c65f416feb0e5cbcc",
+                                   "matches_initial":  true
+                               }
+                           ],
+    "scratch_entries":  0,
+    "experiment_parent_exit_code":  0,
+    "experiment_child_exit_codes":  [
+                                        0
+                                    ],
+    "experiment_jobs":  21,
+    "qualification":  "Read-only state verification after experiments; report/review finalization follows without changing preserved artifacts or code."
+}

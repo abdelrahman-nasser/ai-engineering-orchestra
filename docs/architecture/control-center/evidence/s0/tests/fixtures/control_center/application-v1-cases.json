@@ -1,0 +1,12 @@
+{
+  "fixture_notice": "Synthetic contract fragments only; not operational responses, approvals, authenticated evidence or complete application validation.",
+  "application_version": "1.0",
+  "decimal_values": ["0", "9007199254740991", "9007199254740992", "9007199254740993", "9223372036854775807", "315537897599999999", "18446744073709551616"],
+  "invalid_decimal_values": ["", "-1", "+1", "01", "1.0", "1e3", " 1"],
+  "grant_timestamps": ["2026-10-17T00:00:00Z", "2026-10-17T00:00:00.1Z", "2026-10-17T00:00:00.123456Z"],
+  "inspect_request": {"application_version": "1.0", "source_id": "synthetic-source", "source_revision": "synthetic-revision", "run_id": "synthetic-run"},
+  "journal_request": {"application_version": "1.0", "source_id": "synthetic-source", "source_revision": "synthetic-revision", "inspection_ref": "synthetic-reference", "limit": 50},
+  "error_codes": ["invalid_request", "unsupported_version", "access_denied", "source_unavailable", "source_revision_changed", "run_not_found", "source_busy", "owner_unavailable", "identity_mismatch", "incompatible_source_version", "integrity_failure", "metadata_limit", "work_budget_exceeded", "deadline_exceeded", "inspection_expired", "invalid_cursor", "cursor_expired", "context_limit", "internal_error"],
+  "continuation": {"eligibility": "unassessed", "action_available": false},
+  "payload": {"status": "unavailable_not_retained"}
+}

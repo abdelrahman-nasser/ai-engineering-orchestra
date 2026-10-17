@@ -1,0 +1,164 @@
+"""S0-R synthetic-only fixture helpers; no operational stores or provisioning."""
+from contextlib import contextmanager
+import hashlib
+import importlib.util
+import json
+import os
+from pathlib import Path
+import shutil
+import sqlite3
+import sys
+import tempfile
+from types import SimpleNamespace
+import uuid
+
+REPOSITORY = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(REPOSITORY))
+ROOT = REPOSITORY / 'tests/fixtures/control_center/s0r'
+SCRATCH = ROOT / 'scratch'
+spec = importlib.util.spec_from_file_location('_s0_reference_helpers',
+    REPOSITORY / 'tests/test_control_center_feasibility.py')
+helpers = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(helpers)
+state = helpers.lifecycle
+journal = helpers.journal
+state_store = helpers.lifecycle_store
+journal_store = helpers.journal_store
+
+
+def guarded(path):
+    """Reject existing reparse ancestors and require exact lexical containment."""
+    path = Path(path)
+    if not path.is_absolute() or not path.is_relative_to(ROOT) or path.resolve() != path:
+        raise ValueError('S0-R path must be exact and contained')
+    for item in (path, *path.parents):
+        if item.exists() or item.is_symlink():
+            info = item.lstat()
+            if item.is_symlink() or getattr(info, 'st_file_attributes', 0) & 0x400:
+                raise ValueError('S0-R reparse/symlink rejected')
+    return path
+
+
+def identity(path):
+    info = path.lstat()
+    return info.st_dev, info.st_ino
+
+
+@contextmanager
+def owned_scratch(parent=None):
+    parent = guarded(Path(parent) if parent else SCRATCH)
+    if not parent.is_relative_to(SCRATCH):
+        raise ValueError('S0-R temporary parent must be in designated scratch')
+    parent.mkdir(parents=True, exist_ok=True)
+    guarded(parent)
+    parent_id = identity(parent)
+    root = guarded(Path(tempfile.mkdtemp(prefix='s0r-owned-', dir=parent)))
+    root_id = identity(root)
+    marker = uuid.uuid4().hex
+    with (root / 'ownership-marker').open('x', encoding='ascii') as output:
+        output.write(marker)
+    try:
+        yield root
+    finally:
+        guarded(root)
+        if (identity(parent) != parent_id or identity(root) != root_id
+                or root.parent != parent or not root.name.startswith('s0r-owned-')
+                or (root / 'ownership-marker').read_text('ascii') != marker):
+            raise AssertionError('S0-R cleanup identity/ownership failed')
+        for directory, folders, files in os.walk(root, followlinks=False):
+            for name in (*folders, *files):
+                item = guarded(Path(directory) / name)
+                info = item.lstat()
+                if not item.is_relative_to(root) or (item.is_file() and info.st_nlink != 1):
+                    raise AssertionError('S0-R cleanup foreign object')
+        guarded(root)
+        if identity(root) != root_id or identity(parent) != parent_id:
+            raise AssertionError('S0-R cleanup target changed')
+        shutil.rmtree(root)
+
+
+def write_receipt(value, label='evidence'):
+    guarded(ROOT)
+    path = guarded(ROOT / f'{label}-{uuid.uuid4().hex}.json')
+    with path.open('x', encoding='utf-8', newline='\n') as output:
+        json.dump(value, output, indent=2, ensure_ascii=True)
+        output.write('\n')
+    return path
+
+
+def rows_digest(texts):
+    digest, size, count = hashlib.sha256(), 0, 0
+    for text in texts:
+        raw = text.encode('utf-8')
+        digest.update(raw); digest.update(b'\n')
+        size += len(raw); count += 1
+    return dict(records=count, metadata_bytes=size, canonical_rows_sha256=digest.hexdigest())
+
+
+def journal_documents(shape, count):
+    for index in range(count):
+        pair = shape == 'pairs'
+        document = helpers.record(index // 2 if pair else index, index + 1,
+                                  result=pair and index % 2 == 1)
+        if shape == 'unicode':
+            document['admission']['grant']['provenance_reference'] = 'SYNTHETIC-' + 'é😀漢' * 128
+            document['admission']['grant']['issuer_id'] = 'i' + 'x' * 1024
+            document['execution_entry']['identity'][2] = 'i' + 'x' * 1024
+        yield document
+
+
+def create_journal(path, documents, *, metadata_digest=None):
+    path = guarded(path)
+    if not path.is_relative_to(SCRATCH):
+        raise ValueError('synthetic database must be in S0-R scratch')
+    writer = sqlite3.connect(path, isolation_level=None)
+    try:
+        writer.execute('PRAGMA journal_mode=WAL')
+        writer.execute('PRAGMA wal_autocheckpoint=0')
+        for statement in journal_store._schema_resource()[0]:
+            writer.execute(statement)
+        writer.execute('INSERT INTO journal_metadata VALUES(1,?,?,?,?,1,?)',
+            ('j', 'd', 'l', '1', metadata_digest or journal_store.RESOURCE_SHA256))
+        writer.execute(f'PRAGMA application_id={journal_store.APPLICATION_ID}')
+        writer.execute(f'PRAGMA user_version={journal_store.SCHEMA_VERSION}')
+        digest, size, count = hashlib.sha256(), 0, 0
+        writer.execute('BEGIN')
+        for document in documents:
+            encoded = journal._encode(document)
+            raw = encoded.encode('utf-8')
+            digest.update(raw); digest.update(b'\n'); size += len(raw); count += 1
+            writer.execute('INSERT INTO journal_entries VALUES(?,?,?,?,?)',
+                (document['sequence'], journal._encode(list(journal._subject_key(document))),
+                 document['event_kind'], document['recorded_at'], encoded))
+        writer.execute('COMMIT')
+        config = journal_store.SqliteExecutionJournalConfiguration(
+            path, path.parent, 'j', helpers.AuthorizationDomainIdentity('d', 'l', 1))
+        return writer, SimpleNamespace(configuration=config), dict(records=count,
+            metadata_bytes=size, canonical_rows_sha256=digest.hexdigest())
+    except BaseException:
+        writer.close()
+        raise
+
+
+def create_lifecycle(path, count):
+    path = guarded(path)
+    if not path.is_relative_to(SCRATCH):
+        raise ValueError('synthetic database must be in S0-R scratch')
+    documents = helpers.lifecycle_documents(count)
+    payloads = [state.encode(item) for item in documents]
+    fixture = rows_digest(payloads)
+    writer = sqlite3.connect(path, isolation_level=None)
+    try:
+        writer.execute('PRAGMA journal_mode=DELETE')
+        for _, _, statement in state_store._DDL:
+            writer.execute(statement)
+        writer.execute('INSERT INTO metadata VALUES(1,?,?,?)', ('s', 'p', state_store._DDL_HASH))
+        writer.execute(f'PRAGMA application_id={state_store.APPLICATION_ID}')
+        writer.execute('PRAGMA user_version=1')
+        writer.execute('BEGIN')
+        writer.executemany('INSERT INTO events VALUES(?,?)', enumerate(payloads, 1))
+        writer.execute('COMMIT')
+        return writer, SimpleNamespace(store_id='s', project_id='p'), fixture
+    except BaseException:
+        writer.close()
+        raise

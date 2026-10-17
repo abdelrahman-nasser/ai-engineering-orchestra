@@ -1,0 +1,590 @@
+"""Bounded synthetic S0-C scenarios; no actual Core owner or storage.
+
+Root orchestrates execution and retains stdout/exit evidence. All threads are
+non-daemon and joined. Cooperative successes do not prove Python/OS deadlines.
+The uncooperative-body cases intentionally demonstrate explicit model failure.
+"""
+
+import io
+import json
+import sys
+import threading
+import time
+import traceback
+import unittest
+from unittest import mock
+
+try:
+    from .coordination import (
+        Admission, AdmissionRejected, CaptureDeadlineExceeded, Coordinator,
+        CoordinationCancelled, CoordinationTimeout, LeaseReleased,
+        OwnerClosing, OwnershipLost, ShutdownFailure, ShutdownTimeout,
+    )
+except ImportError:
+    from coordination import (
+        Admission, AdmissionRejected, CaptureDeadlineExceeded, Coordinator,
+        CoordinationCancelled, CoordinationTimeout, LeaseReleased,
+        OwnerClosing, OwnershipLost, ShutdownFailure, ShutdownTimeout,
+    )
+
+
+OUTCOMES = []
+
+
+class CoordinationTests(unittest.TestCase):
+    def setUp(self):
+        self.threads = []
+        self.events = []
+        self.thread_errors = []
+        self.errors_lock = threading.Lock()
+
+    def event(self):
+        event = threading.Event()
+        self.events.append(event)
+        return event
+
+    def spawn(self, function):
+        def run():
+            try:
+                function()
+            except BaseException:
+                with self.errors_lock:
+                    self.thread_errors.append(traceback.format_exc())
+        thread = threading.Thread(target=run, daemon=False)
+        self.threads.append(thread)
+        thread.start()
+        return thread
+
+    def wait_for(self, predicate, seconds=0.8):
+        deadline = time.monotonic() + seconds
+        pause = threading.Event()
+        while not predicate():
+            self.assertLess(time.monotonic(), deadline, "scenario synchronization expired")
+            pause.wait(0.002)
+
+    def join_all(self):
+        for thread in self.threads:
+            thread.join(2.0)
+            self.assertFalse(thread.is_alive(), "synthetic worker did not join")
+        self.assertEqual(self.thread_errors, [], "\n".join(self.thread_errors))
+
+    def tearDown(self):
+        # Release every scenario gate even after a main-thread assertion fails.
+        for event in self.events:
+            event.set()
+        self.join_all()
+
+    def record(self, **values):
+        OUTCOMES.append({"scenario": self.id().rsplit(".", 1)[-1], **values})
+
+    def test_01_immediate_admission_caps_and_exact_labels(self):
+        admission = Admission()
+        with admission.query("source", "principal"):
+            with self.assertRaises(AdmissionRejected):
+                with admission.query("source", "other"):
+                    self.fail("source collision admitted")
+            with self.assertRaises(AdmissionRejected):
+                with admission.query("other", "principal"):
+                    self.fail("principal collision admitted")
+            with admission.query("SOURCE", "PRINCIPAL"):
+                self.assertEqual(admission.snapshot().active, 2)
+                with self.assertRaises(AdmissionRejected):
+                    with admission.query("third", "third"):
+                        self.fail("global third query admitted")
+        with self.assertRaisesRegex(RuntimeError, "body failure"):
+            with admission.query("source", "principal"):
+                raise RuntimeError("body failure")
+        self.assertEqual(admission.snapshot().active, 0)
+        self.record(source_cap=1, principal_cap=1, application_cap=2,
+                    exact_labels_preserved=True, pending_query_queue=False)
+
+    def test_02_simultaneous_admission_is_atomic(self):
+        admission = Admission()
+        gate = self.event()
+        entered = []
+        rejected = []
+        lock = threading.Lock()
+        start = threading.Barrier(4, timeout=0.8)
+
+        def query(number):
+            start.wait()
+            try:
+                with admission.query("s" + str(number), "p" + str(number)):
+                    with lock:
+                        entered.append(number)
+                    self.assertTrue(gate.wait(0.8))
+            except AdmissionRejected:
+                with lock:
+                    rejected.append(number)
+        for number in range(3):
+            self.spawn(lambda n=number: query(n))
+        start.wait()
+        self.wait_for(lambda: len(entered) + len(rejected) == 3)
+        self.assertEqual(len(entered), 2)
+        self.assertEqual(len(rejected), 1)
+        self.assertEqual(admission.snapshot().active, 2)
+        gate.set()
+        self.join_all()
+        self.assertEqual(admission.snapshot().active, 0)
+        self.record(admitted=2, rejected=1, active_after_join=0)
+
+    def test_03_writer_priority_under_late_reader_pressure_and_consistency(self):
+        coordinator = Coordinator()
+        release_initial = self.event()
+        release_writer = self.event()
+        writer_entered = self.event()
+        revisions = {"definition": 1, "graph": 1}
+        order = []
+        observations = []
+        lock = threading.Lock()
+
+        def initial_reader():
+            with coordinator.read() as lease:
+                first = (revisions["definition"], revisions["graph"])
+                self.assertTrue(release_initial.wait(0.8))
+                lease.check()
+                second = (revisions["definition"], revisions["graph"])
+                with lock:
+                    observations.append((first, second))
+
+        self.spawn(initial_reader)
+        self.spawn(initial_reader)
+        self.wait_for(lambda: coordinator.snapshot().readers == 2)
+
+        def writer():
+            with coordinator.write() as lease:
+                order.append("writer")
+                revisions["definition"] = 2
+                writer_entered.set()
+                self.assertTrue(release_writer.wait(0.8))
+                revisions["graph"] = 2
+                lease.check()
+        self.spawn(writer)
+        self.wait_for(lambda: coordinator.snapshot().waiting_writers == 1)
+
+        def later_reader(number):
+            with coordinator.read() as lease:
+                lease.check()
+                with lock:
+                    order.append("late" + str(number))
+                    observations.append(((revisions["definition"], revisions["graph"]),))
+        for number in range(6):
+            self.spawn(lambda n=number: later_reader(n))
+        self.wait_for(lambda: coordinator.snapshot().waiting_readers == 6)
+        self.assertEqual(order, [])
+        release_initial.set()
+        self.assertTrue(writer_entered.wait(0.8))
+        self.assertEqual(order, ["writer"])
+        self.assertEqual(coordinator.snapshot().readers, 0)
+        release_writer.set()
+        self.join_all()
+        self.assertEqual(order[0], "writer")
+        self.assertEqual(observations.count(((1, 1), (1, 1))), 2)
+        self.assertEqual(observations.count(((2, 2),)), 6)
+        self.record(initial_readers=2, later_readers=6, order=order,
+                    mixed_revisions=False, hold_overruns=coordinator.snapshot().hold_overruns)
+
+    def test_04_cancelled_writer_releases_priority_barrier(self):
+        coordinator = Coordinator()
+        cancel = self.event()
+        with coordinator.read():
+            def writer():
+                with self.assertRaises(CoordinationCancelled):
+                    with coordinator.write(cancel=cancel):
+                        self.fail("cancelled writer entered")
+            self.spawn(writer)
+            self.wait_for(lambda: coordinator.snapshot().waiting_writers == 1)
+            cancel.set()
+            self.join_all()
+            self.assertEqual(coordinator.snapshot().waiting_writers, 0)
+            with coordinator.read(wait_seconds=0):
+                self.assertEqual(coordinator.snapshot().readers, 2)
+        self.record(waiting_writers_after_cancel=0, later_reader_admitted=True)
+
+    def test_05_cancelled_waiting_reader_and_bounded_wait(self):
+        coordinator = Coordinator()
+        cancel = self.event()
+        with coordinator.write():
+            def reader():
+                with self.assertRaises(CoordinationCancelled):
+                    with coordinator.read(cancel=cancel):
+                        self.fail("cancelled reader entered")
+            self.spawn(reader)
+            self.wait_for(lambda: coordinator.snapshot().waiting_readers == 1)
+            cancel.set()
+            self.join_all()
+            started = time.monotonic()
+            with self.assertRaises(CoordinationTimeout):
+                with coordinator.read(wait_seconds=0.02):
+                    self.fail("blocked reader entered")
+            elapsed = time.monotonic() - started
+            self.assertLess(elapsed, 1.0)
+        self.assertEqual(coordinator.snapshot().waiting_readers, 0)
+        self.record(reader_wait_seconds=elapsed, explicit_wait_timeout=True)
+
+    def test_06_cancellation_cleanup_is_still_a_live_lease(self):
+        handle = {"closed": False}
+        coordinator = Coordinator(lambda: handle.update(closed=True))
+        cancel = self.event()
+        entered = self.event()
+        cleanup_entered = self.event()
+        finish_cleanup = self.event()
+        cleanup_done = self.event()
+        shutdown_done = self.event()
+
+        def reader():
+            with self.assertRaises((CoordinationCancelled, OwnerClosing)):
+                with coordinator.read(cancel=cancel) as lease:
+                    entered.set()
+                    try:
+                        self.assertTrue(cancel.wait(0.8))
+                        lease.check()
+                    finally:
+                        cleanup_entered.set()
+                        self.assertTrue(finish_cleanup.wait(0.8))
+                        self.assertFalse(handle["closed"])
+                        cleanup_done.set()
+        self.spawn(reader)
+        self.assertTrue(entered.wait(0.8))
+        cancel.set()
+        self.assertTrue(cleanup_entered.wait(0.8))
+
+        def shutdown():
+            coordinator.shutdown()
+            self.assertTrue(cleanup_done.is_set())
+            shutdown_done.set()
+        self.spawn(shutdown)
+        self.wait_for(lambda: coordinator.snapshot().closing)
+        self.assertEqual(coordinator.snapshot().readers, 1)
+        self.assertFalse(handle["closed"])
+        self.assertFalse(shutdown_done.is_set())
+        finish_cleanup.set()
+        self.join_all()
+        self.assertTrue(handle["closed"])
+        self.assertTrue(shutdown_done.is_set())
+        self.record(cleanup_before_close=True, active_after_ack=0,
+                    worker_joined_before_completed_scenario=True)
+
+    def test_07_shutdown_bars_waiters_and_drains_active_reader(self):
+        closed_at = []
+        coordinator = Coordinator(lambda: closed_at.append(coordinator.snapshot()))
+        active_entered = self.event()
+        check_now = self.event()
+
+        def active():
+            with self.assertRaises(OwnerClosing):
+                with coordinator.read() as lease:
+                    active_entered.set()
+                    self.assertTrue(check_now.wait(0.8))
+                    lease.check()
+        self.spawn(active)
+        self.assertTrue(active_entered.wait(0.8))
+
+        def writer():
+            with self.assertRaises(OwnerClosing):
+                with coordinator.write():
+                    self.fail("shutdown waiter writer entered")
+        self.spawn(writer)
+        self.wait_for(lambda: coordinator.snapshot().waiting_writers == 1)
+
+        def reader():
+            with self.assertRaises(OwnerClosing):
+                with coordinator.read():
+                    self.fail("shutdown waiter reader entered")
+        self.spawn(reader)
+        self.wait_for(lambda: coordinator.snapshot().waiting_readers == 1)
+        self.spawn(lambda: coordinator.shutdown())
+        self.wait_for(lambda: coordinator.snapshot().closing)
+        with self.assertRaises(OwnerClosing):
+            with coordinator.read():
+                self.fail("late reader entered closing owner")
+        check_now.set()
+        self.join_all()
+        self.assertEqual(len(closed_at), 1)
+        self.assertEqual(closed_at[0].readers, 0)
+        self.assertFalse(closed_at[0].writer)
+        self.assertTrue(coordinator.snapshot().closed)
+        self.record(waiting_reader_rejected=True, waiting_writer_rejected=True,
+                    close_after_zero_leases=True)
+
+    def test_08_shutdown_waits_for_active_writer(self):
+        closed = self.event()
+        coordinator = Coordinator(closed.set)
+        entered = self.event()
+        release = self.event()
+
+        def writer():
+            with self.assertRaises(OwnerClosing):
+                with coordinator.write():
+                    entered.set()
+                    self.assertTrue(release.wait(0.8))
+                    self.assertFalse(closed.is_set())
+        self.spawn(writer)
+        self.assertTrue(entered.wait(0.8))
+        self.spawn(lambda: coordinator.shutdown())
+        self.wait_for(lambda: coordinator.snapshot().closing)
+        self.assertTrue(coordinator.snapshot().writer)
+        self.assertFalse(closed.is_set())
+        release.set()
+        self.join_all()
+        self.assertTrue(closed.is_set())
+        self.record(close_beneath_writer=False, active_writer_drained=True)
+
+    def test_09_ownership_loss_invalidates_observation(self):
+        coordinator = Coordinator()
+        published = []
+        with self.assertRaises(OwnershipLost):
+            with coordinator.read() as lease:
+                temporary = {"not_yet_validated": True}
+                coordinator.lose_ownership()
+                lease.check()
+                published.append(temporary)
+        self.assertEqual(published, [])
+        self.assertEqual(coordinator.snapshot().readers, 0)
+        with self.assertRaises(OwnershipLost):
+            with coordinator.write():
+                self.fail("lost owner accepted mutation")
+        with self.assertRaises(OwnershipLost):
+            with coordinator.read():
+                self.fail("lost owner accepted reader")
+        self.assertTrue(coordinator.shutdown().closed)
+        self.record(partial_result_published=False, loss_bars_new_work=True)
+
+    def test_10_uncooperative_reader_shutdown_timeout_keeps_handle_open(self):
+        closed = self.event()
+        coordinator = Coordinator(closed.set)
+        entered = self.event()
+        release = self.event()
+
+        def reader():
+            with self.assertRaises(OwnerClosing):
+                with coordinator.read():
+                    entered.set()
+                    self.assertTrue(release.wait(0.8))
+                    self.assertFalse(closed.is_set())
+        self.spawn(reader)
+        self.assertTrue(entered.wait(0.8))
+        with self.assertRaises(ShutdownTimeout):
+            coordinator.shutdown(timeout=0.02)
+        self.assertEqual(coordinator.snapshot().readers, 1)
+        self.assertFalse(closed.is_set())
+        release.set()
+        self.join_all()
+        self.assertTrue(coordinator.shutdown().closed)
+        self.record(negative_control="uncooperative reader", timeout_acknowledged_as_failure=True,
+                    handle_open_while_lease_active=True, safe_retry_after_real_exit=True)
+
+    def test_11_capture_overrun_is_failure_after_actual_release(self):
+        coordinator = Coordinator()
+        pause = threading.Event()
+        lease = None
+        with self.assertRaises(CaptureDeadlineExceeded):
+            with coordinator.read(hold_seconds=0.02) as lease:
+                pause.wait(0.05)
+        self.assertIsNotNone(lease.released_at)
+        self.assertIsNotNone(lease.released_perf_ns)
+        self.assertGreater(lease.elapsed_seconds, 0.02)
+        self.assertGreater(lease.elapsed_ns, 20_000_000)
+        self.assertEqual(coordinator.snapshot().readers, 0)
+        self.assertEqual(coordinator.snapshot().hold_overruns, 1)
+        with self.assertRaises(LeaseReleased):
+            lease.check()
+        self.record(negative_control="uncooperative body", elapsed_seconds=lease.elapsed_seconds,
+                    elapsed_ns=lease.elapsed_ns,
+                    hold_seconds=0.02, overrun_reported=True, no_preemption_claim=True)
+
+    def test_12_exception_cleanup_and_close_failure(self):
+        coordinator = Coordinator()
+        for context in (coordinator.read, coordinator.write):
+            with self.assertRaisesRegex(RuntimeError, "synthetic body"):
+                with context():
+                    raise RuntimeError("synthetic body")
+        self.assertEqual(coordinator.snapshot().readers, 0)
+        self.assertFalse(coordinator.snapshot().writer)
+
+        def close_failure():
+            raise RuntimeError("synthetic close failure")
+        failed = Coordinator(close_failure)
+        with self.assertRaisesRegex(RuntimeError, "synthetic close failure"):
+            failed.shutdown()
+        self.assertFalse(failed.snapshot().closed)
+        self.assertFalse(failed.snapshot().close_in_progress)
+        with self.assertRaises(ShutdownFailure):
+            failed.shutdown()
+        with self.assertRaises(OwnerClosing):
+            with failed.read():
+                self.fail("failed close reopened owner")
+        self.record(body_exception_releases=True, close_failure_not_reported_closed=True)
+
+    def test_13_wait_bounds_and_deadline_input_contract(self):
+        coordinator = Coordinator()
+        for value in (True, -0.1, 1.01, float("inf"), float("nan")):
+            with self.assertRaises(ValueError):
+                with coordinator.read(wait_seconds=value):
+                    self.fail("invalid wait bound accepted")
+            with self.assertRaises(ValueError):
+                coordinator.shutdown(timeout=value)
+        for value in (0, -1, 1.01):
+            with self.assertRaises(ValueError):
+                with coordinator.read(hold_seconds=value):
+                    self.fail("invalid hold bound accepted")
+        cancel = threading.Event()
+        cancel.set()
+        with self.assertRaises(CoordinationCancelled):
+            with coordinator.read(cancel=cancel):
+                self.fail("pre-cancelled work admitted")
+        with coordinator.read():
+            started = time.monotonic()
+            with self.assertRaises(CoordinationTimeout):
+                with coordinator.write(wait_seconds=0.02):
+                    self.fail("writer overtook active reader")
+            elapsed = time.monotonic() - started
+        self.assertEqual(coordinator.snapshot().waiting_writers, 0)
+        self.assertLess(elapsed, 1.0)
+        self.record(writer_wait_seconds=elapsed, no_silent_limit_increase=True)
+
+    def test_14_continuous_bounded_reader_pressure_cannot_overtake_writer(self):
+        coordinator = Coordinator()
+        release_reader = self.event()
+        release_writer = self.event()
+        writer_entered = self.event()
+        stop_pressure = self.event()
+        attempts = []
+        admitted = []
+        initial_entered = self.event()
+
+        def initial_reader():
+            with coordinator.read():
+                initial_entered.set()
+                self.assertTrue(release_reader.wait(0.8))
+
+        def writer():
+            with coordinator.write():
+                writer_entered.set()
+                self.assertTrue(release_writer.wait(0.8))
+
+        self.spawn(initial_reader)
+        self.assertTrue(initial_entered.wait(0.8))
+        self.spawn(writer)
+        self.wait_for(lambda: coordinator.snapshot().waiting_writers == 1)
+        pressure_started = time.monotonic()
+
+        def pressure():
+            # Continuous finite arrival attempts, each immediate/no pending wait.
+            # There is an absolute stop even if a scenario assertion fails.
+            # Windows waits can round a requested 2 ms pause up to a timer tick.
+            # This is a harness arrival window, not a relaxed lease deadline.
+            until = time.monotonic() + 0.6
+            while not stop_pressure.is_set() and time.monotonic() < until:
+                try:
+                    with coordinator.read(wait_seconds=0):
+                        admitted.append(time.monotonic())
+                except CoordinationTimeout:
+                    attempts.append(time.monotonic())
+                stop_pressure.wait(0.002)
+
+        pressure_thread = self.spawn(pressure)
+        self.wait_for(lambda: len(attempts) >= 10)
+        self.assertFalse(writer_entered.is_set())
+        release_reader.set()
+        self.assertTrue(writer_entered.wait(0.8))
+        count_at_writer_entry = len(attempts)
+        self.wait_for(lambda: len(attempts) >= count_at_writer_entry + 10)
+        stop_pressure.set()
+        pressure_thread.join(1.0)
+        self.assertFalse(pressure_thread.is_alive())
+        self.assertEqual(admitted, [])
+        release_writer.set()
+        self.join_all()
+        with coordinator.read(wait_seconds=0):
+            pass
+        self.record(pressure_attempts=len(attempts), pressure_seconds=time.monotonic()-pressure_started,
+                    later_readers_overtaking=0, writer_entered_during_pressure=True,
+                    pressure_window_bounded_seconds=0.6,
+                    qualification="Finite continuous-arrival scenario, not a universal fairness proof")
+
+    def test_15_concurrent_closer_late_reacquisition_is_not_success(self):
+        close_entered = self.event()
+        release_close = self.event()
+        waiter_seen = self.event()
+        first_finished = self.event()
+        clock = [0.0]
+        calls = []
+
+        def close():
+            calls.append("close")
+            close_entered.set()
+            self.assertTrue(release_close.wait(0.8))
+
+        coordinator = Coordinator(close)
+        condition = coordinator._condition
+        actual_wait = condition.wait
+
+        def delayed_wake(timeout):
+            # Deterministically model a waiter scheduled only after the closer
+            # finishes. Release while gated so the closer can publish closed.
+            waiter_seen.set()
+            result = actual_wait(timeout)
+            condition.release()
+            try:
+                self.assertTrue(first_finished.wait(0.8))
+            finally:
+                condition.acquire()
+            return result
+
+        def first_closer():
+            try:
+                self.assertTrue(coordinator.shutdown(timeout=1).closed)
+            finally:
+                first_finished.set()
+
+        def late_waiter():
+            with self.assertRaises(ShutdownTimeout):
+                coordinator.shutdown(timeout=0.1)
+
+        # Fake elapsed time is intentional: this tests the completed-close
+        # return branch, independent of Windows timer rounding or host load.
+        with (mock.patch.object(time, "monotonic", side_effect=lambda: clock[0]),
+              mock.patch.object(condition, "wait", side_effect=delayed_wake)):
+            self.spawn(first_closer)
+            self.assertTrue(close_entered.wait(0.8))
+            self.spawn(late_waiter)
+            self.assertTrue(waiter_seen.wait(0.8))
+            clock[0] = 0.2
+            release_close.set()
+            self.join_all()
+        self.assertEqual(calls, ["close"])
+        self.assertTrue(coordinator.snapshot().closed)
+        self.record(close_calls=1, late_completed_close_reported_timeout=True,
+                    simulated_wait_seconds=0.2, requested_timeout_seconds=0.1,
+                    qualification="Deterministic return-branch regression; not a measured shutdown latency")
+
+
+def main():
+    output = io.StringIO()
+    suite = unittest.defaultTestLoader.loadTestsFromTestCase(CoordinationTests)
+    started = time.monotonic()
+    result = unittest.TextTestRunner(stream=output, verbosity=2).run(suite)
+    document = {
+        "experiment": "S0-C isolated synthetic coordination",
+        "checks": result.testsRun,
+        "failures": len(result.failures),
+        "errors": len(result.errors),
+        "skips": len(result.skipped),
+        "elapsed_seconds": time.monotonic() - started,
+        "outcomes": OUTCOMES,
+        "unittest_output": output.getvalue(),
+        "limitations": [
+            "No actual owner, store or production mutation path participates.",
+            "Checkpoints are cooperative and cannot preempt blocking Python/OS work.",
+            "Expected overrun/timeout controls are failures of bounded safety, not successful cancellation.",
+            "Guard fairness observations are finite scenarios, not universal scheduler guarantees.",
+            "No formal Quality Gate PASS or P07 feasibility follows from this suite.",
+        ],
+    }
+    print(json.dumps(document, sort_keys=True, separators=(",", ":")))
+    return 0 if result.wasSuccessful() else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

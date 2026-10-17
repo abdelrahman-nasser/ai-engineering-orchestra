@@ -1,0 +1,134 @@
+"""Pure S0 definitions for a proposed Control Center read source.
+
+These values describe expected identities, never observed storage, ownership,
+authenticated principals or metadata entitlement. Constructing or validating one
+does not register a source, grant access, open storage or authorize a query.
+Trusted configuration, immutable-reference resolution, authentication, audience
+approval and runtime validation remain separately authorized prerequisites.
+
+This is not an application DTO or a replacement for canonical Core identities.
+In particular, ledger generation is a positive Core integer here; eventual
+application projections must preserve it as a lossless decimal string.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass, fields
+
+
+class SourceDefinitionError(ValueError):
+    """A supplied descriptive definition has an invalid type, value or binding."""
+
+
+def _exact_text(value: object, field_name: str) -> None:
+    if type(value) is not str or not value:
+        raise SourceDefinitionError(f'{field_name} requires nonempty exact text')
+    try:
+        value.encode('utf-8', 'strict')
+    except UnicodeError:
+        raise SourceDefinitionError(f'{field_name} requires valid Unicode text') from None
+
+
+@dataclass(frozen=True, slots=True)
+class LedgerIdentityReference:
+    """Expected three-part ledger identity; no ledger observation or authority."""
+
+    authorization_domain_id: str
+    ledger_instance_id: str
+    domain_generation: int
+
+    def __post_init__(self) -> None:
+        _exact_text(self.authorization_domain_id, 'authorization_domain_id')
+        _exact_text(self.ledger_instance_id, 'ledger_instance_id')
+        if type(self.domain_generation) is not int or self.domain_generation <= 0:
+            raise SourceDefinitionError('domain_generation requires an exact positive integer')
+
+
+@dataclass(frozen=True, slots=True)
+class MetadataPolicyDefinition:
+    """An opaque policy revision reference, without a principal or access grant.
+
+    The whole metadata set is required by P03. This declaration supplies neither
+    the audience configuration nor evidence of entitlement to that set. A
+    successful reference comparison cannot substitute for authorization before
+    existence disclosure, on every request and before response publication.
+    """
+
+    metadata_policy_reference: str
+    policy_revision: str
+
+    def __post_init__(self) -> None:
+        _exact_text(self.metadata_policy_reference, 'metadata_policy_reference')
+        _exact_text(self.policy_revision, 'policy_revision')
+
+    @property
+    def whole_metadata_set_required(self) -> bool:
+        """A contract requirement, never a statement that access was granted."""
+        return True
+
+
+@dataclass(frozen=True, slots=True)
+class SourceRevision:
+    """Immutable expected P02 descriptor with no paths, credentials or handles.
+
+    Identifiers are case-sensitive opaque text. No trimming, normalization,
+    aliasing, source discovery or cross-source lookup occurs. A changed source,
+    definition set, graph, storage identity or ledger generation requires a new
+    source revision. The trusted caller must enforce that mapping: these pure
+    values neither maintain a registry nor prove that references are genuine.
+
+    ``journal_id`` and ``ledger_identity`` are configuration expectations, not
+    claims that InspectRun observed a Journal or opened the authorization ledger.
+    """
+
+    source_id: str
+    source_revision: str
+    project_id: str
+    store_id: str
+    journal_id: str
+    ledger_identity: LedgerIdentityReference
+    definition_set_reference: str
+    graph_reference: str
+    max_concurrency: int
+    metadata_policy_reference: str
+    budget_profile_reference: str
+
+    def __post_init__(self) -> None:
+        for field in fields(SourceRevision):
+            if field.name not in ('ledger_identity', 'max_concurrency'):
+                _exact_text(getattr(self, field.name), field.name)
+        if type(self.ledger_identity) is not LedgerIdentityReference:
+            raise SourceDefinitionError('ledger_identity requires an exact LedgerIdentityReference')
+        self.ledger_identity.__post_init__()
+        if type(self.max_concurrency) is not int or self.max_concurrency not in (1, 2):
+            raise SourceDefinitionError('max_concurrency requires an exact Alpha integer in 1..2')
+
+
+def validate_source_revision(value: SourceRevision) -> SourceRevision:
+    """Revalidate and return the same immutable value; perform no resolution."""
+    if type(value) is not SourceRevision:
+        raise SourceDefinitionError('an exact SourceRevision is required')
+    value.__post_init__()
+    return value
+
+
+def validate_metadata_policy(value: MetadataPolicyDefinition) -> MetadataPolicyDefinition:
+    """Validate definition shape only; do not authenticate or grant an audience."""
+    if type(value) is not MetadataPolicyDefinition:
+        raise SourceDefinitionError('an exact MetadataPolicyDefinition is required')
+    value.__post_init__()
+    return value
+
+
+def validate_source_policy_reference(
+    source: SourceRevision, policy: MetadataPolicyDefinition,
+) -> None:
+    """Check exact reference equality, never policy freshness or entitlement.
+
+    The trusted caller must bind each reference to its immutable policy revision
+    and invalidate observations on a changed/revoked policy or principal. This
+    pure comparison creates no registration, retained observation or approval.
+    """
+    validate_source_revision(source)
+    validate_metadata_policy(policy)
+    if source.metadata_policy_reference != policy.metadata_policy_reference:
+        raise SourceDefinitionError('metadata policy reference mismatch')

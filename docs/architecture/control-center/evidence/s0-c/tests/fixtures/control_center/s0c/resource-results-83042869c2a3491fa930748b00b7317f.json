@@ -1,0 +1,226 @@
+{
+  "phase": "S0-C resources",
+  "command": [
+    "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+    "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0c\\test_resources.py"
+  ],
+  "cwd": "D:\\Dev\\ai-engineering-orchestra",
+  "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+  "sqlite": "3.49.1",
+  "tests": 7,
+  "failures": 0,
+  "errors": 0,
+  "skips": 0,
+  "outcomes": [
+    {
+      "case": "abort-and-rollback-interruption",
+      "rollback_interruption_observed": true,
+      "active_after_interrupted_rollback": true,
+      "acknowledgement_before_final_cleanup": false,
+      "final_cleanup": {
+        "acknowledged_cleanup": true,
+        "transaction_active_after_rollback": false,
+        "rollback_ns": 2600,
+        "close_ns": 30400,
+        "cleanup_ns": 34400
+      },
+      "cleanup_sequence_ns": 47100,
+      "no_partial_result_returned": true,
+      "qualification": "Controlled SQL progress fault; no general rollback/close interruptibility proof."
+    },
+    {
+      "case": "containment-and-native-observability",
+      "native_sqlite": {
+        "status": "UNAVAILABLE",
+        "exact_backing_library_status_api_established": false,
+        "reason": "No safely established status interface for the exact SQLite library backing Python.",
+        "unrelated_library_loaded": false,
+        "query_native_peak_verified": false
+      },
+      "process_memory": {
+        "working_set_bytes": 37842944,
+        "peak_working_set_bytes": 37842944,
+        "private_bytes": 26406912,
+        "peak_pagefile_bytes": 27041792
+      },
+      "qualification": "Whole-process counters are not query-native allocation measurements."
+    },
+    {
+      "case": "identity-and-growth",
+      "identity_change_rejected": true,
+      "handles_closed_before_replacement": true,
+      "observation": {
+        "identity": [
+          1801039310864222624,
+          1688849861271933
+        ],
+        "files": {
+          "database": 67108865,
+          "-wal": null,
+          "-shm": null,
+          "-journal": null
+        },
+        "database_limit_bytes": 67108864,
+        "within_database_limit": false,
+        "qualification": "Logical file sizes only; native/resident/sidecar growth bounds unproved."
+      },
+      "sqlite_open_after_limit": false,
+      "allocated_disk_bytes": "UNAVAILABLE",
+      "qualification": "Between-query identity change; no native-handle pinning/adversarial race proof."
+    },
+    {
+      "case": "lock-contention",
+      "mode": "DELETE",
+      "outcome": "busy",
+      "select_ns": 260738600,
+      "sqlite_timeout_seconds": 0.02,
+      "cleanup": {
+        "acknowledged_cleanup": true,
+        "transaction_active_after_rollback": false,
+        "rollback_ns": 15200,
+        "close_ns": 91400,
+        "cleanup_ns": 109300
+      },
+      "qualification": "SQLite busy observation, not an OS-I/O or coordination deadline guarantee."
+    },
+    {
+      "case": "lock-contention",
+      "mode": "WAL",
+      "outcome": "committed-snapshot-readable",
+      "select_ns": 227100,
+      "sqlite_timeout_seconds": 0.02,
+      "cleanup": {
+        "acknowledged_cleanup": true,
+        "transaction_active_after_rollback": false,
+        "rollback_ns": 4000,
+        "close_ns": 52300,
+        "cleanup_ns": 58200
+      },
+      "qualification": "SQLite busy observation, not an OS-I/O or coordination deadline guarantee."
+    },
+    {
+      "case": "sidecars",
+      "mode": "DELETE",
+      "before": {
+        "identity": [
+          1801039310864222624,
+          1688849861271932
+        ],
+        "files": {
+          "database": 8192,
+          "-wal": null,
+          "-shm": null,
+          "-journal": null
+        },
+        "database_limit_bytes": 67108864,
+        "within_database_limit": true,
+        "qualification": "Logical file sizes only; native/resident/sidecar growth bounds unproved."
+      },
+      "during": {
+        "identity": [
+          1801039310864222624,
+          1688849861271932
+        ],
+        "files": {
+          "database": 8192,
+          "-wal": null,
+          "-shm": null,
+          "-journal": 4616
+        },
+        "database_limit_bytes": 67108864,
+        "within_database_limit": true,
+        "qualification": "Logical file sizes only; native/resident/sidecar growth bounds unproved."
+      },
+      "cleanup": {
+        "acknowledged_cleanup": true,
+        "transaction_active_after_rollback": false,
+        "rollback_ns": 9200,
+        "close_ns": 32600,
+        "cleanup_ns": 44100
+      },
+      "readonly_dml_rejected": true,
+      "qualification": "Observed files, not proof of zero SHM bookkeeping or WAL/native/I-O bound; no explicit checkpoint/repair."
+    },
+    {
+      "case": "sidecars",
+      "mode": "WAL",
+      "before": {
+        "identity": [
+          1801039310864222624,
+          1970324837982588
+        ],
+        "files": {
+          "database": 4096,
+          "-wal": 12392,
+          "-shm": 32768,
+          "-journal": null
+        },
+        "database_limit_bytes": 67108864,
+        "within_database_limit": true,
+        "qualification": "Logical file sizes only; native/resident/sidecar growth bounds unproved."
+      },
+      "during": {
+        "identity": [
+          1801039310864222624,
+          1970324837982588
+        ],
+        "files": {
+          "database": 4096,
+          "-wal": 12392,
+          "-shm": 32768,
+          "-journal": null
+        },
+        "database_limit_bytes": 67108864,
+        "within_database_limit": true,
+        "qualification": "Logical file sizes only; native/resident/sidecar growth bounds unproved."
+      },
+      "cleanup": {
+        "acknowledged_cleanup": true,
+        "transaction_active_after_rollback": false,
+        "rollback_ns": 9700,
+        "close_ns": 81700,
+        "cleanup_ns": 93300
+      },
+      "readonly_dml_rejected": true,
+      "qualification": "Observed files, not proof of zero SHM bookkeeping or WAL/native/I-O bound; no explicit checkpoint/repair."
+    },
+    {
+      "case": "sql-vm-cancellation",
+      "mode": "DELETE",
+      "progress_calls": 19495,
+      "cancel_and_cleanup_ns": 20133300,
+      "cleanup": {
+        "acknowledged_cleanup": true,
+        "transaction_active_after_rollback": false,
+        "rollback_ns": 19900,
+        "close_ns": 68200,
+        "cleanup_ns": 91000
+      },
+      "writer_after_cleanup": true,
+      "qualification": "SQL VM only; no Python/OS-I/O/lease/general cleanup bound proved."
+    },
+    {
+      "case": "sql-vm-cancellation",
+      "mode": "WAL",
+      "progress_calls": 22366,
+      "cancel_and_cleanup_ns": 20144400,
+      "cleanup": {
+        "acknowledged_cleanup": true,
+        "transaction_active_after_rollback": false,
+        "rollback_ns": 22300,
+        "close_ns": 74100,
+        "cleanup_ns": 99000
+      },
+      "writer_after_cleanup": true,
+      "qualification": "SQL VM only; no Python/OS-I/O/lease/general cleanup bound proved."
+    },
+    {
+      "case": "unavailable-connection",
+      "missing_not_created": true,
+      "closed_connection_failed": true,
+      "new_owner_or_reconnection": false,
+      "qualification": "Missing/closed synthetic resources; permission/OS failure profiles unverified."
+    }
+  ],
+  "qualification": "Controlled synthetic checks only; no operational/P07/owner-lifetime PASS."
+}

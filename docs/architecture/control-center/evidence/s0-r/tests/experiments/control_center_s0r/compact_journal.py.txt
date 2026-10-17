@@ -1,0 +1,201 @@
+"""S0-R-only compact exact-state Journal validation experiment.
+
+The caller supplies an already-open synthetic connection and pins one explicit
+read transaction across both passes. Nothing here opens storage, establishes an
+owner, provisions a schema, grants authority, or implements an application query.
+The digest is comparison output only; every identity comparison uses exact data.
+
+Row/encoded-byte guards bound the retained Python-state input. They do not prove
+a native SQLite allocation bound, interruptible SQL/I/O, a 64-MiB memory ceiling,
+a complete query deadline, database/sidecar bounds, or cumulative enforcement.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass
+import hashlib
+from time import perf_counter_ns
+
+from itru import agent_execution_journal as journal
+from itru import sqlite_agent_execution_journal_store as canonical
+from itru.control_center_read_budget import APPROVED_P07
+
+
+PREFLIGHT_SQL = (
+    'SELECT sequence, length(CAST(record_json AS BLOB)) AS record_bytes '
+    'FROM journal_entries ORDER BY sequence'
+)
+ROWS_SQL = 'SELECT * FROM journal_entries ORDER BY sequence'
+
+
+class JournalBudgetLimit(ValueError):
+    """Experimental component limit, distinct from canonical semantic failure."""
+
+    def __init__(self, limit_name):
+        self.limit_name = limit_name
+        super().__init__('S0-R Journal component budget exceeded')
+
+
+@dataclass(frozen=True, slots=True)
+class CompactResult:
+    row_count: int
+    high_water: int
+    metadata_bytes: int
+    canonical_sha256: str
+    entry_count: int
+    result_count: int
+    subject_count: int
+    run_count: int
+    last_recorded_time_key: int | None
+    stage_ns: tuple[tuple[str, int], ...] = ()
+
+    @property
+    def fact_count(self):
+        return self.entry_count + self.result_count
+
+
+def _limits(row_count, metadata_bytes, record_bytes):
+    if row_count > APPROVED_P07.journal_records_per_request:
+        raise JournalBudgetLimit('journal_records_per_request')
+    if record_bytes > APPROVED_P07.journal_record_bytes:
+        raise JournalBudgetLimit('journal_record_bytes')
+    if metadata_bytes > APPROVED_P07.journal_metadata_bytes_per_request:
+        raise JournalBudgetLimit('journal_metadata_bytes_per_request')
+
+
+def _header(probe, connection):
+    """Preserve canonical header checks; avoid unbounded schema/metadata lists."""
+    if (connection.execute('PRAGMA application_id').fetchone()[0] != canonical.APPLICATION_ID
+            or connection.execute('PRAGMA user_version').fetchone()[0] != canonical.SCHEMA_VERSION):
+        raise canonical.JournalIncompatibleSchema()
+    ignored, expected = canonical._schema_resource()
+    schema = []
+    for row in connection.execute(
+            "SELECT name,type,sql FROM sqlite_schema WHERE name NOT LIKE 'sqlite_%'"):
+        schema.append(tuple(row))
+        if len(schema) > len(expected):
+            raise canonical.JournalIncompatibleSchema()
+    if tuple(sorted(schema)) != expected:
+        raise canonical.JournalIncompatibleSchema()
+    if connection.execute('PRAGMA quick_check').fetchone()[0] != 'ok':
+        raise journal.JournalIntegrityError()
+    metadata = connection.execute('SELECT * FROM journal_metadata').fetchmany(2)
+    configuration, identity = probe.configuration, canonical._identity(probe.configuration)
+    wanted = (1, configuration.journal_id, identity['authorization_domain_id'],
+              identity['ledger_instance_id'], str(identity['domain_generation']),
+              canonical.SCHEMA_VERSION, canonical.RESOURCE_SHA256)
+    if len(metadata) != 1 or tuple(metadata[0]) != wanted:
+        raise journal.JournalIntegrityError()
+    return identity
+
+
+def _preflight(connection):
+    """Count before fetching full Python TEXT; SQLite CAST/native cost is unproved."""
+    count, metadata_bytes = 0, 0
+    for row in connection.execute(PREFLIGHT_SQL):
+        record_bytes = row[1]
+        if type(record_bytes) is not int or record_bytes < 0:
+            raise journal.JournalIntegrityError()
+        count += 1
+        metadata_bytes += record_bytes
+        _limits(count, metadata_bytes, record_bytes)
+    return count, metadata_bytes
+
+
+def compact_verify(probe, connection, *, profile=False):
+    """Validate the complete current synthetic snapshot using compact exact state.
+
+    Within approved row/byte limits the semantic oracle is the canonical
+    ``SqliteExecutionJournalStore._verify`` under the same pinned transaction.
+    Over-limit input raises JournalBudgetLimit before retaining row state; that
+    deliberate component-admission difference is not an oracle parity claim.
+
+    canonical_sha256 hashes each exact canonical UTF-8 row followed by LF. It
+    detects output differences for the experiment; it never replaces equality.
+    Optional stage_ns groups actual instrumented code regions only. Header
+    combines schema/fingerprint, quick_check and metadata. decode_semantic does
+    not claim to partition the nested decoder's internal allocations or work.
+    """
+    if type(profile) is not bool:
+        raise ValueError('profile requires an exact boolean')
+    if not connection.in_transaction:
+        raise ValueError('one explicit synthetic read transaction is required')
+    total_started = perf_counter_ns() if profile else None
+    stages = {name: 0 for name in (
+        'header', 'precheck', 'row_fetch', 'decode_semantic', 'bookkeeping')}
+    started = perf_counter_ns() if profile else None
+    identity = _header(probe, connection)
+    if profile:
+        stages['header'] = perf_counter_ns() - started
+        started = perf_counter_ns()
+    expected_count, expected_bytes = _preflight(connection)
+    if profile:
+        stages['precheck'] = perf_counter_ns() - started
+
+    # Each physical subject keeps one exact canonical subject and event flags.
+    # Each Run ID keeps the exact canonical Contract, matching current Core's
+    # Contract-only collision rule. This is not P05 application Binding matching.
+    subjects, runs = {}, {}
+    count = metadata_bytes = entry_count = result_count = 0
+    previous_time = None
+    digest = hashlib.sha256()
+    started = perf_counter_ns() if profile else None
+    rows = iter(connection.execute(ROWS_SQL))
+    if profile:
+        stages['row_fetch'] += perf_counter_ns() - started
+    while True:
+        started = perf_counter_ns() if profile else None
+        try:
+            row = next(rows)
+        except StopIteration:
+            if profile:
+                stages['row_fetch'] += perf_counter_ns() - started
+            break
+        if profile:
+            stages['row_fetch'] += perf_counter_ns() - started
+            started = perf_counter_ns()
+        if type(row['record_json']) is not str:
+            raise journal.JournalIntegrityError()
+        encoded = row['record_json'].encode('utf-8', 'strict')
+        _limits(count + 1, metadata_bytes + len(encoded), len(encoded))
+        document = journal._validate_record(journal._decode(row['record_json']))
+        if profile:
+            stages['decode_semantic'] += perf_counter_ns() - started
+            started = perf_counter_ns()
+        key = journal._subject_key(document)
+        index = (document['sequence'], journal._encode(list(key)),
+                 document['event_kind'], document['recorded_at'], row['record_json'])
+        current_time = journal._time(document['recorded_at'])
+        if (tuple(row) != index or document['journal_id'] != probe.configuration.journal_id
+                or document['ledger_identity'] != identity
+                or document['sequence'] != count + 1
+                or (previous_time is not None and current_time < previous_time)):
+            raise journal.JournalIntegrityError()
+        subject = journal._encode(journal._subject_only(document))
+        run = document['admission']['grant']['run']
+        contract = journal._encode(run['contract'])
+        prior = subjects.get(key)
+        flags = 0 if prior is None else prior[1]
+        bit = 1 if document['event_kind'] == 'entry_observed' else 2
+        prior_contract = runs.get(run['run_id'])
+        if (flags & bit or (prior is not None and prior[0] != subject)
+                or (prior_contract is not None and prior_contract != contract)
+                or (bit == 2 and not flags & 1)):
+            raise journal.JournalIntegrityError()
+        subjects[key] = (subject, flags | bit)
+        runs[run['run_id']] = contract
+        count += 1
+        metadata_bytes += len(encoded)
+        entry_count += bit == 1
+        result_count += bit == 2
+        previous_time = current_time
+        digest.update(encoded)
+        digest.update(b'\n')
+        if profile:
+            stages['bookkeeping'] += perf_counter_ns() - started
+    if count != expected_count or metadata_bytes != expected_bytes:
+        raise journal.JournalIntegrityError()
+    if profile:
+        stages['total'] = perf_counter_ns() - total_started
+    return CompactResult(count, count, metadata_bytes, digest.hexdigest(),
+                         entry_count, result_count, len(subjects), len(runs),
+                         previous_time, tuple(stages.items()) if profile else ())

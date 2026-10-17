@@ -1,0 +1,662 @@
+"""S0-only synthetic measurements and definition checks; no operational owner.
+
+Every database is newly created beneath this file's controlled fixture root.
+Existing unbound validators receive synthetic connections, never store sessions.
+No Grant/Result/observation membership is minted. Tests passing means these
+experiments/checks worked, not that P07 or an operational read port is feasible.
+"""
+from __future__ import annotations
+
+from contextlib import ExitStack, contextmanager
+from dataclasses import FrozenInstanceError, asdict
+import copy
+import ctypes
+from ctypes import wintypes
+import json
+import os
+from pathlib import Path
+import platform
+import re
+import shutil
+import sqlite3
+import subprocess
+import sys
+import tempfile
+import threading
+import time
+import tracemalloc
+from types import SimpleNamespace
+import unittest
+from unittest import mock
+import uuid
+
+REPOSITORY = Path(__file__).resolve().parents[1]
+if str(REPOSITORY) not in sys.path:
+    sys.path.insert(0, str(REPOSITORY))
+
+from itru import agent_execution_journal as journal
+from itru import sqlite_agent_execution_journal_store as journal_store
+from itru import sqlite_task_run_state as lifecycle_store
+from itru import task_run_state as lifecycle
+from itru.agent_execution_authorization_grant import _parse_canonical_utc_timestamp
+from itru.authorization_domain_ownership import AuthorizationDomainIdentity
+from itru.control_center_read_budget import (
+    APPROVED_P07, InspectionWork, P07BudgetProfile, assess_inspection_work,
+    charge_inspection_work, quota_json_bytes, quota_json_size,
+)
+from itru.control_center_read_source import (
+    LedgerIdentityReference, MetadataPolicyDefinition, SourceDefinitionError,
+    SourceRevision, validate_metadata_policy, validate_source_policy_reference,
+    validate_source_revision,
+)
+
+FIXTURES = Path(__file__).resolve().parent / 'fixtures' / 'control_center'
+CONTROLLED = FIXTURES / 'temporary'
+FIXED_TIME = '2026-10-17T00:00:02.000000Z'
+
+
+def fixture_roots():
+    """Check all existing ancestors before any synthetic write; no junctions."""
+    if not FIXTURES.is_relative_to(REPOSITORY) or FIXTURES.resolve() != FIXTURES:
+        raise ValueError('fixture root is outside the authorized repository')
+    for candidate in (CONTROLLED, *CONTROLLED.parents):
+        if candidate.exists() or candidate.is_symlink():
+            info = candidate.lstat()
+            if candidate.is_symlink() or getattr(info, 'st_file_attributes', 0) & 0x400:
+                raise ValueError('synthetic fixture ancestor is a reparse/symlink')
+    if CONTROLLED.exists() and (not CONTROLLED.is_dir() or CONTROLLED.resolve() != CONTROLLED):
+        raise ValueError('invalid controlled fixture directory')
+
+
+def file_identity(path):
+    info = path.lstat()
+    return info.st_dev, info.st_ino
+
+
+@contextmanager
+def owned_directory():
+    """Delete only a newly allocated, marked, contained synthetic directory."""
+    fixture_roots()
+    fixture_identity = file_identity(FIXTURES)
+    CONTROLLED.mkdir(exist_ok=True)
+    fixture_roots()
+    controlled_identity = file_identity(CONTROLLED)
+    root = Path(tempfile.mkdtemp(prefix='s0-owned-', dir=CONTROLLED))
+    fixture_roots()
+    if root.resolve() != root or root.is_symlink():
+        raise AssertionError('allocated synthetic directory is not exact')
+    root_identity = file_identity(root)
+    marker = uuid.uuid4().hex
+    (root / 'ownership-marker').write_text(marker, encoding='ascii')
+    try:
+        yield root
+    finally:
+        fixture_roots()
+        if (file_identity(FIXTURES) != fixture_identity
+                or file_identity(CONTROLLED) != controlled_identity
+                or file_identity(root) != root_identity
+                or root.parent != CONTROLLED.resolve() or not root.name.startswith('s0-owned-')
+                or not root.is_relative_to(FIXTURES.resolve()) or root.is_symlink()
+                or (root / 'ownership-marker').read_text(encoding='ascii') != marker):
+            raise AssertionError('synthetic cleanup containment/ownership failure')
+        for parent, directories, files in os.walk(root, followlinks=False):
+            for name in (*directories, *files):
+                item = Path(parent) / name
+                info = item.lstat()
+                if (item.is_symlink() or not item.resolve().is_relative_to(root)
+                        or getattr(info, 'st_file_attributes', 0) & 0x400
+                        or (item.is_file() and info.st_nlink != 1)):
+                    raise AssertionError('synthetic cleanup rejected foreign object')
+        fixture_roots()
+        if file_identity(root) != root_identity:
+            raise AssertionError('synthetic directory identity changed before removal')
+        shutil.rmtree(root)
+
+
+def source(**changes):
+    values = dict(source_id='synthetic-source', source_revision='synthetic-v1',
+        project_id='p', store_id='s', journal_id='j',
+        ledger_identity=LedgerIdentityReference('d', 'l', 1),
+        definition_set_reference='definitions', graph_reference='graph',
+        max_concurrency=2, metadata_policy_reference='policy',
+        budget_profile_reference='approved-v2-p07')
+    return SourceRevision(**(values | changes))
+
+
+def record(subject=0, sequence=1, *, result=False, run_id=None):
+    """Canonical-shaped descriptive fixture; its provenance is not authenticated."""
+    contract = dict(task_id='synthetic-task', workflow_id='w', stage_id='s',
+        role_id='r', actor_id='a', runtime_option_id='rt', option_id='o',
+        environment_id='e', operation_id='repository_file_read',
+        resource='synthetic.txt', execution_mode='standard')
+    run = dict(run_id=f'r{subject}' if run_id is None else run_id, contract=contract)
+    grant = dict(grant_id=f'g{subject}', run=run, authorization_domain_id='d',
+        issuer_kind='human', issuer_id='i', provenance_reference='SYNTHETIC-NOT-AUTHORITY',
+        issued_at='2026-10-17T00:00:00Z', expires_at='2026-10-18T00:00:00Z')
+    return dict(format_version=1, journal_id='j', sequence=sequence,
+        recorded_at=FIXED_TIME,
+        ledger_identity=dict(authorization_domain_id='d', ledger_instance_id='l',
+                             domain_generation=1),
+        execution_entry=dict(identity=['d', 'human', 'i', f'g{subject}'],
+            claim_id='1' * 64, executor_instance_id='2' * 64, lease_generation=1,
+            entry_time='2026-10-17T00:00:01.000000Z',
+            entry_time_key=journal._time('2026-10-17T00:00:01.000000Z')),
+        admission=dict(grant=grant, tool_binding=dict(run=copy.deepcopy(run), tool_id='tool'),
+                       decision_time='2026-10-17T00:00:00.000000Z'),
+        event_kind='result_observed' if result else 'entry_observed',
+        provenance='original_controlled_invocation',
+        result_summary=dict(outcome='succeeded', diagnostic_code=None, byte_count=0)
+                       if result else None)
+
+
+def make_journal(path, count, *, corrupt_last=False):
+    """Create original-schema synthetic rows without provisioning an owner/store."""
+    writer = sqlite3.connect(path, isolation_level=None)
+    try:
+        writer.execute('PRAGMA journal_mode=WAL')
+        writer.execute('PRAGMA wal_autocheckpoint=0')
+        statements, _ = journal_store._schema_resource()
+        for statement in statements:
+            writer.execute(statement)
+        writer.execute('INSERT INTO journal_metadata VALUES(1,?,?,?,?,1,?)',
+            ('j', 'd', 'l', '1', journal_store.RESOURCE_SHA256))
+        writer.execute(f'PRAGMA application_id={journal_store.APPLICATION_ID}')
+        writer.execute(f'PRAGMA user_version={journal_store.SCHEMA_VERSION}')
+        total_bytes = 0
+        writer.execute('BEGIN')
+        for index in range(count):
+            item = record(index, index + 1)
+            if corrupt_last and index == count - 1:
+                item['result_summary'] = {'unexpected': 'synthetic corruption'}
+            encoded = journal._encode(item)
+            total_bytes += len(encoded.encode('utf-8'))
+            writer.execute('INSERT INTO journal_entries VALUES(?,?,?,?,?)',
+                (index + 1, journal._encode(list(journal._subject_key(item))),
+                 item['event_kind'], item['recorded_at'], encoded))
+        writer.execute('COMMIT')
+        config = journal_store.SqliteExecutionJournalConfiguration(
+            path, path.parent, 'j', AuthorizationDomainIdentity('d', 'l', 1))
+        return writer, SimpleNamespace(configuration=config), total_bytes
+    except BaseException:
+        writer.close()
+        raise
+
+
+def passive(path):
+    connection = sqlite3.connect(path.as_uri() + '?mode=ro', uri=True,
+        isolation_level=None, timeout=0.05)
+    try:
+        connection.row_factory = sqlite3.Row
+        connection.execute('PRAGMA query_only=ON')
+        return connection
+    except BaseException:
+        connection.close()
+        raise
+
+
+def scan(records, high_water, position, limit, cap=1000, run_id='r1500'):
+    """Test-only traversal experiment, not an application query/cursor."""
+    output, scanned = [], 0
+    for item in records:
+        document = item.document
+        sequence = document['sequence']
+        if sequence <= position or sequence > high_water:
+            continue
+        matched = document['admission']['grant']['run']['run_id'] == run_id
+        if matched and len(output) == limit:
+            break
+        if scanned == cap:
+            break
+        position, scanned = sequence, scanned + 1
+        if matched:
+            output.append(sequence)
+    return output, position, scanned, position == high_water
+
+
+def process_memory():
+    """Current process only; lifetime peaks are not per-query native allocation."""
+    if os.name != 'nt':
+        return {'supported': False}
+    class Counters(ctypes.Structure):
+        _fields_ = [('cb', wintypes.DWORD), ('PageFaultCount', wintypes.DWORD)] + [
+            (name, ctypes.c_size_t) for name in ('PeakWorkingSetSize', 'WorkingSetSize',
+            'QuotaPeakPagedPoolUsage', 'QuotaPagedPoolUsage', 'QuotaPeakNonPagedPoolUsage',
+            'QuotaNonPagedPoolUsage', 'PagefileUsage', 'PeakPagefileUsage', 'PrivateUsage')]
+    counter = Counters()
+    counter.cb = ctypes.sizeof(counter)
+    kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+    psapi = ctypes.WinDLL('psapi', use_last_error=True)
+    kernel.GetCurrentProcess.restype = wintypes.HANDLE
+    psapi.GetProcessMemoryInfo.argtypes = [wintypes.HANDLE, ctypes.c_void_p, wintypes.DWORD]
+    if not psapi.GetProcessMemoryInfo(kernel.GetCurrentProcess(), ctypes.byref(counter), counter.cb):
+        raise ctypes.WinError(ctypes.get_last_error())
+    return {'working_set_bytes': counter.WorkingSetSize,
+            'peak_working_set_bytes': counter.PeakWorkingSetSize,
+            'private_bytes': counter.PrivateUsage,
+            'peak_pagefile_bytes': counter.PeakPagefileUsage}
+
+
+def lifecycle_documents(count):
+    """One Task, repeated historical continuations; no real approval is produced."""
+    events = [dict(format_version=1, sequence=1, task_id='synthetic-task', revision=1,
+                   operation='enroll', data={'definition_reference': 'synthetic-definition'})]
+    while len(events) < count:
+        attempt = (len(events) - 1) // 3
+        item = record(attempt)
+        binding = item['admission']['tool_binding']
+        operations = [
+            ('register' if attempt == 0 else 'continue',
+             {'subject': {'binding': binding, 'ledger_identity': item['ledger_identity']}}),
+            ('start', {'run_id': binding['run']['run_id']}),
+            ('result', {'run_id': binding['run']['run_id'], 'outcome': 'succeeded',
+                        'result_identity': list(journal._subject_key(item))}),
+        ]
+        if attempt:
+            operations[0][1].update(reason='synthetic-history',
+                approval=dict(authority_kind='human', authority_id='synthetic',
+                    session_nonce='synthetic-session', request_nonce='synthetic-request',
+                    reference='SYNTHETIC-NOT-APPROVAL'))
+        for operation, data in operations:
+            if len(events) == count:
+                break
+            number = len(events) + 1
+            events.append(dict(format_version=1, sequence=number, task_id='synthetic-task',
+                               revision=number, operation=operation, data=data))
+    return events
+
+
+def measure(mode, count):
+    if type(mode) is not str or mode not in ('journal', 'lifecycle'):
+        raise ValueError('only journal/lifecycle synthetic measurements are allowed')
+    if type(count) is not int or not 1 <= count <= 10000:
+        raise ValueError('synthetic measurement count must be an exact integer in 1..10000')
+    with owned_directory() as root, ExitStack() as resources:
+        path = root / f'{mode}.sqlite3'
+        if mode == 'journal':
+            writer, probe, metadata_bytes = make_journal(path, count)
+            resources.callback(writer.close)
+        else:
+            writer = sqlite3.connect(path, isolation_level=None)
+            resources.callback(writer.close)
+            writer.execute('PRAGMA journal_mode=DELETE')
+            for _, _, statement in lifecycle_store._DDL:
+                writer.execute(statement)
+            writer.execute('INSERT INTO metadata VALUES(1,?,?,?)',
+                           ('s', 'p', lifecycle_store._DDL_HASH))
+            writer.execute(f'PRAGMA application_id={lifecycle_store.APPLICATION_ID}')
+            writer.execute('PRAGMA user_version=1')
+            documents = lifecycle_documents(count)
+            payloads = [lifecycle.encode(item) for item in documents]
+            metadata_bytes = sum(len(item.encode('utf-8')) for item in payloads)
+            writer.execute('BEGIN')
+            writer.executemany('INSERT INTO events VALUES(?,?)', enumerate(payloads, 1))
+            writer.execute('COMMIT')
+            del documents, payloads
+            probe = SimpleNamespace(store_id='s', project_id='p')
+        reader = passive(path)
+        resources.callback(reader.close)
+        if mode == 'lifecycle':
+            reader.row_factory = None  # Existing lifecycle validator expects tuples.
+        before = process_memory()
+        statements = []
+        reader.set_trace_callback(statements.append)
+        try:
+            reader.execute('BEGIN')
+            start = time.perf_counter_ns()
+            if mode == 'journal':
+                value = journal_store.SqliteExecutionJournalStore._verify(probe, reader)
+            else:
+                probe._connection = reader
+                value = lifecycle_store.SqliteTaskRunStateStore._verify(probe)
+            elapsed = time.perf_counter_ns() - start
+            reader.execute('ROLLBACK')
+            after = process_memory()
+            row_count = len(value[0])
+            del value
+            # A separate traced pass measures Python allocations, not native SQLite.
+            traced_peak = None
+            traced_elapsed = None
+            if count <= APPROVED_P07.journal_records_per_request:
+                tracemalloc.start()
+                reader.execute('BEGIN')
+                traced_start = time.perf_counter_ns()
+                value = (journal_store.SqliteExecutionJournalStore._verify(probe, reader)
+                         if mode == 'journal' else lifecycle_store.SqliteTaskRunStateStore._verify(probe))
+                traced_elapsed = time.perf_counter_ns() - traced_start
+                _, traced_peak = tracemalloc.get_traced_memory()
+                tracemalloc.stop()
+                del value
+                reader.execute('ROLLBACK')
+            sidecars = {suffix or 'database': Path(str(path) + suffix).stat().st_size
+                        if Path(str(path) + suffix).exists() else None
+                        for suffix in ('', '-wal', '-shm', '-journal')}
+            return dict(mode=mode, records=row_count, source_metadata_bytes=metadata_bytes,
+                validation_ns=elapsed, within_one_second=elapsed <= 1_000_000_000,
+                within_ten_seconds=elapsed <= 10_000_000_000,
+                python_tracemalloc_peak_bytes=traced_peak, traced_validation_ns=traced_elapsed,
+                memory_before=before, memory_after=after, files=sidecars,
+                sql_statements=sorted(set(statements)),
+                qualification='Synthetic existing-validator measurement, not P07 enforcement or owner capture.')
+        finally:
+            if tracemalloc.is_tracing():
+                tracemalloc.stop()
+            if reader.in_transaction:
+                reader.execute('ROLLBACK')
+            reader.close()
+            writer.close()
+
+
+class SyntheticFeasibility(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        fixture_roots()
+        cls.fixture_identity = file_identity(FIXTURES)
+        cls.evidence = dict(python=sys.version, executable=sys.executable,
+            platform=platform.platform(), sqlite=sqlite3.sqlite_version,
+            clocks={name: vars(time.get_clock_info(name)) for name in ('monotonic', 'perf_counter')},
+            qualifications=['Synthetic only; no operational owner or live execution evidence.',
+                'Correctness checks passing is not a P07 or operational feasibility PASS.'],
+            measurements=[])
+        cls.evidence_path = FIXTURES / f's0-measurements-{uuid.uuid4().hex}.json'
+
+    @classmethod
+    def tearDownClass(cls):
+        fixture_roots()
+        if file_identity(FIXTURES) != cls.fixture_identity:
+            raise AssertionError('fixture directory changed before evidence write')
+        with cls.evidence_path.open('x', encoding='utf-8', newline='\n') as output:
+            json.dump(cls.evidence, output, indent=2, ensure_ascii=True)
+            output.write('\n')
+        print(f'\nS0_EVIDENCE={cls.evidence_path}')
+
+    def test_01_source_policy_definitions_do_not_create_authority(self):
+        item = source()
+        self.assertIs(validate_source_revision(item), item)
+        policy = MetadataPolicyDefinition('policy', 'revision')
+        self.assertIs(validate_metadata_policy(policy), policy)
+        self.assertTrue(policy.whole_metadata_set_required)
+        self.assertIsNone(validate_source_policy_reference(item, policy))
+        with self.assertRaises(FrozenInstanceError):
+            item.source_id = 'changed'
+        self.assertEqual(source(source_id=' A ').source_id, ' A ')
+        self.assertNotEqual(source(source_id='é'), source(source_id='e\u0301'))
+        self.assertEqual(LedgerIdentityReference('d', 'l', 2 ** 128).domain_generation, 2 ** 128)
+        for change in ({'source_id': ''}, {'source_id': '\ud800'},
+                       {'max_concurrency': True}, {'max_concurrency': 3},
+                       {'ledger_identity': {'authorization_domain_id': 'd'}}):
+            with self.subTest(change=change), self.assertRaises(SourceDefinitionError):
+                source(**change)
+        with self.assertRaises(SourceDefinitionError):
+            validate_source_policy_reference(item, MetadataPolicyDefinition('other', 'v1'))
+        for invalid in (0, -1, True):
+            with self.assertRaises(SourceDefinitionError):
+                LedgerIdentityReference('d', 'l', invalid)
+        self.assertNotIn('principal', asdict(policy))
+        self.assertNotIn('path', asdict(item))
+
+    def test_02_profile_and_quota_encoding(self):
+        p = APPROVED_P07
+        self.assertEqual((p.lifecycle_capture_hold_ns, p.whole_query_ns), (10 ** 9, 10 ** 10))
+        self.assertEqual((p.lifecycle_events, p.journal_records_per_request), (10000, 10000))
+        self.assertEqual((p.active_queries_per_source, p.active_queries_per_principal,
+                          p.active_queries_application, p.pending_queries), (1, 1, 2, 0))
+        with self.assertRaises(TypeError):
+            P07BudgetProfile(lifecycle_capture_hold_ns=2 * 10 ** 9)
+        encoded = quota_json_bytes({'z': 'é😀/\n\x01', '\ue000': 1, '😀': 2,
+                                    'n': '9007199254740993', 'b': False})
+        self.assertIn(b'\\u00e9\\ud83d\\ude00/\\n\\u0001', encoded)
+        self.assertLess(encoded.index(b'\\ue000'), encoded.index(b'\\ud83d', encoded.index(b'\\ue000')))
+        self.assertEqual(quota_json_size({'é': '😀'}), len(quota_json_bytes({'é': '😀'})))
+        for invalid in (1.5, float('nan'), {1: 'value'}, {'s': '\udfff'}, (1,)):
+            with self.subTest(invalid=repr(invalid)), self.assertRaises(ValueError):
+                quota_json_bytes(invalid)
+        cycle = []
+        cycle.append(cycle)
+        with self.assertRaises(ValueError):
+            quota_json_bytes(cycle)
+
+    def test_03_cumulative_work_including_failed_replayed_branches(self):
+        limits = dict(attempts=128, validated_records=1000000,
+                      source_metadata_bytes=256 * 1024 ** 2,
+                      response_metadata_bytes=64 * 1024 ** 2, active_time_ns=120 * 10 ** 9)
+        for name, limit in limits.items():
+            self.assertTrue(assess_inspection_work(InspectionWork(**{name: limit})).within_limits)
+            self.assertIn(name, assess_inspection_work(InspectionWork(**{name: limit + 1})).exceeded)
+        work = InspectionWork()
+        # These labels identify synthetic attempts, not actual requests or refunds.
+        for kind in ('first', 'failed', 'replay', 'branch', 'restart', 'second-traversal'):
+            assessment = charge_inspection_work(work, InspectionWork(attempts=1, validated_records=10000,
+                source_metadata_bytes=16 * 1024 ** 2, active_time_ns=10 ** 9))
+            work = assessment.work
+        self.assertEqual(work.attempts, 6)
+        self.assertEqual(work.validated_records, 60000)
+        exceeded = charge_inspection_work(work, InspectionWork(source_metadata_bytes=256 * 1024 ** 2))
+        self.assertFalse(exceeded.within_limits)
+        self.assertGreater(exceeded.work.source_metadata_bytes, work.source_metadata_bytes)
+        self.assertEqual((10000 + 49) // 50, 200)
+        self.assertGreater(100 * 16 * 1024 ** 2, limits['source_metadata_bytes'])
+        self.evidence['cumulative_analysis'] = dict(default_dense_pages=200,
+            dense_100_match_validation_bytes=100 * 16 * 1024 ** 2,
+            byte_budget=limits['source_metadata_bytes'], attempts_budget=limits['attempts'])
+        for invalid in (-1, True, 0.5):
+            with self.assertRaises(ValueError):
+                InspectionWork(attempts=invalid)
+
+    def test_04_contract_fragments_and_semantic_identity(self):
+        cases = json.loads((FIXTURES / 'application-v1-cases.json').read_text(encoding='utf-8'))
+        self.assertEqual(cases['application_version'], '1.0')
+        self.assertEqual(len(set(cases['error_codes'])), 19)
+        self.assertEqual(cases['continuation'], {'eligibility': 'unassessed', 'action_available': False})
+        for value in cases['decimal_values']:
+            self.assertRegex(value, r'^(0|[1-9][0-9]*)$')
+            self.assertEqual(json.loads(quota_json_bytes({'n': value}))['n'], value)
+        for value in cases['invalid_decimal_values']:
+            self.assertIsNone(re.fullmatch(r'(0|[1-9][0-9]*)', value))
+        for value in cases['grant_timestamps']:
+            self.assertIsNotNone(_parse_canonical_utc_timestamp(value))
+            item = record()
+            item['admission']['grant']['issued_at'] = value
+            # Decision must follow the supplied fractional issuance.
+            item['admission']['decision_time'] = '2026-10-17T00:00:00.999999Z'
+            journal._validate_record(item)
+            self.assertEqual(item['admission']['grant']['issued_at'], value)
+        item = record(result=True)
+        self.assertEqual(journal._validate_record(item)['result_summary']['byte_count'], 0)
+        for change in ('tool_id', 'contract'):
+            altered = copy.deepcopy(item)
+            if change == 'contract':
+                altered['admission']['tool_binding']['run']['contract']['resource'] = 'other'
+                with self.assertRaises(ValueError):
+                    journal._validate_record(altered)
+            else:
+                altered['admission']['tool_binding']['tool_id'] = 'other'
+                journal._validate_record(altered)
+                self.assertNotEqual(journal._subject_only(item), journal._subject_only(altered))
+        injected = copy.deepcopy(item)
+        injected['payload'] = 'forbidden'
+        with self.assertRaises(ValueError):
+            journal._validate_record(injected)
+
+    def test_05_existing_whole_journal_validation_and_frozen_scan(self):
+        with owned_directory() as root, ExitStack() as resources:
+            writer, probe, source_bytes = make_journal(root / 'journal.sqlite3', 2000)
+            resources.callback(writer.close)
+            reader = passive(root / 'journal.sqlite3')
+            resources.callback(reader.close)
+            try:
+                reader.execute('BEGIN')
+                records = journal_store.SqliteExecutionJournalStore._verify(probe, reader)[0]
+                reader.execute('ROLLBACK')
+                first = scan(records, 2000, 0, 50)
+                self.assertEqual(first, ([], 1000, 1000, False))
+                reader.execute('BEGIN')
+                records = journal_store.SqliteExecutionJournalStore._verify(probe, reader)[0]
+                reader.execute('ROLLBACK')
+                second = scan(records, 2000, first[1], 50)
+                self.assertEqual(second, ([1501], 2000, 1000, True))
+                with self.assertRaisesRegex(sqlite3.OperationalError, 'readonly'):
+                    reader.execute('INSERT INTO journal_entries VALUES(99999,?,?,?,?)',
+                                   ('invalid', 'entry_observed', FIXED_TIME, '{}'))
+                # New corrupt row beyond pinned H must fail full-current validation.
+                bad = record(2000, 2001)
+                bad['result_summary'] = {'invalid': 'synthetic-corruption'}
+                writer.execute('INSERT INTO journal_entries VALUES(?,?,?,?,?)',
+                    (2001, journal._encode(list(journal._subject_key(bad))),
+                     bad['event_kind'], bad['recorded_at'], journal._encode(bad)))
+                with self.assertRaises(journal.JournalIntegrityError):
+                    journal_store.SqliteExecutionJournalStore._verify(probe, reader)
+                self.evidence['frozen_scan'] = dict(high_water=2000,
+                    first_page=first, second_page=second, source_bytes=source_bytes,
+                    corrupt_after_high_water_rejected=True,
+                    limitation='Test-only scanner; no production cursor/context/auth implementation.')
+            finally:
+                reader.close()
+                writer.close()
+        examples = [journal.JournalRecord(journal._encode(record(i, i + 1, run_id='same')))
+                    for i in range(3)]
+        self.assertEqual(scan(examples, 3, 0, 1, run_id='same'), ([1], 1, 1, False))
+        self.assertEqual(scan(examples, 3, 1, 1, run_id='same'), ([2], 2, 1, False))
+        self.assertEqual(scan([], 0, 0, 50), ([], 0, 0, True))
+
+    def test_06_sql_cancellation_cleanup_and_sidecars(self):
+        observations = []
+        for mode in ('DELETE', 'WAL'):
+            with owned_directory() as root, ExitStack() as resources:
+                path = root / 'sidecar.sqlite3'
+                writer = sqlite3.connect(path, isolation_level=None)
+                resources.callback(writer.close)
+                writer.execute(f'PRAGMA journal_mode={mode}')
+                writer.execute('PRAGMA wal_autocheckpoint=0')
+                writer.execute('CREATE TABLE fixture (value INTEGER)')
+                writer.execute('INSERT INTO fixture VALUES(1)')
+                before = {suffix: Path(str(path) + suffix).exists()
+                          for suffix in ('-wal', '-shm', '-journal')}
+                reader = passive(path)
+                resources.callback(reader.close)
+                deadline = time.perf_counter_ns() + 20_000_000
+                calls = 0
+                def progress():
+                    nonlocal calls
+                    calls += 1
+                    return int(time.perf_counter_ns() >= deadline)
+                reader.set_progress_handler(progress, 100)
+                start = time.perf_counter_ns()
+                reader.execute('BEGIN')
+                with self.assertRaisesRegex(sqlite3.OperationalError, 'interrupted'):
+                    reader.execute('WITH RECURSIVE n(x) AS (VALUES(0) UNION ALL SELECT x+1 FROM n WHERE x<100000000) SELECT sum(x) FROM n').fetchone()
+                reader.set_progress_handler(None, 0)
+                if reader.in_transaction:
+                    reader.execute('ROLLBACK')
+                reader.close()
+                released = time.perf_counter_ns() - start
+                writer.execute('BEGIN IMMEDIATE')
+                writer.execute('INSERT INTO fixture VALUES(2)')
+                during = {suffix: Path(str(path) + suffix).exists()
+                          for suffix in ('-wal', '-shm', '-journal')}
+                writer.execute('ROLLBACK')
+                writer.close()
+                observations.append(dict(mode=mode, progress_calls=calls,
+                    cancellation_and_cleanup_ns=released, before_read=before,
+                    during_writer=during, writer_after_cancel_succeeded=True,
+                    qualification='SQL VM cancellation only; not Python/OS-I/O bounded drain proof.'))
+                self.assertGreater(calls, 0)
+        self.evidence['sql_cancellation_sidecars'] = observations
+
+    def test_07_controlled_writer_priority_model(self):
+        condition = threading.Condition()
+        state = dict(readers=1, waiting=0, writer=False, closing=False)
+        queued, entered, release, late_entered = [threading.Event() for _ in range(4)]
+        order = []
+        errors = []
+        def writer():
+            try:
+                with condition:
+                    state['waiting'] += 1
+                    queued.set()
+                    self.assertTrue(condition.wait_for(lambda: state['readers'] == 0, timeout=2))
+                    state['waiting'] -= 1
+                    state['writer'] = True
+                    order.append('writer')
+                    entered.set()
+                self.assertTrue(release.wait(2))
+                with condition:
+                    state['writer'] = False
+                    condition.notify_all()
+            except BaseException as error:
+                errors.append(repr(error))
+        def late_reader():
+            try:
+                with condition:
+                    self.assertTrue(condition.wait_for(
+                        lambda: not state['waiting'] and not state['writer'] and not state['closing'], timeout=2))
+                    order.append('late-reader')
+                    late_entered.set()
+            except BaseException as error:
+                errors.append(repr(error))
+        first = threading.Thread(target=writer, daemon=True)
+        late = threading.Thread(target=late_reader, daemon=True)
+        start = time.perf_counter_ns()
+        first.start()
+        self.assertTrue(queued.wait(2))
+        late.start()
+        with condition:
+            state['readers'] = 0
+            condition.notify_all()
+        self.assertTrue(entered.wait(2))
+        self.assertFalse(late_entered.is_set())
+        release.set()
+        first.join(2)
+        late.join(2)
+        self.assertFalse(first.is_alive() or late.is_alive())
+        self.assertEqual(errors, [])
+        self.assertEqual(order, ['writer', 'late-reader'])
+        self.evidence['writer_priority_model'] = dict(order=order,
+            elapsed_ns=time.perf_counter_ns() - start,
+            qualification='Controlled scheduling model only; existing store RLock unchanged.')
+
+    def test_08_bounded_isolated_validator_measurements(self):
+        for mode, count in (('journal', 100), ('journal', 1000), ('journal', 10000),
+                            ('lifecycle', 100), ('lifecycle', 1000), ('lifecycle', 10000)):
+            start = time.perf_counter_ns()
+            try:
+                result = subprocess.run([sys.executable, '-B', str(Path(__file__).resolve()),
+                    '--measure', mode, str(count)], cwd=REPOSITORY,
+                    capture_output=True, text=True, timeout=45)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                measurement = json.loads(result.stdout)
+                measurement['subprocess_exit_code'] = result.returncode
+                measurement['subprocess_wall_ns'] = time.perf_counter_ns() - start
+                self.assertEqual(measurement['records'], count)
+                self.assertLessEqual(measurement['source_metadata_bytes'], 16 * 1024 ** 2)
+            except subprocess.TimeoutExpired:
+                measurement = dict(mode=mode, records_requested=count,
+                    timeout_seconds=45, classification='NO-GO: bounded experiment exceeded timeout',
+                    qualification='Child killed; does not establish safe in-process cancellation.')
+            self.evidence['measurements'].append(measurement)
+
+    def test_09_prewrite_containment_and_measurement_input_guards(self):
+        for mode, count in (('../escape', 1), ('journal', 0), ('lifecycle', 10001),
+                            ('journal', True), ('journal', 1.0)):
+            with self.subTest(mode=mode, count=count), mock.patch(
+                    __name__ + '.owned_directory',
+                    side_effect=AssertionError('invalid input reached artifact creation')):
+                with self.assertRaises(ValueError):
+                    measure(mode, count)
+        with mock.patch.object(Path, 'is_symlink', return_value=True):
+            with self.assertRaises(ValueError):
+                fixture_roots()
+
+
+if __name__ == '__main__':
+    if len(sys.argv) == 4 and sys.argv[1] == '--measure':
+        with mock.patch.object(lifecycle_store.SqliteTaskRunStateStore, '__init__',
+                side_effect=AssertionError('S0 must not construct a lifecycle owner')), \
+             mock.patch.object(lifecycle_store.SqliteTaskRunStateStore, 'provision',
+                side_effect=AssertionError('S0 must not provision an owner')), \
+             mock.patch.object(journal_store.SqliteExecutionJournalStore, '__init__',
+                side_effect=AssertionError('S0 uses synthetic connections only')), \
+             mock.patch.object(journal_store.SqliteExecutionJournalStore, 'provision',
+                side_effect=AssertionError('S0 creates synthetic schemas only')):
+            print(json.dumps(measure(sys.argv[2], int(sys.argv[3])), ensure_ascii=True))
+    else:
+        unittest.main()

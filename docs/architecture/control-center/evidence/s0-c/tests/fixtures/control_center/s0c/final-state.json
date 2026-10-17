@@ -1,0 +1,289 @@
+{
+    "phase":  "S0-C",
+    "head":  "19a321fc0876e73b9f83109f2a58528c9d54e331",
+    "branch":  "feature/control-center-s0-feasibility",
+    "staged_paths":  [
+
+                     ],
+    "tracked_changes":  [
+
+                        ],
+    "preserved_artifacts":  [
+                                {
+                                    "path":  "docs/architecture/control-center/s0-feasibility-report.md",
+                                    "initial_bytes":  25793,
+                                    "final_bytes":  25793,
+                                    "initial_sha256":  "50e55b23c176d3f3456c2b9ff3bf1f251eef9d5ac12badc113492834529349f3",
+                                    "final_sha256":  "50e55b23c176d3f3456c2b9ff3bf1f251eef9d5ac12badc113492834529349f3",
+                                    "equal":  true
+                                },
+                                {
+                                    "path":  "docs/architecture/control-center/s0-r-feasibility-report.md",
+                                    "initial_bytes":  28521,
+                                    "final_bytes":  28521,
+                                    "initial_sha256":  "035433d24c3d1b99ee69e13f3c938990b61b7e1b2256b85233b38ec465a83c60",
+                                    "final_sha256":  "035433d24c3d1b99ee69e13f3c938990b61b7e1b2256b85233b38ec465a83c60",
+                                    "equal":  true
+                                },
+                                {
+                                    "path":  "itru/control_center_read_budget.py",
+                                    "initial_bytes":  7548,
+                                    "final_bytes":  7548,
+                                    "initial_sha256":  "c87524e8a00887ba11be2b5959c56640266c2839f453bda7434b7730fb3efaba",
+                                    "final_sha256":  "c87524e8a00887ba11be2b5959c56640266c2839f453bda7434b7730fb3efaba",
+                                    "equal":  true
+                                },
+                                {
+                                    "path":  "itru/control_center_read_source.py",
+                                    "initial_bytes":  5688,
+                                    "final_bytes":  5688,
+                                    "initial_sha256":  "47741c408433dca4de7267d3d368ed42270bd38b1cfe87aacfcb1a6deee8ce8d",
+                                    "final_sha256":  "47741c408433dca4de7267d3d368ed42270bd38b1cfe87aacfcb1a6deee8ce8d",
+                                    "equal":  true
+                                },
+                                {
+                                    "path":  "tests/experiments/control_center_s0r/common.py",
+                                    "initial_bytes":  6900,
+                                    "final_bytes":  6900,
+                                    "initial_sha256":  "307c4dfb5443f41be0960ab9457240a510d6cac817b7d331cd2f536d13cf21dc",
+                                    "final_sha256":  "307c4dfb5443f41be0960ab9457240a510d6cac817b7d331cd2f536d13cf21dc",
+                                    "equal":  true
+                                },
+                                {
+                                    "path":  "tests/experiments/control_center_s0r/compact_journal.py",
+                                    "initial_bytes":  9138,
+                                    "final_bytes":  9138,
+                                    "initial_sha256":  "2f9fb4d0dca99998f412c81e591d3179320aa761c79a48599c97bbdc8ed1bc8b",
+                                    "final_sha256":  "2f9fb4d0dca99998f412c81e591d3179320aa761c79a48599c97bbdc8ed1bc8b",
+                                    "equal":  true
+                                },
+                                {
+                                    "path":  "tests/experiments/control_center_s0r/indexed_replay.py",
+                                    "initial_bytes":  10106,
+                                    "final_bytes":  10106,
+                                    "initial_sha256":  "dbed3dba45c9ed1ecf220dec7ff6f0f3d302195ce2e93ebcc4c73326faface23",
+                                    "final_sha256":  "dbed3dba45c9ed1ecf220dec7ff6f0f3d302195ce2e93ebcc4c73326faface23",
+                                    "equal":  true
+                                },
+                                {
+                                    "path":  "tests/experiments/control_center_s0r/run_experiments.py",
+                                    "initial_bytes":  18435,
+                                    "final_bytes":  18435,
+                                    "initial_sha256":  "17c7e61773b4319aa18a2d7b731bb49e62dc295292905b57870c05b0e1eb4281",
+                                    "final_sha256":  "17c7e61773b4319aa18a2d7b731bb49e62dc295292905b57870c05b0e1eb4281",
+                                    "equal":  true
+                                },
+                                {
+                                    "path":  "tests/experiments/control_center_s0r/test_semantics.py",
+                                    "initial_bytes":  19333,
+                                    "final_bytes":  19333,
+                                    "initial_sha256":  "687e5f2191d6d7a78b6aa24440211be92b1f6838c4064549d4d84b769b2accf7",
+                                    "final_sha256":  "687e5f2191d6d7a78b6aa24440211be92b1f6838c4064549d4d84b769b2accf7",
+                                    "equal":  true
+                                },
+                                {
+                                    "path":  "tests/fixtures/control_center/application-v1-cases.json",
+                                    "initial_bytes":  1396,
+                                    "final_bytes":  1396,
+                                    "initial_sha256":  "68639e7b09fe2cbf7dd6135768c6b515cc42d9a40913e4b379a15d56b623d987",
+                                    "final_sha256":  "68639e7b09fe2cbf7dd6135768c6b515cc42d9a40913e4b379a15d56b623d987",
+                                    "equal":  true
+                                },
+                                {
+                                    "path":  "tests/fixtures/control_center/s0-measurements-1938337ad1624a0e8cb9169a543584d5.json",
+                                    "initial_bytes":  10487,
+                                    "final_bytes":  10487,
+                                    "initial_sha256":  "35a9cc5e3e892a5f2905e9c3cdf51ba69d587f3dfad5368c65f416feb0e5cbcc",
+                                    "final_sha256":  "35a9cc5e3e892a5f2905e9c3cdf51ba69d587f3dfad5368c65f416feb0e5cbcc",
+                                    "equal":  true
+                                },
+                                {
+                                    "path":  "tests/fixtures/control_center/s0-measurements-4d7e21c5cadd42359380a5627c8e5617.json",
+                                    "initial_bytes":  10085,
+                                    "final_bytes":  10085,
+                                    "initial_sha256":  "1b8931eb383840794b99b2c57f050df0645da302716e74b5193459730c0eadc2",
+                                    "final_sha256":  "1b8931eb383840794b99b2c57f050df0645da302716e74b5193459730c0eadc2",
+                                    "equal":  true
+                                },
+                                {
+                                    "path":  "tests/fixtures/control_center/s0-measurements-a3ee3d159d7347ea98f5be26e7c3b40f.json",
+                                    "initial_bytes":  10107,
+                                    "final_bytes":  10107,
+                                    "initial_sha256":  "e2a95c1666eeeb2971314f5758b296e2c12ca6e22a6cf7928a82c12a5ff65acb",
+                                    "final_sha256":  "e2a95c1666eeeb2971314f5758b296e2c12ca6e22a6cf7928a82c12a5ff65acb",
+                                    "equal":  true
+                                },
+                                {
+                                    "path":  "tests/fixtures/control_center/s0r/baseline.json",
+                                    "initial_bytes":  2329,
+                                    "final_bytes":  2329,
+                                    "initial_sha256":  "d7c7c95e7f272642065f5a9414992c96ee8904d232e3555390f1e62bdaac567f",
+                                    "final_sha256":  "d7c7c95e7f272642065f5a9414992c96ee8904d232e3555390f1e62bdaac567f",
+                                    "equal":  true
+                                },
+                                {
+                                    "path":  "tests/fixtures/control_center/s0r/evidence-d2a605369ba94e7595af0dd1f5dc76a3.json",
+                                    "initial_bytes":  107465,
+                                    "final_bytes":  107465,
+                                    "initial_sha256":  "4cd7f2d2447cbc8d93f8b8e23d45631b2812c3033cdb598f4b0827db8d36dcc2",
+                                    "final_sha256":  "4cd7f2d2447cbc8d93f8b8e23d45631b2812c3033cdb598f4b0827db8d36dcc2",
+                                    "equal":  true
+                                },
+                                {
+                                    "path":  "tests/fixtures/control_center/s0r/final-state.json",
+                                    "initial_bytes":  3424,
+                                    "final_bytes":  3424,
+                                    "initial_sha256":  "31eadf230b5921e2aa7456032300bd4bfe985a242b459b8d4d47a37c02ea86f6",
+                                    "final_sha256":  "31eadf230b5921e2aa7456032300bd4bfe985a242b459b8d4d47a37c02ea86f6",
+                                    "equal":  true
+                                },
+                                {
+                                    "path":  "tests/fixtures/control_center/s0r/semantic-corpus-cb09d063fdb04c538c06abf2e818f0de.json",
+                                    "initial_bytes":  581152,
+                                    "final_bytes":  581152,
+                                    "initial_sha256":  "0fd268aef4ead794c70096ffb652642946cae86dd7c5cfb2e6be15b8422f89ec",
+                                    "final_sha256":  "0fd268aef4ead794c70096ffb652642946cae86dd7c5cfb2e6be15b8422f89ec",
+                                    "equal":  true
+                                },
+                                {
+                                    "path":  "tests/fixtures/control_center/s0r/semantic-results-37017e192052479792b9716ae5486bd7.json",
+                                    "initial_bytes":  110822,
+                                    "final_bytes":  110822,
+                                    "initial_sha256":  "e70ea13e47ce4ab4895952c5f270f64c5de8433acb44646ce66b2114abd00196",
+                                    "final_sha256":  "e70ea13e47ce4ab4895952c5f270f64c5de8433acb44646ce66b2114abd00196",
+                                    "equal":  true
+                                },
+                                {
+                                    "path":  "tests/test_control_center_feasibility.py",
+                                    "initial_bytes":  34738,
+                                    "final_bytes":  34738,
+                                    "initial_sha256":  "64c9fb7fa006f97147338caa5610a17492391320ff2356fca30d08f851d13f37",
+                                    "final_sha256":  "64c9fb7fa006f97147338caa5610a17492391320ff2356fca30d08f851d13f37",
+                                    "equal":  true
+                                }
+                            ],
+    "all_19_preserved":  true,
+    "canonical_hashes":  [
+                             {
+                                 "path":  "docs/architecture/control-center/application-boundary-v2.md",
+                                 "expected_sha256":  "c15ac0c1cf6838e48c32cb42931138ee167902cc2eb27207486a178c06785062",
+                                 "actual_sha256":  "c15ac0c1cf6838e48c32cb42931138ee167902cc2eb27207486a178c06785062",
+                                 "equal":  true
+                             },
+                             {
+                                 "path":  "docs/architecture/control-center/integration-implementation-plan.md",
+                                 "expected_sha256":  "93241792fa9a0313e9bee28c6542cbe9d5dd16a4f6599c0b6e0892340f48ee9d",
+                                 "actual_sha256":  "93241792fa9a0313e9bee28c6542cbe9d5dd16a4f6599c0b6e0892340f48ee9d",
+                                 "equal":  true
+                             },
+                             {
+                                 "path":  "docs/architecture/control-center/boundary-investigation.md",
+                                 "expected_sha256":  "1f736d4c0158c6781627b3abd9b95979b4f1279c92d270773d163f7e9cc12596",
+                                 "actual_sha256":  "1f736d4c0158c6781627b3abd9b95979b4f1279c92d270773d163f7e9cc12596",
+                                 "equal":  true
+                             },
+                             {
+                                 "path":  "docs/architecture/control-center/reconciliation-addendum.md",
+                                 "expected_sha256":  "8d816aefda08b9542cb448eca467c3fde3d32bf081ec2cfb52caae4f7b380d94",
+                                 "actual_sha256":  "8d816aefda08b9542cb448eca467c3fde3d32bf081ec2cfb52caae4f7b380d94",
+                                 "equal":  true
+                             }
+                         ],
+    "executed_source_hashes":  [
+                                   {
+                                       "path":  "tests/experiments/control_center_s0c/capture.py",
+                                       "executed_sha256":  "f283076957b9ea75739600b6c9cccf9fa1f23901b679994e1a58b46a396a78ef",
+                                       "final_sha256":  "f283076957b9ea75739600b6c9cccf9fa1f23901b679994e1a58b46a396a78ef",
+                                       "equal":  true
+                                   },
+                                   {
+                                       "path":  "tests/experiments/control_center_s0c/coordination.py",
+                                       "executed_sha256":  "c8071bffdaa4bc77f99bd6d441a467afe8df0a86389cd6a212e1ab4c3deb1354",
+                                       "final_sha256":  "c8071bffdaa4bc77f99bd6d441a467afe8df0a86389cd6a212e1ab4c3deb1354",
+                                       "equal":  true
+                                   },
+                                   {
+                                       "path":  "tests/experiments/control_center_s0c/resources.py",
+                                       "executed_sha256":  "f37587029877179f30024d65e154e99fdeb25a10b9d74be7d81bb101a81d4104",
+                                       "final_sha256":  "f37587029877179f30024d65e154e99fdeb25a10b9d74be7d81bb101a81d4104",
+                                       "equal":  true
+                                   },
+                                   {
+                                       "path":  "tests/experiments/control_center_s0c/run_experiments.py",
+                                       "executed_sha256":  "d13ddc569e69373e98d99723fdfbe7a4dd1b78774cdaf39465d069a18591cbb8",
+                                       "final_sha256":  "d13ddc569e69373e98d99723fdfbe7a4dd1b78774cdaf39465d069a18591cbb8",
+                                       "equal":  true
+                                   },
+                                   {
+                                       "path":  "tests/experiments/control_center_s0c/test_concurrency.py",
+                                       "executed_sha256":  "b74aa9327617da204ea217d7f833a32fc8907f292ef22dbab0d47ac6e8fd1ca8",
+                                       "final_sha256":  "b74aa9327617da204ea217d7f833a32fc8907f292ef22dbab0d47ac6e8fd1ca8",
+                                       "equal":  true
+                                   },
+                                   {
+                                       "path":  "tests/experiments/control_center_s0c/test_resources.py",
+                                       "executed_sha256":  "4bdb3e9dbde7233d7c29cb2afdbfea20dc2ef848a9b012970eb431c7bf9644bc",
+                                       "final_sha256":  "4bdb3e9dbde7233d7c29cb2afdbfea20dc2ef848a9b012970eb431c7bf9644bc",
+                                       "equal":  true
+                                   }
+                               ],
+    "new_s0c_artifacts":  [
+                              "docs/architecture/control-center/s0-c-feasibility-report.md",
+                              "tests/experiments/control_center_s0c/capture.py",
+                              "tests/experiments/control_center_s0c/coordination.py",
+                              "tests/experiments/control_center_s0c/resources.py",
+                              "tests/experiments/control_center_s0c/run_experiments.py",
+                              "tests/experiments/control_center_s0c/test_concurrency.py",
+                              "tests/experiments/control_center_s0c/test_resources.py",
+                              "tests/fixtures/control_center/s0c/baseline.json",
+                              "tests/fixtures/control_center/s0c/evidence-a6d0a4f5d35a4dbd9c0fae3690820671.json",
+                              "tests/fixtures/control_center/s0c/evidence-b3a5e1dd9e5e4e048435b86fa5cb57bd.json",
+                              "tests/fixtures/control_center/s0c/final-state.json",
+                              "tests/fixtures/control_center/s0c/resource-results-83042869c2a3491fa930748b00b7317f.json"
+                          ],
+    "untracked_paths":  [
+                            "docs/architecture/control-center/s0-c-feasibility-report.md",
+                            "docs/architecture/control-center/s0-feasibility-report.md",
+                            "docs/architecture/control-center/s0-r-feasibility-report.md",
+                            "itru/control_center_read_budget.py",
+                            "itru/control_center_read_source.py",
+                            "tests/experiments/control_center_s0c/capture.py",
+                            "tests/experiments/control_center_s0c/coordination.py",
+                            "tests/experiments/control_center_s0c/resources.py",
+                            "tests/experiments/control_center_s0c/run_experiments.py",
+                            "tests/experiments/control_center_s0c/test_concurrency.py",
+                            "tests/experiments/control_center_s0c/test_resources.py",
+                            "tests/experiments/control_center_s0r/common.py",
+                            "tests/experiments/control_center_s0r/compact_journal.py",
+                            "tests/experiments/control_center_s0r/indexed_replay.py",
+                            "tests/experiments/control_center_s0r/run_experiments.py",
+                            "tests/experiments/control_center_s0r/test_semantics.py",
+                            "tests/fixtures/control_center/application-v1-cases.json",
+                            "tests/fixtures/control_center/s0-measurements-1938337ad1624a0e8cb9169a543584d5.json",
+                            "tests/fixtures/control_center/s0-measurements-4d7e21c5cadd42359380a5627c8e5617.json",
+                            "tests/fixtures/control_center/s0-measurements-a3ee3d159d7347ea98f5be26e7c3b40f.json",
+                            "tests/fixtures/control_center/s0c/baseline.json",
+                            "tests/fixtures/control_center/s0c/evidence-a6d0a4f5d35a4dbd9c0fae3690820671.json",
+                            "tests/fixtures/control_center/s0c/evidence-b3a5e1dd9e5e4e048435b86fa5cb57bd.json",
+                            "tests/fixtures/control_center/s0c/final-state.json",
+                            "tests/fixtures/control_center/s0c/resource-results-83042869c2a3491fa930748b00b7317f.json",
+                            "tests/fixtures/control_center/s0r/baseline.json",
+                            "tests/fixtures/control_center/s0r/evidence-d2a605369ba94e7595af0dd1f5dc76a3.json",
+                            "tests/fixtures/control_center/s0r/final-state.json",
+                            "tests/fixtures/control_center/s0r/semantic-corpus-cb09d063fdb04c538c06abf2e818f0de.json",
+                            "tests/fixtures/control_center/s0r/semantic-results-37017e192052479792b9716ae5486bd7.json",
+                            "tests/test_control_center_feasibility.py"
+                        ],
+    "untracked_count":  31,
+    "scratch":  "tests/fixtures/control_center/s0c/scratch",
+    "scratch_entries":  0,
+    "ui":  {
+               "head":  "0485a5fe84746252b3f8f3bcd4f0d9e85e2a7a67",
+               "parked_scrum_81":  "61e817c1f7a2c3987710a73366b516d792402520",
+               "status":  [
+                              "?? ui/control-center/docs/ITRU-064-ui-runtime-integration-readiness.md"
+                          ]
+           },
+    "report_hash_excluded":  "Report remains editable for independent report-review dispositions; this manifest verifies immutable earlier artifacts and executed sources.",
+    "staging_or_commit_performed":  false
+}

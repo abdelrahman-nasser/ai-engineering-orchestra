@@ -1,0 +1,314 @@
+"""Serial bounded S0-R synthetic experiment orchestrator. No operational readers."""
+from contextlib import ExitStack
+import gc
+import hashlib
+import json
+import os
+from pathlib import Path
+import platform
+import sqlite3
+import subprocess
+import sys
+import time
+import tracemalloc
+from unittest import mock
+
+from common import (REPOSITORY, ROOT, SCRATCH, guarded, helpers, state, state_store,
+                    journal, journal_store, create_lifecycle, create_journal,
+                    journal_documents, rows_digest, owned_scratch, write_receipt)
+from indexed_replay import indexed_reconstruct, indexed_reconstruct_profiled
+from compact_journal import compact_verify
+
+
+def lifecycle_verify(probe, connection, indexed=False, profile=False):
+    """Test-only transcription preserving canonical load/validate-before-replay order."""
+    clock = time.perf_counter_ns
+    metrics = {}
+    start = clock()
+    if (connection.execute('PRAGMA application_id').fetchone() != (state_store.APPLICATION_ID,)
+            or connection.execute('PRAGMA user_version').fetchone() != (1,)
+            or connection.execute('PRAGMA quick_check').fetchall() != [('ok',)]):
+        raise state.StateIntegrityError('incompatible or corrupt Store')
+    schema = tuple(sorted(connection.execute(
+        "SELECT name,type,sql FROM sqlite_schema WHERE name NOT LIKE 'sqlite_%'").fetchall()))
+    if schema != tuple(sorted(state_store._DDL)):
+        raise state.StateIntegrityError('Store schema changed')
+    if connection.execute('SELECT * FROM metadata').fetchall() != [(1, probe.store_id, probe.project_id, state_store._DDL_HASH)]:
+        raise state.StateIntegrityError('Store metadata identity changed')
+    if profile: metrics['sql_header_validation_ns'] = clock() - start
+    start = clock()
+    rows = connection.execute('SELECT sequence,payload FROM events ORDER BY sequence LIMIT ?',
+                              (state.MAX_EVENTS + 1,)).fetchall()
+    if profile: metrics['sql_event_loading_ns'] = clock() - start
+    events, decode_ns, validation_ns = [], 0, 0
+    for sequence, payload in rows:
+        start = clock() if profile else 0
+        event = state.decode(payload)
+        if profile:
+            decode_ns += clock() - start; start = clock()
+        state.validate_event(event)
+        if type(sequence) is not int or event['sequence'] != sequence:
+            raise state.StateIntegrityError('event index mismatch')
+        events.append(event)
+        if profile: validation_ns += clock() - start
+    start = clock()
+    if indexed and profile:
+        tasks, replay_metrics = indexed_reconstruct_profiled(events)
+        metrics['indexed_replay_partition'] = replay_metrics
+    else:
+        tasks = (indexed_reconstruct if indexed else state.reconstruct)(events)
+    if profile:
+        metrics.update(json_decode_and_canonical_ns=decode_ns,
+                       row_semantic_validation_ns=validation_ns,
+                       replay_including_snapshot_construction_ns=clock() - start)
+        metrics['canonical_snapshot_construction_ns'] = None
+        metrics['snapshot_qualification'] = 'Canonical construction is fused with replay; prototype final freeze is separately instrumented.'
+    return (events, tasks), metrics
+
+
+class TimedCursor:
+    def __init__(self, cursor, metrics, key): self.cursor, self.metrics, self.key = cursor, metrics, key
+    def _call(self, function, *args):
+        start = time.perf_counter_ns()
+        try: return function(*args)
+        finally: self.metrics[self.key] += time.perf_counter_ns() - start
+    def __iter__(self): return self
+    def __next__(self): return self._call(next, self.cursor)
+    def fetchone(self): return self._call(self.cursor.fetchone)
+    def fetchall(self): return self._call(self.cursor.fetchall)
+    def fetchmany(self, size=1): return self._call(self.cursor.fetchmany, size)
+
+
+class TimedConnection:
+    def __init__(self, connection, metrics): self.connection, self.metrics = connection, metrics
+    def execute(self, sql, parameters=()):
+        key = 'sql_row_loading_ns' if 'FROM journal_entries' in sql else 'sql_header_validation_ns'
+        start = time.perf_counter_ns()
+        cursor = self.connection.execute(sql, parameters)
+        self.metrics[key] += time.perf_counter_ns() - start
+        return TimedCursor(cursor, self.metrics, key)
+
+
+def profile_journal(probe, connection):
+    metrics = dict(sql_row_loading_ns=0, sql_header_validation_ns=0,
+                   json_decode_and_canonical_ns=0, record_semantic_validation_ns=0)
+    original_decode, original_validate = journal._decode, journal._validate_record
+    def decode(text):
+        start = time.perf_counter_ns()
+        try: return original_decode(text)
+        finally: metrics['json_decode_and_canonical_ns'] += time.perf_counter_ns() - start
+    def validate(document):
+        start = time.perf_counter_ns()
+        try: return original_validate(document)
+        finally: metrics['record_semantic_validation_ns'] += time.perf_counter_ns() - start
+    start = time.perf_counter_ns()
+    with mock.patch.object(journal, '_decode', decode), mock.patch.object(journal, '_validate_record', validate):
+        value = journal_store.SqliteExecutionJournalStore._verify(probe, TimedConnection(connection, metrics))
+    metrics['profiled_total_ns'] = time.perf_counter_ns() - start
+    metrics['other_bookkeeping_and_instrumentation_ns'] = metrics['profiled_total_ns'] - sum(
+        metrics[key] for key in ('sql_row_loading_ns', 'sql_header_validation_ns',
+                                'json_decode_and_canonical_ns', 'record_semantic_validation_ns'))
+    return value, metrics
+
+
+def summarize(area, variant, value):
+    if area == 'journal':
+        if variant == 'compact':
+            return dict(records=value.row_count, metadata_bytes=value.metadata_bytes,
+                canonical_rows_sha256=value.canonical_sha256, subjects=value.subject_count,
+                runs=value.run_count, facts=value.fact_count, returned_full_records=False)
+        result = rows_digest(item.canonical_json for item in value[0])
+        result.update(subjects=len(value[2]), runs=len(value[3]), facts=len(value[1]),
+                      returned_full_records=True)
+        return result
+    tasks = value if area == 'replay' else value[1]
+    return dict(tasks=len(tasks), runs=sum(len(task.runs) for task in tasks.values()),
+                revisions={key: task.revision for key, task in tasks.items()})
+
+
+def worker(area, variant, shape, count, measurement):
+    if area not in ('lifecycle', 'replay', 'journal') or variant not in ('canonical', 'indexed', 'compact'):
+        raise ValueError('invalid fixed worker mode')
+    if (area == 'journal') != (variant in ('canonical', 'compact') and area == 'journal'):
+        raise ValueError('invalid journal variant')
+    if (area != 'journal' and variant not in ('canonical', 'indexed')) or count not in (500, 1000, 10000):
+        raise ValueError('invalid worker variant/count')
+    if shape not in ('history', 'unique', 'pairs', 'unicode') or measurement not in ('timing', 'allocation'):
+        raise ValueError('invalid worker shape/measurement')
+    startup_tracing = tracemalloc.is_tracing()
+    startup_memory = tracemalloc.get_traced_memory() if startup_tracing else None
+    if startup_tracing: tracemalloc.stop()
+    result = dict(area=area, variant=variant, shape=shape, count=count, measurement=measurement,
+        python=sys.version, executable=sys.executable, sqlite=sqlite3.sqlite_version,
+        platform=platform.platform(), startup_tracing=startup_tracing,
+        startup_traced_memory=startup_memory, inherited_pythontracemalloc=os.environ.get('PYTHONTRACEMALLOC'),
+        conditions='Fresh child and passive connection; fixture creation primes OS cache. No cold-disk claim.',
+        native_query_peak='unavailable', owner_capture_proven=False)
+    with owned_scratch(os.environ.get('S0R_SCRATCH')) as root, ExitStack() as resources:
+        reader = writer = None
+        events = None
+        if area in ('lifecycle', 'replay'):
+            writer, probe, fixture = create_lifecycle(root / 'lifecycle.sqlite3', count)
+            resources.callback(writer.close)
+            if area == 'replay':
+                events = helpers.lifecycle_documents(count)
+                result['input_memory_qualification'] = 'Pure replay input is predecoded outside target allocation trace; full lifecycle experiment includes loading/decoding.'
+        else:
+            writer, probe, fixture = create_journal(root / 'journal.sqlite3', journal_documents(shape, count))
+            resources.callback(writer.close)
+        if area != 'replay':
+            reader = helpers.passive(root / f'{area}.sqlite3')
+            resources.callback(reader.close)
+            if area == 'lifecycle': reader.row_factory = None
+        result['fixture'] = fixture
+        def target():
+            if area == 'replay': return (state.reconstruct if variant == 'canonical' else indexed_reconstruct)(events)
+            if area == 'journal':
+                return (journal_store.SqliteExecutionJournalStore._verify(probe, reader)
+                        if variant == 'canonical' else compact_verify(probe, reader))
+            if variant == 'canonical':
+                probe._connection = reader
+                return state_store.SqliteTaskRunStateStore._verify(probe)
+            return lifecycle_verify(probe, reader, indexed=True)[0]
+        def begin():
+            start = time.perf_counter_ns()
+            if reader is not None: reader.execute('BEGIN')
+            return time.perf_counter_ns() - start
+        def rollback():
+            start = time.perf_counter_ns()
+            if reader is not None and reader.in_transaction: reader.execute('ROLLBACK')
+            return time.perf_counter_ns() - start
+        result['process_before'] = helpers.process_memory()
+        if measurement == 'timing':
+            timings = []
+            for condition in ('first_pass_fresh_connection', 'second_pass_same_connection'):
+                begin_ns = begin(); start = time.perf_counter_ns()
+                try:
+                    value = target(); elapsed = time.perf_counter_ns() - start
+                    summary = summarize(area, variant, value)
+                    start = time.perf_counter_ns(); del value
+                    release_ns = time.perf_counter_ns() - start
+                finally: rollback_ns = rollback()
+                timings.append(dict(condition=condition, target_ns=elapsed, begin_ns=begin_ns,
+                    result_release_ns=release_ns, rollback_ns=rollback_ns, summary=summary))
+            result['timings'] = timings
+            begin(); start = time.perf_counter_ns()
+            try:
+                if area == 'lifecycle': value, metrics = lifecycle_verify(probe, reader, indexed=variant == 'indexed', profile=True)
+                elif area == 'replay' and variant == 'indexed': value, metrics = indexed_reconstruct_profiled(events)
+                elif area == 'replay':
+                    value = state.reconstruct(events); metrics = dict(snapshot_construction_ns=None,
+                        qualification='Canonical immutable snapshot construction is fused with replay.')
+                elif variant == 'canonical': value, metrics = profile_journal(probe, reader)
+                else:
+                    value = compact_verify(probe, reader, profile=True); metrics = dict(value.stage_ns)
+                result['profiled_target_ns'] = time.perf_counter_ns() - start
+                result['phase_metrics'] = metrics
+                result['profiled_summary'] = summarize(area, variant, value)
+                del value
+            finally: rollback()
+            result['instrumentation_overhead_observation_ns'] = result['profiled_target_ns'] - timings[1]['target_ns']
+            result['overhead_qualification'] = 'Difference between separate warm runs; includes run variation, not an isolated overhead calibration.'
+        else:
+            # No preceding target result. Explicitly fresh trace AFTER fixture/import setup.
+            gc.collect()
+            begin_ns = begin()
+            tracemalloc.start(1)
+            initial = tracemalloc.get_traced_memory()
+            tracemalloc.reset_peak()
+            start = time.perf_counter_ns()
+            try:
+                value = target()
+                elapsed = time.perf_counter_ns() - start
+                current, peak = tracemalloc.get_traced_memory()
+                # Capture target peak BEFORE allocation-site snapshot/report machinery.
+                snapshot = tracemalloc.take_snapshot()
+                sites = []
+                for stat in snapshot.statistics('lineno')[:12]:
+                    frame = stat.traceback[0]
+                    sites.append(dict(file=frame.filename, line=frame.lineno,
+                                      live_bytes=stat.size, live_blocks=stat.count))
+                del snapshot
+                summary = summarize(area, variant, value)
+                del value
+                gc.collect()
+                post_release = tracemalloc.get_traced_memory()
+            finally:
+                tracemalloc.stop()
+                rollback_ns = rollback()
+            result['allocation'] = dict(initial_current_bytes=initial[0], initial_peak_bytes=initial[1],
+                current_at_target_return_bytes=current, target_peak_bytes=peak,
+                target_peak_minus_current_bytes=peak-current, traced_target_ns=elapsed,
+                begin_ns=begin_ns, rollback_ns=rollback_ns, post_release_current_bytes=post_release[0],
+                post_instrumentation_peak_bytes=post_release[1], live_allocation_sites=sites,
+                summary=summary, qualification='Peak captured before snapshot/statistics/summary instrumentation; live-site snapshot is retained-at-return evidence, not historical transient-site attribution.')
+        result['process_with_resources_open'] = helpers.process_memory()
+        result['files'] = {p.name: p.stat().st_size for p in root.iterdir() if p.is_file()}
+        start = time.perf_counter_ns()
+        if reader is not None: reader.close()
+        writer.close()
+        result['explicit_connection_cleanup_ns'] = time.perf_counter_ns() - start
+        result['process_after_explicit_close'] = helpers.process_memory()
+        result['qualification'] = 'Synthetic component only. No graph/owner lease/mutation exclusion/writer priority/cancellation/native-memory bound/query proof.'
+    return result
+
+
+def parent():
+    started = time.perf_counter_ns()
+    evidence = dict(phase='S0-R', command=[sys.executable, '-B', str(Path(__file__).resolve())],
+        cwd=str(REPOSITORY), jobs=[], serial=True, child_timeout_seconds=90,
+        no_operational_owner=True, original_baseline='tests/fixtures/control_center/s0r/baseline.json')
+    with owned_scratch() as root:
+        environment = os.environ.copy()
+        environment.update(S0R_SCRATCH=str(root), TEMP=str(root), TMP=str(root), PYTHONDONTWRITEBYTECODE='1')
+        environment.pop('PYTHONTRACEMALLOC', None)
+        commands = [[sys.executable, '-B', str(Path(__file__).with_name('test_semantics.py'))]]
+        for area, shape, count, variants in (
+            ('lifecycle', 'history', 10000, ('canonical', 'indexed')),
+            ('replay', 'history', 10000, ('canonical', 'indexed')),
+            ('journal', 'unique', 10000, ('canonical', 'compact')),
+            ('journal', 'pairs', 1000, ('canonical', 'compact')),
+            ('journal', 'unicode', 500, ('canonical', 'compact'))):
+            for variant in variants:
+                for measurement in ('timing', 'allocation'):
+                    commands.append([sys.executable, '-B', str(Path(__file__).resolve()),
+                        '--worker', area, variant, shape, str(count), measurement])
+        for command in commands:
+            print('START ' + ' '.join(command[3:]), flush=True)
+            start = time.perf_counter_ns()
+            try:
+                child = subprocess.run(command, cwd=REPOSITORY, env=environment,
+                    capture_output=True, text=True, timeout=90)
+                record = dict(command=command, cwd=str(REPOSITORY), exit_code=child.returncode,
+                    wall_ns=time.perf_counter_ns()-start, stderr=child.stderr, stdout=child.stdout)
+                if '--worker' in command and child.returncode == 0:
+                    record['measurement'] = json.loads(child.stdout)
+                    del record['stdout']
+            except subprocess.TimeoutExpired as error:
+                record = dict(command=command, cwd=str(REPOSITORY), exit_code=None, timeout=True,
+                    wall_ns=time.perf_counter_ns()-start, classification='NO-GO; killed/reaped synthetic child does not prove in-process cleanup')
+            evidence['jobs'].append(record)
+            print('END exit=' + str(record.get('exit_code')), flush=True)
+            if record.get('exit_code') != 0:
+                evidence['stopped_on_failure'] = True
+                break
+    evidence['total_wall_ns'] = time.perf_counter_ns() - started
+    evidence['all_jobs_exit_zero'] = len(evidence['jobs']) == len(commands) and all(job.get('exit_code') == 0 for job in evidence['jobs'])
+    evidence['source_hashes'] = {str(path.relative_to(REPOSITORY)): hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in Path(__file__).parent.glob('*.py')}
+    receipt = write_receipt(evidence)
+    print('S0R_RECEIPT=' + str(receipt), flush=True)
+    return 0 if evidence['all_jobs_exit_zero'] else 1
+
+
+if __name__ == '__main__':
+    if len(sys.argv) == 7 and sys.argv[1] == '--worker':
+        with (mock.patch.object(state_store.SqliteTaskRunStateStore, '__init__', side_effect=AssertionError('no owner')),
+              mock.patch.object(state_store.SqliteTaskRunStateStore, 'provision', side_effect=AssertionError('no provisioning')),
+              mock.patch.object(journal_store.SqliteExecutionJournalStore, '__init__', side_effect=AssertionError('no Journal owner')),
+              mock.patch.object(journal_store.SqliteExecutionJournalStore, 'provision', side_effect=AssertionError('no provisioning'))):
+            print(json.dumps(worker(sys.argv[2], sys.argv[3], sys.argv[4], int(sys.argv[5]), sys.argv[6])))
+    elif len(sys.argv) == 1:
+        sys.exit(parent())
+    else:
+        raise SystemExit('fixed S0-R orchestrator/worker arguments required')

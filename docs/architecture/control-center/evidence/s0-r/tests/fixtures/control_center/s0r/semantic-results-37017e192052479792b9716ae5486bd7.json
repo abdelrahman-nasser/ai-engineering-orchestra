@@ -1,0 +1,4933 @@
+{
+  "checks": 5,
+  "failures": 0,
+  "errors": 0,
+  "skips": 0,
+  "outcomes": [
+    {
+      "area": "journal-row-overlay",
+      "case": "empty",
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "journal-row-overlay",
+      "case": "unique",
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "journal-row-overlay",
+      "case": "noncanonical-json",
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "journal-row-overlay",
+      "case": "non-string-record-NoneType",
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "journal-row-overlay",
+      "case": "non-string-record-bytes",
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "journal-row-overlay",
+      "case": "non-string-record-int",
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "journal-row-overlay",
+      "case": "pairs",
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "journal-row-overlay",
+      "case": "unicode-long",
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "journal-row-overlay",
+      "case": "result-without-entry",
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "journal-row-overlay",
+      "case": "foreign-ledger-generation",
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "journal-row-overlay",
+      "case": "wrong-journal",
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "journal-row-overlay",
+      "case": "end-corruption",
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "journal-row-overlay",
+      "case": "bad-entry-time",
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "journal-row-overlay",
+      "case": "bad-grant-timestamp",
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "journal-row-overlay",
+      "case": "payload-field",
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "journal-row-overlay",
+      "case": "physical-subject-conflict",
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "journal-row-overlay",
+      "case": "run-contract-conflict",
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "journal-row-overlay",
+      "case": "backwards-recording-time",
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "journal-row-overlay",
+      "case": "sequence-gap",
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "journal-row-overlay",
+      "case": "duplicate-entry-physical-identity",
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "journal-row-overlay",
+      "case": "duplicate-conflicting-outcome",
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "journal-row-overlay",
+      "case": "accepted-multiple-physical-same-run-differing-outcomes",
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "journal-row-overlay",
+      "case": "accepted-same-run-contract-different-tool",
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "journal-real-sqlite",
+      "shape": "unique",
+      "parity": true,
+      "fixture": {
+        "records": 20,
+        "metadata_bytes": 29571,
+        "canonical_rows_sha256": "34ec013221bb55c988129f9d940cbe7f97bdf605fc65488bacea976faa8c4c5e"
+      }
+    },
+    {
+      "area": "journal-real-sqlite",
+      "shape": "pairs",
+      "parity": true,
+      "fixture": {
+        "records": 20,
+        "metadata_bytes": 30111,
+        "canonical_rows_sha256": "6c676c1dbec1fdb570b8b5b9f101e973effdc226c09eb01652bd32964f031b1b"
+      }
+    },
+    {
+      "area": "journal-real-sqlite",
+      "shape": "unicode",
+      "parity": true,
+      "fixture": {
+        "records": 20,
+        "metadata_bytes": 131711,
+        "canonical_rows_sha256": "d4b2d7fa6fcc2dc55c69753205d0120baec1304c5d5890b29cd8beff44930f88"
+      }
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "empty",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "successful-three-runs",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "successful-three-runs",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "successful-three-runs",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "successful-three-runs",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "successful-three-runs",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "successful-three-runs",
+      "prefix": 5,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "successful-three-runs",
+      "prefix": 6,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "successful-three-runs",
+      "prefix": 7,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "successful-three-runs",
+      "prefix": 8,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "successful-three-runs",
+      "prefix": 9,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "successful-three-runs",
+      "prefix": 10,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "complete-success",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "complete-success",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "complete-success",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "complete-success",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "complete-success",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "complete-success",
+      "prefix": 5,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "cancel-pending",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "cancel-pending",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "cancel-pending",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "cancel-pending",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "cancel-running",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "cancel-running",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "cancel-running",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "cancel-running",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "cancel-running",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "recover-pending",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "recover-pending",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "recover-pending",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "recover-pending",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "recover-running",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "recover-running",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "recover-running",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "recover-running",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "recover-running",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "stop-running",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "stop-running",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "stop-running",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "stop-running",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "stop-running",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "block-planned",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "block-planned",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "block-planned",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-complete-planned",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-complete-planned",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-complete-planned",
+      "prefix": 2,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-stop-no-unfinished",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-stop-no-unfinished",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-stop-no-unfinished",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-stop-no-unfinished",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-stop-no-unfinished",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-stop-no-unfinished",
+      "prefix": 5,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-recover-no-unfinished",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-recover-no-unfinished",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-recover-no-unfinished",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-recover-no-unfinished",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-recover-no-unfinished",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-recover-no-unfinished",
+      "prefix": 5,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-start-twice",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-start-twice",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-start-twice",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-start-twice",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-start-twice",
+      "prefix": 4,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-result-before-start",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-result-before-start",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-result-before-start",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-result-before-start",
+      "prefix": 3,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-block-running",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-block-running",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-block-running",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-block-running",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-block-running",
+      "prefix": 4,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "recover-pending-then-continue",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "recover-pending-then-continue",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "recover-pending-then-continue",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "recover-pending-then-continue",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "recover-pending-then-continue",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "recover-running-then-continue",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "recover-running-then-continue",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "recover-running-then-continue",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "recover-running-then-continue",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "recover-running-then-continue",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "recover-running-then-continue",
+      "prefix": 5,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "stop-running-then-continue",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "stop-running-then-continue",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "stop-running-then-continue",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "stop-running-then-continue",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "stop-running-then-continue",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "stop-running-then-continue",
+      "prefix": 5,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "cancel-pending-then-continue",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "cancel-pending-then-continue",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "cancel-pending-then-continue",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "cancel-pending-then-continue",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "cancel-pending-then-continue",
+      "prefix": 4,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "complete-success-then-continue",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "complete-success-then-continue",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "complete-success-then-continue",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "complete-success-then-continue",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "complete-success-then-continue",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "complete-success-then-continue",
+      "prefix": 5,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "complete-success-then-continue",
+      "prefix": 6,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "block-planned-then-continue",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "block-planned-then-continue",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "block-planned-then-continue",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "block-planned-then-continue",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "continue-while-pending",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "continue-while-pending",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "continue-while-pending",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "continue-while-pending",
+      "prefix": 3,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "failed_before_effect",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "failed_before_effect",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "failed_before_effect",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "failed_before_effect",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "failed_before_effect",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "failed_before_effect-continue",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "failed_before_effect-continue",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "failed_before_effect-continue",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "failed_before_effect-continue",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "failed_before_effect-continue",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "failed_before_effect-continue",
+      "prefix": 5,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "failed_before_effect-complete",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "failed_before_effect-complete",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "failed_before_effect-complete",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "failed_before_effect-complete",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "failed_before_effect-complete",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "failed_before_effect-complete",
+      "prefix": 5,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "effect_ambiguous",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "effect_ambiguous",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "effect_ambiguous",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "effect_ambiguous",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "effect_ambiguous",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "effect_ambiguous-continue",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "effect_ambiguous-continue",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "effect_ambiguous-continue",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "effect_ambiguous-continue",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "effect_ambiguous-continue",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "effect_ambiguous-continue",
+      "prefix": 5,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "effect_ambiguous-complete",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "effect_ambiguous-complete",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "effect_ambiguous-complete",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "effect_ambiguous-complete",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "effect_ambiguous-complete",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "effect_ambiguous-complete",
+      "prefix": 5,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "duplicate-result-identity",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "duplicate-result-identity",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "duplicate-result-identity",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "duplicate-result-identity",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "duplicate-result-identity",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "duplicate-result-identity",
+      "prefix": 5,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "duplicate-result-identity",
+      "prefix": 6,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "duplicate-result-identity",
+      "prefix": 7,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "duplicate-run-id",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "duplicate-run-id",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "duplicate-run-id",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "duplicate-run-id",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "duplicate-run-id",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "duplicate-run-id",
+      "prefix": 5,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "global-run-collision-across-tasks",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "global-run-collision-across-tasks",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "global-run-collision-across-tasks",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "global-run-collision-across-tasks",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "global-run-collision-across-tasks",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "global-run-collision-across-tasks",
+      "prefix": 5,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "global-run-collision-across-tasks",
+      "prefix": 6,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "terminal-cannot-reopen",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "terminal-cannot-reopen",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "terminal-cannot-reopen",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "terminal-cannot-reopen",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "terminal-cannot-reopen",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "terminal-cannot-reopen",
+      "prefix": 5,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "terminal-cannot-reopen",
+      "prefix": 6,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "enrollment-collision",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "enrollment-collision",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "enrollment-collision",
+      "prefix": 2,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-sequence-999",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-sequence-999",
+      "prefix": 1,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-sequence-999",
+      "prefix": 2,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-sequence-999",
+      "prefix": 3,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-sequence-999",
+      "prefix": 4,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-sequence-999",
+      "prefix": 5,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-sequence-999",
+      "prefix": 6,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-sequence-999",
+      "prefix": 7,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-sequence-999",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-sequence-999",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-sequence-999",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-revision-True",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-revision-True",
+      "prefix": 1,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-revision-True",
+      "prefix": 2,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-revision-True",
+      "prefix": 3,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-revision-True",
+      "prefix": 4,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-revision-True",
+      "prefix": 5,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-revision-True",
+      "prefix": 6,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-revision-True",
+      "prefix": 7,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-revision-True",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-revision-True",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-revision-True",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-revision-999",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-revision-999",
+      "prefix": 1,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-revision-999",
+      "prefix": 2,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-revision-999",
+      "prefix": 3,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-revision-999",
+      "prefix": 4,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-revision-999",
+      "prefix": 5,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-revision-999",
+      "prefix": 6,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-revision-999",
+      "prefix": 7,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-revision-999",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-revision-999",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-revision-999",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-operation-unknown",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-operation-unknown",
+      "prefix": 1,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-operation-unknown",
+      "prefix": 2,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-operation-unknown",
+      "prefix": 3,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-operation-unknown",
+      "prefix": 4,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-operation-unknown",
+      "prefix": 5,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-operation-unknown",
+      "prefix": 6,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-operation-unknown",
+      "prefix": 7,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-operation-unknown",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-operation-unknown",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-0-operation-unknown",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-sequence-999",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-sequence-999",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-sequence-999",
+      "prefix": 2,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-sequence-999",
+      "prefix": 3,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-sequence-999",
+      "prefix": 4,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-sequence-999",
+      "prefix": 5,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-sequence-999",
+      "prefix": 6,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-sequence-999",
+      "prefix": 7,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-sequence-999",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-sequence-999",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-sequence-999",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-revision-True",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-revision-True",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-revision-True",
+      "prefix": 2,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-revision-True",
+      "prefix": 3,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-revision-True",
+      "prefix": 4,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-revision-True",
+      "prefix": 5,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-revision-True",
+      "prefix": 6,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-revision-True",
+      "prefix": 7,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-revision-True",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-revision-True",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-revision-True",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-revision-999",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-revision-999",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-revision-999",
+      "prefix": 2,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-revision-999",
+      "prefix": 3,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-revision-999",
+      "prefix": 4,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-revision-999",
+      "prefix": 5,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-revision-999",
+      "prefix": 6,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-revision-999",
+      "prefix": 7,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-revision-999",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-revision-999",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-revision-999",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-operation-unknown",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-operation-unknown",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-operation-unknown",
+      "prefix": 2,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-operation-unknown",
+      "prefix": 3,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-operation-unknown",
+      "prefix": 4,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-operation-unknown",
+      "prefix": 5,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-operation-unknown",
+      "prefix": 6,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-operation-unknown",
+      "prefix": 7,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-operation-unknown",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-operation-unknown",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-1-operation-unknown",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-sequence-999",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-sequence-999",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-sequence-999",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-sequence-999",
+      "prefix": 3,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-sequence-999",
+      "prefix": 4,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-sequence-999",
+      "prefix": 5,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-sequence-999",
+      "prefix": 6,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-sequence-999",
+      "prefix": 7,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-sequence-999",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-sequence-999",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-sequence-999",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-revision-True",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-revision-True",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-revision-True",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-revision-True",
+      "prefix": 3,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-revision-True",
+      "prefix": 4,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-revision-True",
+      "prefix": 5,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-revision-True",
+      "prefix": 6,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-revision-True",
+      "prefix": 7,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-revision-True",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-revision-True",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-revision-True",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-revision-999",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-revision-999",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-revision-999",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-revision-999",
+      "prefix": 3,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-revision-999",
+      "prefix": 4,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-revision-999",
+      "prefix": 5,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-revision-999",
+      "prefix": 6,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-revision-999",
+      "prefix": 7,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-revision-999",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-revision-999",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-revision-999",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-operation-unknown",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-operation-unknown",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-operation-unknown",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-operation-unknown",
+      "prefix": 3,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-operation-unknown",
+      "prefix": 4,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-operation-unknown",
+      "prefix": 5,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-operation-unknown",
+      "prefix": 6,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-operation-unknown",
+      "prefix": 7,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-operation-unknown",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-operation-unknown",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-2-operation-unknown",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-sequence-999",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-sequence-999",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-sequence-999",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-sequence-999",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-sequence-999",
+      "prefix": 4,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-sequence-999",
+      "prefix": 5,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-sequence-999",
+      "prefix": 6,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-sequence-999",
+      "prefix": 7,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-sequence-999",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-sequence-999",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-sequence-999",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-revision-True",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-revision-True",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-revision-True",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-revision-True",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-revision-True",
+      "prefix": 4,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-revision-True",
+      "prefix": 5,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-revision-True",
+      "prefix": 6,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-revision-True",
+      "prefix": 7,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-revision-True",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-revision-True",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-revision-True",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-revision-999",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-revision-999",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-revision-999",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-revision-999",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-revision-999",
+      "prefix": 4,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-revision-999",
+      "prefix": 5,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-revision-999",
+      "prefix": 6,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-revision-999",
+      "prefix": 7,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-revision-999",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-revision-999",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-revision-999",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-operation-unknown",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-operation-unknown",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-operation-unknown",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-operation-unknown",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-operation-unknown",
+      "prefix": 4,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-operation-unknown",
+      "prefix": 5,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-operation-unknown",
+      "prefix": 6,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-operation-unknown",
+      "prefix": 7,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-operation-unknown",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-operation-unknown",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-3-operation-unknown",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-sequence-999",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-sequence-999",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-sequence-999",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-sequence-999",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-sequence-999",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-sequence-999",
+      "prefix": 5,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-sequence-999",
+      "prefix": 6,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-sequence-999",
+      "prefix": 7,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-sequence-999",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-sequence-999",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-sequence-999",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-revision-True",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-revision-True",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-revision-True",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-revision-True",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-revision-True",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-revision-True",
+      "prefix": 5,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-revision-True",
+      "prefix": 6,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-revision-True",
+      "prefix": 7,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-revision-True",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-revision-True",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-revision-True",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-revision-999",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-revision-999",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-revision-999",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-revision-999",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-revision-999",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-revision-999",
+      "prefix": 5,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-revision-999",
+      "prefix": 6,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-revision-999",
+      "prefix": 7,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-revision-999",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-revision-999",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-revision-999",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-operation-unknown",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-operation-unknown",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-operation-unknown",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-operation-unknown",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-operation-unknown",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-operation-unknown",
+      "prefix": 5,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-operation-unknown",
+      "prefix": 6,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-operation-unknown",
+      "prefix": 7,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-operation-unknown",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-operation-unknown",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-4-operation-unknown",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-sequence-999",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-sequence-999",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-sequence-999",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-sequence-999",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-sequence-999",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-sequence-999",
+      "prefix": 5,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-sequence-999",
+      "prefix": 6,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-sequence-999",
+      "prefix": 7,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-sequence-999",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-sequence-999",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-sequence-999",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-revision-True",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-revision-True",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-revision-True",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-revision-True",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-revision-True",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-revision-True",
+      "prefix": 5,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-revision-True",
+      "prefix": 6,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-revision-True",
+      "prefix": 7,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-revision-True",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-revision-True",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-revision-True",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-revision-999",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-revision-999",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-revision-999",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-revision-999",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-revision-999",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-revision-999",
+      "prefix": 5,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-revision-999",
+      "prefix": 6,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-revision-999",
+      "prefix": 7,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-revision-999",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-revision-999",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-revision-999",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-operation-unknown",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-operation-unknown",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-operation-unknown",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-operation-unknown",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-operation-unknown",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-operation-unknown",
+      "prefix": 5,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-operation-unknown",
+      "prefix": 6,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-operation-unknown",
+      "prefix": 7,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-operation-unknown",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-operation-unknown",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-5-operation-unknown",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-sequence-999",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-sequence-999",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-sequence-999",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-sequence-999",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-sequence-999",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-sequence-999",
+      "prefix": 5,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-sequence-999",
+      "prefix": 6,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-sequence-999",
+      "prefix": 7,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-sequence-999",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-sequence-999",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-sequence-999",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-revision-True",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-revision-True",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-revision-True",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-revision-True",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-revision-True",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-revision-True",
+      "prefix": 5,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-revision-True",
+      "prefix": 6,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-revision-True",
+      "prefix": 7,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-revision-True",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-revision-True",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-revision-True",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-revision-999",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-revision-999",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-revision-999",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-revision-999",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-revision-999",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-revision-999",
+      "prefix": 5,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-revision-999",
+      "prefix": 6,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-revision-999",
+      "prefix": 7,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-revision-999",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-revision-999",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-revision-999",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-operation-unknown",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-operation-unknown",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-operation-unknown",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-operation-unknown",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-operation-unknown",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-operation-unknown",
+      "prefix": 5,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-operation-unknown",
+      "prefix": 6,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-operation-unknown",
+      "prefix": 7,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-operation-unknown",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-operation-unknown",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-6-operation-unknown",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-sequence-999",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-sequence-999",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-sequence-999",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-sequence-999",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-sequence-999",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-sequence-999",
+      "prefix": 5,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-sequence-999",
+      "prefix": 6,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-sequence-999",
+      "prefix": 7,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-sequence-999",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-sequence-999",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-sequence-999",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-revision-True",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-revision-True",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-revision-True",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-revision-True",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-revision-True",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-revision-True",
+      "prefix": 5,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-revision-True",
+      "prefix": 6,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-revision-True",
+      "prefix": 7,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-revision-True",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-revision-True",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-revision-True",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-revision-999",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-revision-999",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-revision-999",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-revision-999",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-revision-999",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-revision-999",
+      "prefix": 5,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-revision-999",
+      "prefix": 6,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-revision-999",
+      "prefix": 7,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-revision-999",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-revision-999",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-revision-999",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-operation-unknown",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-operation-unknown",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-operation-unknown",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-operation-unknown",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-operation-unknown",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-operation-unknown",
+      "prefix": 5,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-operation-unknown",
+      "prefix": 6,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-operation-unknown",
+      "prefix": 7,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-operation-unknown",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-operation-unknown",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-7-operation-unknown",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-sequence-999",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-sequence-999",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-sequence-999",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-sequence-999",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-sequence-999",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-sequence-999",
+      "prefix": 5,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-sequence-999",
+      "prefix": 6,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-sequence-999",
+      "prefix": 7,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-sequence-999",
+      "prefix": 8,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-sequence-999",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-sequence-999",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-revision-True",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-revision-True",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-revision-True",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-revision-True",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-revision-True",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-revision-True",
+      "prefix": 5,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-revision-True",
+      "prefix": 6,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-revision-True",
+      "prefix": 7,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-revision-True",
+      "prefix": 8,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-revision-True",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-revision-True",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-revision-999",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-revision-999",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-revision-999",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-revision-999",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-revision-999",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-revision-999",
+      "prefix": 5,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-revision-999",
+      "prefix": 6,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-revision-999",
+      "prefix": 7,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-revision-999",
+      "prefix": 8,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-revision-999",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-revision-999",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-operation-unknown",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-operation-unknown",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-operation-unknown",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-operation-unknown",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-operation-unknown",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-operation-unknown",
+      "prefix": 5,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-operation-unknown",
+      "prefix": 6,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-operation-unknown",
+      "prefix": 7,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-operation-unknown",
+      "prefix": 8,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-operation-unknown",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-8-operation-unknown",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-sequence-999",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-sequence-999",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-sequence-999",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-sequence-999",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-sequence-999",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-sequence-999",
+      "prefix": 5,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-sequence-999",
+      "prefix": 6,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-sequence-999",
+      "prefix": 7,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-sequence-999",
+      "prefix": 8,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-sequence-999",
+      "prefix": 9,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-sequence-999",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-revision-True",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-revision-True",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-revision-True",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-revision-True",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-revision-True",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-revision-True",
+      "prefix": 5,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-revision-True",
+      "prefix": 6,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-revision-True",
+      "prefix": 7,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-revision-True",
+      "prefix": 8,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-revision-True",
+      "prefix": 9,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-revision-True",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-revision-999",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-revision-999",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-revision-999",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-revision-999",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-revision-999",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-revision-999",
+      "prefix": 5,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-revision-999",
+      "prefix": 6,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-revision-999",
+      "prefix": 7,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-revision-999",
+      "prefix": 8,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-revision-999",
+      "prefix": 9,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-revision-999",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-operation-unknown",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-operation-unknown",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-operation-unknown",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-operation-unknown",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-operation-unknown",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-operation-unknown",
+      "prefix": 5,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-operation-unknown",
+      "prefix": 6,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-operation-unknown",
+      "prefix": 7,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-operation-unknown",
+      "prefix": 8,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-operation-unknown",
+      "prefix": 9,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "mutate-9-operation-unknown",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "missing-sequence",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "missing-sequence",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "missing-sequence",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "missing-sequence",
+      "prefix": 3,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "missing-sequence",
+      "prefix": 4,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "missing-task_id",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "missing-task_id",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "missing-task_id",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "missing-task_id",
+      "prefix": 3,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "missing-task_id",
+      "prefix": 4,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "missing-data",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "missing-data",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "missing-data",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "missing-data",
+      "prefix": 3,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "missing-data",
+      "prefix": 4,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "valid-interleaved-tasks",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "valid-interleaved-tasks",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "valid-interleaved-tasks",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "valid-interleaved-tasks",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "valid-interleaved-tasks",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "valid-interleaved-tasks",
+      "prefix": 5,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "valid-interleaved-tasks",
+      "prefix": 6,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "valid-interleaved-tasks",
+      "prefix": 7,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "valid-interleaved-tasks",
+      "prefix": 8,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "valid-interleaved-tasks",
+      "prefix": 9,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "valid-interleaved-tasks",
+      "prefix": 10,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "valid-interleaved-tasks",
+      "prefix": 11,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "valid-interleaved-tasks",
+      "prefix": 12,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "valid-interleaved-tasks",
+      "prefix": 13,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "valid-interleaved-tasks",
+      "prefix": 14,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "global-result-collision-across-tasks",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "global-result-collision-across-tasks",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "global-result-collision-across-tasks",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "global-result-collision-across-tasks",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "global-result-collision-across-tasks",
+      "prefix": 4,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "global-result-collision-across-tasks",
+      "prefix": 5,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "global-result-collision-across-tasks",
+      "prefix": 6,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "global-result-collision-across-tasks",
+      "prefix": 7,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "global-result-collision-across-tasks",
+      "prefix": 8,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "global-result-collision-across-tasks",
+      "prefix": 9,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "global-result-collision-across-tasks",
+      "prefix": 10,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "global-result-collision-across-tasks",
+      "prefix": 11,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "global-result-collision-across-tasks",
+      "prefix": 12,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "global-result-collision-across-tasks",
+      "prefix": 13,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "global-result-collision-across-tasks",
+      "prefix": 14,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "foreign-result-ledger",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "foreign-result-ledger",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "foreign-result-ledger",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "foreign-result-ledger",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "foreign-result-ledger",
+      "prefix": 4,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-result-issuer",
+      "prefix": 0,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-result-issuer",
+      "prefix": 1,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-result-issuer",
+      "prefix": 2,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-result-issuer",
+      "prefix": 3,
+      "outcome": "accepted",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-prefix",
+      "case": "invalid-result-issuer",
+      "prefix": 4,
+      "outcome": "rejected",
+      "parity": true
+    },
+    {
+      "area": "lifecycle-max",
+      "events": 10000,
+      "runs": 3333,
+      "parity": true,
+      "frozen": true,
+      "profile_metrics": {
+        "events": 100,
+        "tasks": 1,
+        "runs": 33,
+        "validation_calls": 100,
+        "validation_ns": 1924300,
+        "reduction_ns": 983400,
+        "freeze_ns": 16000,
+        "total_ns": 2959300,
+        "loop_and_instrumentation_ns": 35600
+      }
+    },
+    {
+      "area": "journal-real-header",
+      "case": "application-id",
+      "rejected": true,
+      "parity": true
+    },
+    {
+      "area": "journal-real-header",
+      "case": "schema-version",
+      "rejected": true,
+      "parity": true
+    },
+    {
+      "area": "journal-real-header",
+      "case": "schema-change",
+      "rejected": true,
+      "parity": true
+    },
+    {
+      "area": "journal-real-header",
+      "case": "metadata-id",
+      "rejected": true,
+      "parity": true
+    },
+    {
+      "area": "journal-real-header",
+      "case": "metadata-manifest",
+      "rejected": true,
+      "parity": true
+    },
+    {
+      "area": "limits",
+      "case": "row-count",
+      "component_rejected": true,
+      "canonical_semantic_parity_claim": false
+    },
+    {
+      "area": "limits",
+      "case": "aggregate-bytes",
+      "component_rejected": true,
+      "canonical_semantic_parity_claim": false
+    },
+    {
+      "area": "limits",
+      "sql_duplicate_rejected": true,
+      "per_record_preflight_rejected": true
+    }
+  ],
+  "corpus_path": "tests\\fixtures\\control_center\\s0r\\semantic-corpus-cb09d063fdb04c538c06abf2e818f0de.json",
+  "corpus_sha256": "0fd268aef4ead794c70096ffb652642946cae86dd7c5cfb2e6be15b8422f89ec"
+}

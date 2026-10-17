@@ -1,0 +1,109 @@
+{
+  "phase": "S0-C",
+  "head": "19a321fc0876e73b9f83109f2a58528c9d54e331",
+  "branch": "feature/control-center-s0-feasibility",
+  "staged_paths": [],
+  "tracked_changes": [],
+  "preserved_artifacts": [
+    {
+      "path": "docs/architecture/control-center/s0-feasibility-report.md",
+      "bytes": 25793,
+      "sha256": "50e55b23c176d3f3456c2b9ff3bf1f251eef9d5ac12badc113492834529349f3"
+    },
+    {
+      "path": "docs/architecture/control-center/s0-r-feasibility-report.md",
+      "bytes": 28521,
+      "sha256": "035433d24c3d1b99ee69e13f3c938990b61b7e1b2256b85233b38ec465a83c60"
+    },
+    {
+      "path": "itru/control_center_read_budget.py",
+      "bytes": 7548,
+      "sha256": "c87524e8a00887ba11be2b5959c56640266c2839f453bda7434b7730fb3efaba"
+    },
+    {
+      "path": "itru/control_center_read_source.py",
+      "bytes": 5688,
+      "sha256": "47741c408433dca4de7267d3d368ed42270bd38b1cfe87aacfcb1a6deee8ce8d"
+    },
+    {
+      "path": "tests/experiments/control_center_s0r/common.py",
+      "bytes": 6900,
+      "sha256": "307c4dfb5443f41be0960ab9457240a510d6cac817b7d331cd2f536d13cf21dc"
+    },
+    {
+      "path": "tests/experiments/control_center_s0r/compact_journal.py",
+      "bytes": 9138,
+      "sha256": "2f9fb4d0dca99998f412c81e591d3179320aa761c79a48599c97bbdc8ed1bc8b"
+    },
+    {
+      "path": "tests/experiments/control_center_s0r/indexed_replay.py",
+      "bytes": 10106,
+      "sha256": "dbed3dba45c9ed1ecf220dec7ff6f0f3d302195ce2e93ebcc4c73326faface23"
+    },
+    {
+      "path": "tests/experiments/control_center_s0r/run_experiments.py",
+      "bytes": 18435,
+      "sha256": "17c7e61773b4319aa18a2d7b731bb49e62dc295292905b57870c05b0e1eb4281"
+    },
+    {
+      "path": "tests/experiments/control_center_s0r/test_semantics.py",
+      "bytes": 19333,
+      "sha256": "687e5f2191d6d7a78b6aa24440211be92b1f6838c4064549d4d84b769b2accf7"
+    },
+    {
+      "path": "tests/fixtures/control_center/application-v1-cases.json",
+      "bytes": 1396,
+      "sha256": "68639e7b09fe2cbf7dd6135768c6b515cc42d9a40913e4b379a15d56b623d987"
+    },
+    {
+      "path": "tests/fixtures/control_center/s0-measurements-1938337ad1624a0e8cb9169a543584d5.json",
+      "bytes": 10487,
+      "sha256": "35a9cc5e3e892a5f2905e9c3cdf51ba69d587f3dfad5368c65f416feb0e5cbcc"
+    },
+    {
+      "path": "tests/fixtures/control_center/s0-measurements-4d7e21c5cadd42359380a5627c8e5617.json",
+      "bytes": 10085,
+      "sha256": "1b8931eb383840794b99b2c57f050df0645da302716e74b5193459730c0eadc2"
+    },
+    {
+      "path": "tests/fixtures/control_center/s0-measurements-a3ee3d159d7347ea98f5be26e7c3b40f.json",
+      "bytes": 10107,
+      "sha256": "e2a95c1666eeeb2971314f5758b296e2c12ca6e22a6cf7928a82c12a5ff65acb"
+    },
+    {
+      "path": "tests/fixtures/control_center/s0r/baseline.json",
+      "bytes": 2329,
+      "sha256": "d7c7c95e7f272642065f5a9414992c96ee8904d232e3555390f1e62bdaac567f"
+    },
+    {
+      "path": "tests/fixtures/control_center/s0r/evidence-d2a605369ba94e7595af0dd1f5dc76a3.json",
+      "bytes": 107465,
+      "sha256": "4cd7f2d2447cbc8d93f8b8e23d45631b2812c3033cdb598f4b0827db8d36dcc2"
+    },
+    {
+      "path": "tests/fixtures/control_center/s0r/final-state.json",
+      "bytes": 3424,
+      "sha256": "31eadf230b5921e2aa7456032300bd4bfe985a242b459b8d4d47a37c02ea86f6"
+    },
+    {
+      "path": "tests/fixtures/control_center/s0r/semantic-corpus-cb09d063fdb04c538c06abf2e818f0de.json",
+      "bytes": 581152,
+      "sha256": "0fd268aef4ead794c70096ffb652642946cae86dd7c5cfb2e6be15b8422f89ec"
+    },
+    {
+      "path": "tests/fixtures/control_center/s0r/semantic-results-37017e192052479792b9716ae5486bd7.json",
+      "bytes": 110822,
+      "sha256": "e70ea13e47ce4ab4895952c5f270f64c5de8433acb44646ce66b2114abd00196"
+    },
+    {
+      "path": "tests/test_control_center_feasibility.py",
+      "bytes": 34738,
+      "sha256": "64c9fb7fa006f97147338caa5610a17492391320ff2356fca30d08f851d13f37"
+    }
+  ],
+  "canonical_hashes": {
+    "docs/architecture/control-center/application-boundary-v2.md": "c15ac0c1cf6838e48c32cb42931138ee167902cc2eb27207486a178c06785062",
+    "docs/architecture/control-center/integration-implementation-plan.md": "93241792fa9a0313e9bee28c6542cbe9d5dd16a4f6599c0b6e0892340f48ee9d"
+  },
+  "scratch": "tests/fixtures/control_center/s0c/scratch"
+}

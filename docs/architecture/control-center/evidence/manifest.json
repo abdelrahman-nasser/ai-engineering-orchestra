@@ -1,0 +1,259 @@
+{
+    "format_version":  1,
+    "archival_date":  "2026-10-17",
+    "source_branch":  "feature/control-center-s0-feasibility",
+    "source_head":  "1a8ed01232796d0da2387e349cbd09a79623ed13",
+    "artifact_count":  31,
+    "total_bytes":  1294345,
+    "hash_algorithm":  "SHA-256",
+    "artifacts":  [
+                      {
+                          "original_path":  "docs/architecture/control-center/s0-c-feasibility-report.md",
+                          "archival_path":  "docs/architecture/control-center/s0-c-feasibility-report.md",
+                          "sha256":  "5103874cc0e99a1c69bcfa72d5ae436ede1e40511aabab3d9e52726d95771351",
+                          "byte_count":  36886,
+                          "classification":  "historical-report",
+                          "experiment_phase":  "S0-C"
+                      },
+                      {
+                          "original_path":  "docs/architecture/control-center/s0-feasibility-report.md",
+                          "archival_path":  "docs/architecture/control-center/s0-feasibility-report.md",
+                          "sha256":  "50e55b23c176d3f3456c2b9ff3bf1f251eef9d5ac12badc113492834529349f3",
+                          "byte_count":  25793,
+                          "classification":  "historical-report",
+                          "experiment_phase":  "S0"
+                      },
+                      {
+                          "original_path":  "docs/architecture/control-center/s0-r-feasibility-report.md",
+                          "archival_path":  "docs/architecture/control-center/s0-r-feasibility-report.md",
+                          "sha256":  "035433d24c3d1b99ee69e13f3c938990b61b7e1b2256b85233b38ec465a83c60",
+                          "byte_count":  28521,
+                          "classification":  "historical-report",
+                          "experiment_phase":  "S0-R"
+                      },
+                      {
+                          "original_path":  "itru/control_center_read_budget.py",
+                          "archival_path":  "docs/architecture/control-center/evidence/s0/itru/control_center_read_budget.py.txt",
+                          "sha256":  "c87524e8a00887ba11be2b5959c56640266c2839f453bda7434b7730fb3efaba",
+                          "byte_count":  7548,
+                          "classification":  "experimental-prototype",
+                          "experiment_phase":  "S0"
+                      },
+                      {
+                          "original_path":  "itru/control_center_read_source.py",
+                          "archival_path":  "docs/architecture/control-center/evidence/s0/itru/control_center_read_source.py.txt",
+                          "sha256":  "47741c408433dca4de7267d3d368ed42270bd38b1cfe87aacfcb1a6deee8ce8d",
+                          "byte_count":  5688,
+                          "classification":  "experimental-prototype",
+                          "experiment_phase":  "S0"
+                      },
+                      {
+                          "original_path":  "tests/experiments/control_center_s0c/capture.py",
+                          "archival_path":  "docs/architecture/control-center/evidence/s0-c/tests/experiments/control_center_s0c/capture.py.txt",
+                          "sha256":  "f283076957b9ea75739600b6c9cccf9fa1f23901b679994e1a58b46a396a78ef",
+                          "byte_count":  14961,
+                          "classification":  "experimental-test-or-harness",
+                          "experiment_phase":  "S0-C"
+                      },
+                      {
+                          "original_path":  "tests/experiments/control_center_s0c/coordination.py",
+                          "archival_path":  "docs/architecture/control-center/evidence/s0-c/tests/experiments/control_center_s0c/coordination.py.txt",
+                          "sha256":  "c8071bffdaa4bc77f99bd6d441a467afe8df0a86389cd6a212e1ab4c3deb1354",
+                          "byte_count":  13602,
+                          "classification":  "experimental-prototype",
+                          "experiment_phase":  "S0-C"
+                      },
+                      {
+                          "original_path":  "tests/experiments/control_center_s0c/resources.py",
+                          "archival_path":  "docs/architecture/control-center/evidence/s0-c/tests/experiments/control_center_s0c/resources.py.txt",
+                          "sha256":  "f37587029877179f30024d65e154e99fdeb25a10b9d74be7d81bb101a81d4104",
+                          "byte_count":  8776,
+                          "classification":  "experimental-test-or-harness",
+                          "experiment_phase":  "S0-C"
+                      },
+                      {
+                          "original_path":  "tests/experiments/control_center_s0c/run_experiments.py",
+                          "archival_path":  "docs/architecture/control-center/evidence/s0-c/tests/experiments/control_center_s0c/run_experiments.py.txt",
+                          "sha256":  "d13ddc569e69373e98d99723fdfbe7a4dd1b78774cdaf39465d069a18591cbb8",
+                          "byte_count":  13845,
+                          "classification":  "experimental-test-or-harness",
+                          "experiment_phase":  "S0-C"
+                      },
+                      {
+                          "original_path":  "tests/experiments/control_center_s0c/test_concurrency.py",
+                          "archival_path":  "docs/architecture/control-center/evidence/s0-c/tests/experiments/control_center_s0c/test_concurrency.py.txt",
+                          "sha256":  "b74aa9327617da204ea217d7f833a32fc8907f292ef22dbab0d47ac6e8fd1ca8",
+                          "byte_count":  24802,
+                          "classification":  "experimental-test-or-harness",
+                          "experiment_phase":  "S0-C"
+                      },
+                      {
+                          "original_path":  "tests/experiments/control_center_s0c/test_resources.py",
+                          "archival_path":  "docs/architecture/control-center/evidence/s0-c/tests/experiments/control_center_s0c/test_resources.py.txt",
+                          "sha256":  "4bdb3e9dbde7233d7c29cb2afdbfea20dc2ef848a9b012970eb431c7bf9644bc",
+                          "byte_count":  12075,
+                          "classification":  "experimental-test-or-harness",
+                          "experiment_phase":  "S0-C"
+                      },
+                      {
+                          "original_path":  "tests/experiments/control_center_s0r/common.py",
+                          "archival_path":  "docs/architecture/control-center/evidence/s0-r/tests/experiments/control_center_s0r/common.py.txt",
+                          "sha256":  "307c4dfb5443f41be0960ab9457240a510d6cac817b7d331cd2f536d13cf21dc",
+                          "byte_count":  6900,
+                          "classification":  "experimental-test-or-harness",
+                          "experiment_phase":  "S0-R"
+                      },
+                      {
+                          "original_path":  "tests/experiments/control_center_s0r/compact_journal.py",
+                          "archival_path":  "docs/architecture/control-center/evidence/s0-r/tests/experiments/control_center_s0r/compact_journal.py.txt",
+                          "sha256":  "2f9fb4d0dca99998f412c81e591d3179320aa761c79a48599c97bbdc8ed1bc8b",
+                          "byte_count":  9138,
+                          "classification":  "experimental-prototype",
+                          "experiment_phase":  "S0-R"
+                      },
+                      {
+                          "original_path":  "tests/experiments/control_center_s0r/indexed_replay.py",
+                          "archival_path":  "docs/architecture/control-center/evidence/s0-r/tests/experiments/control_center_s0r/indexed_replay.py.txt",
+                          "sha256":  "dbed3dba45c9ed1ecf220dec7ff6f0f3d302195ce2e93ebcc4c73326faface23",
+                          "byte_count":  10106,
+                          "classification":  "experimental-prototype",
+                          "experiment_phase":  "S0-R"
+                      },
+                      {
+                          "original_path":  "tests/experiments/control_center_s0r/run_experiments.py",
+                          "archival_path":  "docs/architecture/control-center/evidence/s0-r/tests/experiments/control_center_s0r/run_experiments.py.txt",
+                          "sha256":  "17c7e61773b4319aa18a2d7b731bb49e62dc295292905b57870c05b0e1eb4281",
+                          "byte_count":  18435,
+                          "classification":  "experimental-test-or-harness",
+                          "experiment_phase":  "S0-R"
+                      },
+                      {
+                          "original_path":  "tests/experiments/control_center_s0r/test_semantics.py",
+                          "archival_path":  "docs/architecture/control-center/evidence/s0-r/tests/experiments/control_center_s0r/test_semantics.py.txt",
+                          "sha256":  "687e5f2191d6d7a78b6aa24440211be92b1f6838c4064549d4d84b769b2accf7",
+                          "byte_count":  19333,
+                          "classification":  "experimental-test-or-harness",
+                          "experiment_phase":  "S0-R"
+                      },
+                      {
+                          "original_path":  "tests/fixtures/control_center/application-v1-cases.json",
+                          "archival_path":  "docs/architecture/control-center/evidence/s0/tests/fixtures/control_center/application-v1-cases.json",
+                          "sha256":  "68639e7b09fe2cbf7dd6135768c6b515cc42d9a40913e4b379a15d56b623d987",
+                          "byte_count":  1396,
+                          "classification":  "synthetic-fixture",
+                          "experiment_phase":  "S0"
+                      },
+                      {
+                          "original_path":  "tests/fixtures/control_center/s0-measurements-1938337ad1624a0e8cb9169a543584d5.json",
+                          "archival_path":  "docs/architecture/control-center/evidence/s0/tests/fixtures/control_center/s0-measurements-1938337ad1624a0e8cb9169a543584d5.json",
+                          "sha256":  "35a9cc5e3e892a5f2905e9c3cdf51ba69d587f3dfad5368c65f416feb0e5cbcc",
+                          "byte_count":  10487,
+                          "classification":  "measurement-or-result-receipt",
+                          "experiment_phase":  "S0"
+                      },
+                      {
+                          "original_path":  "tests/fixtures/control_center/s0-measurements-4d7e21c5cadd42359380a5627c8e5617.json",
+                          "archival_path":  "docs/architecture/control-center/evidence/s0/tests/fixtures/control_center/s0-measurements-4d7e21c5cadd42359380a5627c8e5617.json",
+                          "sha256":  "1b8931eb383840794b99b2c57f050df0645da302716e74b5193459730c0eadc2",
+                          "byte_count":  10085,
+                          "classification":  "measurement-or-result-receipt",
+                          "experiment_phase":  "S0"
+                      },
+                      {
+                          "original_path":  "tests/fixtures/control_center/s0-measurements-a3ee3d159d7347ea98f5be26e7c3b40f.json",
+                          "archival_path":  "docs/architecture/control-center/evidence/s0/tests/fixtures/control_center/s0-measurements-a3ee3d159d7347ea98f5be26e7c3b40f.json",
+                          "sha256":  "e2a95c1666eeeb2971314f5758b296e2c12ca6e22a6cf7928a82c12a5ff65acb",
+                          "byte_count":  10107,
+                          "classification":  "measurement-or-result-receipt",
+                          "experiment_phase":  "S0"
+                      },
+                      {
+                          "original_path":  "tests/fixtures/control_center/s0c/baseline.json",
+                          "archival_path":  "docs/architecture/control-center/evidence/s0-c/tests/fixtures/control_center/s0c/baseline.json",
+                          "sha256":  "da58f508dd64faca415df213b31cf9bbc9efd67e53c8bc14556d89392edd3915",
+                          "byte_count":  4295,
+                          "classification":  "preservation-snapshot",
+                          "experiment_phase":  "S0-C"
+                      },
+                      {
+                          "original_path":  "tests/fixtures/control_center/s0c/evidence-a6d0a4f5d35a4dbd9c0fae3690820671.json",
+                          "archival_path":  "docs/architecture/control-center/evidence/s0-c/tests/fixtures/control_center/s0c/evidence-a6d0a4f5d35a4dbd9c0fae3690820671.json",
+                          "sha256":  "913bf787aec37ea5d7bafac278c817625a8ab51251811f191c0583647787d91d",
+                          "byte_count":  11049,
+                          "classification":  "measurement-or-result-receipt",
+                          "experiment_phase":  "S0-C"
+                      },
+                      {
+                          "original_path":  "tests/fixtures/control_center/s0c/evidence-b3a5e1dd9e5e4e048435b86fa5cb57bd.json",
+                          "archival_path":  "docs/architecture/control-center/evidence/s0-c/tests/fixtures/control_center/s0c/evidence-b3a5e1dd9e5e4e048435b86fa5cb57bd.json",
+                          "sha256":  "5d5a78177c9c6e3750eb2b48a52677ad22db85ab7f49d08a57bfa2d6ccc7870d",
+                          "byte_count":  121702,
+                          "classification":  "measurement-or-result-receipt",
+                          "experiment_phase":  "S0-C"
+                      },
+                      {
+                          "original_path":  "tests/fixtures/control_center/s0c/final-state.json",
+                          "archival_path":  "docs/architecture/control-center/evidence/s0-c/tests/fixtures/control_center/s0c/final-state.json",
+                          "sha256":  "033520e644ccb42d3961055b916c8d6b96d3723cb75abcfb74e3524d9fdcf920",
+                          "byte_count":  21489,
+                          "classification":  "preservation-snapshot",
+                          "experiment_phase":  "S0-C"
+                      },
+                      {
+                          "original_path":  "tests/fixtures/control_center/s0c/resource-results-83042869c2a3491fa930748b00b7317f.json",
+                          "archival_path":  "docs/architecture/control-center/evidence/s0-c/tests/fixtures/control_center/s0c/resource-results-83042869c2a3491fa930748b00b7317f.json",
+                          "sha256":  "dbfae8bfad81d447cd883ff08e264342468b1e426dd68cfdd4f6272f9937e363",
+                          "byte_count":  7396,
+                          "classification":  "measurement-or-result-receipt",
+                          "experiment_phase":  "S0-C"
+                      },
+                      {
+                          "original_path":  "tests/fixtures/control_center/s0r/baseline.json",
+                          "archival_path":  "docs/architecture/control-center/evidence/s0-r/tests/fixtures/control_center/s0r/baseline.json",
+                          "sha256":  "d7c7c95e7f272642065f5a9414992c96ee8904d232e3555390f1e62bdaac567f",
+                          "byte_count":  2329,
+                          "classification":  "preservation-snapshot",
+                          "experiment_phase":  "S0-R"
+                      },
+                      {
+                          "original_path":  "tests/fixtures/control_center/s0r/evidence-d2a605369ba94e7595af0dd1f5dc76a3.json",
+                          "archival_path":  "docs/architecture/control-center/evidence/s0-r/tests/fixtures/control_center/s0r/evidence-d2a605369ba94e7595af0dd1f5dc76a3.json",
+                          "sha256":  "4cd7f2d2447cbc8d93f8b8e23d45631b2812c3033cdb598f4b0827db8d36dcc2",
+                          "byte_count":  107465,
+                          "classification":  "measurement-or-result-receipt",
+                          "experiment_phase":  "S0-R"
+                      },
+                      {
+                          "original_path":  "tests/fixtures/control_center/s0r/final-state.json",
+                          "archival_path":  "docs/architecture/control-center/evidence/s0-r/tests/fixtures/control_center/s0r/final-state.json",
+                          "sha256":  "31eadf230b5921e2aa7456032300bd4bfe985a242b459b8d4d47a37c02ea86f6",
+                          "byte_count":  3424,
+                          "classification":  "preservation-snapshot",
+                          "experiment_phase":  "S0-R"
+                      },
+                      {
+                          "original_path":  "tests/fixtures/control_center/s0r/semantic-corpus-cb09d063fdb04c538c06abf2e818f0de.json",
+                          "archival_path":  "docs/architecture/control-center/evidence/s0-r/tests/fixtures/control_center/s0r/semantic-corpus-cb09d063fdb04c538c06abf2e818f0de.json",
+                          "sha256":  "0fd268aef4ead794c70096ffb652642946cae86dd7c5cfb2e6be15b8422f89ec",
+                          "byte_count":  581152,
+                          "classification":  "synthetic-fixture",
+                          "experiment_phase":  "S0-R"
+                      },
+                      {
+                          "original_path":  "tests/fixtures/control_center/s0r/semantic-results-37017e192052479792b9716ae5486bd7.json",
+                          "archival_path":  "docs/architecture/control-center/evidence/s0-r/tests/fixtures/control_center/s0r/semantic-results-37017e192052479792b9716ae5486bd7.json",
+                          "sha256":  "e70ea13e47ce4ab4895952c5f270f64c5de8433acb44646ce66b2114abd00196",
+                          "byte_count":  110822,
+                          "classification":  "measurement-or-result-receipt",
+                          "experiment_phase":  "S0-R"
+                      },
+                      {
+                          "original_path":  "tests/test_control_center_feasibility.py",
+                          "archival_path":  "docs/architecture/control-center/evidence/s0/tests/test_control_center_feasibility.py.txt",
+                          "sha256":  "64c9fb7fa006f97147338caa5610a17492391320ff2356fca30d08f851d13f37",
+                          "byte_count":  34738,
+                          "classification":  "experimental-test-or-harness",
+                          "experiment_phase":  "S0"
+                      }
+                  ]
+}

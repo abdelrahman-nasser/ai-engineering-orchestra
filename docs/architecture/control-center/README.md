@@ -14,8 +14,11 @@ The [latest Human decision](human-decisions.md)
 supersedes the earlier S0 execution authorization. Earlier S0 instructions below
 are historical context, not permission to resume experiments or implementation.
 The [Developer Alpha usability roadmap](../../developer-alpha-usability-roadmap.md)
-is the current planning deliverable; none of its proposed slices is authorized
-for implementation. All 31 feasibility artifacts remain preserved and uncommitted.
+is the current planning deliverable. The later archival/first-Run authorization
+recorded in [Human decisions](human-decisions.md) permits two sequential
+documentation/evidence changes only. All 31 feasibility artifacts are preserved
+in the [evidence archive](evidence/README.md); production implementation remains
+unauthorized.
 
 ## Canonical documents
 
@@ -29,6 +32,7 @@ All paths below are relative to the Core repository root.
 | [docs/architecture/control-center/application-boundary-v2.md](application-boundary-v2.md) | Exact approved v2 technical baseline, including P01–P10. Historical candidate and approval-pending labels remain verbatim; read the later Human decision alongside it. |
 | [docs/architecture/control-center/human-decisions.md](human-decisions.md) | Architecture/plan approvals, historical S0 authorization and latest Option D decision closing S0 at NO-GO. |
 | [docs/architecture/control-center/integration-implementation-plan.md](integration-implementation-plan.md) | Exact Human-approved S0–S8 planning baseline. Historical authorization and unresolved-H2 statements are preserved; the subsequent Human decision accepts H2 and authorizes S0 only, subject to governance. |
+| [docs/architecture/control-center/evidence/README.md](evidence/README.md) | Quarantined S0/S0-R/S0-C evidence, complete path/hash manifest and static packaging/discovery findings. Historical reports remain at their original paths. |
 
 The **implementation plan is approved and archived**. This does not authorize
 S1–S8, operational-store access, transport/authentication selection, or UI work.
@@ -146,8 +150,9 @@ Before planning revisions or separately authorized integration work:
 7. Read the complete archived implementation plan and latest Human decision.
    Option D closes S0 at NO-GO. Earlier S0-only instructions are historical;
    no experiment, A/B redesign or later implementation slice is currently
-   authorized. Preserve all 31 uncommitted feasibility artifacts pending a
-   separate archival disposition.
+   authorized. Preserve all 31 feasibility artifacts using the
+   [archival manifest](evidence/manifest.json); historical execution/import paths
+   are mapped by the archive guide and are no longer active.
 
 The approved first slice contains exactly `InspectRun` and `ReadRunJournal`.
 It remains read-only and content-free, with Core-authoritative lifecycle, DAG,
@@ -157,9 +162,10 @@ access require their own scoped authorization. Execution, approval,
 cancellation, and continuation controls remain disabled.
 
 **Current Human Control:** The October 17, 2026 Option D decision defers reader
-admission and closes S0 at NO-GO. The current authorization permits recording
-that decision, preparing the Developer Alpha usability roadmap, and one reviewed
-local documentation-only commit. Do not stage or commit the 31 feasibility
-artifacts or implement the roadmap. Stop after the documentation report. No
-push, merge, tag, PR, release change, external-system modification, A/B redesign,
-transport selection or progression to S1–S8 is authorized.
+admission and closes S0 at NO-GO. The later Human instruction authorizes reviewed
+evidence archival followed, only after archival succeeds, by a documentation-only
+Developer Alpha first-Run operator card and two specified local commits. Stop at
+Human Control after reporting both phases. No product implementation, runtime/CLI
+execution, build, product test, network access, push, merge, tag, publication,
+external-system modification, A/B redesign, transport selection or progression
+to S1–S8 is authorized.

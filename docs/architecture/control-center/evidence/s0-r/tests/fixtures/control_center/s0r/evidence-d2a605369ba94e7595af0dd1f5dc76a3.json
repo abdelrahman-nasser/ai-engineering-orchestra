@@ -1,0 +1,2804 @@
+{
+  "phase": "S0-R",
+  "command": [
+    "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+    "-B",
+    "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\run_experiments.py"
+  ],
+  "cwd": "D:\\Dev\\ai-engineering-orchestra",
+  "jobs": [
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\test_semantics.py"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 2496805300,
+      "stderr": "test_journal_actual_schema_and_adversarial_rows (__main__.SemanticExperiments.test_journal_actual_schema_and_adversarial_rows) ... ok\ntest_lifecycle_every_prefix (__main__.SemanticExperiments.test_lifecycle_every_prefix) ... ok\ntest_lifecycle_max_history_and_immutability (__main__.SemanticExperiments.test_lifecycle_max_history_and_immutability) ... ok\ntest_real_sql_header_failures (__main__.SemanticExperiments.test_real_sql_header_failures) ... ok\ntest_sql_duplicate_constraint_and_prototype_preflight (__main__.SemanticExperiments.test_sql_duplicate_constraint_and_prototype_preflight) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 2.119s\n\nOK\n",
+      "stdout": "S0R_SEMANTIC_RECEIPT=D:\\Dev\\ai-engineering-orchestra\\tests\\fixtures\\control_center\\s0r\\semantic-results-37017e192052479792b9716ae5486bd7.json\n"
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\run_experiments.py",
+        "--worker",
+        "lifecycle",
+        "canonical",
+        "history",
+        "10000",
+        "timing"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 7315311800,
+      "stderr": "",
+      "measurement": {
+        "area": "lifecycle",
+        "variant": "canonical",
+        "shape": "history",
+        "count": 10000,
+        "measurement": "timing",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "executable": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "startup_tracing": false,
+        "startup_traced_memory": null,
+        "inherited_pythontracemalloc": null,
+        "conditions": "Fresh child and passive connection; fixture creation primes OS cache. No cold-disk claim.",
+        "native_query_peak": "unavailable",
+        "owner_capture_proven": false,
+        "fixture": {
+          "records": 10000,
+          "metadata_bytes": 3509615,
+          "canonical_rows_sha256": "2ca8c785d69002b73378869c1c92eb704afef739ed14f8d218e4ad7d5864329b"
+        },
+        "process_before": {
+          "working_set_bytes": 49635328,
+          "peak_working_set_bytes": 60383232,
+          "private_bytes": 33914880,
+          "peak_pagefile_bytes": 44929024
+        },
+        "timings": [
+          {
+            "condition": "first_pass_fresh_connection",
+            "target_ns": 1901934000,
+            "begin_ns": 8000,
+            "result_release_ns": 4105000,
+            "rollback_ns": 34400,
+            "summary": {
+              "tasks": 1,
+              "runs": 3333,
+              "revisions": {
+                "synthetic-task": 10000
+              }
+            }
+          },
+          {
+            "condition": "second_pass_same_connection",
+            "target_ns": 2273617900,
+            "begin_ns": 2800,
+            "result_release_ns": 13066900,
+            "rollback_ns": 45600,
+            "summary": {
+              "tasks": 1,
+              "runs": 3333,
+              "revisions": {
+                "synthetic-task": 10000
+              }
+            }
+          }
+        ],
+        "profiled_target_ns": 2559167300,
+        "phase_metrics": {
+          "sql_header_validation_ns": 6850100,
+          "sql_event_loading_ns": 18336000,
+          "json_decode_and_canonical_ns": 191964700,
+          "row_semantic_validation_ns": 292104900,
+          "replay_including_snapshot_construction_ns": 2044758900,
+          "canonical_snapshot_construction_ns": null,
+          "snapshot_qualification": "Canonical construction is fused with replay; prototype final freeze is separately instrumented."
+        },
+        "profiled_summary": {
+          "tasks": 1,
+          "runs": 3333,
+          "revisions": {
+            "synthetic-task": 10000
+          }
+        },
+        "instrumentation_overhead_observation_ns": 285549400,
+        "overhead_qualification": "Difference between separate warm runs; includes run variation, not an isolated overhead calibration.",
+        "process_with_resources_open": {
+          "working_set_bytes": 80719872,
+          "peak_working_set_bytes": 83730432,
+          "private_bytes": 64225280,
+          "peak_pagefile_bytes": 67403776
+        },
+        "files": {
+          "lifecycle.sqlite3": 3923968,
+          "ownership-marker": 32
+        },
+        "explicit_connection_cleanup_ns": 817900,
+        "process_after_explicit_close": {
+          "working_set_bytes": 75776000,
+          "peak_working_set_bytes": 83730432,
+          "private_bytes": 59219968,
+          "peak_pagefile_bytes": 67403776
+        },
+        "qualification": "Synthetic component only. No graph/owner lease/mutation exclusion/writer priority/cancellation/native-memory bound/query proof."
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\run_experiments.py",
+        "--worker",
+        "lifecycle",
+        "canonical",
+        "history",
+        "10000",
+        "allocation"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 10532589600,
+      "stderr": "",
+      "measurement": {
+        "area": "lifecycle",
+        "variant": "canonical",
+        "shape": "history",
+        "count": 10000,
+        "measurement": "allocation",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "executable": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "startup_tracing": false,
+        "startup_traced_memory": null,
+        "inherited_pythontracemalloc": null,
+        "conditions": "Fresh child and passive connection; fixture creation primes OS cache. No cold-disk claim.",
+        "native_query_peak": "unavailable",
+        "owner_capture_proven": false,
+        "fixture": {
+          "records": 10000,
+          "metadata_bytes": 3509615,
+          "canonical_rows_sha256": "2ca8c785d69002b73378869c1c92eb704afef739ed14f8d218e4ad7d5864329b"
+        },
+        "process_before": {
+          "working_set_bytes": 49410048,
+          "peak_working_set_bytes": 60633088,
+          "private_bytes": 33677312,
+          "peak_pagefile_bytes": 45101056
+        },
+        "allocation": {
+          "initial_current_bytes": 0,
+          "initial_peak_bytes": 0,
+          "current_at_target_return_bytes": 24936456,
+          "target_peak_bytes": 29872495,
+          "target_peak_minus_current_bytes": 4936039,
+          "traced_target_ns": 9318400300,
+          "begin_ns": 11300,
+          "rollback_ns": 32700,
+          "post_release_current_bytes": 55942,
+          "post_instrumentation_peak_bytes": 29872495,
+          "live_allocation_sites": [
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\json\\decoder.py",
+              "line": 354,
+              "live_bytes": 13319771,
+              "live_blocks": 269460
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\task_run_state.py",
+              "line": 154,
+              "live_bytes": 4613320,
+              "live_blocks": 23334
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\task_run_state.py",
+              "line": 150,
+              "live_bytes": 2559808,
+              "live_blocks": 39997
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\json\\__init__.py",
+              "line": 359,
+              "live_bytes": 1200000,
+              "live_blocks": 10000
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\task_run_state.py",
+              "line": 195,
+              "live_bytes": 789280,
+              "live_blocks": 8666
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\task_run_state.py",
+              "line": 196,
+              "live_bytes": 591168,
+              "live_blocks": 6704
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\task_run_state.py",
+              "line": 194,
+              "live_bytes": 533280,
+              "live_blocks": 13332
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\task_run_state.py",
+              "line": 181,
+              "live_bytes": 399960,
+              "live_blocks": 3333
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\task_run_state.py",
+              "line": 294,
+              "live_bytes": 266640,
+              "live_blocks": 3333
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\dataclasses.py",
+              "line": 1588,
+              "live_bytes": 245144,
+              "live_blocks": 3378
+            },
+            {
+              "file": "<string>",
+              "line": 5,
+              "live_bytes": 127936,
+              "live_blocks": 1999
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\json\\encoder.py",
+              "line": 258,
+              "live_bytes": 115528,
+              "live_blocks": 2063
+            }
+          ],
+          "summary": {
+            "tasks": 1,
+            "runs": 3333,
+            "revisions": {
+              "synthetic-task": 10000
+            }
+          },
+          "qualification": "Peak captured before snapshot/statistics/summary instrumentation; live-site snapshot is retained-at-return evidence, not historical transient-site attribution."
+        },
+        "process_with_resources_open": {
+          "working_set_bytes": 71974912,
+          "peak_working_set_bytes": 194777088,
+          "private_bytes": 57593856,
+          "peak_pagefile_bytes": 182935552
+        },
+        "files": {
+          "lifecycle.sqlite3": 3923968,
+          "ownership-marker": 32
+        },
+        "explicit_connection_cleanup_ns": 752900,
+        "process_after_explicit_close": {
+          "working_set_bytes": 66703360,
+          "peak_working_set_bytes": 194777088,
+          "private_bytes": 49614848,
+          "peak_pagefile_bytes": 182935552
+        },
+        "qualification": "Synthetic component only. No graph/owner lease/mutation exclusion/writer priority/cancellation/native-memory bound/query proof."
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\run_experiments.py",
+        "--worker",
+        "lifecycle",
+        "indexed",
+        "history",
+        "10000",
+        "timing"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 2955544800,
+      "stderr": "",
+      "measurement": {
+        "area": "lifecycle",
+        "variant": "indexed",
+        "shape": "history",
+        "count": 10000,
+        "measurement": "timing",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "executable": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "startup_tracing": false,
+        "startup_traced_memory": null,
+        "inherited_pythontracemalloc": null,
+        "conditions": "Fresh child and passive connection; fixture creation primes OS cache. No cold-disk claim.",
+        "native_query_peak": "unavailable",
+        "owner_capture_proven": false,
+        "fixture": {
+          "records": 10000,
+          "metadata_bytes": 3509615,
+          "canonical_rows_sha256": "2ca8c785d69002b73378869c1c92eb704afef739ed14f8d218e4ad7d5864329b"
+        },
+        "process_before": {
+          "working_set_bytes": 49164288,
+          "peak_working_set_bytes": 60309504,
+          "private_bytes": 33443840,
+          "peak_pagefile_bytes": 44748800
+        },
+        "timings": [
+          {
+            "condition": "first_pass_fresh_connection",
+            "target_ns": 783301700,
+            "begin_ns": 7000,
+            "result_release_ns": 7320400,
+            "rollback_ns": 80200,
+            "summary": {
+              "tasks": 1,
+              "runs": 3333,
+              "revisions": {
+                "synthetic-task": 10000
+              }
+            }
+          },
+          {
+            "condition": "second_pass_same_connection",
+            "target_ns": 783458400,
+            "begin_ns": 6300,
+            "result_release_ns": 4924400,
+            "rollback_ns": 26100,
+            "summary": {
+              "tasks": 1,
+              "runs": 3333,
+              "revisions": {
+                "synthetic-task": 10000
+              }
+            }
+          }
+        ],
+        "profiled_target_ns": 797655700,
+        "phase_metrics": {
+          "sql_header_validation_ns": 2812600,
+          "sql_event_loading_ns": 7133800,
+          "indexed_replay_partition": {
+            "events": 10000,
+            "tasks": 1,
+            "runs": 3333,
+            "validation_calls": 10000,
+            "validation_ns": 244075300,
+            "reduction_ns": 129479900,
+            "freeze_ns": 2294700,
+            "total_ns": 381227400,
+            "loop_and_instrumentation_ns": 5377500
+          },
+          "json_decode_and_canonical_ns": 157322300,
+          "row_semantic_validation_ns": 244785000,
+          "replay_including_snapshot_construction_ns": 381507300,
+          "canonical_snapshot_construction_ns": null,
+          "snapshot_qualification": "Canonical construction is fused with replay; prototype final freeze is separately instrumented."
+        },
+        "profiled_summary": {
+          "tasks": 1,
+          "runs": 3333,
+          "revisions": {
+            "synthetic-task": 10000
+          }
+        },
+        "instrumentation_overhead_observation_ns": 14197300,
+        "overhead_qualification": "Difference between separate warm runs; includes run variation, not an isolated overhead calibration.",
+        "process_with_resources_open": {
+          "working_set_bytes": 78786560,
+          "peak_working_set_bytes": 81240064,
+          "private_bytes": 63377408,
+          "peak_pagefile_bytes": 65695744
+        },
+        "files": {
+          "lifecycle.sqlite3": 3923968,
+          "ownership-marker": 32
+        },
+        "explicit_connection_cleanup_ns": 1098100,
+        "process_after_explicit_close": {
+          "working_set_bytes": 73310208,
+          "peak_working_set_bytes": 81240064,
+          "private_bytes": 57421824,
+          "peak_pagefile_bytes": 65695744
+        },
+        "qualification": "Synthetic component only. No graph/owner lease/mutation exclusion/writer priority/cancellation/native-memory bound/query proof."
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\run_experiments.py",
+        "--worker",
+        "lifecycle",
+        "indexed",
+        "history",
+        "10000",
+        "allocation"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 6842954300,
+      "stderr": "",
+      "measurement": {
+        "area": "lifecycle",
+        "variant": "indexed",
+        "shape": "history",
+        "count": 10000,
+        "measurement": "allocation",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "executable": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "startup_tracing": false,
+        "startup_traced_memory": null,
+        "inherited_pythontracemalloc": null,
+        "conditions": "Fresh child and passive connection; fixture creation primes OS cache. No cold-disk claim.",
+        "native_query_peak": "unavailable",
+        "owner_capture_proven": false,
+        "fixture": {
+          "records": 10000,
+          "metadata_bytes": 3509615,
+          "canonical_rows_sha256": "2ca8c785d69002b73378869c1c92eb704afef739ed14f8d218e4ad7d5864329b"
+        },
+        "process_before": {
+          "working_set_bytes": 50982912,
+          "peak_working_set_bytes": 60702720,
+          "private_bytes": 35508224,
+          "peak_pagefile_bytes": 45051904
+        },
+        "allocation": {
+          "initial_current_bytes": 0,
+          "initial_peak_bytes": 0,
+          "current_at_target_return_bytes": 24932101,
+          "target_peak_bytes": 30348915,
+          "target_peak_minus_current_bytes": 5416814,
+          "traced_target_ns": 5171444100,
+          "begin_ns": 28200,
+          "rollback_ns": 35500,
+          "post_release_current_bytes": 55005,
+          "post_instrumentation_peak_bytes": 30348915,
+          "live_allocation_sites": [
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\json\\decoder.py",
+              "line": 354,
+              "live_bytes": 13319771,
+              "live_blocks": 269460
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\task_run_state.py",
+              "line": 154,
+              "live_bytes": 4613320,
+              "live_blocks": 23334
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\task_run_state.py",
+              "line": 150,
+              "live_bytes": 2559808,
+              "live_blocks": 39997
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\json\\__init__.py",
+              "line": 359,
+              "live_bytes": 1200000,
+              "live_blocks": 10000
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\task_run_state.py",
+              "line": 195,
+              "live_bytes": 789280,
+              "live_blocks": 8666
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\task_run_state.py",
+              "line": 196,
+              "live_bytes": 595848,
+              "live_blocks": 6743
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\task_run_state.py",
+              "line": 194,
+              "live_bytes": 533280,
+              "live_blocks": 13332
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\task_run_state.py",
+              "line": 181,
+              "live_bytes": 399960,
+              "live_blocks": 3333
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\indexed_replay.py",
+              "line": 152,
+              "live_bytes": 266760,
+              "live_blocks": 3335
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\indexed_replay.py",
+              "line": 109,
+              "live_bytes": 266640,
+              "live_blocks": 3333
+            },
+            {
+              "file": "<string>",
+              "line": 5,
+              "live_bytes": 127936,
+              "live_blocks": 1999
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\json\\encoder.py",
+              "line": 258,
+              "live_bytes": 116312,
+              "live_blocks": 2077
+            }
+          ],
+          "summary": {
+            "tasks": 1,
+            "runs": 3333,
+            "revisions": {
+              "synthetic-task": 10000
+            }
+          },
+          "qualification": "Peak captured before snapshot/statistics/summary instrumentation; live-site snapshot is retained-at-return evidence, not historical transient-site attribution."
+        },
+        "process_with_resources_open": {
+          "working_set_bytes": 71589888,
+          "peak_working_set_bytes": 192630784,
+          "private_bytes": 60387328,
+          "peak_pagefile_bytes": 181972992
+        },
+        "files": {
+          "lifecycle.sqlite3": 3923968,
+          "ownership-marker": 32
+        },
+        "explicit_connection_cleanup_ns": 857600,
+        "process_after_explicit_close": {
+          "working_set_bytes": 66375680,
+          "peak_working_set_bytes": 192630784,
+          "private_bytes": 51982336,
+          "peak_pagefile_bytes": 181972992
+        },
+        "qualification": "Synthetic component only. No graph/owner lease/mutation exclusion/writer priority/cancellation/native-memory bound/query proof."
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\run_experiments.py",
+        "--worker",
+        "replay",
+        "canonical",
+        "history",
+        "10000",
+        "timing"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 5817646800,
+      "stderr": "",
+      "measurement": {
+        "area": "replay",
+        "variant": "canonical",
+        "shape": "history",
+        "count": 10000,
+        "measurement": "timing",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "executable": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "startup_tracing": false,
+        "startup_traced_memory": null,
+        "inherited_pythontracemalloc": null,
+        "conditions": "Fresh child and passive connection; fixture creation primes OS cache. No cold-disk claim.",
+        "native_query_peak": "unavailable",
+        "owner_capture_proven": false,
+        "input_memory_qualification": "Pure replay input is predecoded outside target allocation trace; full lifecycle experiment includes loading/decoding.",
+        "fixture": {
+          "records": 10000,
+          "metadata_bytes": 3509615,
+          "canonical_rows_sha256": "2ca8c785d69002b73378869c1c92eb704afef739ed14f8d218e4ad7d5864329b"
+        },
+        "process_before": {
+          "working_set_bytes": 56410112,
+          "peak_working_set_bytes": 60260352,
+          "private_bytes": 41304064,
+          "peak_pagefile_bytes": 44699648
+        },
+        "timings": [
+          {
+            "condition": "first_pass_fresh_connection",
+            "target_ns": 1421462300,
+            "begin_ns": 300,
+            "result_release_ns": 293000,
+            "rollback_ns": 100,
+            "summary": {
+              "tasks": 1,
+              "runs": 3333,
+              "revisions": {
+                "synthetic-task": 10000
+              }
+            }
+          },
+          {
+            "condition": "second_pass_same_connection",
+            "target_ns": 1548871100,
+            "begin_ns": 200,
+            "result_release_ns": 353900,
+            "rollback_ns": 200,
+            "summary": {
+              "tasks": 1,
+              "runs": 3333,
+              "revisions": {
+                "synthetic-task": 10000
+              }
+            }
+          }
+        ],
+        "profiled_target_ns": 2250996100,
+        "phase_metrics": {
+          "snapshot_construction_ns": null,
+          "qualification": "Canonical immutable snapshot construction is fused with replay."
+        },
+        "profiled_summary": {
+          "tasks": 1,
+          "runs": 3333,
+          "revisions": {
+            "synthetic-task": 10000
+          }
+        },
+        "instrumentation_overhead_observation_ns": 702125000,
+        "overhead_qualification": "Difference between separate warm runs; includes run variation, not an isolated overhead calibration.",
+        "process_with_resources_open": {
+          "working_set_bytes": 61018112,
+          "peak_working_set_bytes": 61018112,
+          "private_bytes": 44961792,
+          "peak_pagefile_bytes": 44961792
+        },
+        "files": {
+          "lifecycle.sqlite3": 3923968,
+          "ownership-marker": 32
+        },
+        "explicit_connection_cleanup_ns": 816700,
+        "process_after_explicit_close": {
+          "working_set_bytes": 59170816,
+          "peak_working_set_bytes": 61022208,
+          "private_bytes": 43503616,
+          "peak_pagefile_bytes": 44961792
+        },
+        "qualification": "Synthetic component only. No graph/owner lease/mutation exclusion/writer priority/cancellation/native-memory bound/query proof."
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\run_experiments.py",
+        "--worker",
+        "replay",
+        "canonical",
+        "history",
+        "10000",
+        "allocation"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 6763727500,
+      "stderr": "",
+      "measurement": {
+        "area": "replay",
+        "variant": "canonical",
+        "shape": "history",
+        "count": 10000,
+        "measurement": "allocation",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "executable": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "startup_tracing": false,
+        "startup_traced_memory": null,
+        "inherited_pythontracemalloc": null,
+        "conditions": "Fresh child and passive connection; fixture creation primes OS cache. No cold-disk claim.",
+        "native_query_peak": "unavailable",
+        "owner_capture_proven": false,
+        "input_memory_qualification": "Pure replay input is predecoded outside target allocation trace; full lifecycle experiment includes loading/decoding.",
+        "fixture": {
+          "records": 10000,
+          "metadata_bytes": 3509615,
+          "canonical_rows_sha256": "2ca8c785d69002b73378869c1c92eb704afef739ed14f8d218e4ad7d5864329b"
+        },
+        "process_before": {
+          "working_set_bytes": 55791616,
+          "peak_working_set_bytes": 60297216,
+          "private_bytes": 40218624,
+          "peak_pagefile_bytes": 44978176
+        },
+        "allocation": {
+          "initial_current_bytes": 0,
+          "initial_peak_bytes": 0,
+          "current_at_target_return_bytes": 2310064,
+          "target_peak_bytes": 2367604,
+          "target_peak_minus_current_bytes": 57540,
+          "traced_target_ns": 5984050300,
+          "begin_ns": 400,
+          "rollback_ns": 400,
+          "post_release_current_bytes": 3756,
+          "post_instrumentation_peak_bytes": 2367604,
+          "live_allocation_sites": [
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\task_run_state.py",
+              "line": 195,
+              "live_bytes": 789808,
+              "live_blocks": 8665
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\task_run_state.py",
+              "line": 194,
+              "live_bytes": 536320,
+              "live_blocks": 13332
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\task_run_state.py",
+              "line": 294,
+              "live_bytes": 266640,
+              "live_blocks": 3333
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\dataclasses.py",
+              "line": 1588,
+              "live_bytes": 245144,
+              "live_blocks": 3378
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\task_run_state.py",
+              "line": 196,
+              "live_bytes": 191208,
+              "live_blocks": 3371
+            },
+            {
+              "file": "<string>",
+              "line": 5,
+              "live_bytes": 127872,
+              "live_blocks": 1998
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\json\\encoder.py",
+              "line": 258,
+              "live_bytes": 115528,
+              "live_blocks": 2063
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\task_run_state.py",
+              "line": 320,
+              "live_bytes": 29984,
+              "live_blocks": 22
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\json\\encoder.py",
+              "line": 216,
+              "live_bytes": 4800,
+              "live_blocks": 75
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\_repository_resource.py",
+              "line": 111,
+              "live_bytes": 840,
+              "live_blocks": 15
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\dataclasses.py",
+              "line": 1339,
+              "live_bytes": 240,
+              "live_blocks": 2
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\json\\encoder.py",
+              "line": 249,
+              "live_bytes": 224,
+              "live_blocks": 2
+            }
+          ],
+          "summary": {
+            "tasks": 1,
+            "runs": 3333,
+            "revisions": {
+              "synthetic-task": 10000
+            }
+          },
+          "qualification": "Peak captured before snapshot/statistics/summary instrumentation; live-site snapshot is retained-at-return evidence, not historical transient-site attribution."
+        },
+        "process_with_resources_open": {
+          "working_set_bytes": 62398464,
+          "peak_working_set_bytes": 73252864,
+          "private_bytes": 45805568,
+          "peak_pagefile_bytes": 57270272
+        },
+        "files": {
+          "lifecycle.sqlite3": 3923968,
+          "ownership-marker": 32
+        },
+        "explicit_connection_cleanup_ns": 389700,
+        "process_after_explicit_close": {
+          "working_set_bytes": 59596800,
+          "peak_working_set_bytes": 73252864,
+          "private_bytes": 42545152,
+          "peak_pagefile_bytes": 57270272
+        },
+        "qualification": "Synthetic component only. No graph/owner lease/mutation exclusion/writer priority/cancellation/native-memory bound/query proof."
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\run_experiments.py",
+        "--worker",
+        "replay",
+        "indexed",
+        "history",
+        "10000",
+        "timing"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 1625772400,
+      "stderr": "",
+      "measurement": {
+        "area": "replay",
+        "variant": "indexed",
+        "shape": "history",
+        "count": 10000,
+        "measurement": "timing",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "executable": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "startup_tracing": false,
+        "startup_traced_memory": null,
+        "inherited_pythontracemalloc": null,
+        "conditions": "Fresh child and passive connection; fixture creation primes OS cache. No cold-disk claim.",
+        "native_query_peak": "unavailable",
+        "owner_capture_proven": false,
+        "input_memory_qualification": "Pure replay input is predecoded outside target allocation trace; full lifecycle experiment includes loading/decoding.",
+        "fixture": {
+          "records": 10000,
+          "metadata_bytes": 3509615,
+          "canonical_rows_sha256": "2ca8c785d69002b73378869c1c92eb704afef739ed14f8d218e4ad7d5864329b"
+        },
+        "process_before": {
+          "working_set_bytes": 55578624,
+          "peak_working_set_bytes": 59977728,
+          "private_bytes": 40099840,
+          "peak_pagefile_bytes": 44548096
+        },
+        "timings": [
+          {
+            "condition": "first_pass_fresh_connection",
+            "target_ns": 329136200,
+            "begin_ns": 300,
+            "result_release_ns": 280900,
+            "rollback_ns": 200,
+            "summary": {
+              "tasks": 1,
+              "runs": 3333,
+              "revisions": {
+                "synthetic-task": 10000
+              }
+            }
+          },
+          {
+            "condition": "second_pass_same_connection",
+            "target_ns": 337728600,
+            "begin_ns": 100,
+            "result_release_ns": 229100,
+            "rollback_ns": 100,
+            "summary": {
+              "tasks": 1,
+              "runs": 3333,
+              "revisions": {
+                "synthetic-task": 10000
+              }
+            }
+          }
+        ],
+        "profiled_target_ns": 325850200,
+        "phase_metrics": {
+          "events": 10000,
+          "tasks": 1,
+          "runs": 3333,
+          "validation_calls": 10000,
+          "validation_ns": 209014700,
+          "reduction_ns": 111158700,
+          "freeze_ns": 1766000,
+          "total_ns": 325595700,
+          "loop_and_instrumentation_ns": 3656300
+        },
+        "profiled_summary": {
+          "tasks": 1,
+          "runs": 3333,
+          "revisions": {
+            "synthetic-task": 10000
+          }
+        },
+        "instrumentation_overhead_observation_ns": -11878400,
+        "overhead_qualification": "Difference between separate warm runs; includes run variation, not an isolated overhead calibration.",
+        "process_with_resources_open": {
+          "working_set_bytes": 58900480,
+          "peak_working_set_bytes": 59977728,
+          "private_bytes": 42614784,
+          "peak_pagefile_bytes": 44548096
+        },
+        "files": {
+          "lifecycle.sqlite3": 3923968,
+          "ownership-marker": 32
+        },
+        "explicit_connection_cleanup_ns": 570200,
+        "process_after_explicit_close": {
+          "working_set_bytes": 56303616,
+          "peak_working_set_bytes": 59977728,
+          "private_bytes": 40497152,
+          "peak_pagefile_bytes": 44548096
+        },
+        "qualification": "Synthetic component only. No graph/owner lease/mutation exclusion/writer priority/cancellation/native-memory bound/query proof."
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\run_experiments.py",
+        "--worker",
+        "replay",
+        "indexed",
+        "history",
+        "10000",
+        "allocation"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 2611272200,
+      "stderr": "",
+      "measurement": {
+        "area": "replay",
+        "variant": "indexed",
+        "shape": "history",
+        "count": 10000,
+        "measurement": "allocation",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "executable": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "startup_tracing": false,
+        "startup_traced_memory": null,
+        "inherited_pythontracemalloc": null,
+        "conditions": "Fresh child and passive connection; fixture creation primes OS cache. No cold-disk claim.",
+        "native_query_peak": "unavailable",
+        "owner_capture_proven": false,
+        "input_memory_qualification": "Pure replay input is predecoded outside target allocation trace; full lifecycle experiment includes loading/decoding.",
+        "fixture": {
+          "records": 10000,
+          "metadata_bytes": 3509615,
+          "canonical_rows_sha256": "2ca8c785d69002b73378869c1c92eb704afef739ed14f8d218e4ad7d5864329b"
+        },
+        "process_before": {
+          "working_set_bytes": 55873536,
+          "peak_working_set_bytes": 60329984,
+          "private_bytes": 40742912,
+          "peak_pagefile_bytes": 44826624
+        },
+        "allocation": {
+          "initial_current_bytes": 0,
+          "initial_peak_bytes": 0,
+          "current_at_target_return_bytes": 2306336,
+          "target_peak_bytes": 2844420,
+          "target_peak_minus_current_bytes": 538084,
+          "traced_target_ns": 1895345800,
+          "begin_ns": 400,
+          "rollback_ns": 400,
+          "post_release_current_bytes": 3692,
+          "post_instrumentation_peak_bytes": 2844420,
+          "live_allocation_sites": [
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\task_run_state.py",
+              "line": 195,
+              "live_bytes": 789936,
+              "live_blocks": 8666
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\task_run_state.py",
+              "line": 194,
+              "live_bytes": 536320,
+              "live_blocks": 13332
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\indexed_replay.py",
+              "line": 152,
+              "live_bytes": 266760,
+              "live_blocks": 3335
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\indexed_replay.py",
+              "line": 109,
+              "live_bytes": 266640,
+              "live_blocks": 3333
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\task_run_state.py",
+              "line": 196,
+              "live_bytes": 195888,
+              "live_blocks": 3410
+            },
+            {
+              "file": "<string>",
+              "line": 5,
+              "live_bytes": 127936,
+              "live_blocks": 1999
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\json\\encoder.py",
+              "line": 258,
+              "live_bytes": 116312,
+              "live_blocks": 2077
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\json\\encoder.py",
+              "line": 216,
+              "live_bytes": 4864,
+              "live_blocks": 76
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\dataclasses.py",
+              "line": 1339,
+              "live_bytes": 240,
+              "live_blocks": 2
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\indexed_replay.py",
+              "line": 150,
+              "live_bytes": 168,
+              "live_blocks": 2
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\dataclasses.py",
+              "line": 1338,
+              "live_bytes": 128,
+              "live_blocks": 2
+            },
+            {
+              "file": "<string>",
+              "line": 8,
+              "live_bytes": 120,
+              "live_blocks": 2
+            }
+          ],
+          "summary": {
+            "tasks": 1,
+            "runs": 3333,
+            "revisions": {
+              "synthetic-task": 10000
+            }
+          },
+          "qualification": "Peak captured before snapshot/statistics/summary instrumentation; live-site snapshot is retained-at-return evidence, not historical transient-site attribution."
+        },
+        "process_with_resources_open": {
+          "working_set_bytes": 61140992,
+          "peak_working_set_bytes": 70189056,
+          "private_bytes": 47316992,
+          "peak_pagefile_bytes": 55468032
+        },
+        "files": {
+          "lifecycle.sqlite3": 3923968,
+          "ownership-marker": 32
+        },
+        "explicit_connection_cleanup_ns": 425700,
+        "process_after_explicit_close": {
+          "working_set_bytes": 58155008,
+          "peak_working_set_bytes": 70189056,
+          "private_bytes": 43048960,
+          "peak_pagefile_bytes": 55468032
+        },
+        "qualification": "Synthetic component only. No graph/owner lease/mutation exclusion/writer priority/cancellation/native-memory bound/query proof."
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\run_experiments.py",
+        "--worker",
+        "journal",
+        "canonical",
+        "unique",
+        "10000",
+        "timing"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 13533041200,
+      "stderr": "",
+      "measurement": {
+        "area": "journal",
+        "variant": "canonical",
+        "shape": "unique",
+        "count": 10000,
+        "measurement": "timing",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "executable": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "startup_tracing": false,
+        "startup_traced_memory": null,
+        "inherited_pythontracemalloc": null,
+        "conditions": "Fresh child and passive connection; fixture creation primes OS cache. No cold-disk claim.",
+        "native_query_peak": "unavailable",
+        "owner_capture_proven": false,
+        "fixture": {
+          "records": 10000,
+          "metadata_bytes": 14904454,
+          "canonical_rows_sha256": "02cd8a3ef8b215568ac7d49b58a9a1015ca61ce3dc22923bc8c6cf0eb603a0a4"
+        },
+        "process_before": {
+          "working_set_bytes": 45740032,
+          "peak_working_set_bytes": 45740032,
+          "private_bytes": 30146560,
+          "peak_pagefile_bytes": 30146560
+        },
+        "timings": [
+          {
+            "condition": "first_pass_fresh_connection",
+            "target_ns": 3332464400,
+            "begin_ns": 8800,
+            "result_release_ns": 16669000,
+            "rollback_ns": 53300,
+            "summary": {
+              "records": 10000,
+              "metadata_bytes": 14904454,
+              "canonical_rows_sha256": "02cd8a3ef8b215568ac7d49b58a9a1015ca61ce3dc22923bc8c6cf0eb603a0a4",
+              "subjects": 10000,
+              "runs": 10000,
+              "facts": 10000,
+              "returned_full_records": true
+            }
+          },
+          {
+            "condition": "second_pass_same_connection",
+            "target_ns": 4409561100,
+            "begin_ns": 5100,
+            "result_release_ns": 44925800,
+            "rollback_ns": 58800,
+            "summary": {
+              "records": 10000,
+              "metadata_bytes": 14904454,
+              "canonical_rows_sha256": "02cd8a3ef8b215568ac7d49b58a9a1015ca61ce3dc22923bc8c6cf0eb603a0a4",
+              "subjects": 10000,
+              "runs": 10000,
+              "facts": 10000,
+              "returned_full_records": true
+            }
+          }
+        ],
+        "profiled_target_ns": 4296095700,
+        "phase_metrics": {
+          "sql_row_loading_ns": 74782000,
+          "sql_header_validation_ns": 45476200,
+          "json_decode_and_canonical_ns": 663986300,
+          "record_semantic_validation_ns": 3143221300,
+          "profiled_total_ns": 4294844900,
+          "other_bookkeeping_and_instrumentation_ns": 367379100
+        },
+        "profiled_summary": {
+          "records": 10000,
+          "metadata_bytes": 14904454,
+          "canonical_rows_sha256": "02cd8a3ef8b215568ac7d49b58a9a1015ca61ce3dc22923bc8c6cf0eb603a0a4",
+          "subjects": 10000,
+          "runs": 10000,
+          "facts": 10000,
+          "returned_full_records": true
+        },
+        "instrumentation_overhead_observation_ns": -113465400,
+        "overhead_qualification": "Difference between separate warm runs; includes run variation, not an isolated overhead calibration.",
+        "process_with_resources_open": {
+          "working_set_bytes": 103235584,
+          "peak_working_set_bytes": 132661248,
+          "private_bytes": 88399872,
+          "peak_pagefile_bytes": 117288960
+        },
+        "files": {
+          "journal.sqlite3": 4096,
+          "journal.sqlite3-shm": 65536,
+          "journal.sqlite3-wal": 21300432,
+          "ownership-marker": 32
+        },
+        "explicit_connection_cleanup_ns": 47291500,
+        "process_after_explicit_close": {
+          "working_set_bytes": 98312192,
+          "peak_working_set_bytes": 132661248,
+          "private_bytes": 82907136,
+          "peak_pagefile_bytes": 117288960
+        },
+        "qualification": "Synthetic component only. No graph/owner lease/mutation exclusion/writer priority/cancellation/native-memory bound/query proof."
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\run_experiments.py",
+        "--worker",
+        "journal",
+        "canonical",
+        "unique",
+        "10000",
+        "allocation"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 29296441300,
+      "stderr": "",
+      "measurement": {
+        "area": "journal",
+        "variant": "canonical",
+        "shape": "unique",
+        "count": 10000,
+        "measurement": "allocation",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "executable": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "startup_tracing": false,
+        "startup_traced_memory": null,
+        "inherited_pythontracemalloc": null,
+        "conditions": "Fresh child and passive connection; fixture creation primes OS cache. No cold-disk claim.",
+        "native_query_peak": "unavailable",
+        "owner_capture_proven": false,
+        "fixture": {
+          "records": 10000,
+          "metadata_bytes": 14904454,
+          "canonical_rows_sha256": "02cd8a3ef8b215568ac7d49b58a9a1015ca61ce3dc22923bc8c6cf0eb603a0a4"
+        },
+        "process_before": {
+          "working_set_bytes": 45240320,
+          "peak_working_set_bytes": 45240320,
+          "private_bytes": 29261824,
+          "peak_pagefile_bytes": 29261824
+        },
+        "allocation": {
+          "initial_current_bytes": 0,
+          "initial_peak_bytes": 0,
+          "current_at_target_return_bytes": 77512370,
+          "target_peak_bytes": 77611152,
+          "target_peak_minus_current_bytes": 98782,
+          "traced_target_ns": 26092322000,
+          "begin_ns": 18400,
+          "rollback_ns": 34200,
+          "post_release_current_bytes": 1045118,
+          "post_instrumentation_peak_bytes": 77650503,
+          "live_allocation_sites": [
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\json\\decoder.py",
+              "line": 354,
+              "live_bytes": 32745560,
+              "live_blocks": 610000
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\sqlite_agent_execution_journal_store.py",
+              "line": 256,
+              "live_bytes": 15315278,
+              "live_blocks": 10010
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\agent_execution_journal.py",
+              "line": 115,
+              "live_bytes": 12161080,
+              "live_blocks": 40009
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\agent_execution_journal.py",
+              "line": 111,
+              "live_bytes": 5760064,
+              "live_blocks": 90001
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\json\\__init__.py",
+              "line": 359,
+              "live_bytes": 2399880,
+              "live_blocks": 19999
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\sqlite_agent_execution_dispatch_admission_store.py",
+              "line": 448,
+              "live_bytes": 1199160,
+              "live_blocks": 9993
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\sqlite_agent_execution_dispatch_admission_store.py",
+              "line": 422,
+              "live_bytes": 1199104,
+              "live_blocks": 9993
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\sqlite_agent_execution_dispatch_admission_store.py",
+              "line": 416,
+              "live_bytes": 1199104,
+              "live_blocks": 9993
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\sqlite_agent_execution_dispatch_admission_store.py",
+              "line": 399,
+              "live_bytes": 1199048,
+              "live_blocks": 9993
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\agent_execution_journal.py",
+              "line": 161,
+              "live_bytes": 800000,
+              "live_blocks": 10000
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\sqlite_agent_execution_journal_store.py",
+              "line": 272,
+              "live_bytes": 797408,
+              "live_blocks": 3
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\agent_execution_journal.py",
+              "line": 166,
+              "live_bytes": 640000,
+              "live_blocks": 10000
+            }
+          ],
+          "summary": {
+            "records": 10000,
+            "metadata_bytes": 14904454,
+            "canonical_rows_sha256": "02cd8a3ef8b215568ac7d49b58a9a1015ca61ce3dc22923bc8c6cf0eb603a0a4",
+            "subjects": 10000,
+            "runs": 10000,
+            "facts": 10000,
+            "returned_full_records": true
+          },
+          "qualification": "Peak captured before snapshot/statistics/summary instrumentation; live-site snapshot is retained-at-return evidence, not historical transient-site attribution."
+        },
+        "process_with_resources_open": {
+          "working_set_bytes": 92762112,
+          "peak_working_set_bytes": 389820416,
+          "private_bytes": 77316096,
+          "peak_pagefile_bytes": 383070208
+        },
+        "files": {
+          "journal.sqlite3": 4096,
+          "journal.sqlite3-shm": 65536,
+          "journal.sqlite3-wal": 21300432,
+          "ownership-marker": 32
+        },
+        "explicit_connection_cleanup_ns": 56801800,
+        "process_after_explicit_close": {
+          "working_set_bytes": 87502848,
+          "peak_working_set_bytes": 389820416,
+          "private_bytes": 71049216,
+          "peak_pagefile_bytes": 383070208
+        },
+        "qualification": "Synthetic component only. No graph/owner lease/mutation exclusion/writer priority/cancellation/native-memory bound/query proof."
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\run_experiments.py",
+        "--worker",
+        "journal",
+        "compact",
+        "unique",
+        "10000",
+        "timing"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 14229232600,
+      "stderr": "",
+      "measurement": {
+        "area": "journal",
+        "variant": "compact",
+        "shape": "unique",
+        "count": 10000,
+        "measurement": "timing",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "executable": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "startup_tracing": false,
+        "startup_traced_memory": null,
+        "inherited_pythontracemalloc": null,
+        "conditions": "Fresh child and passive connection; fixture creation primes OS cache. No cold-disk claim.",
+        "native_query_peak": "unavailable",
+        "owner_capture_proven": false,
+        "fixture": {
+          "records": 10000,
+          "metadata_bytes": 14904454,
+          "canonical_rows_sha256": "02cd8a3ef8b215568ac7d49b58a9a1015ca61ce3dc22923bc8c6cf0eb603a0a4"
+        },
+        "process_before": {
+          "working_set_bytes": 45404160,
+          "peak_working_set_bytes": 45404160,
+          "private_bytes": 29495296,
+          "peak_pagefile_bytes": 29495296
+        },
+        "timings": [
+          {
+            "condition": "first_pass_fresh_connection",
+            "target_ns": 3870547700,
+            "begin_ns": 6700,
+            "result_release_ns": 600,
+            "rollback_ns": 26700,
+            "summary": {
+              "records": 10000,
+              "metadata_bytes": 14904454,
+              "canonical_rows_sha256": "02cd8a3ef8b215568ac7d49b58a9a1015ca61ce3dc22923bc8c6cf0eb603a0a4",
+              "subjects": 10000,
+              "runs": 10000,
+              "facts": 10000,
+              "returned_full_records": false
+            }
+          },
+          {
+            "condition": "second_pass_same_connection",
+            "target_ns": 4559936700,
+            "begin_ns": 8100,
+            "result_release_ns": 900,
+            "rollback_ns": 20400,
+            "summary": {
+              "records": 10000,
+              "metadata_bytes": 14904454,
+              "canonical_rows_sha256": "02cd8a3ef8b215568ac7d49b58a9a1015ca61ce3dc22923bc8c6cf0eb603a0a4",
+              "subjects": 10000,
+              "runs": 10000,
+              "facts": 10000,
+              "returned_full_records": false
+            }
+          }
+        ],
+        "profiled_target_ns": 4811426200,
+        "phase_metrics": {
+          "header": 21888800,
+          "precheck": 21768700,
+          "row_fetch": 87259900,
+          "decode_semantic": 3898109000,
+          "bookkeeping": 769031400,
+          "total": 4808917800
+        },
+        "profiled_summary": {
+          "records": 10000,
+          "metadata_bytes": 14904454,
+          "canonical_rows_sha256": "02cd8a3ef8b215568ac7d49b58a9a1015ca61ce3dc22923bc8c6cf0eb603a0a4",
+          "subjects": 10000,
+          "runs": 10000,
+          "facts": 10000,
+          "returned_full_records": false
+        },
+        "instrumentation_overhead_observation_ns": 251489500,
+        "overhead_qualification": "Difference between separate warm runs; includes run variation, not an isolated overhead calibration.",
+        "process_with_resources_open": {
+          "working_set_bytes": 56725504,
+          "peak_working_set_bytes": 71270400,
+          "private_bytes": 40431616,
+          "peak_pagefile_bytes": 55885824
+        },
+        "files": {
+          "journal.sqlite3": 4096,
+          "journal.sqlite3-shm": 65536,
+          "journal.sqlite3-wal": 21300432,
+          "ownership-marker": 32
+        },
+        "explicit_connection_cleanup_ns": 50717100,
+        "process_after_explicit_close": {
+          "working_set_bytes": 52453376,
+          "peak_working_set_bytes": 71270400,
+          "private_bytes": 36204544,
+          "peak_pagefile_bytes": 55885824
+        },
+        "qualification": "Synthetic component only. No graph/owner lease/mutation exclusion/writer priority/cancellation/native-memory bound/query proof."
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\run_experiments.py",
+        "--worker",
+        "journal",
+        "compact",
+        "unique",
+        "10000",
+        "allocation"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 28118652000,
+      "stderr": "",
+      "measurement": {
+        "area": "journal",
+        "variant": "compact",
+        "shape": "unique",
+        "count": 10000,
+        "measurement": "allocation",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "executable": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "startup_tracing": false,
+        "startup_traced_memory": null,
+        "inherited_pythontracemalloc": null,
+        "conditions": "Fresh child and passive connection; fixture creation primes OS cache. No cold-disk claim.",
+        "native_query_peak": "unavailable",
+        "owner_capture_proven": false,
+        "fixture": {
+          "records": 10000,
+          "metadata_bytes": 14904454,
+          "canonical_rows_sha256": "02cd8a3ef8b215568ac7d49b58a9a1015ca61ce3dc22923bc8c6cf0eb603a0a4"
+        },
+        "process_before": {
+          "working_set_bytes": 45346816,
+          "peak_working_set_bytes": 45346816,
+          "private_bytes": 29659136,
+          "peak_pagefile_bytes": 29659136
+        },
+        "allocation": {
+          "initial_current_bytes": 0,
+          "initial_peak_bytes": 0,
+          "current_at_target_return_bytes": 1348418,
+          "target_peak_bytes": 20578294,
+          "target_peak_minus_current_bytes": 19229876,
+          "traced_target_ns": 27049288500,
+          "begin_ns": 14700,
+          "rollback_ns": 31000,
+          "post_release_current_bytes": 1045792,
+          "post_instrumentation_peak_bytes": 20578294,
+          "live_allocation_sites": [
+            {
+              "file": "<frozen importlib._bootstrap>",
+              "line": 488,
+              "live_bytes": 414041,
+              "live_blocks": 3256
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\dataclasses.py",
+              "line": 473,
+              "live_bytes": 165077,
+              "live_blocks": 1429
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\agent_execution_journal.py",
+              "line": 161,
+              "live_bytes": 159920,
+              "live_blocks": 1999
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\compact_journal.py",
+              "line": 184,
+              "live_bytes": 110040,
+              "live_blocks": 1965
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\json\\decoder.py",
+              "line": 330,
+              "live_bytes": 49619,
+              "live_blocks": 984
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\agent_operation_tool_registry.py",
+              "line": 156,
+              "live_bytes": 39219,
+              "live_blocks": 12
+            },
+            {
+              "file": "<string>",
+              "line": 2,
+              "live_bytes": 31680,
+              "live_blocks": 256
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\dataclasses.py",
+              "line": 1233,
+              "live_bytes": 28131,
+              "live_blocks": 159
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\enum.py",
+              "line": 1332,
+              "live_bytes": 22848,
+              "live_blocks": 136
+            },
+            {
+              "file": "<frozen abc>",
+              "line": 106,
+              "live_bytes": 16850,
+              "live_blocks": 66
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\dataclasses.py",
+              "line": 424,
+              "live_bytes": 15840,
+              "live_blocks": 132
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\enum.py",
+              "line": 595,
+              "live_bytes": 14712,
+              "live_blocks": 45
+            }
+          ],
+          "summary": {
+            "records": 10000,
+            "metadata_bytes": 14904454,
+            "canonical_rows_sha256": "02cd8a3ef8b215568ac7d49b58a9a1015ca61ce3dc22923bc8c6cf0eb603a0a4",
+            "subjects": 10000,
+            "runs": 10000,
+            "facts": 10000,
+            "returned_full_records": false
+          },
+          "qualification": "Peak captured before snapshot/statistics/summary instrumentation; live-site snapshot is retained-at-return evidence, not historical transient-site attribution."
+        },
+        "process_with_resources_open": {
+          "working_set_bytes": 55906304,
+          "peak_working_set_bytes": 78893056,
+          "private_bytes": 41754624,
+          "peak_pagefile_bytes": 64339968
+        },
+        "files": {
+          "journal.sqlite3": 4096,
+          "journal.sqlite3-shm": 65536,
+          "journal.sqlite3-wal": 21300432,
+          "ownership-marker": 32
+        },
+        "explicit_connection_cleanup_ns": 46100500,
+        "process_after_explicit_close": {
+          "working_set_bytes": 51118080,
+          "peak_working_set_bytes": 78893056,
+          "private_bytes": 35602432,
+          "peak_pagefile_bytes": 64339968
+        },
+        "qualification": "Synthetic component only. No graph/owner lease/mutation exclusion/writer priority/cancellation/native-memory bound/query proof."
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\run_experiments.py",
+        "--worker",
+        "journal",
+        "canonical",
+        "pairs",
+        "1000",
+        "timing"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 1277704100,
+      "stderr": "",
+      "measurement": {
+        "area": "journal",
+        "variant": "canonical",
+        "shape": "pairs",
+        "count": 1000,
+        "measurement": "timing",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "executable": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "startup_tracing": false,
+        "startup_traced_memory": null,
+        "inherited_pythontracemalloc": null,
+        "conditions": "Fresh child and passive connection; fixture creation primes OS cache. No cold-disk claim.",
+        "native_query_peak": "unavailable",
+        "owner_capture_proven": false,
+        "fixture": {
+          "records": 1000,
+          "metadata_bytes": 1514013,
+          "canonical_rows_sha256": "2ca03a311d90e1191f34ae9c5b37e340a7994a9075308458bc086f51baf7cfb4"
+        },
+        "process_before": {
+          "working_set_bytes": 45428736,
+          "peak_working_set_bytes": 45428736,
+          "private_bytes": 29720576,
+          "peak_pagefile_bytes": 29720576
+        },
+        "timings": [
+          {
+            "condition": "first_pass_fresh_connection",
+            "target_ns": 298892700,
+            "begin_ns": 8600,
+            "result_release_ns": 595900,
+            "rollback_ns": 28700,
+            "summary": {
+              "records": 1000,
+              "metadata_bytes": 1514013,
+              "canonical_rows_sha256": "2ca03a311d90e1191f34ae9c5b37e340a7994a9075308458bc086f51baf7cfb4",
+              "subjects": 500,
+              "runs": 500,
+              "facts": 1000,
+              "returned_full_records": true
+            }
+          },
+          {
+            "condition": "second_pass_same_connection",
+            "target_ns": 260869400,
+            "begin_ns": 2800,
+            "result_release_ns": 683600,
+            "rollback_ns": 17100,
+            "summary": {
+              "records": 1000,
+              "metadata_bytes": 1514013,
+              "canonical_rows_sha256": "2ca03a311d90e1191f34ae9c5b37e340a7994a9075308458bc086f51baf7cfb4",
+              "subjects": 500,
+              "runs": 500,
+              "facts": 1000,
+              "returned_full_records": true
+            }
+          }
+        ],
+        "profiled_target_ns": 273074500,
+        "phase_metrics": {
+          "sql_row_loading_ns": 4467600,
+          "sql_header_validation_ns": 592900,
+          "json_decode_and_canonical_ns": 44683000,
+          "record_semantic_validation_ns": 198596300,
+          "profiled_total_ns": 273067500,
+          "other_bookkeeping_and_instrumentation_ns": 24727700
+        },
+        "profiled_summary": {
+          "records": 1000,
+          "metadata_bytes": 1514013,
+          "canonical_rows_sha256": "2ca03a311d90e1191f34ae9c5b37e340a7994a9075308458bc086f51baf7cfb4",
+          "subjects": 500,
+          "runs": 500,
+          "facts": 1000,
+          "returned_full_records": true
+        },
+        "instrumentation_overhead_observation_ns": 12205100,
+        "overhead_qualification": "Difference between separate warm runs; includes run variation, not an isolated overhead calibration.",
+        "process_with_resources_open": {
+          "working_set_bytes": 53358592,
+          "peak_working_set_bytes": 58839040,
+          "private_bytes": 38305792,
+          "peak_pagefile_bytes": 42749952
+        },
+        "files": {
+          "journal.sqlite3": 4096,
+          "journal.sqlite3-shm": 32768,
+          "journal.sqlite3-wal": 2195992,
+          "ownership-marker": 32
+        },
+        "explicit_connection_cleanup_ns": 8549900,
+        "process_after_explicit_close": {
+          "working_set_bytes": 48701440,
+          "peak_working_set_bytes": 58839040,
+          "private_bytes": 33153024,
+          "peak_pagefile_bytes": 42749952
+        },
+        "qualification": "Synthetic component only. No graph/owner lease/mutation exclusion/writer priority/cancellation/native-memory bound/query proof."
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\run_experiments.py",
+        "--worker",
+        "journal",
+        "canonical",
+        "pairs",
+        "1000",
+        "allocation"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 2393460000,
+      "stderr": "",
+      "measurement": {
+        "area": "journal",
+        "variant": "canonical",
+        "shape": "pairs",
+        "count": 1000,
+        "measurement": "allocation",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "executable": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "startup_tracing": false,
+        "startup_traced_memory": null,
+        "inherited_pythontracemalloc": null,
+        "conditions": "Fresh child and passive connection; fixture creation primes OS cache. No cold-disk claim.",
+        "native_query_peak": "unavailable",
+        "owner_capture_proven": false,
+        "fixture": {
+          "records": 1000,
+          "metadata_bytes": 1514013,
+          "canonical_rows_sha256": "2ca03a311d90e1191f34ae9c5b37e340a7994a9075308458bc086f51baf7cfb4"
+        },
+        "process_before": {
+          "working_set_bytes": 45096960,
+          "peak_working_set_bytes": 45096960,
+          "private_bytes": 29114368,
+          "peak_pagefile_bytes": 29114368
+        },
+        "allocation": {
+          "initial_current_bytes": 0,
+          "initial_peak_bytes": 0,
+          "current_at_target_return_bytes": 5896588,
+          "target_peak_bytes": 8200842,
+          "target_peak_minus_current_bytes": 2304254,
+          "traced_target_ns": 1888043400,
+          "begin_ns": 18900,
+          "rollback_ns": 41700,
+          "post_release_current_bytes": 1043640,
+          "post_instrumentation_peak_bytes": 8200842,
+          "live_allocation_sites": [
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\json\\decoder.py",
+              "line": 354,
+              "live_bytes": 1730840,
+              "live_blocks": 32500
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\sqlite_agent_execution_journal_store.py",
+              "line": 256,
+              "live_bytes": 1555837,
+              "live_blocks": 1010
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\agent_execution_journal.py",
+              "line": 115,
+              "live_bytes": 608480,
+              "live_blocks": 2004
+            },
+            {
+              "file": "<frozen importlib._bootstrap>",
+              "line": 488,
+              "live_bytes": 414625,
+              "live_blocks": 3263
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\agent_execution_journal.py",
+              "line": 111,
+              "live_bytes": 288640,
+              "live_blocks": 4510
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\json\\__init__.py",
+              "line": 359,
+              "live_bytes": 240000,
+              "live_blocks": 2000
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\dataclasses.py",
+              "line": 473,
+              "live_bytes": 165077,
+              "live_blocks": 1429
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\agent_execution_journal.py",
+              "line": 161,
+              "live_bytes": 80000,
+              "live_blocks": 1000
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\sqlite_agent_execution_journal_store.py",
+              "line": 272,
+              "live_bytes": 68328,
+              "live_blocks": 3
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\sqlite_agent_execution_dispatch_admission_store.py",
+              "line": 422,
+              "live_bytes": 58864,
+              "live_blocks": 491
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\sqlite_agent_execution_dispatch_admission_store.py",
+              "line": 416,
+              "live_bytes": 58744,
+              "live_blocks": 490
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\sqlite_agent_execution_journal_store.py",
+              "line": 264,
+              "live_bytes": 56000,
+              "live_blocks": 1000
+            }
+          ],
+          "summary": {
+            "records": 1000,
+            "metadata_bytes": 1514013,
+            "canonical_rows_sha256": "2ca03a311d90e1191f34ae9c5b37e340a7994a9075308458bc086f51baf7cfb4",
+            "subjects": 500,
+            "runs": 500,
+            "facts": 1000,
+            "returned_full_records": true
+          },
+          "qualification": "Peak captured before snapshot/statistics/summary instrumentation; live-site snapshot is retained-at-return evidence, not historical transient-site attribution."
+        },
+        "process_with_resources_open": {
+          "working_set_bytes": 57167872,
+          "peak_working_set_bytes": 71786496,
+          "private_bytes": 41639936,
+          "peak_pagefile_bytes": 56676352
+        },
+        "files": {
+          "journal.sqlite3": 4096,
+          "journal.sqlite3-shm": 32768,
+          "journal.sqlite3-wal": 2195992,
+          "ownership-marker": 32
+        },
+        "explicit_connection_cleanup_ns": 5297200,
+        "process_after_explicit_close": {
+          "working_set_bytes": 52101120,
+          "peak_working_set_bytes": 71786496,
+          "private_bytes": 35971072,
+          "peak_pagefile_bytes": 56676352
+        },
+        "qualification": "Synthetic component only. No graph/owner lease/mutation exclusion/writer priority/cancellation/native-memory bound/query proof."
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\run_experiments.py",
+        "--worker",
+        "journal",
+        "compact",
+        "pairs",
+        "1000",
+        "timing"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 1320143900,
+      "stderr": "",
+      "measurement": {
+        "area": "journal",
+        "variant": "compact",
+        "shape": "pairs",
+        "count": 1000,
+        "measurement": "timing",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "executable": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "startup_tracing": false,
+        "startup_traced_memory": null,
+        "inherited_pythontracemalloc": null,
+        "conditions": "Fresh child and passive connection; fixture creation primes OS cache. No cold-disk claim.",
+        "native_query_peak": "unavailable",
+        "owner_capture_proven": false,
+        "fixture": {
+          "records": 1000,
+          "metadata_bytes": 1514013,
+          "canonical_rows_sha256": "2ca03a311d90e1191f34ae9c5b37e340a7994a9075308458bc086f51baf7cfb4"
+        },
+        "process_before": {
+          "working_set_bytes": 45334528,
+          "peak_working_set_bytes": 45334528,
+          "private_bytes": 29569024,
+          "peak_pagefile_bytes": 29569024
+        },
+        "timings": [
+          {
+            "condition": "first_pass_fresh_connection",
+            "target_ns": 327035500,
+            "begin_ns": 6800,
+            "result_release_ns": 400,
+            "rollback_ns": 17300,
+            "summary": {
+              "records": 1000,
+              "metadata_bytes": 1514013,
+              "canonical_rows_sha256": "2ca03a311d90e1191f34ae9c5b37e340a7994a9075308458bc086f51baf7cfb4",
+              "subjects": 500,
+              "runs": 500,
+              "facts": 1000,
+              "returned_full_records": false
+            }
+          },
+          {
+            "condition": "second_pass_same_connection",
+            "target_ns": 289792800,
+            "begin_ns": 4200,
+            "result_release_ns": 400,
+            "rollback_ns": 12400,
+            "summary": {
+              "records": 1000,
+              "metadata_bytes": 1514013,
+              "canonical_rows_sha256": "2ca03a311d90e1191f34ae9c5b37e340a7994a9075308458bc086f51baf7cfb4",
+              "subjects": 500,
+              "runs": 500,
+              "facts": 1000,
+              "returned_full_records": false
+            }
+          }
+        ],
+        "profiled_target_ns": 295508900,
+        "phase_metrics": {
+          "header": 838400,
+          "precheck": 1540000,
+          "row_fetch": 4875100,
+          "decode_semantic": 241296600,
+          "bookkeeping": 46292900,
+          "total": 295414400
+        },
+        "profiled_summary": {
+          "records": 1000,
+          "metadata_bytes": 1514013,
+          "canonical_rows_sha256": "2ca03a311d90e1191f34ae9c5b37e340a7994a9075308458bc086f51baf7cfb4",
+          "subjects": 500,
+          "runs": 500,
+          "facts": 1000,
+          "returned_full_records": false
+        },
+        "instrumentation_overhead_observation_ns": 5716100,
+        "overhead_qualification": "Difference between separate warm runs; includes run variation, not an isolated overhead calibration.",
+        "process_with_resources_open": {
+          "working_set_bytes": 52719616,
+          "peak_working_set_bytes": 58912768,
+          "private_bytes": 37298176,
+          "peak_pagefile_bytes": 43130880
+        },
+        "files": {
+          "journal.sqlite3": 4096,
+          "journal.sqlite3-shm": 32768,
+          "journal.sqlite3-wal": 2195992,
+          "ownership-marker": 32
+        },
+        "explicit_connection_cleanup_ns": 5820900,
+        "process_after_explicit_close": {
+          "working_set_bytes": 47685632,
+          "peak_working_set_bytes": 58912768,
+          "private_bytes": 31928320,
+          "peak_pagefile_bytes": 43130880
+        },
+        "qualification": "Synthetic component only. No graph/owner lease/mutation exclusion/writer priority/cancellation/native-memory bound/query proof."
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\run_experiments.py",
+        "--worker",
+        "journal",
+        "compact",
+        "pairs",
+        "1000",
+        "allocation"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 2452967800,
+      "stderr": "",
+      "measurement": {
+        "area": "journal",
+        "variant": "compact",
+        "shape": "pairs",
+        "count": 1000,
+        "measurement": "allocation",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "executable": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "startup_tracing": false,
+        "startup_traced_memory": null,
+        "inherited_pythontracemalloc": null,
+        "conditions": "Fresh child and passive connection; fixture creation primes OS cache. No cold-disk claim.",
+        "native_query_peak": "unavailable",
+        "owner_capture_proven": false,
+        "fixture": {
+          "records": 1000,
+          "metadata_bytes": 1514013,
+          "canonical_rows_sha256": "2ca03a311d90e1191f34ae9c5b37e340a7994a9075308458bc086f51baf7cfb4"
+        },
+        "process_before": {
+          "working_set_bytes": 45490176,
+          "peak_working_set_bytes": 45490176,
+          "private_bytes": 29679616,
+          "peak_pagefile_bytes": 29679616
+        },
+        "allocation": {
+          "initial_current_bytes": 0,
+          "initial_peak_bytes": 0,
+          "current_at_target_return_bytes": 1167720,
+          "target_peak_bytes": 8190523,
+          "target_peak_minus_current_bytes": 7022803,
+          "traced_target_ns": 2017521600,
+          "begin_ns": 11400,
+          "rollback_ns": 30200,
+          "post_release_current_bytes": 1038542,
+          "post_instrumentation_peak_bytes": 8190523,
+          "live_allocation_sites": [
+            {
+              "file": "<frozen importlib._bootstrap>",
+              "line": 488,
+              "live_bytes": 441849,
+              "live_blocks": 3756
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\dataclasses.py",
+              "line": 473,
+              "live_bytes": 165077,
+              "live_blocks": 1429
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\json\\decoder.py",
+              "line": 330,
+              "live_bytes": 42405,
+              "live_blocks": 845
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\agent_execution_journal.py",
+              "line": 161,
+              "live_bytes": 40080,
+              "live_blocks": 501
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\agent_operation_tool_registry.py",
+              "line": 156,
+              "live_bytes": 39219,
+              "live_blocks": 12
+            },
+            {
+              "file": "<string>",
+              "line": 2,
+              "live_bytes": 31680,
+              "live_blocks": 256
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\dataclasses.py",
+              "line": 1233,
+              "live_bytes": 28131,
+              "live_blocks": 159
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\compact_journal.py",
+              "line": 184,
+              "live_bytes": 28000,
+              "live_blocks": 500
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\enum.py",
+              "line": 1332,
+              "live_bytes": 22848,
+              "live_blocks": 136
+            },
+            {
+              "file": "<frozen abc>",
+              "line": 106,
+              "live_bytes": 16850,
+              "live_blocks": 66
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\dataclasses.py",
+              "line": 424,
+              "live_bytes": 15840,
+              "live_blocks": 132
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\enum.py",
+              "line": 595,
+              "live_bytes": 14712,
+              "live_blocks": 45
+            }
+          ],
+          "summary": {
+            "records": 1000,
+            "metadata_bytes": 1514013,
+            "canonical_rows_sha256": "2ca03a311d90e1191f34ae9c5b37e340a7994a9075308458bc086f51baf7cfb4",
+            "subjects": 500,
+            "runs": 500,
+            "facts": 1000,
+            "returned_full_records": false
+          },
+          "qualification": "Peak captured before snapshot/statistics/summary instrumentation; live-site snapshot is retained-at-return evidence, not historical transient-site attribution."
+        },
+        "process_with_resources_open": {
+          "working_set_bytes": 50855936,
+          "peak_working_set_bytes": 62332928,
+          "private_bytes": 34492416,
+          "peak_pagefile_bytes": 46989312
+        },
+        "files": {
+          "journal.sqlite3": 4096,
+          "journal.sqlite3-shm": 32768,
+          "journal.sqlite3-wal": 2195992,
+          "ownership-marker": 32
+        },
+        "explicit_connection_cleanup_ns": 7432900,
+        "process_after_explicit_close": {
+          "working_set_bytes": 46194688,
+          "peak_working_set_bytes": 62332928,
+          "private_bytes": 29839360,
+          "peak_pagefile_bytes": 46989312
+        },
+        "qualification": "Synthetic component only. No graph/owner lease/mutation exclusion/writer priority/cancellation/native-memory bound/query proof."
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\run_experiments.py",
+        "--worker",
+        "journal",
+        "canonical",
+        "unicode",
+        "500",
+        "timing"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 939781200,
+      "stderr": "",
+      "measurement": {
+        "area": "journal",
+        "variant": "canonical",
+        "shape": "unicode",
+        "count": 500,
+        "measurement": "timing",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "executable": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "startup_tracing": false,
+        "startup_traced_memory": null,
+        "inherited_pythontracemalloc": null,
+        "conditions": "Fresh child and passive connection; fixture creation primes OS cache. No cold-disk claim.",
+        "native_query_peak": "unavailable",
+        "owner_capture_proven": false,
+        "fixture": {
+          "records": 500,
+          "metadata_bytes": 3295952,
+          "canonical_rows_sha256": "dfb8f46e43696924891e87cf3ff7bdd86cc22ae8fc236e661a39f3faa67f4a63"
+        },
+        "process_before": {
+          "working_set_bytes": 45621248,
+          "peak_working_set_bytes": 45621248,
+          "private_bytes": 29687808,
+          "peak_pagefile_bytes": 29687808
+        },
+        "timings": [
+          {
+            "condition": "first_pass_fresh_connection",
+            "target_ns": 208772400,
+            "begin_ns": 6200,
+            "result_release_ns": 1100000,
+            "rollback_ns": 34400,
+            "summary": {
+              "records": 500,
+              "metadata_bytes": 3295952,
+              "canonical_rows_sha256": "dfb8f46e43696924891e87cf3ff7bdd86cc22ae8fc236e661a39f3faa67f4a63",
+              "subjects": 500,
+              "runs": 500,
+              "facts": 500,
+              "returned_full_records": true
+            }
+          },
+          {
+            "condition": "second_pass_same_connection",
+            "target_ns": 147639400,
+            "begin_ns": 3500,
+            "result_release_ns": 1185000,
+            "rollback_ns": 17700,
+            "summary": {
+              "records": 500,
+              "metadata_bytes": 3295952,
+              "canonical_rows_sha256": "dfb8f46e43696924891e87cf3ff7bdd86cc22ae8fc236e661a39f3faa67f4a63",
+              "subjects": 500,
+              "runs": 500,
+              "facts": 500,
+              "returned_full_records": true
+            }
+          }
+        ],
+        "profiled_target_ns": 162901600,
+        "phase_metrics": {
+          "sql_row_loading_ns": 4960700,
+          "sql_header_validation_ns": 4013300,
+          "json_decode_and_canonical_ns": 28139000,
+          "record_semantic_validation_ns": 113094700,
+          "profiled_total_ns": 162894400,
+          "other_bookkeeping_and_instrumentation_ns": 12686700
+        },
+        "profiled_summary": {
+          "records": 500,
+          "metadata_bytes": 3295952,
+          "canonical_rows_sha256": "dfb8f46e43696924891e87cf3ff7bdd86cc22ae8fc236e661a39f3faa67f4a63",
+          "subjects": 500,
+          "runs": 500,
+          "facts": 500,
+          "returned_full_records": true
+        },
+        "instrumentation_overhead_observation_ns": 15262200,
+        "overhead_qualification": "Difference between separate warm runs; includes run variation, not an isolated overhead calibration.",
+        "process_with_resources_open": {
+          "working_set_bytes": 54710272,
+          "peak_working_set_bytes": 58789888,
+          "private_bytes": 40972288,
+          "peak_pagefile_bytes": 43638784
+        },
+        "files": {
+          "journal.sqlite3": 4096,
+          "journal.sqlite3-shm": 32768,
+          "journal.sqlite3-wal": 6542592,
+          "ownership-marker": 32
+        },
+        "explicit_connection_cleanup_ns": 11711200,
+        "process_after_explicit_close": {
+          "working_set_bytes": 49606656,
+          "peak_working_set_bytes": 58789888,
+          "private_bytes": 34390016,
+          "peak_pagefile_bytes": 43638784
+        },
+        "qualification": "Synthetic component only. No graph/owner lease/mutation exclusion/writer priority/cancellation/native-memory bound/query proof."
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\run_experiments.py",
+        "--worker",
+        "journal",
+        "canonical",
+        "unicode",
+        "500",
+        "allocation"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 1529406200,
+      "stderr": "",
+      "measurement": {
+        "area": "journal",
+        "variant": "canonical",
+        "shape": "unicode",
+        "count": 500,
+        "measurement": "allocation",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "executable": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "startup_tracing": false,
+        "startup_traced_memory": null,
+        "inherited_pythontracemalloc": null,
+        "conditions": "Fresh child and passive connection; fixture creation primes OS cache. No cold-disk claim.",
+        "native_query_peak": "unavailable",
+        "owner_capture_proven": false,
+        "fixture": {
+          "records": 500,
+          "metadata_bytes": 3295952,
+          "canonical_rows_sha256": "dfb8f46e43696924891e87cf3ff7bdd86cc22ae8fc236e661a39f3faa67f4a63"
+        },
+        "process_before": {
+          "working_set_bytes": 45580288,
+          "peak_working_set_bytes": 45580288,
+          "private_bytes": 29732864,
+          "peak_pagefile_bytes": 29732864
+        },
+        "allocation": {
+          "initial_current_bytes": 0,
+          "initial_peak_bytes": 0,
+          "current_at_target_return_bytes": 9324688,
+          "target_peak_bytes": 9370586,
+          "target_peak_minus_current_bytes": 45898,
+          "traced_target_ns": 1028462000,
+          "begin_ns": 9900,
+          "rollback_ns": 35400,
+          "post_release_current_bytes": 1038118,
+          "post_instrumentation_peak_bytes": 9464613,
+          "live_allocation_sites": [
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\json\\decoder.py",
+              "line": 354,
+              "live_bytes": 3487060,
+              "live_blocks": 31500
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\sqlite_agent_execution_journal_store.py",
+              "line": 256,
+              "live_bytes": 3317276,
+              "live_blocks": 510
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\agent_execution_journal.py",
+              "line": 115,
+              "live_bytes": 608480,
+              "live_blocks": 2004
+            },
+            {
+              "file": "<frozen importlib._bootstrap>",
+              "line": 488,
+              "live_bytes": 442625,
+              "live_blocks": 3763
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\agent_execution_journal.py",
+              "line": 111,
+              "live_bytes": 288064,
+              "live_blocks": 4501
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\dataclasses.py",
+              "line": 473,
+              "live_bytes": 165077,
+              "live_blocks": 1429
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\json\\__init__.py",
+              "line": 359,
+              "live_bytes": 120000,
+              "live_blocks": 1000
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\sqlite_agent_execution_dispatch_admission_store.py",
+              "line": 399,
+              "live_bytes": 59288,
+              "live_blocks": 495
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\sqlite_agent_execution_dispatch_admission_store.py",
+              "line": 422,
+              "live_bytes": 59224,
+              "live_blocks": 494
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\sqlite_agent_execution_dispatch_admission_store.py",
+              "line": 416,
+              "live_bytes": 59224,
+              "live_blocks": 494
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\sqlite_agent_execution_dispatch_admission_store.py",
+              "line": 448,
+              "live_bytes": 59160,
+              "live_blocks": 493
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\sqlite_agent_execution_journal_store.py",
+              "line": 272,
+              "live_bytes": 49888,
+              "live_blocks": 3
+            }
+          ],
+          "summary": {
+            "records": 500,
+            "metadata_bytes": 3295952,
+            "canonical_rows_sha256": "dfb8f46e43696924891e87cf3ff7bdd86cc22ae8fc236e661a39f3faa67f4a63",
+            "subjects": 500,
+            "runs": 500,
+            "facts": 500,
+            "returned_full_records": true
+          },
+          "qualification": "Peak captured before snapshot/statistics/summary instrumentation; live-site snapshot is retained-at-return evidence, not historical transient-site attribution."
+        },
+        "process_with_resources_open": {
+          "working_set_bytes": 56061952,
+          "peak_working_set_bytes": 74469376,
+          "private_bytes": 41508864,
+          "peak_pagefile_bytes": 59535360
+        },
+        "files": {
+          "journal.sqlite3": 4096,
+          "journal.sqlite3-shm": 32768,
+          "journal.sqlite3-wal": 6542592,
+          "ownership-marker": 32
+        },
+        "explicit_connection_cleanup_ns": 14028300,
+        "process_after_explicit_close": {
+          "working_set_bytes": 51593216,
+          "peak_working_set_bytes": 74469376,
+          "private_bytes": 36524032,
+          "peak_pagefile_bytes": 59535360
+        },
+        "qualification": "Synthetic component only. No graph/owner lease/mutation exclusion/writer priority/cancellation/native-memory bound/query proof."
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\run_experiments.py",
+        "--worker",
+        "journal",
+        "compact",
+        "unicode",
+        "500",
+        "timing"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 996951600,
+      "stderr": "",
+      "measurement": {
+        "area": "journal",
+        "variant": "compact",
+        "shape": "unicode",
+        "count": 500,
+        "measurement": "timing",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "executable": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "startup_tracing": false,
+        "startup_traced_memory": null,
+        "inherited_pythontracemalloc": null,
+        "conditions": "Fresh child and passive connection; fixture creation primes OS cache. No cold-disk claim.",
+        "native_query_peak": "unavailable",
+        "owner_capture_proven": false,
+        "fixture": {
+          "records": 500,
+          "metadata_bytes": 3295952,
+          "canonical_rows_sha256": "dfb8f46e43696924891e87cf3ff7bdd86cc22ae8fc236e661a39f3faa67f4a63"
+        },
+        "process_before": {
+          "working_set_bytes": 45621248,
+          "peak_working_set_bytes": 45621248,
+          "private_bytes": 29687808,
+          "peak_pagefile_bytes": 29687808
+        },
+        "timings": [
+          {
+            "condition": "first_pass_fresh_connection",
+            "target_ns": 215058100,
+            "begin_ns": 7400,
+            "result_release_ns": 700,
+            "rollback_ns": 22400,
+            "summary": {
+              "records": 500,
+              "metadata_bytes": 3295952,
+              "canonical_rows_sha256": "dfb8f46e43696924891e87cf3ff7bdd86cc22ae8fc236e661a39f3faa67f4a63",
+              "subjects": 500,
+              "runs": 500,
+              "facts": 500,
+              "returned_full_records": false
+            }
+          },
+          {
+            "condition": "second_pass_same_connection",
+            "target_ns": 188341900,
+            "begin_ns": 4500,
+            "result_release_ns": 600,
+            "rollback_ns": 13300,
+            "summary": {
+              "records": 500,
+              "metadata_bytes": 3295952,
+              "canonical_rows_sha256": "dfb8f46e43696924891e87cf3ff7bdd86cc22ae8fc236e661a39f3faa67f4a63",
+              "subjects": 500,
+              "runs": 500,
+              "facts": 500,
+              "returned_full_records": false
+            }
+          }
+        ],
+        "profiled_target_ns": 174254300,
+        "phase_metrics": {
+          "header": 3879700,
+          "precheck": 2394700,
+          "row_fetch": 4670700,
+          "decode_semantic": 136222000,
+          "bookkeeping": 26456100,
+          "total": 173917300
+        },
+        "profiled_summary": {
+          "records": 500,
+          "metadata_bytes": 3295952,
+          "canonical_rows_sha256": "dfb8f46e43696924891e87cf3ff7bdd86cc22ae8fc236e661a39f3faa67f4a63",
+          "subjects": 500,
+          "runs": 500,
+          "facts": 500,
+          "returned_full_records": false
+        },
+        "instrumentation_overhead_observation_ns": -14087600,
+        "overhead_qualification": "Difference between separate warm runs; includes run variation, not an isolated overhead calibration.",
+        "process_with_resources_open": {
+          "working_set_bytes": 53006336,
+          "peak_working_set_bytes": 57638912,
+          "private_bytes": 37138432,
+          "peak_pagefile_bytes": 41758720
+        },
+        "files": {
+          "journal.sqlite3": 4096,
+          "journal.sqlite3-shm": 32768,
+          "journal.sqlite3-wal": 6542592,
+          "ownership-marker": 32
+        },
+        "explicit_connection_cleanup_ns": 11490100,
+        "process_after_explicit_close": {
+          "working_set_bytes": 47575040,
+          "peak_working_set_bytes": 57638912,
+          "private_bytes": 31653888,
+          "peak_pagefile_bytes": 41758720
+        },
+        "qualification": "Synthetic component only. No graph/owner lease/mutation exclusion/writer priority/cancellation/native-memory bound/query proof."
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\run_experiments.py",
+        "--worker",
+        "journal",
+        "compact",
+        "unicode",
+        "500",
+        "allocation"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 1554611800,
+      "stderr": "",
+      "measurement": {
+        "area": "journal",
+        "variant": "compact",
+        "shape": "unicode",
+        "count": 500,
+        "measurement": "allocation",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "executable": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "startup_tracing": false,
+        "startup_traced_memory": null,
+        "inherited_pythontracemalloc": null,
+        "conditions": "Fresh child and passive connection; fixture creation primes OS cache. No cold-disk claim.",
+        "native_query_peak": "unavailable",
+        "owner_capture_proven": false,
+        "fixture": {
+          "records": 500,
+          "metadata_bytes": 3295952,
+          "canonical_rows_sha256": "dfb8f46e43696924891e87cf3ff7bdd86cc22ae8fc236e661a39f3faa67f4a63"
+        },
+        "process_before": {
+          "working_set_bytes": 45232128,
+          "peak_working_set_bytes": 45232128,
+          "private_bytes": 29306880,
+          "peak_pagefile_bytes": 29306880
+        },
+        "allocation": {
+          "initial_current_bytes": 0,
+          "initial_peak_bytes": 0,
+          "current_at_target_return_bytes": 1159940,
+          "target_peak_bytes": 8205465,
+          "target_peak_minus_current_bytes": 7045525,
+          "traced_target_ns": 1108633500,
+          "begin_ns": 18600,
+          "rollback_ns": 27700,
+          "post_release_current_bytes": 1030812,
+          "post_instrumentation_peak_bytes": 8205465,
+          "live_allocation_sites": [
+            {
+              "file": "<frozen importlib._bootstrap>",
+              "line": 488,
+              "live_bytes": 442265,
+              "live_blocks": 3760
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\dataclasses.py",
+              "line": 473,
+              "live_bytes": 165077,
+              "live_blocks": 1429
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\agent_execution_journal.py",
+              "line": 161,
+              "live_bytes": 40000,
+              "live_blocks": 500
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\itru\\agent_operation_tool_registry.py",
+              "line": 156,
+              "live_bytes": 39219,
+              "live_blocks": 12
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\json\\decoder.py",
+              "line": 330,
+              "live_bytes": 34630,
+              "live_blocks": 690
+            },
+            {
+              "file": "<string>",
+              "line": 2,
+              "live_bytes": 31680,
+              "live_blocks": 256
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\dataclasses.py",
+              "line": 1233,
+              "live_bytes": 28131,
+              "live_blocks": 159
+            },
+            {
+              "file": "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0r\\compact_journal.py",
+              "line": 184,
+              "live_bytes": 27944,
+              "live_blocks": 499
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\enum.py",
+              "line": 1332,
+              "live_bytes": 22848,
+              "live_blocks": 136
+            },
+            {
+              "file": "<frozen abc>",
+              "line": 106,
+              "live_bytes": 16850,
+              "live_blocks": 66
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\dataclasses.py",
+              "line": 424,
+              "live_bytes": 15840,
+              "live_blocks": 132
+            },
+            {
+              "file": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\enum.py",
+              "line": 595,
+              "live_bytes": 14712,
+              "live_blocks": 45
+            }
+          ],
+          "summary": {
+            "records": 500,
+            "metadata_bytes": 3295952,
+            "canonical_rows_sha256": "dfb8f46e43696924891e87cf3ff7bdd86cc22ae8fc236e661a39f3faa67f4a63",
+            "subjects": 500,
+            "runs": 500,
+            "facts": 500,
+            "returned_full_records": false
+          },
+          "qualification": "Peak captured before snapshot/statistics/summary instrumentation; live-site snapshot is retained-at-return evidence, not historical transient-site attribution."
+        },
+        "process_with_resources_open": {
+          "working_set_bytes": 52449280,
+          "peak_working_set_bytes": 62193664,
+          "private_bytes": 37355520,
+          "peak_pagefile_bytes": 46739456
+        },
+        "files": {
+          "journal.sqlite3": 4096,
+          "journal.sqlite3-shm": 32768,
+          "journal.sqlite3-wal": 6542592,
+          "ownership-marker": 32
+        },
+        "explicit_connection_cleanup_ns": 13586100,
+        "process_after_explicit_close": {
+          "working_set_bytes": 46862336,
+          "peak_working_set_bytes": 62193664,
+          "private_bytes": 30547968,
+          "peak_pagefile_bytes": 46739456
+        },
+        "qualification": "Synthetic component only. No graph/owner lease/mutation exclusion/writer priority/cancellation/native-memory bound/query proof."
+      }
+    }
+  ],
+  "serial": true,
+  "child_timeout_seconds": 90,
+  "no_operational_owner": true,
+  "original_baseline": "tests/fixtures/control_center/s0r/baseline.json",
+  "total_wall_ns": 144614167800,
+  "all_jobs_exit_zero": true,
+  "source_hashes": {
+    "tests\\experiments\\control_center_s0r\\common.py": "307c4dfb5443f41be0960ab9457240a510d6cac817b7d331cd2f536d13cf21dc",
+    "tests\\experiments\\control_center_s0r\\compact_journal.py": "2f9fb4d0dca99998f412c81e591d3179320aa761c79a48599c97bbdc8ed1bc8b",
+    "tests\\experiments\\control_center_s0r\\indexed_replay.py": "dbed3dba45c9ed1ecf220dec7ff6f0f3d302195ce2e93ebcc4c73326faface23",
+    "tests\\experiments\\control_center_s0r\\run_experiments.py": "17c7e61773b4319aa18a2d7b731bb49e62dc295292905b57870c05b0e1eb4281",
+    "tests\\experiments\\control_center_s0r\\test_semantics.py": "687e5f2191d6d7a78b6aa24440211be92b1f6838c4064549d4d84b769b2accf7"
+  }
+}

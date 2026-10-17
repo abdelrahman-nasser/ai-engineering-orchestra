@@ -1,0 +1,219 @@
+"""S0-R-only pure indexed replay experiment; never a production read port.
+
+Every event passes the unchanged canonical validator. Private mutable builders
+and permanent exact-ID sets replace repeated history copies/searches, then
+freeze into the original immutable snapshot types only after complete success.
+Historical continuation predicates are preserved internally under Human H2;
+no current eligibility assessment or authority artifact is returned.
+
+This is a comparison candidate, not proven semantic equivalence or P07
+compliance. It performs no storage, ownership, authentication or query work.
+It has no cancellation/deadline/admission machinery, and successful component
+timings cannot establish a one-second complete owner capture or safe shutdown.
+Canonical JSON decoding/row validation performed by the Store is outside this
+reducer-level experiment, just as it is outside canonical reconstruct(events).
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from time import perf_counter_ns
+
+from itru import task_run_state as canonical
+
+
+__all__ = ('indexed_reconstruct', 'indexed_reconstruct_profiled')
+
+
+@dataclass(slots=True)
+class _RunBuild:
+    binding: object
+    ledger_identity: object
+    state: str
+    revision: int
+    result_identity: tuple[str, ...] | None = None
+
+    @property
+    def run_id(self):
+        return self.binding.run.run_id
+
+
+@dataclass(slots=True)
+class _TaskBuild:
+    task_id: str
+    definition_reference: str
+    state: str
+    revision: int
+    reason: str
+    runs: list[_RunBuild] = field(default_factory=list)
+    unfinished_count: int = 0
+    unsafe_count: int = 0
+    succeeded_count: int = 0
+
+
+def _set_run_state(task, run, state, revision):
+    """Maintain exact historical counts; Run identity never leaves the indexes."""
+    task.unfinished_count += int(state in canonical.UNFINISHED) - int(
+        run.state in canonical.UNFINISHED)
+    task.unsafe_count += int(state in canonical.UNSAFE) - int(run.state in canonical.UNSAFE)
+    task.succeeded_count += int(state == 'succeeded') - int(run.state == 'succeeded')
+    run.state, run.revision = state, revision
+
+
+def _apply_validated(tasks, seen_runs, seen_results, event):
+    """Private branch-equivalent reduction, used only after validate_event."""
+    task_id, revision, operation, data = (event[key] for key in
+        ('task_id', 'revision', 'operation', 'data'))
+    task = tasks.get(task_id)
+    if operation == 'enroll':
+        if task is not None or revision != 1:
+            raise canonical.StateConflictError('Task enrollment collision')
+        tasks[task_id] = _TaskBuild(task_id, data['definition_reference'],
+                                    'planned', 1, 'enrolled')
+        return
+    if task is None or revision != task.revision + 1:
+        raise canonical.StateConflictError('stale Task revision')
+    if task.state in ('completed', 'cancelled'):
+        raise canonical.StateConflictError('terminal Task cannot reopen')
+    state, reason = task.state, task.reason
+    if operation in ('register', 'continue'):
+        if operation == 'register':
+            if state != 'planned' or task.runs:
+                raise canonical.StateConflictError('initial registration already used')
+        elif not (state in ('in_progress', 'blocked')
+                and task.unfinished_count == 0 and task.unsafe_count == 0
+                and (not task.runs or task.runs[-1].state in
+                     ('succeeded', 'failed_before_effect', 'cancelled'))):
+            raise canonical.StateConflictError('continuation unsafe')
+        # Preserve the canonical subject reconstruction and validation, including
+        # complete Binding and ledger identity; never index a normalized alias.
+        binding, ledger = canonical._subject(data['subject'])
+        run_id = binding.run.run_id
+        if run_id in seen_runs:
+            raise canonical.StateConflictError('Run ID permanently bound')
+        task.runs.append(_RunBuild(binding, ledger, 'pending', revision))
+        task.unfinished_count += 1
+        seen_runs.add(run_id)
+        state = 'in_progress'
+        reason = 'registered' if operation == 'register' else data['reason']
+    elif operation == 'start':
+        if (not task.runs or task.runs[-1].run_id != data['run_id']
+                or task.runs[-1].state != 'pending' or state != 'in_progress'):
+            raise canonical.StateConflictError('Run cannot start')
+        _set_run_state(task, task.runs[-1], 'running', revision)
+        reason = 'started'
+    elif operation == 'result':
+        if (not task.runs or task.runs[-1].run_id != data['run_id']
+                or task.runs[-1].state != 'running'):
+            raise canonical.StateConflictError('Run cannot accept Result')
+        run = task.runs[-1]
+        identity = tuple(data['result_identity'])
+        if (identity[0] != run.ledger_identity.ledger_instance_id
+                or identity[1] != run.ledger_identity.authorization_domain_id
+                or identity[2] not in ('human', 'policy')):
+            raise canonical.StateIntegrityError('Result identity scope mismatch')
+        if identity in seen_results:
+            raise canonical.StateConflictError('physical Result identity already bound')
+        _set_run_state(task, run, data['outcome'], revision)
+        run.result_identity = identity
+        seen_results.add(identity)
+        state = 'in_progress' if data['outcome'] == 'succeeded' else 'blocked'
+        reason = 'original_result_observed'
+    elif operation in ('recover', 'stop', 'cancel'):
+        if operation != 'cancel' and task.unfinished_count == 0:
+            raise canonical.StateConflictError('no unfinished Run')
+        if task.unfinished_count:
+            # Starting from an empty builder and preserving registration and
+            # continuation rules establishes at most one unfinished Run, always
+            # the latest. Do not accept externally supplied mutable prefixes.
+            run = task.runs[-1]
+            _set_run_state(task, run,
+                'cancelled' if run.state == 'pending' else 'interrupted', revision)
+        state = 'cancelled' if operation == 'cancel' else 'blocked'
+        reason = 'process_recovery' if operation == 'recover' else data['reference']
+    elif operation == 'block':
+        if state not in ('planned', 'in_progress') or task.unfinished_count:
+            raise canonical.StateConflictError('cannot block with unfinished work')
+        state, reason = 'blocked', data['reference']
+    elif operation == 'complete':
+        if (state != 'in_progress' or not task.runs or task.succeeded_count == 0
+                or task.unfinished_count or task.unsafe_count):
+            raise canonical.StateConflictError('Task cannot complete')
+        state, reason = 'completed', data['reference']
+    else:
+        raise canonical.StateIntegrityError('unsupported state operation')
+    task.state, task.revision, task.reason = state, revision, reason
+
+
+def _freeze(tasks):
+    """Keep enrollment order and complete registration order; expose no builder."""
+    return {
+        key: canonical.TaskSnapshot(task.task_id, task.definition_reference,
+            task.state, task.revision, task.reason,
+            tuple(canonical.RunSnapshot(run.binding, run.ledger_identity,
+                run.state, run.revision, run.result_identity) for run in task.runs))
+        for key, task in tasks.items()
+    }
+
+
+def _reconstruct(events, *, profiled):
+    tasks, seen_runs, seen_results = {}, set(), set()
+    if len(events) > canonical.MAX_EVENTS:
+        raise canonical.StateIntegrityError('Store history limit')
+    validation_ns = reduction_ns = count = 0
+    total_start = perf_counter_ns() if profiled else None
+    try:
+        for sequence, event in enumerate(events, 1):
+            # Match canonical pre-validation sequence access and exception order.
+            if event['sequence'] != sequence:
+                raise canonical.StateIntegrityError('broken event sequence')
+            if profiled:
+                start = perf_counter_ns()
+            canonical.validate_event(event)
+            if profiled:
+                validation_ns += perf_counter_ns() - start
+                start = perf_counter_ns()
+            _apply_validated(tasks, seen_runs, seen_results, event)
+            if profiled:
+                reduction_ns += perf_counter_ns() - start
+            count += 1
+    except (canonical.StateConflictError, TypeError, KeyError):
+        raise canonical.StateIntegrityError('inconsistent Store history') from None
+    if not profiled:
+        return _freeze(tasks)
+    start = perf_counter_ns()
+    frozen = _freeze(tasks)
+    freeze_ns = perf_counter_ns() - start
+    total_ns = perf_counter_ns() - total_start
+    return frozen, {
+        'events': count,
+        'tasks': len(tasks),
+        'runs': len(seen_runs),
+        'validation_calls': count,
+        'validation_ns': validation_ns,
+        'reduction_ns': reduction_ns,
+        'freeze_ns': freeze_ns,
+        'total_ns': total_ns,
+        'loop_and_instrumentation_ns': total_ns - validation_ns - reduction_ns - freeze_ns,
+    }
+
+
+def indexed_reconstruct(events):
+    """Experimental complete replay; return canonical snapshots or no prefix.
+
+    Event limits, canonical validation, exception mapping and enrollment/Run
+    ordering follow reconstruct. No private unchecked replay API is exported.
+    """
+    return _reconstruct(events, profiled=False)
+
+
+def indexed_reconstruct_profiled(events):
+    """Return (canonical snapshots, nonoverlapping component timing metrics).
+
+    Timings include canonical event validation separately from reduction and
+    final freezing. Reduction still includes canonical subject reconstruction.
+    The residual records loop/timing overhead; outer-call setup/teardown and
+    any Store SQL/decoding/owner coordination are not measured here. Use the
+    unprofiled entry point for ordinary elapsed/allocation comparisons. Invalid
+    input raises without returning builders, snapshots or partial metrics.
+    """
+    return _reconstruct(events, profiled=True)

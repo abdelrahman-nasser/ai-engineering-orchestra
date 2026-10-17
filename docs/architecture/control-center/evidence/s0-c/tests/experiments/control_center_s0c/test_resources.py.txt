@@ -1,0 +1,217 @@
+"""Bounded S0-C resource scenarios; passing checks are not operational P07 proof."""
+from contextlib import ExitStack
+import os
+from pathlib import Path
+import sqlite3
+import sys
+import time
+import unittest
+from unittest import mock
+
+from resources import (SCRATCH, DATABASE_LIMIT_BYTES, DatabasePreflightLimit,
+    ResourceIdentityChanged, create_fixture, database_envelope, guarded,
+    native_sqlite_status, open_passive, owned_scratch, pinned_file_identity,
+    process_memory, require_database_envelope, write_receipt)
+
+
+OUTCOMES = []
+
+
+def finish_reader(reader):
+    """Acknowledge only after rollback, inactive-transaction check and close."""
+    started = time.perf_counter_ns()
+    try:
+        reader.set_progress_handler(None, 0)
+        rollback_started = time.perf_counter_ns()
+        if reader.in_transaction:
+            reader.execute('ROLLBACK')
+        rollback_ns = time.perf_counter_ns() - rollback_started
+        active = reader.in_transaction
+        if active:
+            raise AssertionError('cannot acknowledge an active transaction')
+    finally:
+        close_started = time.perf_counter_ns()
+        reader.close()
+        close_ns = time.perf_counter_ns() - close_started
+    return dict(acknowledged_cleanup=True, transaction_active_after_rollback=False,
+                rollback_ns=rollback_ns, close_ns=close_ns,
+                cleanup_ns=time.perf_counter_ns() - started)
+
+
+class ResourceExperiments(unittest.TestCase):
+    def test_sql_vm_cancellation_transaction_and_cleanup(self):
+        for mode in ('DELETE', 'WAL'):
+            with owned_scratch(os.environ.get('S0C_SCRATCH')) as root, ExitStack() as stack:
+                path = root / 'cancel.sqlite3'
+                writer = create_fixture(path, mode); stack.callback(writer.close)
+                reader = open_passive(path); stack.callback(reader.close)
+                reader.execute('BEGIN')
+                reader.execute('SELECT value FROM fixture').fetchone()
+                deadline = time.perf_counter_ns() + 20_000_000
+                calls = 0
+                def progress():
+                    nonlocal calls
+                    calls += 1
+                    return int(time.perf_counter_ns() >= deadline)
+                reader.set_progress_handler(progress, 100)
+                started = time.perf_counter_ns()
+                with self.assertRaisesRegex(sqlite3.OperationalError, 'interrupted'):
+                    reader.execute('WITH RECURSIVE n(x) AS (VALUES(0) UNION ALL SELECT x+1 FROM n WHERE x<100000000) SELECT sum(x) FROM n').fetchone()
+                cleanup = finish_reader(reader)
+                elapsed = time.perf_counter_ns() - started
+                writer.execute('BEGIN IMMEDIATE')
+                writer.execute('INSERT INTO fixture VALUES(1)')
+                writer.execute('ROLLBACK')
+                self.assertGreater(calls, 0)
+                OUTCOMES.append(dict(case='sql-vm-cancellation', mode=mode,
+                    progress_calls=calls, cancel_and_cleanup_ns=elapsed, cleanup=cleanup,
+                    writer_after_cleanup=True,
+                    qualification='SQL VM only; no Python/OS-I/O/lease/general cleanup bound proved.'))
+
+    def test_read_lock_contention_and_wal_snapshot(self):
+        for mode in ('DELETE', 'WAL'):
+            with owned_scratch(os.environ.get('S0C_SCRATCH')) as root, ExitStack() as stack:
+                path = root / 'busy.sqlite3'
+                writer = create_fixture(path, mode); stack.callback(writer.close)
+                # Establish the passive resource BEFORE the contending writer.
+                reader = open_passive(path); stack.callback(reader.close)
+                writer.execute('BEGIN EXCLUSIVE')
+                writer.execute('INSERT INTO fixture VALUES(1)')
+                reader.execute('BEGIN')
+                started = time.perf_counter_ns()
+                if mode == 'DELETE':
+                    with self.assertRaisesRegex(sqlite3.OperationalError, 'locked'):
+                        reader.execute('SELECT count(*) FROM fixture').fetchone()
+                    outcome = 'busy'
+                else:
+                    self.assertEqual(reader.execute('SELECT count(*) FROM fixture').fetchone()[0], 1)
+                    outcome = 'committed-snapshot-readable'
+                elapsed = time.perf_counter_ns() - started
+                cleanup = finish_reader(reader)
+                writer.execute('ROLLBACK')
+                self.assertFalse(writer.in_transaction)
+                OUTCOMES.append(dict(case='lock-contention', mode=mode, outcome=outcome,
+                    select_ns=elapsed, sqlite_timeout_seconds=0.02, cleanup=cleanup,
+                    qualification='SQLite busy observation, not an OS-I/O or coordination deadline guarantee.'))
+
+    def test_abort_and_rollback_interruption(self):
+        with owned_scratch(os.environ.get('S0C_SCRATCH')) as root, ExitStack() as stack:
+            path = root / 'rollback.sqlite3'
+            writer = create_fixture(path); stack.callback(writer.close)
+            reader = open_passive(path); stack.callback(reader.close)
+            reader.execute('BEGIN')
+            reader.execute('SELECT value FROM fixture').fetchone()
+            with self.assertRaisesRegex(RuntimeError, 'synthetic decode abort'):
+                raise RuntimeError('synthetic decode abort')
+            # Cancellation during rollback is observed separately from eventual
+            # cleanup. No completed-cancellation acknowledgement is issued here.
+            reader.set_progress_handler(lambda: 1, 1)
+            interruption = None
+            started = time.perf_counter_ns()
+            try:
+                reader.execute('ROLLBACK')
+            except sqlite3.OperationalError as error:
+                if 'interrupted' not in str(error):
+                    raise
+                interruption = 'interrupted'
+            remained_active = reader.in_transaction
+            cleanup = finish_reader(reader)
+            OUTCOMES.append(dict(case='abort-and-rollback-interruption',
+                rollback_interruption_observed=interruption is not None,
+                active_after_interrupted_rollback=remained_active,
+                acknowledgement_before_final_cleanup=False, final_cleanup=cleanup,
+                cleanup_sequence_ns=time.perf_counter_ns() - started,
+                no_partial_result_returned=True,
+                qualification='Controlled SQL progress fault; no general rollback/close interruptibility proof.'))
+
+    def test_unavailable_and_closed_connection(self):
+        with owned_scratch(os.environ.get('S0C_SCRATCH')) as root, ExitStack() as stack:
+            missing = root / 'missing.sqlite3'
+            with self.assertRaises(FileNotFoundError):
+                open_passive(missing)
+            self.assertFalse(missing.exists())
+            path = root / 'closed.sqlite3'
+            writer = create_fixture(path); stack.callback(writer.close)
+            reader = open_passive(path)
+            reader.close()
+            with self.assertRaises(sqlite3.ProgrammingError):
+                reader.execute('BEGIN')
+            OUTCOMES.append(dict(case='unavailable-connection', missing_not_created=True,
+                closed_connection_failed=True, new_owner_or_reconnection=False,
+                qualification='Missing/closed synthetic resources; permission/OS failure profiles unverified.'))
+
+    def test_identity_change_and_database_growth_preflight(self):
+        with owned_scratch(os.environ.get('S0C_SCRATCH')) as root:
+            path, replacement = root / 'identity.sqlite3', root / 'replacement.sqlite3'
+            first = create_fixture(path); first.close()
+            expected = pinned_file_identity(path)
+            second = create_fixture(replacement); second.close()
+            guarded(path); guarded(replacement)
+            self.assertTrue(path.is_relative_to(SCRATCH) and replacement.is_relative_to(SCRATCH))
+            replacement.replace(path)  # Only new, closed, controlled fixture files.
+            with self.assertRaises(ResourceIdentityChanged):
+                require_database_envelope(path, expected_identity=expected)
+            # Logical-size growth is enough for file preflight; allocated disk
+            # blocks/native residency are deliberately not inferred from truncate.
+            with path.open('r+b') as output:
+                output.truncate(DATABASE_LIMIT_BYTES + 1)
+            observation = database_envelope(path)
+            with mock.patch('resources.sqlite3.connect', side_effect=AssertionError('overlimit opened')):
+                with self.assertRaises(DatabasePreflightLimit):
+                    open_passive(path)
+            self.assertFalse(observation['within_database_limit'])
+            OUTCOMES.append(dict(case='identity-and-growth', identity_change_rejected=True,
+                handles_closed_before_replacement=True, observation=observation,
+                sqlite_open_after_limit=False, allocated_disk_bytes='UNAVAILABLE',
+                qualification='Between-query identity change; no native-handle pinning/adversarial race proof.'))
+
+    def test_sidecars_and_readonly_dml(self):
+        for mode in ('DELETE', 'WAL'):
+            with owned_scratch(os.environ.get('S0C_SCRATCH')) as root, ExitStack() as stack:
+                path = root / 'sidecars.sqlite3'
+                writer = create_fixture(path, mode); stack.callback(writer.close)
+                before = database_envelope(path)
+                reader = open_passive(path); stack.callback(reader.close)
+                reader.execute('BEGIN')
+                self.assertEqual(reader.execute('SELECT count(*) FROM fixture').fetchone()[0], 1)
+                with self.assertRaisesRegex(sqlite3.OperationalError, 'readonly'):
+                    reader.execute('INSERT INTO fixture VALUES(99)')
+                writer.execute('BEGIN IMMEDIATE')
+                writer.execute('INSERT INTO fixture VALUES(1)')
+                during = database_envelope(path)
+                if mode == 'WAL':
+                    writer.execute('COMMIT')
+                    self.assertEqual(reader.execute('SELECT count(*) FROM fixture').fetchone()[0], 1)
+                else:
+                    writer.execute('ROLLBACK')
+                cleanup = finish_reader(reader)
+                OUTCOMES.append(dict(case='sidecars', mode=mode, before=before, during=during,
+                    cleanup=cleanup, readonly_dml_rejected=True,
+                    qualification='Observed files, not proof of zero SHM bookkeeping or WAL/native/I-O bound; no explicit checkpoint/repair.'))
+
+    def test_containment_and_native_status(self):
+        with self.assertRaises(ValueError):
+            with owned_scratch(SCRATCH.parent):
+                self.fail('non-scratch parent admitted')
+        with mock.patch.object(Path, 'is_symlink', return_value=True):
+            with self.assertRaises(ValueError):
+                guarded(SCRATCH)
+        status = native_sqlite_status()
+        self.assertEqual(status['status'], 'UNAVAILABLE')
+        self.assertFalse(status['unrelated_library_loaded'])
+        OUTCOMES.append(dict(case='containment-and-native-observability',
+            native_sqlite=status, process_memory=process_memory(),
+            qualification='Whole-process counters are not query-native allocation measurements.'))
+
+
+if __name__ == '__main__':
+    result = unittest.TextTestRunner(verbosity=2).run(
+        unittest.defaultTestLoader.loadTestsFromTestCase(ResourceExperiments))
+    receipt = write_receipt(dict(phase='S0-C resources', command=[sys.executable, *sys.argv],
+        cwd=os.getcwd(), python=sys.version, sqlite=sqlite3.sqlite_version,
+        tests=result.testsRun, failures=len(result.failures), errors=len(result.errors),
+        skips=len(result.skipped), outcomes=OUTCOMES,
+        qualification='Controlled synthetic checks only; no operational/P07/owner-lifetime PASS.'),
+        'resource-results')
+    print('S0C_RESOURCE_RECEIPT=' + str(receipt))
+    sys.exit(0 if result.wasSuccessful() else 1)

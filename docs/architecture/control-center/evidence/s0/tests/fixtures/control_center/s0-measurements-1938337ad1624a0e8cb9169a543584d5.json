@@ -1,0 +1,342 @@
+{
+  "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+  "executable": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "sqlite": "3.49.1",
+  "clocks": {
+    "monotonic": {
+      "implementation": "GetTickCount64()",
+      "monotonic": true,
+      "adjustable": false,
+      "resolution": 0.015625
+    },
+    "perf_counter": {
+      "implementation": "QueryPerformanceCounter()",
+      "monotonic": true,
+      "adjustable": false,
+      "resolution": 1e-07
+    }
+  },
+  "qualifications": [
+    "Synthetic only; no operational owner or live execution evidence.",
+    "Correctness checks passing is not a P07 or operational feasibility PASS."
+  ],
+  "measurements": [
+    {
+      "mode": "journal",
+      "records": 100,
+      "source_metadata_bytes": 148052,
+      "validation_ns": 65340500,
+      "within_one_second": true,
+      "within_ten_seconds": true,
+      "python_tracemalloc_peak_bytes": 786424,
+      "traced_validation_ns": 152061300,
+      "memory_before": {
+        "working_set_bytes": 40275968,
+        "peak_working_set_bytes": 40890368,
+        "private_bytes": 28426240,
+        "peak_pagefile_bytes": 29130752
+      },
+      "memory_after": {
+        "working_set_bytes": 44216320,
+        "peak_working_set_bytes": 50933760,
+        "private_bytes": 32514048,
+        "peak_pagefile_bytes": 38707200
+      },
+      "files": {
+        "database": 4096,
+        "-wal": 292552,
+        "-shm": 32768,
+        "-journal": null
+      },
+      "sql_statements": [
+        "BEGIN",
+        "PRAGMA application_id",
+        "PRAGMA quick_check",
+        "PRAGMA user_version",
+        "ROLLBACK",
+        "SELECT * FROM journal_entries ORDER BY sequence",
+        "SELECT * FROM journal_metadata",
+        "SELECT name,type,sql FROM sqlite_schema WHERE name NOT LIKE 'sqlite_%'"
+      ],
+      "qualification": "Synthetic existing-validator measurement, not P07 enforcement or owner capture.",
+      "subprocess_exit_code": 0,
+      "subprocess_wall_ns": 665072800
+    },
+    {
+      "mode": "journal",
+      "records": 1000,
+      "source_metadata_bytes": 1485453,
+      "validation_ns": 314371000,
+      "within_one_second": true,
+      "within_ten_seconds": true,
+      "python_tracemalloc_peak_bytes": 7581073,
+      "traced_validation_ns": 1543715000,
+      "memory_before": {
+        "working_set_bytes": 42172416,
+        "peak_working_set_bytes": 42172416,
+        "private_bytes": 30670848,
+        "peak_pagefile_bytes": 30670848
+      },
+      "memory_after": {
+        "working_set_bytes": 53911552,
+        "peak_working_set_bytes": 54935552,
+        "private_bytes": 42532864,
+        "peak_pagefile_bytes": 42770432
+      },
+      "files": {
+        "database": 4096,
+        "-wal": 2195992,
+        "-shm": 32768,
+        "-journal": null
+      },
+      "sql_statements": [
+        "BEGIN",
+        "PRAGMA application_id",
+        "PRAGMA quick_check",
+        "PRAGMA user_version",
+        "ROLLBACK",
+        "SELECT * FROM journal_entries ORDER BY sequence",
+        "SELECT * FROM journal_metadata",
+        "SELECT name,type,sql FROM sqlite_schema WHERE name NOT LIKE 'sqlite_%'"
+      ],
+      "qualification": "Synthetic existing-validator measurement, not P07 enforcement or owner capture.",
+      "subprocess_exit_code": 0,
+      "subprocess_wall_ns": 2191007700
+    },
+    {
+      "mode": "journal",
+      "records": 10000,
+      "source_metadata_bytes": 14904454,
+      "validation_ns": 2768284500,
+      "within_one_second": false,
+      "within_ten_seconds": true,
+      "python_tracemalloc_peak_bytes": 76331067,
+      "traced_validation_ns": 16291327200,
+      "memory_before": {
+        "working_set_bytes": 41660416,
+        "peak_working_set_bytes": 41660416,
+        "private_bytes": 29630464,
+        "peak_pagefile_bytes": 29630464
+      },
+      "memory_after": {
+        "working_set_bytes": 128671744,
+        "peak_working_set_bytes": 128671744,
+        "private_bytes": 116850688,
+        "peak_pagefile_bytes": 116850688
+      },
+      "files": {
+        "database": 4096,
+        "-wal": 21300432,
+        "-shm": 65536,
+        "-journal": null
+      },
+      "sql_statements": [
+        "BEGIN",
+        "PRAGMA application_id",
+        "PRAGMA quick_check",
+        "PRAGMA user_version",
+        "ROLLBACK",
+        "SELECT * FROM journal_entries ORDER BY sequence",
+        "SELECT * FROM journal_metadata",
+        "SELECT name,type,sql FROM sqlite_schema WHERE name NOT LIKE 'sqlite_%'"
+      ],
+      "qualification": "Synthetic existing-validator measurement, not P07 enforcement or owner capture.",
+      "subprocess_exit_code": 0,
+      "subprocess_wall_ns": 20008248200
+    },
+    {
+      "mode": "lifecycle",
+      "records": 100,
+      "source_metadata_bytes": 34047,
+      "validation_ns": 7957600,
+      "within_one_second": true,
+      "within_ten_seconds": true,
+      "python_tracemalloc_peak_bytes": 321883,
+      "traced_validation_ns": 38697700,
+      "memory_before": {
+        "working_set_bytes": 39813120,
+        "peak_working_set_bytes": 40460288,
+        "private_bytes": 27852800,
+        "peak_pagefile_bytes": 28598272
+      },
+      "memory_after": {
+        "working_set_bytes": 40116224,
+        "peak_working_set_bytes": 40460288,
+        "private_bytes": 28282880,
+        "peak_pagefile_bytes": 28598272
+      },
+      "files": {
+        "database": 53248,
+        "-wal": null,
+        "-shm": null,
+        "-journal": null
+      },
+      "sql_statements": [
+        "BEGIN",
+        "PRAGMA application_id",
+        "PRAGMA quick_check",
+        "PRAGMA user_version",
+        "ROLLBACK",
+        "SELECT * FROM metadata",
+        "SELECT name,type,sql FROM sqlite_schema WHERE name NOT LIKE 'sqlite_%'",
+        "SELECT sequence,payload FROM events ORDER BY sequence LIMIT 10001"
+      ],
+      "qualification": "Synthetic existing-validator measurement, not P07 enforcement or owner capture.",
+      "subprocess_exit_code": 0,
+      "subprocess_wall_ns": 347463200
+    },
+    {
+      "mode": "lifecycle",
+      "records": 1000,
+      "source_metadata_bytes": 347281,
+      "validation_ns": 86508900,
+      "within_one_second": true,
+      "within_ten_seconds": true,
+      "python_tracemalloc_peak_bytes": 3116054,
+      "traced_validation_ns": 445503500,
+      "memory_before": {
+        "working_set_bytes": 41648128,
+        "peak_working_set_bytes": 41648128,
+        "private_bytes": 30187520,
+        "peak_pagefile_bytes": 30187520
+      },
+      "memory_after": {
+        "working_set_bytes": 44220416,
+        "peak_working_set_bytes": 44220416,
+        "private_bytes": 32563200,
+        "peak_pagefile_bytes": 32563200
+      },
+      "files": {
+        "database": 405504,
+        "-wal": null,
+        "-shm": null,
+        "-journal": null
+      },
+      "sql_statements": [
+        "BEGIN",
+        "PRAGMA application_id",
+        "PRAGMA quick_check",
+        "PRAGMA user_version",
+        "ROLLBACK",
+        "SELECT * FROM metadata",
+        "SELECT name,type,sql FROM sqlite_schema WHERE name NOT LIKE 'sqlite_%'",
+        "SELECT sequence,payload FROM events ORDER BY sequence LIMIT 10001"
+      ],
+      "qualification": "Synthetic existing-validator measurement, not P07 enforcement or owner capture.",
+      "subprocess_exit_code": 0,
+      "subprocess_wall_ns": 842262400
+    },
+    {
+      "mode": "lifecycle",
+      "records": 10000,
+      "source_metadata_bytes": 3509615,
+      "validation_ns": 1989122900,
+      "within_one_second": false,
+      "within_ten_seconds": true,
+      "python_tracemalloc_peak_bytes": 29745177,
+      "traced_validation_ns": 7552839500,
+      "memory_before": {
+        "working_set_bytes": 44236800,
+        "peak_working_set_bytes": 56033280,
+        "private_bytes": 31621120,
+        "peak_pagefile_bytes": 44003328
+      },
+      "memory_after": {
+        "working_set_bytes": 75980800,
+        "peak_working_set_bytes": 77664256,
+        "private_bytes": 65036288,
+        "peak_pagefile_bytes": 66584576
+      },
+      "files": {
+        "database": 3923968,
+        "-wal": null,
+        "-shm": null,
+        "-journal": null
+      },
+      "sql_statements": [
+        "BEGIN",
+        "PRAGMA application_id",
+        "PRAGMA quick_check",
+        "PRAGMA user_version",
+        "ROLLBACK",
+        "SELECT * FROM metadata",
+        "SELECT name,type,sql FROM sqlite_schema WHERE name NOT LIKE 'sqlite_%'",
+        "SELECT sequence,payload FROM events ORDER BY sequence LIMIT 10001"
+      ],
+      "qualification": "Synthetic existing-validator measurement, not P07 enforcement or owner capture.",
+      "subprocess_exit_code": 0,
+      "subprocess_wall_ns": 10062310100
+    }
+  ],
+  "cumulative_analysis": {
+    "default_dense_pages": 200,
+    "dense_100_match_validation_bytes": 1677721600,
+    "byte_budget": 268435456,
+    "attempts_budget": 128
+  },
+  "frozen_scan": {
+    "high_water": 2000,
+    "first_page": [
+      [],
+      1000,
+      1000,
+      false
+    ],
+    "second_page": [
+      [
+        1501
+      ],
+      2000,
+      1000,
+      true
+    ],
+    "source_bytes": 2976453,
+    "corrupt_after_high_water_rejected": true,
+    "limitation": "Test-only scanner; no production cursor/context/auth implementation."
+  },
+  "sql_cancellation_sidecars": [
+    {
+      "mode": "DELETE",
+      "progress_calls": 21185,
+      "cancellation_and_cleanup_ns": 20089400,
+      "before_read": {
+        "-wal": false,
+        "-shm": false,
+        "-journal": false
+      },
+      "during_writer": {
+        "-wal": false,
+        "-shm": false,
+        "-journal": true
+      },
+      "writer_after_cancel_succeeded": true,
+      "qualification": "SQL VM cancellation only; not Python/OS-I/O bounded drain proof."
+    },
+    {
+      "mode": "WAL",
+      "progress_calls": 21443,
+      "cancellation_and_cleanup_ns": 20104700,
+      "before_read": {
+        "-wal": true,
+        "-shm": true,
+        "-journal": false
+      },
+      "during_writer": {
+        "-wal": true,
+        "-shm": true,
+        "-journal": false
+      },
+      "writer_after_cancel_succeeded": true,
+      "qualification": "SQL VM cancellation only; not Python/OS-I/O bounded drain proof."
+    }
+  ],
+  "writer_priority_model": {
+    "order": [
+      "writer",
+      "late-reader"
+    ],
+    "elapsed_ns": 474400,
+    "qualification": "Controlled scheduling model only; existing store RLock unchanged."
+  }
+}

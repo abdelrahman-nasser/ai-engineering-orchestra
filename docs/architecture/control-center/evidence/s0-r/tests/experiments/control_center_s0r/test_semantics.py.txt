@@ -1,0 +1,343 @@
+"""Bounded synthetic differential cases. This does not test an operational reader."""
+import copy
+from dataclasses import FrozenInstanceError, replace
+import hashlib
+import json
+import os
+import sqlite3
+import sys
+import unittest
+
+from common import (helpers, state, journal, journal_store, owned_scratch,
+                    create_journal, journal_documents, write_receipt)
+from indexed_replay import indexed_reconstruct, indexed_reconstruct_profiled
+from compact_journal import compact_verify, JournalBudgetLimit
+
+OUTCOMES = []
+
+
+def append(history, operation, data, task_id='synthetic-task'):
+    history.append(dict(format_version=1, sequence=len(history) + 1, task_id=task_id,
+        revision=1 + sum(item['task_id'] == task_id for item in history),
+        operation=operation, data=copy.deepcopy(data)))
+    return history
+
+
+def lifecycle_cases():
+    cases = {'empty': [], 'successful-three-runs': helpers.lifecycle_documents(10)}
+    for name, n, op, data in (
+        ('complete-success', 4, 'complete', {'reference': 'synthetic'}),
+        ('cancel-pending', 2, 'cancel', {'reference': 'synthetic'}),
+        ('cancel-running', 3, 'cancel', {'reference': 'synthetic'}),
+        ('recover-pending', 2, 'recover', {}),
+        ('recover-running', 3, 'recover', {}),
+        ('stop-running', 3, 'stop', {'reference': 'synthetic'}),
+        ('block-planned', 1, 'block', {'reference': 'synthetic'}),
+        ('invalid-complete-planned', 1, 'complete', {'reference': 'synthetic'}),
+        ('invalid-stop-no-unfinished', 4, 'stop', {'reference': 'synthetic'}),
+        ('invalid-recover-no-unfinished', 4, 'recover', {}),
+        ('invalid-start-twice', 3, 'start', {'run_id': 'r0'}),
+        ('invalid-result-before-start', 2, 'result', helpers.lifecycle_documents(4)[3]['data']),
+        ('invalid-block-running', 3, 'block', {'reference': 'synthetic'})):
+        cases[name] = append(helpers.lifecycle_documents(n), op, data)
+    continuation = helpers.lifecycle_documents(5)[4]['data']
+    for name in ('recover-pending', 'recover-running', 'stop-running',
+                 'cancel-pending', 'complete-success', 'block-planned'):
+        cases[name + '-then-continue'] = append(copy.deepcopy(cases[name]), 'continue', continuation)
+    cases['continue-while-pending'] = append(helpers.lifecycle_documents(2), 'continue', continuation)
+    for outcome in ('failed_before_effect', 'effect_ambiguous'):
+        h = helpers.lifecycle_documents(4)
+        h[-1]['data']['outcome'] = outcome
+        cases[outcome] = h
+        cases[outcome + '-continue'] = append(copy.deepcopy(h), 'continue', continuation)
+        cases[outcome + '-complete'] = append(copy.deepcopy(h), 'complete', {'reference': 'synthetic'})
+    h = helpers.lifecycle_documents(7)
+    h[-1]['data']['result_identity'] = h[3]['data']['result_identity'][:]
+    cases['duplicate-result-identity'] = h
+    h = helpers.lifecycle_documents(5)
+    h[-1]['data']['subject']['binding']['run']['run_id'] = 'r0'
+    cases['duplicate-run-id'] = h
+    h = helpers.lifecycle_documents(4)
+    append(h, 'enroll', {'definition_reference': 'synthetic'}, 'second-task')
+    subject = copy.deepcopy(h[1]['data']['subject'])
+    subject['binding']['run']['contract']['task_id'] = 'second-task'
+    cases['global-run-collision-across-tasks'] = append(h, 'register', {'subject': subject}, 'second-task')
+    cases['terminal-cannot-reopen'] = append(copy.deepcopy(cases['complete-success']),
+                                           'block', {'reference': 'synthetic'})
+    h = helpers.lifecycle_documents(1)
+    cases['enrollment-collision'] = append(h, 'enroll', {'definition_reference': 'synthetic'})
+    for index in range(10):
+        for field, value in (('sequence', 999), ('revision', True),
+                             ('revision', 999), ('operation', 'unknown')):
+            h = helpers.lifecycle_documents(10)
+            h[index][field] = value
+            cases[f'mutate-{index}-{field}-{value}'] = h
+    for field in ('sequence', 'task_id', 'data'):
+        h = helpers.lifecycle_documents(4)
+        del h[2][field]
+        cases['missing-' + field] = h
+    first = helpers.lifecycle_documents(7)
+    second = copy.deepcopy(first)
+    for event in second:
+        event['task_id'] = 'second-task'
+        if event['operation'] in ('register', 'continue'):
+            run = event['data']['subject']['binding']['run']
+            run['run_id'] = 'second-' + run['run_id']
+            run['contract']['task_id'] = 'second-task'
+        if event['operation'] in ('start', 'result'):
+            event['data']['run_id'] = 'second-' + event['data']['run_id']
+        if event['operation'] == 'result':
+            event['data']['result_identity'][-1] = 'second-' + event['data']['result_identity'][-1]
+    interleaved = []
+    for left, right in zip(first, second):
+        for event in (left, right):
+            item = copy.deepcopy(event); item['sequence'] = len(interleaved) + 1
+            interleaved.append(item)
+    cases['valid-interleaved-tasks'] = interleaved
+    h = copy.deepcopy(interleaved)
+    h[7]['data']['result_identity'] = h[6]['data']['result_identity'][:]
+    cases['global-result-collision-across-tasks'] = h
+    for name, change in (('foreign-result-ledger', 'foreign'), ('invalid-result-issuer', 'robot')):
+        h = helpers.lifecycle_documents(4)
+        h[-1]['data']['result_identity'][0 if 'ledger' in name else 2] = change
+        cases[name] = h
+    return cases
+
+
+class Row(tuple):
+    names = ('sequence', 'subject_key', 'event_kind', 'recorded_at', 'record_json')
+    def __getitem__(self, key):
+        return super().__getitem__(self.names.index(key) if isinstance(key, str) else key)
+
+
+class Cursor:
+    def __init__(self, rows): self.rows = iter(rows)
+    def __iter__(self): return self
+    def __next__(self): return next(self.rows)
+    def fetchone(self): return next(self.rows, None)
+    def fetchmany(self, size=1):
+        output = []
+        for _ in range(size):
+            item = self.fetchone()
+            if item is None: break
+            output.append(item)
+        return output
+    def fetchall(self): return list(self.rows)
+
+
+class Overlay:
+    """Adversarial row-stream fixture below SQL constraints, not a real corrupt DB."""
+    def __init__(self, connection, rows): self.connection, self.rows = connection, rows
+    @property
+    def in_transaction(self): return self.connection.in_transaction
+    def execute(self, sql, parameters=()):
+        if sql == 'SELECT * FROM journal_entries ORDER BY sequence':
+            return Cursor(self.rows)
+        if sql.startswith('SELECT sequence, length(CAST(record_json AS BLOB))'):
+            return Cursor((row[0], None if row[4] is None else len(
+                row[4] if isinstance(row[4], bytes) else str(row[4]).encode('utf-8')))
+                for row in self.rows)
+        return self.connection.execute(sql, parameters)
+
+
+def row(document):
+    return Row((document['sequence'], journal._encode(list(journal._subject_key(document))),
+        document['event_kind'], document['recorded_at'], journal._encode(document)))
+
+
+def journal_cases():
+    cases = {'empty': [], 'unique': list(journal_documents('unique', 8)),
+             'pairs': list(journal_documents('pairs', 8)),
+             'unicode-long': list(journal_documents('unicode', 4))}
+    cases['result-without-entry'] = [helpers.record(0, 1, result=True)]
+    for name, mutate in (
+        ('foreign-ledger-generation', lambda d: d['ledger_identity'].update(domain_generation=2)),
+        ('wrong-journal', lambda d: d.update(journal_id='foreign')),
+        ('end-corruption', lambda d: d.update(result_summary={'unexpected': 'synthetic'})),
+        ('bad-entry-time', lambda d: d['execution_entry'].update(entry_time_key=0)),
+        ('bad-grant-timestamp', lambda d: d['admission']['grant'].update(issued_at='invalid')),
+        ('payload-field', lambda d: d.update(payload='forbidden'))):
+        documents = list(journal_documents('unique', 8)); mutate(documents[-1]); cases[name] = documents
+    pair = list(journal_documents('pairs', 2))
+    pair[-1]['admission']['grant']['provenance_reference'] = 'SYNTHETIC-CONFLICT'
+    cases['physical-subject-conflict'] = pair
+    docs = list(journal_documents('unique', 2))
+    docs[1]['admission']['grant']['run']['run_id'] = 'r0'
+    docs[1]['admission']['tool_binding']['run']['run_id'] = 'r0'
+    for side in ('grant', 'tool_binding'):
+        docs[1]['admission'][side]['run']['contract']['resource'] = 'other.txt'
+    cases['run-contract-conflict'] = docs
+    docs = list(journal_documents('unique', 2))
+    docs[0]['recorded_at'] = '2026-10-17T00:00:03.000000Z'
+    cases['backwards-recording-time'] = docs
+    docs = list(journal_documents('unique', 2)); docs[-1]['sequence'] = 3
+    cases['sequence-gap'] = docs
+    docs = [helpers.record(0, 1), helpers.record(0, 2)]
+    cases['duplicate-entry-physical-identity'] = docs
+    docs = list(journal_documents('pairs', 2))
+    extra = copy.deepcopy(docs[-1]); extra['sequence'] = 3
+    extra['result_summary'] = dict(outcome='failed_before_effect', diagnostic_code='resource_missing', byte_count=None)
+    docs.append(extra)
+    cases['duplicate-conflicting-outcome'] = docs
+    docs = [helpers.record(0, 1), helpers.record(0, 2, result=True),
+            helpers.record(1, 3, run_id='r0'), helpers.record(1, 4, result=True, run_id='r0')]
+    docs[-1]['result_summary'] = dict(outcome='failed_before_effect', diagnostic_code='resource_missing', byte_count=None)
+    cases['accepted-multiple-physical-same-run-differing-outcomes'] = docs
+    docs = copy.deepcopy(docs)
+    for document in docs[2:]: document['admission']['tool_binding']['tool_id'] = 'other-tool'
+    cases['accepted-same-run-contract-different-tool'] = docs
+    return cases
+
+
+def capture(function, *args):
+    try: return ('accepted', function(*args))
+    except (ValueError, RuntimeError, TypeError, KeyError) as error:
+        return ('rejected', type(error).__name__, str(error))
+
+
+class SemanticExperiments(unittest.TestCase):
+    def test_lifecycle_every_prefix(self):
+        for name, history in lifecycle_cases().items():
+            for length in range(len(history) + 1):
+                prefix = history[:length]
+                reference = capture(state.reconstruct, prefix)
+                candidate = capture(indexed_reconstruct, prefix)
+                self.assertEqual(reference, candidate, (name, length))
+                OUTCOMES.append(dict(area='lifecycle-prefix', case=name, prefix=length,
+                                     outcome=reference[0], parity=True))
+
+    def test_lifecycle_max_history_and_immutability(self):
+        events = helpers.lifecycle_documents(10000)
+        expected = state.reconstruct(events)
+        actual = indexed_reconstruct(events)
+        self.assertEqual(expected, actual)
+        profiled, metrics = indexed_reconstruct_profiled(events[:100])
+        self.assertEqual(state.reconstruct(events[:100]), profiled)
+        with self.assertRaises(FrozenInstanceError):
+            actual['synthetic-task'].revision = 0
+        before = actual['synthetic-task']
+        indexed_reconstruct(events[:4])
+        self.assertIs(before, actual['synthetic-task'])
+        OUTCOMES.append(dict(area='lifecycle-max', events=10000, runs=3333,
+                             parity=True, frozen=True, profile_metrics=metrics))
+
+    def test_journal_actual_schema_and_adversarial_rows(self):
+        with owned_scratch(os.environ.get('S0R_SCRATCH')) as root:
+            writer, probe, _ = create_journal(root / 'journal.sqlite3', [])
+            reader = None
+            try:
+                reader = helpers.passive(root / 'journal.sqlite3')
+                reader.execute('BEGIN')
+                for name, documents in journal_cases().items():
+                    rows = [row(item) for item in documents]
+                    if name == 'unique':
+                        extra = list(rows[0]); extra[4] += ' '
+                        variants = [(name, rows), ('noncanonical-json', [Row(extra)])]
+                        for invalid in (None, b'{}', 7):
+                            raw = list(rows[0]); raw[4] = invalid
+                            variants.append(('non-string-record-' + type(invalid).__name__, [Row(raw)]))
+                    else: variants = [(name, rows)]
+                    for label, stream in variants:
+                        connection = Overlay(reader, stream)
+                        reference = capture(journal_store.SqliteExecutionJournalStore._verify, probe, connection)
+                        candidate = capture(compact_verify, probe, connection)
+                        self.assertEqual(reference[0], candidate[0], label)
+                        if reference[0] == 'rejected':
+                            self.assertEqual(reference[1:], candidate[1:], label)
+                        else:
+                            result = candidate[1]
+                            self.assertEqual(len(reference[1][0]), result.row_count, label)
+                            digest = hashlib.sha256()
+                            for item in reference[1][0]:
+                                digest.update(item.canonical_json.encode('utf-8')); digest.update(b'\n')
+                            self.assertEqual(digest.hexdigest(), result.canonical_sha256, label)
+                            self.assertEqual(len(reference[1][2]), result.subject_count, label)
+                            self.assertEqual(len(reference[1][3]), result.run_count, label)
+                        OUTCOMES.append(dict(area='journal-row-overlay', case=label,
+                                             outcome=reference[0], parity=True))
+                reader.execute('ROLLBACK')
+            finally:
+                if reader is not None: reader.close()
+                writer.close()
+        for shape in ('unique', 'pairs', 'unicode'):
+            with owned_scratch(os.environ.get('S0R_SCRATCH')) as root:
+                writer, probe, fixture = create_journal(root / 'journal.sqlite3', journal_documents(shape, 20))
+                reader = None
+                try:
+                    reader = helpers.passive(root / 'journal.sqlite3'); reader.execute('BEGIN')
+                    canonical = journal_store.SqliteExecutionJournalStore._verify(probe, reader)
+                    candidate = compact_verify(probe, reader, profile=True)
+                    self.assertEqual(len(canonical[0]), candidate.row_count)
+                    self.assertEqual(fixture['canonical_rows_sha256'], candidate.canonical_sha256)
+                    OUTCOMES.append(dict(area='journal-real-sqlite', shape=shape, parity=True, fixture=fixture))
+                finally:
+                    if reader is not None: reader.close()
+                    writer.close()
+
+    def test_sql_duplicate_constraint_and_prototype_preflight(self):
+        with owned_scratch(os.environ.get('S0R_SCRATCH')) as root:
+            writer, probe, _ = create_journal(root / 'journal.sqlite3', [helpers.record(0, 1)])
+            reader = None
+            try:
+                duplicate = row(helpers.record(0, 2))
+                with self.assertRaises(sqlite3.IntegrityError):
+                    writer.execute('INSERT INTO journal_entries VALUES(?,?,?,?,?)', duplicate)
+                reader = helpers.passive(root / 'journal.sqlite3'); reader.execute('BEGIN')
+                class Oversize(Overlay):
+                    def execute(self, sql, parameters=()):
+                        if sql.startswith('SELECT sequence, length(CAST(record_json AS BLOB))'):
+                            return Cursor([(1, 1048577)])
+                        return super().execute(sql, parameters)
+                with self.assertRaises(JournalBudgetLimit): compact_verify(probe, Oversize(reader, []))
+                for label, sizes in (('row-count', [(i, 1) for i in range(1, 10002)]),
+                                     ('aggregate-bytes', [(i, 1048576) for i in range(1, 18)])):
+                    class Excess(Overlay):
+                        def execute(self, sql, parameters=()):
+                            if sql.startswith('SELECT sequence, length(CAST(record_json AS BLOB))'):
+                                return Cursor(sizes)
+                            if sql == 'SELECT * FROM journal_entries ORDER BY sequence':
+                                raise AssertionError('overlimit preflight reached row materialization')
+                            return super().execute(sql, parameters)
+                    with self.assertRaises(JournalBudgetLimit): compact_verify(probe, Excess(reader, []))
+                    OUTCOMES.append(dict(area='limits', case=label, component_rejected=True,
+                                         canonical_semantic_parity_claim=False))
+                OUTCOMES.append(dict(area='limits', sql_duplicate_rejected=True,
+                                     per_record_preflight_rejected=True))
+            finally:
+                if reader is not None: reader.close()
+                writer.close()
+
+    def test_real_sql_header_failures(self):
+        for kind in ('application-id', 'schema-version', 'schema-change', 'metadata-id', 'metadata-manifest'):
+            with owned_scratch(os.environ.get('S0R_SCRATCH')) as root:
+                writer, probe, _ = create_journal(root / 'journal.sqlite3', [],
+                    metadata_digest='0' * 64 if kind == 'metadata-manifest' else None)
+                reader = None
+                try:
+                    if kind == 'application-id': writer.execute('PRAGMA application_id=1')
+                    if kind == 'schema-version': writer.execute('PRAGMA user_version=99')
+                    if kind == 'schema-change': writer.execute('CREATE TABLE extra_synthetic(value INTEGER)')
+                    if kind == 'metadata-id': probe.configuration = replace(probe.configuration, journal_id='foreign')
+                    reader = helpers.passive(root / 'journal.sqlite3'); reader.execute('BEGIN')
+                    reference = capture(journal_store.SqliteExecutionJournalStore._verify, probe, reader)
+                    candidate = capture(compact_verify, probe, reader)
+                    self.assertEqual(reference, candidate, kind)
+                    self.assertEqual(reference[0], 'rejected', kind)
+                    OUTCOMES.append(dict(area='journal-real-header', case=kind, rejected=True, parity=True))
+                finally:
+                    if reader is not None: reader.close()
+                    writer.close()
+
+
+if __name__ == '__main__':
+    suite = unittest.defaultTestLoader.loadTestsFromTestCase(SemanticExperiments)
+    result = unittest.TextTestRunner(verbosity=2).run(suite)
+    corpus = dict(lifecycle=lifecycle_cases(), journal=journal_cases(),
+                  overlay_qualification=Overlay.__doc__)
+    corpus_path = write_receipt(corpus, 'semantic-corpus')
+    receipt = write_receipt(dict(checks=result.testsRun, failures=len(result.failures),
+        errors=len(result.errors), skips=len(result.skipped), outcomes=OUTCOMES,
+        corpus_path=str(corpus_path.relative_to(helpers.REPOSITORY)),
+        corpus_sha256=hashlib.sha256(corpus_path.read_bytes()).hexdigest()), 'semantic-results')
+    print('S0R_SEMANTIC_RECEIPT=' + str(receipt))
+    sys.exit(0 if result.wasSuccessful() else 1)

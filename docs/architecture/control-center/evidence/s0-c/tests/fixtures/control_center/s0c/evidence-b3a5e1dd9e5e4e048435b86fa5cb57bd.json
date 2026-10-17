@@ -1,0 +1,3086 @@
+{
+  "phase": "S0-C",
+  "command": [
+    "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+    "-B",
+    "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0c\\run_experiments.py"
+  ],
+  "cwd": "D:\\Dev\\ai-engineering-orchestra",
+  "child_timeout_seconds": 60,
+  "serial": true,
+  "jobs": [
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0c\\test_concurrency.py"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 695583000,
+      "stdout": "{\"checks\":15,\"elapsed_seconds\":0.5160000000032596,\"errors\":0,\"experiment\":\"S0-C isolated synthetic coordination\",\"failures\":0,\"limitations\":[\"No actual owner, store or production mutation path participates.\",\"Checkpoints are cooperative and cannot preempt blocking Python/OS work.\",\"Expected overrun/timeout controls are failures of bounded safety, not successful cancellation.\",\"Guard fairness observations are finite scenarios, not universal scheduler guarantees.\",\"No formal Quality Gate PASS or P07 feasibility follows from this suite.\"],\"outcomes\":[{\"application_cap\":2,\"exact_labels_preserved\":true,\"pending_query_queue\":false,\"principal_cap\":1,\"scenario\":\"test_01_immediate_admission_caps_and_exact_labels\",\"source_cap\":1},{\"active_after_join\":0,\"admitted\":2,\"rejected\":1,\"scenario\":\"test_02_simultaneous_admission_is_atomic\"},{\"hold_overruns\":0,\"initial_readers\":2,\"later_readers\":6,\"mixed_revisions\":false,\"order\":[\"writer\",\"late2\",\"late4\",\"late3\",\"late0\",\"late5\",\"late1\"],\"scenario\":\"test_03_writer_priority_under_late_reader_pressure_and_consistency\"},{\"later_reader_admitted\":true,\"scenario\":\"test_04_cancelled_writer_releases_priority_barrier\",\"waiting_writers_after_cancel\":0},{\"explicit_wait_timeout\":true,\"reader_wait_seconds\":0.0319999999992433,\"scenario\":\"test_05_cancelled_waiting_reader_and_bounded_wait\"},{\"active_after_ack\":0,\"cleanup_before_close\":true,\"scenario\":\"test_06_cancellation_cleanup_is_still_a_live_lease\",\"worker_joined_before_completed_scenario\":true},{\"close_after_zero_leases\":true,\"scenario\":\"test_07_shutdown_bars_waiters_and_drains_active_reader\",\"waiting_reader_rejected\":true,\"waiting_writer_rejected\":true},{\"active_writer_drained\":true,\"close_beneath_writer\":false,\"scenario\":\"test_08_shutdown_waits_for_active_writer\"},{\"loss_bars_new_work\":true,\"partial_result_published\":false,\"scenario\":\"test_09_ownership_loss_invalidates_observation\"},{\"handle_open_while_lease_active\":true,\"negative_control\":\"uncooperative reader\",\"safe_retry_after_real_exit\":true,\"scenario\":\"test_10_uncooperative_reader_shutdown_timeout_keeps_handle_open\",\"timeout_acknowledged_as_failure\":true},{\"elapsed_ns\":61879700,\"elapsed_seconds\":0.062000000001717126,\"hold_seconds\":0.02,\"negative_control\":\"uncooperative body\",\"no_preemption_claim\":true,\"overrun_reported\":true,\"scenario\":\"test_11_capture_overrun_is_failure_after_actual_release\"},{\"body_exception_releases\":true,\"close_failure_not_reported_closed\":true,\"scenario\":\"test_12_exception_cleanup_and_close_failure\"},{\"no_silent_limit_increase\":true,\"scenario\":\"test_13_wait_bounds_and_deadline_input_contract\",\"writer_wait_seconds\":0.0319999999992433},{\"later_readers_overtaking\":0,\"pressure_attempts\":21,\"pressure_seconds\":0.3120000000017171,\"pressure_window_bounded_seconds\":0.6,\"qualification\":\"Finite continuous-arrival scenario, not a universal fairness proof\",\"scenario\":\"test_14_continuous_bounded_reader_pressure_cannot_overtake_writer\",\"writer_entered_during_pressure\":true},{\"close_calls\":1,\"late_completed_close_reported_timeout\":true,\"qualification\":\"Deterministic return-branch regression; not a measured shutdown latency\",\"requested_timeout_seconds\":0.1,\"scenario\":\"test_15_concurrent_closer_late_reacquisition_is_not_success\",\"simulated_wait_seconds\":0.2}],\"skips\":0,\"unittest_output\":\"test_01_immediate_admission_caps_and_exact_labels (__main__.CoordinationTests.test_01_immediate_admission_caps_and_exact_labels) ... ok\\ntest_02_simultaneous_admission_is_atomic (__main__.CoordinationTests.test_02_simultaneous_admission_is_atomic) ... ok\\ntest_03_writer_priority_under_late_reader_pressure_and_consistency (__main__.CoordinationTests.test_03_writer_priority_under_late_reader_pressure_and_consistency) ... ok\\ntest_04_cancelled_writer_releases_priority_barrier (__main__.CoordinationTests.test_04_cancelled_writer_releases_priority_barrier) ... ok\\ntest_05_cancelled_waiting_reader_and_bounded_wait (__main__.CoordinationTests.test_05_cancelled_waiting_reader_and_bounded_wait) ... ok\\ntest_06_cancellation_cleanup_is_still_a_live_lease (__main__.CoordinationTests.test_06_cancellation_cleanup_is_still_a_live_lease) ... ok\\ntest_07_shutdown_bars_waiters_and_drains_active_reader (__main__.CoordinationTests.test_07_shutdown_bars_waiters_and_drains_active_reader) ... ok\\ntest_08_shutdown_waits_for_active_writer (__main__.CoordinationTests.test_08_shutdown_waits_for_active_writer) ... ok\\ntest_09_ownership_loss_invalidates_observation (__main__.CoordinationTests.test_09_ownership_loss_invalidates_observation) ... ok\\ntest_10_uncooperative_reader_shutdown_timeout_keeps_handle_open (__main__.CoordinationTests.test_10_uncooperative_reader_shutdown_timeout_keeps_handle_open) ... ok\\ntest_11_capture_overrun_is_failure_after_actual_release (__main__.CoordinationTests.test_11_capture_overrun_is_failure_after_actual_release) ... ok\\ntest_12_exception_cleanup_and_close_failure (__main__.CoordinationTests.test_12_exception_cleanup_and_close_failure) ... ok\\ntest_13_wait_bounds_and_deadline_input_contract (__main__.CoordinationTests.test_13_wait_bounds_and_deadline_input_contract) ... ok\\ntest_14_continuous_bounded_reader_pressure_cannot_overtake_writer (__main__.CoordinationTests.test_14_continuous_bounded_reader_pressure_cannot_overtake_writer) ... ok\\ntest_15_concurrent_closer_late_reacquisition_is_not_success (__main__.CoordinationTests.test_15_concurrent_closer_late_reacquisition_is_not_success) ... ok\\n\\n----------------------------------------------------------------------\\nRan 15 tests in 0.519s\\n\\nOK\\n\"}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0c\\test_resources.py"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 918655200,
+      "stdout": "S0C_RESOURCE_RECEIPT=D:\\Dev\\ai-engineering-orchestra\\tests\\fixtures\\control_center\\s0c\\resource-results-83042869c2a3491fa930748b00b7317f.json\n",
+      "stderr": "test_abort_and_rollback_interruption (__main__.ResourceExperiments.test_abort_and_rollback_interruption) ... ok\ntest_containment_and_native_status (__main__.ResourceExperiments.test_containment_and_native_status) ... ok\ntest_identity_change_and_database_growth_preflight (__main__.ResourceExperiments.test_identity_change_and_database_growth_preflight) ... ok\ntest_read_lock_contention_and_wal_snapshot (__main__.ResourceExperiments.test_read_lock_contention_and_wal_snapshot) ... ok\ntest_sidecars_and_readonly_dml (__main__.ResourceExperiments.test_sidecars_and_readonly_dml) ... ok\ntest_sql_vm_cancellation_transaction_and_cleanup (__main__.ResourceExperiments.test_sql_vm_cancellation_transaction_and_cleanup) ... ok\ntest_unavailable_and_closed_connection (__main__.ResourceExperiments.test_unavailable_and_closed_connection) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.570s\n\nOK\n"
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0c\\run_experiments.py",
+        "--worker",
+        "timing",
+        "representative",
+        "none"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 484240100,
+      "stderr": "",
+      "measurement": {
+        "mode": "timing",
+        "shape": "representative",
+        "fault": "none",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "trace_initially_active": false,
+        "startup_trace_memory": null,
+        "native_sqlite": {
+          "status": "UNAVAILABLE",
+          "exact_backing_library_status_api_established": false,
+          "reason": "No safely established status interface for the exact SQLite library backing Python.",
+          "unrelated_library_loaded": false,
+          "query_native_peak_verified": false
+        },
+        "conditions": "Fresh synthetic setup primes OS cache; not cold-disk or production-owner evidence.",
+        "fixtures": [
+          {
+            "shape": "representative",
+            "events": 78,
+            "tasks": 20,
+            "dependencies": 0,
+            "metadata_bytes": 18695,
+            "canonical_rows_sha256": "db5a1acd2d5904f88e9e90f76b66fc1016757c03370cafde727df4a0b00beaf1",
+            "graph_sha256": "4fee8c35c06c03fe2dd3373423588db37605eb22a6d8f96c6a261bf97bfc4c18",
+            "alpha_supported": true,
+            "max_concurrency": 2,
+            "setup_file_identity": [
+              1801039310864222624,
+              1970324837982590
+            ]
+          }
+        ],
+        "process_before": {
+          "working_set_bytes": 43106304,
+          "peak_working_set_bytes": 43257856,
+          "private_bytes": 27377664,
+          "peak_pagefile_bytes": 28344320
+        },
+        "captures": [
+          {
+            "success": true,
+            "capture_completed": true,
+            "error": null,
+            "phases": {
+              "admission_ns": 12800,
+              "coordination_wait_and_lease_ns": 26900,
+              "resource_preflight_ns": 4524500,
+              "transaction_begin_ns": 14300,
+              "whole_store_decode_validate_ns": 3047800,
+              "indexed_replay_and_freeze_ns": 2500100,
+              "full_domain_and_graph_ns": 48400,
+              "core_scheduler_ns": 763100,
+              "final_identity_check_ns": 5331100,
+              "rollback_and_passive_close_ns": 74000,
+              "capture_through_release_ns": 16379600,
+              "synthetic_projection_encoding_ns": 866600
+            },
+            "total_query_ns": 17277200,
+            "hold_seconds": 0.0163472,
+            "hold_within_one_second": true,
+            "resources_closed": true,
+            "closed_under_active_work": false,
+            "no_usable_prefix_on_error": false,
+            "cleanup_acknowledged": true,
+            "transaction_inactive_observed": true,
+            "connection_already_closed": false,
+            "acknowledgement_scope": "Synchronous capture body; no internal detached worker. Closed-connection property failure implies already-closed Python SQLite handle.",
+            "coordination_after": {
+              "readers": 0,
+              "writer": false,
+              "waiting_readers": 0,
+              "waiting_writers": 0,
+              "closing": false,
+              "lost": false,
+              "closed": false,
+              "close_in_progress": false,
+              "hold_overruns": 0
+            },
+            "admission_after": {
+              "active": 0,
+              "sources": [],
+              "principals": []
+            },
+            "observation": {
+              "scheduler_state": "evaluated",
+              "occupied_run_ids": [
+                "t0018-r0",
+                "t0019-r0"
+              ],
+              "tasks": 20,
+              "output_bytes": 16584,
+              "continuation": "unassessed",
+              "projection_notice": "Synthetic scheduler/allocation structure; not a P04 success DTO"
+            }
+          }
+        ],
+        "elapsed_ns": 17330300,
+        "process_after_query": {
+          "working_set_bytes": 43491328,
+          "peak_working_set_bytes": 43491328,
+          "private_bytes": 27709440,
+          "peak_pagefile_bytes": 28344320
+        },
+        "admission_after": {
+          "active": 0,
+          "sources": [],
+          "principals": []
+        },
+        "envelopes_after_query": [
+          {
+            "identity": [
+              1801039310864222624,
+              1970324837982590
+            ],
+            "files": {
+              "database": 32768,
+              "-wal": null,
+              "-shm": null,
+              "-journal": null
+            },
+            "database_limit_bytes": 67108864,
+            "within_database_limit": true,
+            "qualification": "Logical file sizes only; native/resident/sidecar growth bounds unproved."
+          }
+        ],
+        "shutdown_after_capture": [
+          {
+            "closed": true,
+            "elapsed_seconds": 0.0
+          }
+        ],
+        "fixture_handles_close_ns": 92500,
+        "process_after_cleanup": {
+          "working_set_bytes": 43491328,
+          "peak_working_set_bytes": 43491328,
+          "private_bytes": 27709440,
+          "peak_pagefile_bytes": 28344320
+        },
+        "blocking_hold_failure": false,
+        "no_usable_prefix_on_failures": true,
+        "cleanup_acknowledged_only_after_work": true,
+        "fault_qualification": "Injected function-entry gates/delays and finite synthetic work; no arbitrary OS-I/O preemption proof. Uncooperative >1s cases are intentional counterexamples, not P07 passes.",
+        "assertion_failures": []
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0c\\run_experiments.py",
+        "--worker",
+        "timing",
+        "long",
+        "none"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 1529497700,
+      "stderr": "",
+      "measurement": {
+        "mode": "timing",
+        "shape": "long",
+        "fault": "none",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "trace_initially_active": false,
+        "startup_trace_memory": null,
+        "native_sqlite": {
+          "status": "UNAVAILABLE",
+          "exact_backing_library_status_api_established": false,
+          "reason": "No safely established status interface for the exact SQLite library backing Python.",
+          "unrelated_library_loaded": false,
+          "query_native_peak_verified": false
+        },
+        "conditions": "Fresh synthetic setup primes OS cache; not cold-disk or production-owner evidence.",
+        "fixtures": [
+          {
+            "shape": "long",
+            "events": 10000,
+            "tasks": 1,
+            "dependencies": 0,
+            "metadata_bytes": 3709595,
+            "canonical_rows_sha256": "c238efe6269484e5a8384150da4105923a30b4764c27233c31bd930357e54671",
+            "graph_sha256": "c5eda390d7b5f1304ca23761f2fefcdef9ba1c9571b7a1bf64e6792f624dd000",
+            "alpha_supported": true,
+            "max_concurrency": 2,
+            "setup_file_identity": [
+              1801039310864222624,
+              2251799814693246
+            ]
+          }
+        ],
+        "process_before": {
+          "working_set_bytes": 51097600,
+          "peak_working_set_bytes": 61063168,
+          "private_bytes": 34676736,
+          "peak_pagefile_bytes": 44752896
+        },
+        "captures": [
+          {
+            "success": true,
+            "capture_completed": true,
+            "error": null,
+            "phases": {
+              "admission_ns": 12600,
+              "coordination_wait_and_lease_ns": 23800,
+              "resource_preflight_ns": 4129800,
+              "transaction_begin_ns": 11900,
+              "whole_store_decode_validate_ns": 428468300,
+              "indexed_replay_and_freeze_ns": 332856700,
+              "full_domain_and_graph_ns": 23500,
+              "core_scheduler_ns": 81833200,
+              "final_identity_check_ns": 4938600,
+              "rollback_and_passive_close_ns": 342000,
+              "capture_through_release_ns": 852680100,
+              "synthetic_projection_encoding_ns": 83008700
+            },
+            "total_query_ns": 935746300,
+            "hold_seconds": 0.8526486,
+            "hold_within_one_second": true,
+            "resources_closed": true,
+            "closed_under_active_work": false,
+            "no_usable_prefix_on_error": false,
+            "cleanup_acknowledged": true,
+            "transaction_inactive_observed": true,
+            "connection_already_closed": false,
+            "acknowledgement_scope": "Synchronous capture body; no internal detached worker. Closed-connection property failure implies already-closed Python SQLite handle.",
+            "coordination_after": {
+              "readers": 0,
+              "writer": false,
+              "waiting_readers": 0,
+              "waiting_writers": 0,
+              "closing": false,
+              "lost": false,
+              "closed": false,
+              "close_in_progress": false,
+              "hold_overruns": 0
+            },
+            "admission_after": {
+              "active": 0,
+              "sources": [],
+              "principals": []
+            },
+            "observation": {
+              "scheduler_state": "evaluated",
+              "occupied_run_ids": [],
+              "tasks": 1,
+              "output_bytes": 1744507,
+              "continuation": "unassessed",
+              "projection_notice": "Synthetic scheduler/allocation structure; not a P04 success DTO"
+            }
+          }
+        ],
+        "elapsed_ns": 941472100,
+        "process_after_query": {
+          "working_set_bytes": 79724544,
+          "peak_working_set_bytes": 87408640,
+          "private_bytes": 64229376,
+          "peak_pagefile_bytes": 72253440
+        },
+        "admission_after": {
+          "active": 0,
+          "sources": [],
+          "principals": []
+        },
+        "envelopes_after_query": [
+          {
+            "identity": [
+              1801039310864222624,
+              2251799814693246
+            ],
+            "files": {
+              "database": 4575232,
+              "-wal": null,
+              "-shm": null,
+              "-journal": null
+            },
+            "database_limit_bytes": 67108864,
+            "within_database_limit": true,
+            "qualification": "Logical file sizes only; native/resident/sidecar growth bounds unproved."
+          }
+        ],
+        "shutdown_after_capture": [
+          {
+            "closed": true,
+            "elapsed_seconds": 0.0
+          }
+        ],
+        "fixture_handles_close_ns": 489900,
+        "process_after_cleanup": {
+          "working_set_bytes": 71430144,
+          "peak_working_set_bytes": 87408640,
+          "private_bytes": 55701504,
+          "peak_pagefile_bytes": 72253440
+        },
+        "blocking_hold_failure": false,
+        "no_usable_prefix_on_failures": true,
+        "cleanup_acknowledged_only_after_work": true,
+        "fault_qualification": "Injected function-entry gates/delays and finite synthetic work; no arbitrary OS-I/O preemption proof. Uncooperative >1s cases are intentional counterexamples, not P07 passes.",
+        "assertion_failures": []
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0c\\run_experiments.py",
+        "--worker",
+        "timing",
+        "alpha_max",
+        "none"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 1598139900,
+      "stderr": "",
+      "measurement": {
+        "mode": "timing",
+        "shape": "alpha_max",
+        "fault": "none",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "trace_initially_active": false,
+        "startup_trace_memory": null,
+        "native_sqlite": {
+          "status": "UNAVAILABLE",
+          "exact_backing_library_status_api_established": false,
+          "reason": "No safely established status interface for the exact SQLite library backing Python.",
+          "unrelated_library_loaded": false,
+          "query_native_peak_verified": false
+        },
+        "conditions": "Fresh synthetic setup primes OS cache; not cold-disk or production-owner evidence.",
+        "fixtures": [
+          {
+            "shape": "alpha_max",
+            "events": 9998,
+            "tasks": 100,
+            "dependencies": 4753,
+            "metadata_bytes": 3383505,
+            "canonical_rows_sha256": "6a6130f5e11680b7195740bdd295bab95a24ae267a0a44e09b318d09ede58e17",
+            "graph_sha256": "536a29c38ee7fa03299dbdbcc08f2af74d3ddd40cbd1f0b878271e262aa39271",
+            "alpha_supported": true,
+            "max_concurrency": 2,
+            "setup_file_identity": [
+              1801039310864222624,
+              2533274791403902
+            ]
+          }
+        ],
+        "process_before": {
+          "working_set_bytes": 56770560,
+          "peak_working_set_bytes": 62091264,
+          "private_bytes": 42475520,
+          "peak_pagefile_bytes": 46374912
+        },
+        "captures": [
+          {
+            "success": true,
+            "capture_completed": true,
+            "error": null,
+            "phases": {
+              "admission_ns": 16000,
+              "coordination_wait_and_lease_ns": 34100,
+              "resource_preflight_ns": 4423300,
+              "transaction_begin_ns": 15500,
+              "whole_store_decode_validate_ns": 408008400,
+              "indexed_replay_and_freeze_ns": 375235500,
+              "full_domain_and_graph_ns": 31471400,
+              "core_scheduler_ns": 96646400,
+              "final_identity_check_ns": 5373200,
+              "rollback_and_passive_close_ns": 324900,
+              "capture_through_release_ns": 921597200,
+              "synthetic_projection_encoding_ns": 90698200
+            },
+            "total_query_ns": 1012355200,
+            "hold_seconds": 0.9215573,
+            "hold_within_one_second": true,
+            "resources_closed": true,
+            "closed_under_active_work": false,
+            "no_usable_prefix_on_error": false,
+            "cleanup_acknowledged": true,
+            "transaction_inactive_observed": true,
+            "connection_already_closed": false,
+            "acknowledgement_scope": "Synchronous capture body; no internal detached worker. Closed-connection property failure implies already-closed Python SQLite handle.",
+            "coordination_after": {
+              "readers": 0,
+              "writer": false,
+              "waiting_readers": 0,
+              "waiting_writers": 0,
+              "closing": false,
+              "lost": false,
+              "closed": false,
+              "close_in_progress": false,
+              "hold_overruns": 0
+            },
+            "admission_after": {
+              "active": 0,
+              "sources": [],
+              "principals": []
+            },
+            "observation": {
+              "scheduler_state": "evaluated",
+              "occupied_run_ids": [
+                "t0098-r32",
+                "t0099-r32"
+              ],
+              "tasks": 100,
+              "output_bytes": 1932463,
+              "continuation": "unassessed",
+              "projection_notice": "Synthetic scheduler/allocation structure; not a P04 success DTO"
+            }
+          }
+        ],
+        "elapsed_ns": 1019259300,
+        "process_after_query": {
+          "working_set_bytes": 81289216,
+          "peak_working_set_bytes": 90382336,
+          "private_bytes": 66600960,
+          "peak_pagefile_bytes": 76197888
+        },
+        "admission_after": {
+          "active": 0,
+          "sources": [],
+          "principals": []
+        },
+        "envelopes_after_query": [
+          {
+            "identity": [
+              1801039310864222624,
+              2533274791403902
+            ],
+            "files": {
+              "database": 3837952,
+              "-wal": null,
+              "-shm": null,
+              "-journal": null
+            },
+            "database_limit_bytes": 67108864,
+            "within_database_limit": true,
+            "qualification": "Logical file sizes only; native/resident/sidecar growth bounds unproved."
+          }
+        ],
+        "shutdown_after_capture": [
+          {
+            "closed": true,
+            "elapsed_seconds": 0.0
+          }
+        ],
+        "fixture_handles_close_ns": 609300,
+        "process_after_cleanup": {
+          "working_set_bytes": 70434816,
+          "peak_working_set_bytes": 90382336,
+          "private_bytes": 54886400,
+          "peak_pagefile_bytes": 76197888
+        },
+        "blocking_hold_failure": false,
+        "no_usable_prefix_on_failures": true,
+        "cleanup_acknowledged_only_after_work": true,
+        "fault_qualification": "Injected function-entry gates/delays and finite synthetic work; no arbitrary OS-I/O preemption proof. Uncooperative >1s cases are intentional counterexamples, not P07 passes.",
+        "assertion_failures": []
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0c\\run_experiments.py",
+        "--worker",
+        "timing",
+        "core_max",
+        "none"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 898917200,
+      "stderr": "",
+      "measurement": {
+        "mode": "timing",
+        "shape": "core_max",
+        "fault": "none",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "trace_initially_active": false,
+        "startup_trace_memory": null,
+        "native_sqlite": {
+          "status": "UNAVAILABLE",
+          "exact_backing_library_status_api_established": false,
+          "reason": "No safely established status interface for the exact SQLite library backing Python.",
+          "unrelated_library_loaded": false,
+          "query_native_peak_verified": false
+        },
+        "conditions": "Fresh synthetic setup primes OS cache; not cold-disk or production-owner evidence.",
+        "fixtures": [
+          {
+            "shape": "core_max",
+            "events": 3998,
+            "tasks": 1000,
+            "dependencies": 10000,
+            "metadata_bytes": 960513,
+            "canonical_rows_sha256": "24b4558418991299689da5b1b688bde4eff7335175bf74d6e5d4210c840e81cf",
+            "graph_sha256": "74609e6fd271c11587d9852014fdf002ed630508a84fa3c496245301d5803a23",
+            "alpha_supported": false,
+            "max_concurrency": 2,
+            "setup_file_identity": [
+              1801039310864222624,
+              2814749768114558
+            ]
+          }
+        ],
+        "process_before": {
+          "working_set_bytes": 52113408,
+          "peak_working_set_bytes": 52260864,
+          "private_bytes": 36315136,
+          "peak_pagefile_bytes": 37412864
+        },
+        "captures": [
+          {
+            "success": true,
+            "capture_completed": true,
+            "error": null,
+            "phases": {
+              "admission_ns": 13700,
+              "coordination_wait_and_lease_ns": 24900,
+              "resource_preflight_ns": 4195700,
+              "transaction_begin_ns": 12800,
+              "whole_store_decode_validate_ns": 132935600,
+              "indexed_replay_and_freeze_ns": 110492900,
+              "full_domain_and_graph_ns": 12236400,
+              "core_scheduler_ns": 44044300,
+              "final_identity_check_ns": 4978400,
+              "rollback_and_passive_close_ns": 207600,
+              "capture_through_release_ns": 309184400,
+              "synthetic_projection_encoding_ns": 71035000
+            },
+            "total_query_ns": 380275200,
+            "hold_seconds": 0.3091511,
+            "hold_within_one_second": true,
+            "resources_closed": true,
+            "closed_under_active_work": false,
+            "no_usable_prefix_on_error": false,
+            "cleanup_acknowledged": true,
+            "transaction_inactive_observed": true,
+            "connection_already_closed": false,
+            "acknowledgement_scope": "Synchronous capture body; no internal detached worker. Closed-connection property failure implies already-closed Python SQLite handle.",
+            "coordination_after": {
+              "readers": 0,
+              "writer": false,
+              "waiting_readers": 0,
+              "waiting_writers": 0,
+              "closing": false,
+              "lost": false,
+              "closed": false,
+              "close_in_progress": false,
+              "hold_overruns": 0
+            },
+            "admission_after": {
+              "active": 0,
+              "sources": [],
+              "principals": []
+            },
+            "observation": {
+              "scheduler_state": "evaluated",
+              "occupied_run_ids": [
+                "t0998-r0",
+                "t0999-r0"
+              ],
+              "tasks": 1000,
+              "output_bytes": 1412284,
+              "continuation": "unassessed",
+              "projection_notice": "Synthetic scheduler/allocation structure; not a P04 success DTO"
+            }
+          }
+        ],
+        "elapsed_ns": 382927300,
+        "process_after_query": {
+          "working_set_bytes": 62693376,
+          "peak_working_set_bytes": 68468736,
+          "private_bytes": 47742976,
+          "peak_pagefile_bytes": 53071872
+        },
+        "admission_after": {
+          "active": 0,
+          "sources": [],
+          "principals": []
+        },
+        "envelopes_after_query": [
+          {
+            "identity": [
+              1801039310864222624,
+              2814749768114558
+            ],
+            "files": {
+              "database": 1036288,
+              "-wal": null,
+              "-shm": null,
+              "-journal": null
+            },
+            "database_limit_bytes": 67108864,
+            "within_database_limit": true,
+            "qualification": "Logical file sizes only; native/resident/sidecar growth bounds unproved."
+          }
+        ],
+        "shutdown_after_capture": [
+          {
+            "closed": true,
+            "elapsed_seconds": 0.0
+          }
+        ],
+        "fixture_handles_close_ns": 278500,
+        "process_after_cleanup": {
+          "working_set_bytes": 58118144,
+          "peak_working_set_bytes": 68468736,
+          "private_bytes": 42450944,
+          "peak_pagefile_bytes": 53071872
+        },
+        "blocking_hold_failure": false,
+        "no_usable_prefix_on_failures": true,
+        "cleanup_acknowledged_only_after_work": true,
+        "fault_qualification": "Injected function-entry gates/delays and finite synthetic work; no arbitrary OS-I/O preemption proof. Uncooperative >1s cases are intentional counterexamples, not P07 passes.",
+        "assertion_failures": []
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0c\\run_experiments.py",
+        "--worker",
+        "allocation",
+        "representative",
+        "none"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 463390900,
+      "stderr": "",
+      "measurement": {
+        "mode": "allocation",
+        "shape": "representative",
+        "fault": "none",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "trace_initially_active": false,
+        "startup_trace_memory": null,
+        "native_sqlite": {
+          "status": "UNAVAILABLE",
+          "exact_backing_library_status_api_established": false,
+          "reason": "No safely established status interface for the exact SQLite library backing Python.",
+          "unrelated_library_loaded": false,
+          "query_native_peak_verified": false
+        },
+        "conditions": "Fresh synthetic setup primes OS cache; not cold-disk or production-owner evidence.",
+        "fixtures": [
+          {
+            "shape": "representative",
+            "events": 78,
+            "tasks": 20,
+            "dependencies": 0,
+            "metadata_bytes": 18695,
+            "canonical_rows_sha256": "db5a1acd2d5904f88e9e90f76b66fc1016757c03370cafde727df4a0b00beaf1",
+            "graph_sha256": "4fee8c35c06c03fe2dd3373423588db37605eb22a6d8f96c6a261bf97bfc4c18",
+            "alpha_supported": true,
+            "max_concurrency": 2,
+            "setup_file_identity": [
+              1801039310864222624,
+              3096224744825214
+            ]
+          }
+        ],
+        "process_before": {
+          "working_set_bytes": 43036672,
+          "peak_working_set_bytes": 43540480,
+          "private_bytes": 27185152,
+          "peak_pagefile_bytes": 28672000
+        },
+        "captures": [
+          {
+            "success": true,
+            "capture_completed": true,
+            "error": null,
+            "phases": {
+              "admission_ns": 26200,
+              "coordination_wait_and_lease_ns": 41400,
+              "resource_preflight_ns": 9834500,
+              "transaction_begin_ns": 26200,
+              "whole_store_decode_validate_ns": 16696500,
+              "indexed_replay_and_freeze_ns": 14860400,
+              "full_domain_and_graph_ns": 195700,
+              "core_scheduler_ns": 3868000,
+              "final_identity_check_ns": 9111500,
+              "rollback_and_passive_close_ns": 76000,
+              "capture_through_release_ns": 54853100,
+              "synthetic_projection_encoding_ns": 4556000
+            },
+            "total_query_ns": 59483500,
+            "hold_seconds": 0.0547945,
+            "hold_within_one_second": true,
+            "resources_closed": true,
+            "closed_under_active_work": false,
+            "no_usable_prefix_on_error": false,
+            "cleanup_acknowledged": true,
+            "transaction_inactive_observed": true,
+            "connection_already_closed": false,
+            "acknowledgement_scope": "Synchronous capture body; no internal detached worker. Closed-connection property failure implies already-closed Python SQLite handle.",
+            "coordination_after": {
+              "readers": 0,
+              "writer": false,
+              "waiting_readers": 0,
+              "waiting_writers": 0,
+              "closing": false,
+              "lost": false,
+              "closed": false,
+              "close_in_progress": false,
+              "hold_overruns": 0
+            },
+            "admission_after": {
+              "active": 0,
+              "sources": [],
+              "principals": []
+            },
+            "observation": {
+              "scheduler_state": "evaluated",
+              "occupied_run_ids": [
+                "t0018-r0",
+                "t0019-r0"
+              ],
+              "tasks": 20,
+              "output_bytes": 16584,
+              "continuation": "unassessed",
+              "projection_notice": "Synthetic scheduler/allocation structure; not a P04 success DTO"
+            }
+          }
+        ],
+        "elapsed_ns": 59783500,
+        "python_trace": {
+          "baseline_current_bytes": 0,
+          "baseline_peak_bytes": 0,
+          "current_after_queries_bytes": 86409,
+          "peak_bytes": 310692,
+          "qualification": "Complete attempted query/cancellation work including synthetic projection when reached. Timing under tracing is instrumentation-inflated; no per-query native attribution."
+        },
+        "process_after_query": {
+          "working_set_bytes": 43708416,
+          "peak_working_set_bytes": 43708416,
+          "private_bytes": 28680192,
+          "peak_pagefile_bytes": 28680192
+        },
+        "admission_after": {
+          "active": 0,
+          "sources": [],
+          "principals": []
+        },
+        "envelopes_after_query": [
+          {
+            "identity": [
+              1801039310864222624,
+              3096224744825214
+            ],
+            "files": {
+              "database": 32768,
+              "-wal": null,
+              "-shm": null,
+              "-journal": null
+            },
+            "database_limit_bytes": 67108864,
+            "within_database_limit": true,
+            "qualification": "Logical file sizes only; native/resident/sidecar growth bounds unproved."
+          }
+        ],
+        "shutdown_after_capture": [
+          {
+            "closed": true,
+            "elapsed_seconds": 0.0
+          }
+        ],
+        "fixture_handles_close_ns": 100300,
+        "process_after_cleanup": {
+          "working_set_bytes": 43708416,
+          "peak_working_set_bytes": 43708416,
+          "private_bytes": 28680192,
+          "peak_pagefile_bytes": 28680192
+        },
+        "blocking_hold_failure": false,
+        "no_usable_prefix_on_failures": true,
+        "cleanup_acknowledged_only_after_work": true,
+        "fault_qualification": "Injected function-entry gates/delays and finite synthetic work; no arbitrary OS-I/O preemption proof. Uncooperative >1s cases are intentional counterexamples, not P07 passes.",
+        "assertion_failures": []
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0c\\run_experiments.py",
+        "--worker",
+        "allocation",
+        "alpha_max",
+        "none"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 1594697100,
+      "stderr": "",
+      "measurement": {
+        "mode": "allocation",
+        "shape": "alpha_max",
+        "fault": "none",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "trace_initially_active": false,
+        "startup_trace_memory": null,
+        "native_sqlite": {
+          "status": "UNAVAILABLE",
+          "exact_backing_library_status_api_established": false,
+          "reason": "No safely established status interface for the exact SQLite library backing Python.",
+          "unrelated_library_loaded": false,
+          "query_native_peak_verified": false
+        },
+        "conditions": "Fresh synthetic setup primes OS cache; not cold-disk or production-owner evidence.",
+        "fixtures": [
+          {
+            "shape": "alpha_max",
+            "events": 9998,
+            "tasks": 100,
+            "dependencies": 4753,
+            "metadata_bytes": 3383505,
+            "canonical_rows_sha256": "6a6130f5e11680b7195740bdd295bab95a24ae267a0a44e09b318d09ede58e17",
+            "graph_sha256": "536a29c38ee7fa03299dbdbcc08f2af74d3ddd40cbd1f0b878271e262aa39271",
+            "alpha_supported": true,
+            "max_concurrency": 2,
+            "setup_file_identity": [
+              1801039310864222624,
+              3377699721535870
+            ]
+          }
+        ],
+        "process_before": {
+          "working_set_bytes": 58134528,
+          "peak_working_set_bytes": 63574016,
+          "private_bytes": 41873408,
+          "peak_pagefile_bytes": 46858240
+        },
+        "captures": [
+          {
+            "success": false,
+            "capture_completed": false,
+            "error": {
+              "type": "CaptureDeadlineExceeded",
+              "message": "synthetic capture hold expired"
+            },
+            "phases": {
+              "admission_ns": 43800,
+              "coordination_wait_and_lease_ns": 52500,
+              "resource_preflight_ns": 8529300,
+              "transaction_begin_ns": 22400,
+              "whole_store_decode_validate_ns": 984280200,
+              "rollback_and_passive_close_ns": 318600
+            },
+            "total_query_ns": 1007719500,
+            "hold_seconds": 0.9932493,
+            "hold_within_one_second": true,
+            "resources_closed": true,
+            "closed_under_active_work": false,
+            "no_usable_prefix_on_error": true,
+            "cleanup_acknowledged": true,
+            "transaction_inactive_observed": true,
+            "connection_already_closed": false,
+            "acknowledgement_scope": "Synchronous capture body; no internal detached worker. Closed-connection property failure implies already-closed Python SQLite handle.",
+            "coordination_after": {
+              "readers": 0,
+              "writer": false,
+              "waiting_readers": 0,
+              "waiting_writers": 0,
+              "closing": false,
+              "lost": false,
+              "closed": false,
+              "close_in_progress": false,
+              "hold_overruns": 0
+            },
+            "admission_after": {
+              "active": 0,
+              "sources": [],
+              "principals": []
+            },
+            "observation": null
+          }
+        ],
+        "elapsed_ns": 1007838700,
+        "python_trace": {
+          "baseline_current_bytes": 0,
+          "baseline_peak_bytes": 0,
+          "current_after_queries_bytes": 435135,
+          "peak_bytes": 9040243,
+          "qualification": "Complete attempted query/cancellation work including synthetic projection when reached. Timing under tracing is instrumentation-inflated; no per-query native attribution."
+        },
+        "process_after_query": {
+          "working_set_bytes": 57724928,
+          "peak_working_set_bytes": 76804096,
+          "private_bytes": 42135552,
+          "peak_pagefile_bytes": 60596224
+        },
+        "admission_after": {
+          "active": 0,
+          "sources": [],
+          "principals": []
+        },
+        "envelopes_after_query": [
+          {
+            "identity": [
+              1801039310864222624,
+              3377699721535870
+            ],
+            "files": {
+              "database": 3837952,
+              "-wal": null,
+              "-shm": null,
+              "-journal": null
+            },
+            "database_limit_bytes": 67108864,
+            "within_database_limit": true,
+            "qualification": "Logical file sizes only; native/resident/sidecar growth bounds unproved."
+          }
+        ],
+        "shutdown_after_capture": [
+          {
+            "closed": true,
+            "elapsed_seconds": 0.0
+          }
+        ],
+        "fixture_handles_close_ns": 398500,
+        "process_after_cleanup": {
+          "working_set_bytes": 55169024,
+          "peak_working_set_bytes": 76804096,
+          "private_bytes": 38445056,
+          "peak_pagefile_bytes": 60596224
+        },
+        "blocking_hold_failure": false,
+        "no_usable_prefix_on_failures": true,
+        "cleanup_acknowledged_only_after_work": true,
+        "fault_qualification": "Injected function-entry gates/delays and finite synthetic work; no arbitrary OS-I/O preemption proof. Uncooperative >1s cases are intentional counterexamples, not P07 passes.",
+        "assertion_failures": []
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0c\\run_experiments.py",
+        "--worker",
+        "concurrent",
+        "representative",
+        "none"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 534729500,
+      "stderr": "",
+      "measurement": {
+        "mode": "concurrent",
+        "shape": "representative",
+        "fault": "none",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "trace_initially_active": false,
+        "startup_trace_memory": null,
+        "native_sqlite": {
+          "status": "UNAVAILABLE",
+          "exact_backing_library_status_api_established": false,
+          "reason": "No safely established status interface for the exact SQLite library backing Python.",
+          "unrelated_library_loaded": false,
+          "query_native_peak_verified": false
+        },
+        "conditions": "Fresh synthetic setup primes OS cache; not cold-disk or production-owner evidence.",
+        "fixtures": [
+          {
+            "shape": "representative",
+            "events": 78,
+            "tasks": 20,
+            "dependencies": 0,
+            "metadata_bytes": 18695,
+            "canonical_rows_sha256": "db5a1acd2d5904f88e9e90f76b66fc1016757c03370cafde727df4a0b00beaf1",
+            "graph_sha256": "4fee8c35c06c03fe2dd3373423588db37605eb22a6d8f96c6a261bf97bfc4c18",
+            "alpha_supported": true,
+            "max_concurrency": 2,
+            "setup_file_identity": [
+              1801039310864222624,
+              3659174698246526
+            ]
+          },
+          {
+            "shape": "representative",
+            "events": 78,
+            "tasks": 20,
+            "dependencies": 0,
+            "metadata_bytes": 18695,
+            "canonical_rows_sha256": "db5a1acd2d5904f88e9e90f76b66fc1016757c03370cafde727df4a0b00beaf1",
+            "graph_sha256": "4fee8c35c06c03fe2dd3373423588db37605eb22a6d8f96c6a261bf97bfc4c18",
+            "alpha_supported": true,
+            "max_concurrency": 2,
+            "setup_file_identity": [
+              1801039310864222624,
+              562949954429312
+            ]
+          }
+        ],
+        "process_before": {
+          "working_set_bytes": 43347968,
+          "peak_working_set_bytes": 43880448,
+          "private_bytes": 27582464,
+          "peak_pagefile_bytes": 28909568
+        },
+        "captures": [
+          {
+            "success": true,
+            "capture_completed": true,
+            "error": null,
+            "phases": {
+              "admission_ns": 14600,
+              "coordination_wait_and_lease_ns": 24700,
+              "resource_preflight_ns": 14827700,
+              "transaction_begin_ns": 15900,
+              "whole_store_decode_validate_ns": 50957600,
+              "indexed_replay_and_freeze_ns": 11750400,
+              "full_domain_and_graph_ns": 176700,
+              "core_scheduler_ns": 3544500,
+              "final_identity_check_ns": 16948400,
+              "rollback_and_passive_close_ns": 64300,
+              "capture_through_release_ns": 98422400,
+              "synthetic_projection_encoding_ns": 4306900
+            },
+            "total_query_ns": 102789000,
+            "hold_seconds": 0.0983845,
+            "hold_within_one_second": true,
+            "resources_closed": true,
+            "closed_under_active_work": false,
+            "no_usable_prefix_on_error": false,
+            "cleanup_acknowledged": true,
+            "transaction_inactive_observed": true,
+            "connection_already_closed": false,
+            "acknowledgement_scope": "Synchronous capture body; no internal detached worker. Closed-connection property failure implies already-closed Python SQLite handle.",
+            "coordination_after": {
+              "readers": 0,
+              "writer": false,
+              "waiting_readers": 0,
+              "waiting_writers": 0,
+              "closing": false,
+              "lost": false,
+              "closed": false,
+              "close_in_progress": false,
+              "hold_overruns": 0
+            },
+            "admission_after": {
+              "active": 1,
+              "sources": [
+                "s0"
+              ],
+              "principals": [
+                "p0"
+              ]
+            },
+            "observation": {
+              "scheduler_state": "evaluated",
+              "occupied_run_ids": [
+                "t0018-r0",
+                "t0019-r0"
+              ],
+              "tasks": 20,
+              "output_bytes": 16584,
+              "continuation": "unassessed",
+              "projection_notice": "Synthetic scheduler/allocation structure; not a P04 success DTO"
+            }
+          },
+          {
+            "success": true,
+            "capture_completed": true,
+            "error": null,
+            "phases": {
+              "admission_ns": 17000,
+              "coordination_wait_and_lease_ns": 33700,
+              "resource_preflight_ns": 14708000,
+              "transaction_begin_ns": 43900,
+              "whole_store_decode_validate_ns": 17242400,
+              "indexed_replay_and_freeze_ns": 12118200,
+              "full_domain_and_graph_ns": 168800,
+              "core_scheduler_ns": 3552300,
+              "final_identity_check_ns": 46340100,
+              "rollback_and_passive_close_ns": 117900,
+              "capture_through_release_ns": 94447600,
+              "synthetic_projection_encoding_ns": 8908100
+            },
+            "total_query_ns": 103459300,
+            "hold_seconds": 0.0944025,
+            "hold_within_one_second": true,
+            "resources_closed": true,
+            "closed_under_active_work": false,
+            "no_usable_prefix_on_error": false,
+            "cleanup_acknowledged": true,
+            "transaction_inactive_observed": true,
+            "connection_already_closed": false,
+            "acknowledgement_scope": "Synchronous capture body; no internal detached worker. Closed-connection property failure implies already-closed Python SQLite handle.",
+            "coordination_after": {
+              "readers": 0,
+              "writer": false,
+              "waiting_readers": 0,
+              "waiting_writers": 0,
+              "closing": false,
+              "lost": false,
+              "closed": false,
+              "close_in_progress": false,
+              "hold_overruns": 0
+            },
+            "admission_after": {
+              "active": 0,
+              "sources": [],
+              "principals": []
+            },
+            "observation": {
+              "scheduler_state": "evaluated",
+              "occupied_run_ids": [
+                "t0018-r0",
+                "t0019-r0"
+              ],
+              "tasks": 20,
+              "output_bytes": 16584,
+              "continuation": "unassessed",
+              "projection_notice": "Synthetic scheduler/allocation structure; not a P04 success DTO"
+            }
+          }
+        ],
+        "thread_errors": [],
+        "overlap_admissions": [
+          {
+            "active": 2,
+            "sources": [
+              "s0",
+              "s1"
+            ],
+            "principals": [
+              "p0",
+              "p1"
+            ]
+          }
+        ],
+        "threads_joined": true,
+        "per_query_native_attribution": "UNVERIFIED; shared-process trace cannot isolate native/thread ownership",
+        "elapsed_ns": 104053300,
+        "python_trace": {
+          "baseline_current_bytes": 0,
+          "baseline_peak_bytes": 0,
+          "current_after_queries_bytes": 150395,
+          "peak_bytes": 583663,
+          "qualification": "Complete attempted query/cancellation work including synthetic projection when reached. Timing under tracing is instrumentation-inflated; no per-query native attribution."
+        },
+        "process_after_query": {
+          "working_set_bytes": 44097536,
+          "peak_working_set_bytes": 44900352,
+          "private_bytes": 28065792,
+          "peak_pagefile_bytes": 28909568
+        },
+        "admission_after": {
+          "active": 0,
+          "sources": [],
+          "principals": []
+        },
+        "envelopes_after_query": [
+          {
+            "identity": [
+              1801039310864222624,
+              3659174698246526
+            ],
+            "files": {
+              "database": 32768,
+              "-wal": null,
+              "-shm": null,
+              "-journal": null
+            },
+            "database_limit_bytes": 67108864,
+            "within_database_limit": true,
+            "qualification": "Logical file sizes only; native/resident/sidecar growth bounds unproved."
+          },
+          {
+            "identity": [
+              1801039310864222624,
+              562949954429312
+            ],
+            "files": {
+              "database": 32768,
+              "-wal": null,
+              "-shm": null,
+              "-journal": null
+            },
+            "database_limit_bytes": 67108864,
+            "within_database_limit": true,
+            "qualification": "Logical file sizes only; native/resident/sidecar growth bounds unproved."
+          }
+        ],
+        "shutdown_after_capture": [
+          {
+            "closed": true,
+            "elapsed_seconds": 0.0
+          },
+          {
+            "closed": true,
+            "elapsed_seconds": 0.0
+          }
+        ],
+        "fixture_handles_close_ns": 156500,
+        "process_after_cleanup": {
+          "working_set_bytes": 43360256,
+          "peak_working_set_bytes": 44900352,
+          "private_bytes": 26951680,
+          "peak_pagefile_bytes": 28909568
+        },
+        "blocking_hold_failure": false,
+        "no_usable_prefix_on_failures": true,
+        "cleanup_acknowledged_only_after_work": true,
+        "fault_qualification": "Injected function-entry gates/delays and finite synthetic work; no arbitrary OS-I/O preemption proof. Uncooperative >1s cases are intentional counterexamples, not P07 passes.",
+        "assertion_failures": []
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0c\\run_experiments.py",
+        "--worker",
+        "fault",
+        "representative",
+        "decode"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 406841000,
+      "stderr": "",
+      "measurement": {
+        "mode": "fault",
+        "shape": "representative",
+        "fault": "decode",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "trace_initially_active": false,
+        "startup_trace_memory": null,
+        "native_sqlite": {
+          "status": "UNAVAILABLE",
+          "exact_backing_library_status_api_established": false,
+          "reason": "No safely established status interface for the exact SQLite library backing Python.",
+          "unrelated_library_loaded": false,
+          "query_native_peak_verified": false
+        },
+        "conditions": "Fresh synthetic setup primes OS cache; not cold-disk or production-owner evidence.",
+        "fixtures": [
+          {
+            "shape": "representative",
+            "events": 78,
+            "tasks": 20,
+            "dependencies": 0,
+            "metadata_bytes": 18695,
+            "canonical_rows_sha256": "db5a1acd2d5904f88e9e90f76b66fc1016757c03370cafde727df4a0b00beaf1",
+            "graph_sha256": "4fee8c35c06c03fe2dd3373423588db37605eb22a6d8f96c6a261bf97bfc4c18",
+            "alpha_supported": true,
+            "max_concurrency": 2,
+            "setup_file_identity": [
+              1801039310864222624,
+              3940649674957182
+            ]
+          }
+        ],
+        "process_before": {
+          "working_set_bytes": 43270144,
+          "peak_working_set_bytes": 43270144,
+          "private_bytes": 27287552,
+          "peak_pagefile_bytes": 28057600
+        },
+        "captures": [
+          {
+            "success": false,
+            "capture_completed": false,
+            "error": {
+              "type": "CoordinationCancelled",
+              "message": "synthetic cancellation requested"
+            },
+            "phases": {
+              "admission_ns": 11100,
+              "coordination_wait_and_lease_ns": 22800,
+              "resource_preflight_ns": 4256400,
+              "transaction_begin_ns": 8500,
+              "whole_store_decode_validate_ns": 30794700,
+              "rollback_and_passive_close_ns": 175000
+            },
+            "total_query_ns": 35381200,
+            "hold_seconds": 0.035273,
+            "hold_within_one_second": true,
+            "resources_closed": true,
+            "closed_under_active_work": false,
+            "no_usable_prefix_on_error": true,
+            "cleanup_acknowledged": true,
+            "transaction_inactive_observed": true,
+            "connection_already_closed": false,
+            "acknowledgement_scope": "Synchronous capture body; no internal detached worker. Closed-connection property failure implies already-closed Python SQLite handle.",
+            "coordination_after": {
+              "readers": 0,
+              "writer": false,
+              "waiting_readers": 0,
+              "waiting_writers": 0,
+              "closing": false,
+              "lost": false,
+              "closed": false,
+              "close_in_progress": false,
+              "hold_overruns": 0
+            },
+            "admission_after": {
+              "active": 0,
+              "sources": [],
+              "principals": []
+            },
+            "observation": null
+          }
+        ],
+        "elapsed_ns": 35426900,
+        "process_after_query": {
+          "working_set_bytes": 43380736,
+          "peak_working_set_bytes": 43380736,
+          "private_bytes": 27844608,
+          "peak_pagefile_bytes": 28057600
+        },
+        "admission_after": {
+          "active": 0,
+          "sources": [],
+          "principals": []
+        },
+        "envelopes_after_query": [
+          {
+            "identity": [
+              1801039310864222624,
+              3940649674957182
+            ],
+            "files": {
+              "database": 32768,
+              "-wal": null,
+              "-shm": null,
+              "-journal": null
+            },
+            "database_limit_bytes": 67108864,
+            "within_database_limit": true,
+            "qualification": "Logical file sizes only; native/resident/sidecar growth bounds unproved."
+          }
+        ],
+        "shutdown_after_capture": [
+          {
+            "closed": true,
+            "elapsed_seconds": 0.0
+          }
+        ],
+        "fixture_handles_close_ns": 80100,
+        "process_after_cleanup": {
+          "working_set_bytes": 43380736,
+          "peak_working_set_bytes": 43380736,
+          "private_bytes": 27844608,
+          "peak_pagefile_bytes": 28057600
+        },
+        "blocking_hold_failure": false,
+        "no_usable_prefix_on_failures": true,
+        "cleanup_acknowledged_only_after_work": true,
+        "fault_qualification": "Injected function-entry gates/delays and finite synthetic work; no arbitrary OS-I/O preemption proof. Uncooperative >1s cases are intentional counterexamples, not P07 passes.",
+        "assertion_failures": []
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0c\\run_experiments.py",
+        "--worker",
+        "fault",
+        "representative",
+        "replay"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 428746500,
+      "stderr": "",
+      "measurement": {
+        "mode": "fault",
+        "shape": "representative",
+        "fault": "replay",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "trace_initially_active": false,
+        "startup_trace_memory": null,
+        "native_sqlite": {
+          "status": "UNAVAILABLE",
+          "exact_backing_library_status_api_established": false,
+          "reason": "No safely established status interface for the exact SQLite library backing Python.",
+          "unrelated_library_loaded": false,
+          "query_native_peak_verified": false
+        },
+        "conditions": "Fresh synthetic setup primes OS cache; not cold-disk or production-owner evidence.",
+        "fixtures": [
+          {
+            "shape": "representative",
+            "events": 78,
+            "tasks": 20,
+            "dependencies": 0,
+            "metadata_bytes": 18695,
+            "canonical_rows_sha256": "db5a1acd2d5904f88e9e90f76b66fc1016757c03370cafde727df4a0b00beaf1",
+            "graph_sha256": "4fee8c35c06c03fe2dd3373423588db37605eb22a6d8f96c6a261bf97bfc4c18",
+            "alpha_supported": true,
+            "max_concurrency": 2,
+            "setup_file_identity": [
+              1801039310864222624,
+              4222124651667838
+            ]
+          }
+        ],
+        "process_before": {
+          "working_set_bytes": 43073536,
+          "peak_working_set_bytes": 43606016,
+          "private_bytes": 26980352,
+          "peak_pagefile_bytes": 28499968
+        },
+        "captures": [
+          {
+            "success": false,
+            "capture_completed": false,
+            "error": {
+              "type": "CoordinationCancelled",
+              "message": "synthetic cancellation requested"
+            },
+            "phases": {
+              "admission_ns": 13100,
+              "coordination_wait_and_lease_ns": 26700,
+              "resource_preflight_ns": 4585100,
+              "transaction_begin_ns": 9100,
+              "whole_store_decode_validate_ns": 3169300,
+              "indexed_replay_and_freeze_ns": 33618200,
+              "rollback_and_passive_close_ns": 101200
+            },
+            "total_query_ns": 41588800,
+            "hold_seconds": 0.0415175,
+            "hold_within_one_second": true,
+            "resources_closed": true,
+            "closed_under_active_work": false,
+            "no_usable_prefix_on_error": true,
+            "cleanup_acknowledged": true,
+            "transaction_inactive_observed": true,
+            "connection_already_closed": false,
+            "acknowledgement_scope": "Synchronous capture body; no internal detached worker. Closed-connection property failure implies already-closed Python SQLite handle.",
+            "coordination_after": {
+              "readers": 0,
+              "writer": false,
+              "waiting_readers": 0,
+              "waiting_writers": 0,
+              "closing": false,
+              "lost": false,
+              "closed": false,
+              "close_in_progress": false,
+              "hold_overruns": 0
+            },
+            "admission_after": {
+              "active": 0,
+              "sources": [],
+              "principals": []
+            },
+            "observation": null
+          }
+        ],
+        "elapsed_ns": 41629000,
+        "process_after_query": {
+          "working_set_bytes": 43290624,
+          "peak_working_set_bytes": 43606016,
+          "private_bytes": 27234304,
+          "peak_pagefile_bytes": 28499968
+        },
+        "admission_after": {
+          "active": 0,
+          "sources": [],
+          "principals": []
+        },
+        "envelopes_after_query": [
+          {
+            "identity": [
+              1801039310864222624,
+              4222124651667838
+            ],
+            "files": {
+              "database": 32768,
+              "-wal": null,
+              "-shm": null,
+              "-journal": null
+            },
+            "database_limit_bytes": 67108864,
+            "within_database_limit": true,
+            "qualification": "Logical file sizes only; native/resident/sidecar growth bounds unproved."
+          }
+        ],
+        "shutdown_after_capture": [
+          {
+            "closed": true,
+            "elapsed_seconds": 0.0
+          }
+        ],
+        "fixture_handles_close_ns": 67200,
+        "process_after_cleanup": {
+          "working_set_bytes": 43290624,
+          "peak_working_set_bytes": 43606016,
+          "private_bytes": 27234304,
+          "peak_pagefile_bytes": 28499968
+        },
+        "blocking_hold_failure": false,
+        "no_usable_prefix_on_failures": true,
+        "cleanup_acknowledged_only_after_work": true,
+        "fault_qualification": "Injected function-entry gates/delays and finite synthetic work; no arbitrary OS-I/O preemption proof. Uncooperative >1s cases are intentional counterexamples, not P07 passes.",
+        "assertion_failures": []
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0c\\run_experiments.py",
+        "--worker",
+        "fault",
+        "representative",
+        "scheduler"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 437554300,
+      "stderr": "",
+      "measurement": {
+        "mode": "fault",
+        "shape": "representative",
+        "fault": "scheduler",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "trace_initially_active": false,
+        "startup_trace_memory": null,
+        "native_sqlite": {
+          "status": "UNAVAILABLE",
+          "exact_backing_library_status_api_established": false,
+          "reason": "No safely established status interface for the exact SQLite library backing Python.",
+          "unrelated_library_loaded": false,
+          "query_native_peak_verified": false
+        },
+        "conditions": "Fresh synthetic setup primes OS cache; not cold-disk or production-owner evidence.",
+        "fixtures": [
+          {
+            "shape": "representative",
+            "events": 78,
+            "tasks": 20,
+            "dependencies": 0,
+            "metadata_bytes": 18695,
+            "canonical_rows_sha256": "db5a1acd2d5904f88e9e90f76b66fc1016757c03370cafde727df4a0b00beaf1",
+            "graph_sha256": "4fee8c35c06c03fe2dd3373423588db37605eb22a6d8f96c6a261bf97bfc4c18",
+            "alpha_supported": true,
+            "max_concurrency": 2,
+            "setup_file_identity": [
+              1801039310864222624,
+              4503599628378494
+            ]
+          }
+        ],
+        "process_before": {
+          "working_set_bytes": 42901504,
+          "peak_working_set_bytes": 43290624,
+          "private_bytes": 27037696,
+          "peak_pagefile_bytes": 28303360
+        },
+        "captures": [
+          {
+            "success": false,
+            "capture_completed": false,
+            "error": {
+              "type": "CoordinationCancelled",
+              "message": "synthetic cancellation requested"
+            },
+            "phases": {
+              "admission_ns": 14400,
+              "coordination_wait_and_lease_ns": 34800,
+              "resource_preflight_ns": 4928500,
+              "transaction_begin_ns": 20500,
+              "whole_store_decode_validate_ns": 3075900,
+              "indexed_replay_and_freeze_ns": 2206400,
+              "full_domain_and_graph_ns": 43500,
+              "core_scheduler_ns": 31158200,
+              "rollback_and_passive_close_ns": 110200
+            },
+            "total_query_ns": 41684600,
+            "hold_seconds": 0.0416039,
+            "hold_within_one_second": true,
+            "resources_closed": true,
+            "closed_under_active_work": false,
+            "no_usable_prefix_on_error": true,
+            "cleanup_acknowledged": true,
+            "transaction_inactive_observed": true,
+            "connection_already_closed": false,
+            "acknowledgement_scope": "Synchronous capture body; no internal detached worker. Closed-connection property failure implies already-closed Python SQLite handle.",
+            "coordination_after": {
+              "readers": 0,
+              "writer": false,
+              "waiting_readers": 0,
+              "waiting_writers": 0,
+              "closing": false,
+              "lost": false,
+              "closed": false,
+              "close_in_progress": false,
+              "hold_overruns": 0
+            },
+            "admission_after": {
+              "active": 0,
+              "sources": [],
+              "principals": []
+            },
+            "observation": null
+          }
+        ],
+        "elapsed_ns": 41753700,
+        "process_after_query": {
+          "working_set_bytes": 43126784,
+          "peak_working_set_bytes": 43290624,
+          "private_bytes": 27295744,
+          "peak_pagefile_bytes": 28303360
+        },
+        "admission_after": {
+          "active": 0,
+          "sources": [],
+          "principals": []
+        },
+        "envelopes_after_query": [
+          {
+            "identity": [
+              1801039310864222624,
+              4503599628378494
+            ],
+            "files": {
+              "database": 32768,
+              "-wal": null,
+              "-shm": null,
+              "-journal": null
+            },
+            "database_limit_bytes": 67108864,
+            "within_database_limit": true,
+            "qualification": "Logical file sizes only; native/resident/sidecar growth bounds unproved."
+          }
+        ],
+        "shutdown_after_capture": [
+          {
+            "closed": true,
+            "elapsed_seconds": 0.0
+          }
+        ],
+        "fixture_handles_close_ns": 88900,
+        "process_after_cleanup": {
+          "working_set_bytes": 43126784,
+          "peak_working_set_bytes": 43290624,
+          "private_bytes": 27295744,
+          "peak_pagefile_bytes": 28303360
+        },
+        "blocking_hold_failure": false,
+        "no_usable_prefix_on_failures": true,
+        "cleanup_acknowledged_only_after_work": true,
+        "fault_qualification": "Injected function-entry gates/delays and finite synthetic work; no arbitrary OS-I/O preemption proof. Uncooperative >1s cases are intentional counterexamples, not P07 passes.",
+        "assertion_failures": []
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0c\\run_experiments.py",
+        "--worker",
+        "fault",
+        "representative",
+        "transaction"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 448192800,
+      "stderr": "",
+      "measurement": {
+        "mode": "fault",
+        "shape": "representative",
+        "fault": "transaction",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "trace_initially_active": false,
+        "startup_trace_memory": null,
+        "native_sqlite": {
+          "status": "UNAVAILABLE",
+          "exact_backing_library_status_api_established": false,
+          "reason": "No safely established status interface for the exact SQLite library backing Python.",
+          "unrelated_library_loaded": false,
+          "query_native_peak_verified": false
+        },
+        "conditions": "Fresh synthetic setup primes OS cache; not cold-disk or production-owner evidence.",
+        "fixtures": [
+          {
+            "shape": "representative",
+            "events": 78,
+            "tasks": 20,
+            "dependencies": 0,
+            "metadata_bytes": 18695,
+            "canonical_rows_sha256": "db5a1acd2d5904f88e9e90f76b66fc1016757c03370cafde727df4a0b00beaf1",
+            "graph_sha256": "4fee8c35c06c03fe2dd3373423588db37605eb22a6d8f96c6a261bf97bfc4c18",
+            "alpha_supported": true,
+            "max_concurrency": 2,
+            "setup_file_identity": [
+              1801039310864222624,
+              4785074605089150
+            ]
+          }
+        ],
+        "process_before": {
+          "working_set_bytes": 43102208,
+          "peak_working_set_bytes": 43659264,
+          "private_bytes": 27242496,
+          "peak_pagefile_bytes": 28745728
+        },
+        "captures": [
+          {
+            "success": false,
+            "capture_completed": false,
+            "error": {
+              "type": "CoordinationCancelled",
+              "message": "synthetic cancellation requested"
+            },
+            "phases": {
+              "admission_ns": 14600,
+              "coordination_wait_and_lease_ns": 30900,
+              "resource_preflight_ns": 4067800,
+              "transaction_begin_ns": 23400,
+              "rollback_and_passive_close_ns": 43200
+            },
+            "total_query_ns": 4240600,
+            "hold_seconds": 0.0041668,
+            "hold_within_one_second": true,
+            "resources_closed": true,
+            "closed_under_active_work": false,
+            "no_usable_prefix_on_error": true,
+            "cleanup_acknowledged": true,
+            "transaction_inactive_observed": true,
+            "connection_already_closed": false,
+            "acknowledgement_scope": "Synchronous capture body; no internal detached worker. Closed-connection property failure implies already-closed Python SQLite handle.",
+            "coordination_after": {
+              "readers": 0,
+              "writer": false,
+              "waiting_readers": 0,
+              "waiting_writers": 0,
+              "closing": false,
+              "lost": false,
+              "closed": false,
+              "close_in_progress": false,
+              "hold_overruns": 0
+            },
+            "admission_after": {
+              "active": 0,
+              "sources": [],
+              "principals": []
+            },
+            "observation": null
+          }
+        ],
+        "elapsed_ns": 4263900,
+        "process_after_query": {
+          "working_set_bytes": 43110400,
+          "peak_working_set_bytes": 43659264,
+          "private_bytes": 27242496,
+          "peak_pagefile_bytes": 28745728
+        },
+        "admission_after": {
+          "active": 0,
+          "sources": [],
+          "principals": []
+        },
+        "envelopes_after_query": [
+          {
+            "identity": [
+              1801039310864222624,
+              4785074605089150
+            ],
+            "files": {
+              "database": 32768,
+              "-wal": null,
+              "-shm": null,
+              "-journal": null
+            },
+            "database_limit_bytes": 67108864,
+            "within_database_limit": true,
+            "qualification": "Logical file sizes only; native/resident/sidecar growth bounds unproved."
+          }
+        ],
+        "shutdown_after_capture": [
+          {
+            "closed": true,
+            "elapsed_seconds": 0.0
+          }
+        ],
+        "fixture_handles_close_ns": 84100,
+        "process_after_cleanup": {
+          "working_set_bytes": 43110400,
+          "peak_working_set_bytes": 43659264,
+          "private_bytes": 27242496,
+          "peak_pagefile_bytes": 28745728
+        },
+        "blocking_hold_failure": false,
+        "no_usable_prefix_on_failures": true,
+        "cleanup_acknowledged_only_after_work": true,
+        "fault_qualification": "Injected function-entry gates/delays and finite synthetic work; no arbitrary OS-I/O preemption proof. Uncooperative >1s cases are intentional counterexamples, not P07 passes.",
+        "assertion_failures": []
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0c\\run_experiments.py",
+        "--worker",
+        "fault",
+        "representative",
+        "encoding"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 459091000,
+      "stderr": "",
+      "measurement": {
+        "mode": "fault",
+        "shape": "representative",
+        "fault": "encoding",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "trace_initially_active": false,
+        "startup_trace_memory": null,
+        "native_sqlite": {
+          "status": "UNAVAILABLE",
+          "exact_backing_library_status_api_established": false,
+          "reason": "No safely established status interface for the exact SQLite library backing Python.",
+          "unrelated_library_loaded": false,
+          "query_native_peak_verified": false
+        },
+        "conditions": "Fresh synthetic setup primes OS cache; not cold-disk or production-owner evidence.",
+        "fixtures": [
+          {
+            "shape": "representative",
+            "events": 78,
+            "tasks": 20,
+            "dependencies": 0,
+            "metadata_bytes": 18695,
+            "canonical_rows_sha256": "db5a1acd2d5904f88e9e90f76b66fc1016757c03370cafde727df4a0b00beaf1",
+            "graph_sha256": "4fee8c35c06c03fe2dd3373423588db37605eb22a6d8f96c6a261bf97bfc4c18",
+            "alpha_supported": true,
+            "max_concurrency": 2,
+            "setup_file_identity": [
+              1801039310864222624,
+              5066549581799806
+            ]
+          }
+        ],
+        "process_before": {
+          "working_set_bytes": 42860544,
+          "peak_working_set_bytes": 43466752,
+          "private_bytes": 26890240,
+          "peak_pagefile_bytes": 28520448
+        },
+        "captures": [
+          {
+            "success": false,
+            "capture_completed": true,
+            "error": {
+              "type": "RuntimeError",
+              "message": "cancelled before projection"
+            },
+            "phases": {
+              "admission_ns": 13300,
+              "coordination_wait_and_lease_ns": 26200,
+              "resource_preflight_ns": 4629800,
+              "transaction_begin_ns": 38100,
+              "whole_store_decode_validate_ns": 3054900,
+              "indexed_replay_and_freeze_ns": 2197900,
+              "full_domain_and_graph_ns": 48800,
+              "core_scheduler_ns": 789200,
+              "final_identity_check_ns": 5571000,
+              "rollback_and_passive_close_ns": 269700,
+              "capture_through_release_ns": 16680700
+            },
+            "total_query_ns": 47135300,
+            "hold_seconds": 0.0166468,
+            "hold_within_one_second": true,
+            "resources_closed": true,
+            "closed_under_active_work": false,
+            "no_usable_prefix_on_error": true,
+            "cleanup_acknowledged": true,
+            "transaction_inactive_observed": true,
+            "connection_already_closed": false,
+            "acknowledgement_scope": "Synchronous capture body; no internal detached worker. Closed-connection property failure implies already-closed Python SQLite handle.",
+            "coordination_after": {
+              "readers": 0,
+              "writer": false,
+              "waiting_readers": 0,
+              "waiting_writers": 0,
+              "closing": false,
+              "lost": false,
+              "closed": false,
+              "close_in_progress": false,
+              "hold_overruns": 0
+            },
+            "admission_after": {
+              "active": 0,
+              "sources": [],
+              "principals": []
+            },
+            "observation": null
+          }
+        ],
+        "elapsed_ns": 47213800,
+        "process_after_query": {
+          "working_set_bytes": 43098112,
+          "peak_working_set_bytes": 43466752,
+          "private_bytes": 27045888,
+          "peak_pagefile_bytes": 28520448
+        },
+        "admission_after": {
+          "active": 0,
+          "sources": [],
+          "principals": []
+        },
+        "envelopes_after_query": [
+          {
+            "identity": [
+              1801039310864222624,
+              5066549581799806
+            ],
+            "files": {
+              "database": 32768,
+              "-wal": null,
+              "-shm": null,
+              "-journal": null
+            },
+            "database_limit_bytes": 67108864,
+            "within_database_limit": true,
+            "qualification": "Logical file sizes only; native/resident/sidecar growth bounds unproved."
+          }
+        ],
+        "shutdown_after_capture": [
+          {
+            "closed": true,
+            "elapsed_seconds": 0.0
+          }
+        ],
+        "fixture_handles_close_ns": 91700,
+        "process_after_cleanup": {
+          "working_set_bytes": 43098112,
+          "peak_working_set_bytes": 43466752,
+          "private_bytes": 27045888,
+          "peak_pagefile_bytes": 28520448
+        },
+        "blocking_hold_failure": false,
+        "no_usable_prefix_on_failures": true,
+        "cleanup_acknowledged_only_after_work": true,
+        "fault_qualification": "Injected function-entry gates/delays and finite synthetic work; no arbitrary OS-I/O preemption proof. Uncooperative >1s cases are intentional counterexamples, not P07 passes.",
+        "assertion_failures": []
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0c\\run_experiments.py",
+        "--worker",
+        "fault",
+        "representative",
+        "allocation"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 406400200,
+      "stderr": "",
+      "measurement": {
+        "mode": "fault",
+        "shape": "representative",
+        "fault": "allocation",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "trace_initially_active": false,
+        "startup_trace_memory": null,
+        "native_sqlite": {
+          "status": "UNAVAILABLE",
+          "exact_backing_library_status_api_established": false,
+          "reason": "No safely established status interface for the exact SQLite library backing Python.",
+          "unrelated_library_loaded": false,
+          "query_native_peak_verified": false
+        },
+        "conditions": "Fresh synthetic setup primes OS cache; not cold-disk or production-owner evidence.",
+        "fixtures": [
+          {
+            "shape": "representative",
+            "events": 78,
+            "tasks": 20,
+            "dependencies": 0,
+            "metadata_bytes": 18695,
+            "canonical_rows_sha256": "db5a1acd2d5904f88e9e90f76b66fc1016757c03370cafde727df4a0b00beaf1",
+            "graph_sha256": "4fee8c35c06c03fe2dd3373423588db37605eb22a6d8f96c6a261bf97bfc4c18",
+            "alpha_supported": true,
+            "max_concurrency": 2,
+            "setup_file_identity": [
+              1801039310864222624,
+              5348024558510462
+            ]
+          }
+        ],
+        "process_before": {
+          "working_set_bytes": 43130880,
+          "peak_working_set_bytes": 43646976,
+          "private_bytes": 27111424,
+          "peak_pagefile_bytes": 28794880
+        },
+        "captures": [
+          {
+            "success": false,
+            "capture_completed": true,
+            "error": {
+              "type": "ValueError",
+              "message": "synthetic projection exceeds 2MiB"
+            },
+            "phases": {
+              "admission_ns": 11200,
+              "coordination_wait_and_lease_ns": 23200,
+              "resource_preflight_ns": 3991500,
+              "transaction_begin_ns": 8800,
+              "whole_store_decode_validate_ns": 2470700,
+              "indexed_replay_and_freeze_ns": 1978800,
+              "full_domain_and_graph_ns": 37800,
+              "core_scheduler_ns": 625900,
+              "final_identity_check_ns": 4356800,
+              "rollback_and_passive_close_ns": 57800,
+              "capture_through_release_ns": 13591400
+            },
+            "total_query_ns": 20566400,
+            "hold_seconds": 0.0135639,
+            "hold_within_one_second": true,
+            "resources_closed": true,
+            "closed_under_active_work": false,
+            "no_usable_prefix_on_error": true,
+            "cleanup_acknowledged": true,
+            "transaction_inactive_observed": true,
+            "connection_already_closed": false,
+            "acknowledgement_scope": "Synchronous capture body; no internal detached worker. Closed-connection property failure implies already-closed Python SQLite handle.",
+            "coordination_after": {
+              "readers": 0,
+              "writer": false,
+              "waiting_readers": 0,
+              "waiting_writers": 0,
+              "closing": false,
+              "lost": false,
+              "closed": false,
+              "close_in_progress": false,
+              "hold_overruns": 0
+            },
+            "admission_after": {
+              "active": 0,
+              "sources": [],
+              "principals": []
+            },
+            "observation": null
+          }
+        ],
+        "elapsed_ns": 20623800,
+        "process_after_query": {
+          "working_set_bytes": 43388928,
+          "peak_working_set_bytes": 52883456,
+          "private_bytes": 27242496,
+          "peak_pagefile_bytes": 38334464
+        },
+        "admission_after": {
+          "active": 0,
+          "sources": [],
+          "principals": []
+        },
+        "envelopes_after_query": [
+          {
+            "identity": [
+              1801039310864222624,
+              5348024558510462
+            ],
+            "files": {
+              "database": 32768,
+              "-wal": null,
+              "-shm": null,
+              "-journal": null
+            },
+            "database_limit_bytes": 67108864,
+            "within_database_limit": true,
+            "qualification": "Logical file sizes only; native/resident/sidecar growth bounds unproved."
+          }
+        ],
+        "shutdown_after_capture": [
+          {
+            "closed": true,
+            "elapsed_seconds": 0.0
+          }
+        ],
+        "fixture_handles_close_ns": 64900,
+        "process_after_cleanup": {
+          "working_set_bytes": 43388928,
+          "peak_working_set_bytes": 52883456,
+          "private_bytes": 27242496,
+          "peak_pagefile_bytes": 38334464
+        },
+        "blocking_hold_failure": false,
+        "no_usable_prefix_on_failures": true,
+        "cleanup_acknowledged_only_after_work": true,
+        "fault_qualification": "Injected function-entry gates/delays and finite synthetic work; no arbitrary OS-I/O preemption proof. Uncooperative >1s cases are intentional counterexamples, not P07 passes.",
+        "assertion_failures": []
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0c\\run_experiments.py",
+        "--worker",
+        "fault",
+        "representative",
+        "cleanup"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 441465700,
+      "stderr": "",
+      "measurement": {
+        "mode": "fault",
+        "shape": "representative",
+        "fault": "cleanup",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "trace_initially_active": false,
+        "startup_trace_memory": null,
+        "native_sqlite": {
+          "status": "UNAVAILABLE",
+          "exact_backing_library_status_api_established": false,
+          "reason": "No safely established status interface for the exact SQLite library backing Python.",
+          "unrelated_library_loaded": false,
+          "query_native_peak_verified": false
+        },
+        "conditions": "Fresh synthetic setup primes OS cache; not cold-disk or production-owner evidence.",
+        "fixtures": [
+          {
+            "shape": "representative",
+            "events": 78,
+            "tasks": 20,
+            "dependencies": 0,
+            "metadata_bytes": 18695,
+            "canonical_rows_sha256": "db5a1acd2d5904f88e9e90f76b66fc1016757c03370cafde727df4a0b00beaf1",
+            "graph_sha256": "4fee8c35c06c03fe2dd3373423588db37605eb22a6d8f96c6a261bf97bfc4c18",
+            "alpha_supported": true,
+            "max_concurrency": 2,
+            "setup_file_identity": [
+              1801039310864222624,
+              5629499535221118
+            ]
+          }
+        ],
+        "process_before": {
+          "working_set_bytes": 42987520,
+          "peak_working_set_bytes": 43667456,
+          "private_bytes": 26890240,
+          "peak_pagefile_bytes": 28663808
+        },
+        "captures": [
+          {
+            "success": false,
+            "capture_completed": false,
+            "error": {
+              "type": "CoordinationCancelled",
+              "message": "synthetic cancellation requested"
+            },
+            "phases": {
+              "admission_ns": 11000,
+              "coordination_wait_and_lease_ns": 21700,
+              "resource_preflight_ns": 4093100,
+              "transaction_begin_ns": 8100,
+              "whole_store_decode_validate_ns": 2506700,
+              "indexed_replay_and_freeze_ns": 1943900,
+              "full_domain_and_graph_ns": 35300,
+              "core_scheduler_ns": 616600,
+              "final_identity_check_ns": 4283500,
+              "rollback_and_passive_close_ns": 30603400
+            },
+            "total_query_ns": 44307600,
+            "hold_seconds": 0.0441588,
+            "hold_within_one_second": true,
+            "resources_closed": true,
+            "closed_under_active_work": false,
+            "no_usable_prefix_on_error": true,
+            "cleanup_acknowledged": true,
+            "transaction_inactive_observed": true,
+            "connection_already_closed": false,
+            "acknowledgement_scope": "Synchronous capture body; no internal detached worker. Closed-connection property failure implies already-closed Python SQLite handle.",
+            "coordination_after": {
+              "readers": 0,
+              "writer": false,
+              "waiting_readers": 0,
+              "waiting_writers": 0,
+              "closing": false,
+              "lost": false,
+              "closed": false,
+              "close_in_progress": false,
+              "hold_overruns": 0
+            },
+            "admission_after": {
+              "active": 0,
+              "sources": [],
+              "principals": []
+            },
+            "observation": null
+          }
+        ],
+        "elapsed_ns": 44417300,
+        "process_after_query": {
+          "working_set_bytes": 43212800,
+          "peak_working_set_bytes": 43667456,
+          "private_bytes": 27148288,
+          "peak_pagefile_bytes": 28663808
+        },
+        "admission_after": {
+          "active": 0,
+          "sources": [],
+          "principals": []
+        },
+        "envelopes_after_query": [
+          {
+            "identity": [
+              1801039310864222624,
+              5629499535221118
+            ],
+            "files": {
+              "database": 32768,
+              "-wal": null,
+              "-shm": null,
+              "-journal": null
+            },
+            "database_limit_bytes": 67108864,
+            "within_database_limit": true,
+            "qualification": "Logical file sizes only; native/resident/sidecar growth bounds unproved."
+          }
+        ],
+        "shutdown_after_capture": [
+          {
+            "closed": true,
+            "elapsed_seconds": 0.0
+          }
+        ],
+        "fixture_handles_close_ns": 67400,
+        "process_after_cleanup": {
+          "working_set_bytes": 43212800,
+          "peak_working_set_bytes": 43667456,
+          "private_bytes": 27148288,
+          "peak_pagefile_bytes": 28663808
+        },
+        "blocking_hold_failure": false,
+        "no_usable_prefix_on_failures": true,
+        "cleanup_acknowledged_only_after_work": true,
+        "fault_qualification": "Injected function-entry gates/delays and finite synthetic work; no arbitrary OS-I/O preemption proof. Uncooperative >1s cases are intentional counterexamples, not P07 passes.",
+        "assertion_failures": []
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0c\\run_experiments.py",
+        "--worker",
+        "fault",
+        "representative",
+        "ownership-loss"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 384970300,
+      "stderr": "",
+      "measurement": {
+        "mode": "fault",
+        "shape": "representative",
+        "fault": "ownership-loss",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "trace_initially_active": false,
+        "startup_trace_memory": null,
+        "native_sqlite": {
+          "status": "UNAVAILABLE",
+          "exact_backing_library_status_api_established": false,
+          "reason": "No safely established status interface for the exact SQLite library backing Python.",
+          "unrelated_library_loaded": false,
+          "query_native_peak_verified": false
+        },
+        "conditions": "Fresh synthetic setup primes OS cache; not cold-disk or production-owner evidence.",
+        "fixtures": [
+          {
+            "shape": "representative",
+            "events": 78,
+            "tasks": 20,
+            "dependencies": 0,
+            "metadata_bytes": 18695,
+            "canonical_rows_sha256": "db5a1acd2d5904f88e9e90f76b66fc1016757c03370cafde727df4a0b00beaf1",
+            "graph_sha256": "4fee8c35c06c03fe2dd3373423588db37605eb22a6d8f96c6a261bf97bfc4c18",
+            "alpha_supported": true,
+            "max_concurrency": 2,
+            "setup_file_identity": [
+              1801039310864222624,
+              5910974511931774
+            ]
+          }
+        ],
+        "process_before": {
+          "working_set_bytes": 43339776,
+          "peak_working_set_bytes": 43339776,
+          "private_bytes": 27885568,
+          "peak_pagefile_bytes": 28127232
+        },
+        "captures": [
+          {
+            "success": false,
+            "capture_completed": false,
+            "error": {
+              "type": "OwnershipLost",
+              "message": "synthetic ownership lost"
+            },
+            "phases": {
+              "admission_ns": 12300,
+              "coordination_wait_and_lease_ns": 25700,
+              "resource_preflight_ns": 4736600,
+              "transaction_begin_ns": 15200,
+              "whole_store_decode_validate_ns": 2766300,
+              "indexed_replay_and_freeze_ns": 2769000,
+              "rollback_and_passive_close_ns": 81200
+            },
+            "total_query_ns": 10470800,
+            "hold_seconds": 0.0104031,
+            "hold_within_one_second": true,
+            "resources_closed": true,
+            "closed_under_active_work": false,
+            "no_usable_prefix_on_error": true,
+            "cleanup_acknowledged": true,
+            "transaction_inactive_observed": true,
+            "connection_already_closed": false,
+            "acknowledgement_scope": "Synchronous capture body; no internal detached worker. Closed-connection property failure implies already-closed Python SQLite handle.",
+            "coordination_after": {
+              "readers": 0,
+              "writer": false,
+              "waiting_readers": 0,
+              "waiting_writers": 0,
+              "closing": true,
+              "lost": true,
+              "closed": false,
+              "close_in_progress": false,
+              "hold_overruns": 0
+            },
+            "admission_after": {
+              "active": 0,
+              "sources": [],
+              "principals": []
+            },
+            "observation": null
+          }
+        ],
+        "elapsed_ns": 10511100,
+        "process_after_query": {
+          "working_set_bytes": 43569152,
+          "peak_working_set_bytes": 43569152,
+          "private_bytes": 27897856,
+          "peak_pagefile_bytes": 28127232
+        },
+        "admission_after": {
+          "active": 0,
+          "sources": [],
+          "principals": []
+        },
+        "envelopes_after_query": [
+          {
+            "identity": [
+              1801039310864222624,
+              5910974511931774
+            ],
+            "files": {
+              "database": 32768,
+              "-wal": null,
+              "-shm": null,
+              "-journal": null
+            },
+            "database_limit_bytes": 67108864,
+            "within_database_limit": true,
+            "qualification": "Logical file sizes only; native/resident/sidecar growth bounds unproved."
+          }
+        ],
+        "shutdown_after_capture": [
+          {
+            "closed": true,
+            "elapsed_seconds": 0.0
+          }
+        ],
+        "fixture_handles_close_ns": 63000,
+        "process_after_cleanup": {
+          "working_set_bytes": 43569152,
+          "peak_working_set_bytes": 43569152,
+          "private_bytes": 27897856,
+          "peak_pagefile_bytes": 28127232
+        },
+        "blocking_hold_failure": false,
+        "no_usable_prefix_on_failures": true,
+        "cleanup_acknowledged_only_after_work": true,
+        "fault_qualification": "Injected function-entry gates/delays and finite synthetic work; no arbitrary OS-I/O preemption proof. Uncooperative >1s cases are intentional counterexamples, not P07 passes.",
+        "assertion_failures": []
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0c\\run_experiments.py",
+        "--worker",
+        "fault",
+        "representative",
+        "uncooperative-decode"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 1450008800,
+      "stderr": "",
+      "measurement": {
+        "mode": "fault",
+        "shape": "representative",
+        "fault": "uncooperative-decode",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "trace_initially_active": false,
+        "startup_trace_memory": null,
+        "native_sqlite": {
+          "status": "UNAVAILABLE",
+          "exact_backing_library_status_api_established": false,
+          "reason": "No safely established status interface for the exact SQLite library backing Python.",
+          "unrelated_library_loaded": false,
+          "query_native_peak_verified": false
+        },
+        "conditions": "Fresh synthetic setup primes OS cache; not cold-disk or production-owner evidence.",
+        "fixtures": [
+          {
+            "shape": "representative",
+            "events": 78,
+            "tasks": 20,
+            "dependencies": 0,
+            "metadata_bytes": 18695,
+            "canonical_rows_sha256": "db5a1acd2d5904f88e9e90f76b66fc1016757c03370cafde727df4a0b00beaf1",
+            "graph_sha256": "4fee8c35c06c03fe2dd3373423588db37605eb22a6d8f96c6a261bf97bfc4c18",
+            "alpha_supported": true,
+            "max_concurrency": 2,
+            "setup_file_identity": [
+              1801039310864222624,
+              6192449488642430
+            ]
+          }
+        ],
+        "process_before": {
+          "working_set_bytes": 43442176,
+          "peak_working_set_bytes": 43442176,
+          "private_bytes": 27795456,
+          "peak_pagefile_bytes": 28340224
+        },
+        "captures": [
+          {
+            "success": false,
+            "capture_completed": false,
+            "error": {
+              "type": "CaptureDeadlineExceeded",
+              "message": "synthetic capture hold expired"
+            },
+            "phases": {
+              "admission_ns": 13400,
+              "coordination_wait_and_lease_ns": 26000,
+              "resource_preflight_ns": 4276900,
+              "transaction_begin_ns": 15400,
+              "whole_store_decode_validate_ns": 1051749000,
+              "rollback_and_passive_close_ns": 215000
+            },
+            "total_query_ns": 1056489500,
+            "hold_seconds": 1.0563137,
+            "hold_within_one_second": false,
+            "resources_closed": true,
+            "closed_under_active_work": false,
+            "no_usable_prefix_on_error": true,
+            "cleanup_acknowledged": true,
+            "transaction_inactive_observed": true,
+            "connection_already_closed": false,
+            "acknowledgement_scope": "Synchronous capture body; no internal detached worker. Closed-connection property failure implies already-closed Python SQLite handle.",
+            "coordination_after": {
+              "readers": 0,
+              "writer": false,
+              "waiting_readers": 0,
+              "waiting_writers": 0,
+              "closing": false,
+              "lost": false,
+              "closed": false,
+              "close_in_progress": false,
+              "hold_overruns": 1
+            },
+            "admission_after": {
+              "active": 0,
+              "sources": [],
+              "principals": []
+            },
+            "observation": null
+          }
+        ],
+        "elapsed_ns": 1056530800,
+        "process_after_query": {
+          "working_set_bytes": 43565056,
+          "peak_working_set_bytes": 43565056,
+          "private_bytes": 27930624,
+          "peak_pagefile_bytes": 28340224
+        },
+        "admission_after": {
+          "active": 0,
+          "sources": [],
+          "principals": []
+        },
+        "envelopes_after_query": [
+          {
+            "identity": [
+              1801039310864222624,
+              6192449488642430
+            ],
+            "files": {
+              "database": 32768,
+              "-wal": null,
+              "-shm": null,
+              "-journal": null
+            },
+            "database_limit_bytes": 67108864,
+            "within_database_limit": true,
+            "qualification": "Logical file sizes only; native/resident/sidecar growth bounds unproved."
+          }
+        ],
+        "shutdown_after_capture": [
+          {
+            "closed": true,
+            "elapsed_seconds": 0.0
+          }
+        ],
+        "fixture_handles_close_ns": 82800,
+        "process_after_cleanup": {
+          "working_set_bytes": 43565056,
+          "peak_working_set_bytes": 43565056,
+          "private_bytes": 27930624,
+          "peak_pagefile_bytes": 28340224
+        },
+        "blocking_hold_failure": true,
+        "no_usable_prefix_on_failures": true,
+        "cleanup_acknowledged_only_after_work": true,
+        "fault_qualification": "Injected function-entry gates/delays and finite synthetic work; no arbitrary OS-I/O preemption proof. Uncooperative >1s cases are intentional counterexamples, not P07 passes.",
+        "assertion_failures": []
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0c\\run_experiments.py",
+        "--worker",
+        "fault",
+        "representative",
+        "uncooperative-cleanup"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 1468122300,
+      "stderr": "",
+      "measurement": {
+        "mode": "fault",
+        "shape": "representative",
+        "fault": "uncooperative-cleanup",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "trace_initially_active": false,
+        "startup_trace_memory": null,
+        "native_sqlite": {
+          "status": "UNAVAILABLE",
+          "exact_backing_library_status_api_established": false,
+          "reason": "No safely established status interface for the exact SQLite library backing Python.",
+          "unrelated_library_loaded": false,
+          "query_native_peak_verified": false
+        },
+        "conditions": "Fresh synthetic setup primes OS cache; not cold-disk or production-owner evidence.",
+        "fixtures": [
+          {
+            "shape": "representative",
+            "events": 78,
+            "tasks": 20,
+            "dependencies": 0,
+            "metadata_bytes": 18695,
+            "canonical_rows_sha256": "db5a1acd2d5904f88e9e90f76b66fc1016757c03370cafde727df4a0b00beaf1",
+            "graph_sha256": "4fee8c35c06c03fe2dd3373423588db37605eb22a6d8f96c6a261bf97bfc4c18",
+            "alpha_supported": true,
+            "max_concurrency": 2,
+            "setup_file_identity": [
+              1801039310864222624,
+              6473924465353086
+            ]
+          }
+        ],
+        "process_before": {
+          "working_set_bytes": 42844160,
+          "peak_working_set_bytes": 43462656,
+          "private_bytes": 26824704,
+          "peak_pagefile_bytes": 28430336
+        },
+        "captures": [
+          {
+            "success": false,
+            "capture_completed": false,
+            "error": {
+              "type": "CoordinationCancelled",
+              "message": "synthetic cancellation requested"
+            },
+            "phases": {
+              "admission_ns": 12000,
+              "coordination_wait_and_lease_ns": 23600,
+              "resource_preflight_ns": 4150300,
+              "transaction_begin_ns": 14400,
+              "whole_store_decode_validate_ns": 2691300,
+              "indexed_replay_and_freeze_ns": 2819600,
+              "full_domain_and_graph_ns": 45400,
+              "core_scheduler_ns": 721000,
+              "final_identity_check_ns": 5040500,
+              "rollback_and_passive_close_ns": 1050501300
+            },
+            "total_query_ns": 1066121200,
+            "hold_seconds": 1.0660408,
+            "hold_within_one_second": false,
+            "resources_closed": true,
+            "closed_under_active_work": false,
+            "no_usable_prefix_on_error": true,
+            "cleanup_acknowledged": true,
+            "transaction_inactive_observed": true,
+            "connection_already_closed": false,
+            "acknowledgement_scope": "Synchronous capture body; no internal detached worker. Closed-connection property failure implies already-closed Python SQLite handle.",
+            "coordination_after": {
+              "readers": 0,
+              "writer": false,
+              "waiting_readers": 0,
+              "waiting_writers": 0,
+              "closing": false,
+              "lost": false,
+              "closed": false,
+              "close_in_progress": false,
+              "hold_overruns": 1
+            },
+            "admission_after": {
+              "active": 0,
+              "sources": [],
+              "principals": []
+            },
+            "observation": null
+          }
+        ],
+        "elapsed_ns": 1066188700,
+        "process_after_query": {
+          "working_set_bytes": 43069440,
+          "peak_working_set_bytes": 43462656,
+          "private_bytes": 27090944,
+          "peak_pagefile_bytes": 28430336
+        },
+        "admission_after": {
+          "active": 0,
+          "sources": [],
+          "principals": []
+        },
+        "envelopes_after_query": [
+          {
+            "identity": [
+              1801039310864222624,
+              6473924465353086
+            ],
+            "files": {
+              "database": 32768,
+              "-wal": null,
+              "-shm": null,
+              "-journal": null
+            },
+            "database_limit_bytes": 67108864,
+            "within_database_limit": true,
+            "qualification": "Logical file sizes only; native/resident/sidecar growth bounds unproved."
+          }
+        ],
+        "shutdown_after_capture": [
+          {
+            "closed": true,
+            "elapsed_seconds": 0.0
+          }
+        ],
+        "fixture_handles_close_ns": 85200,
+        "process_after_cleanup": {
+          "working_set_bytes": 43069440,
+          "peak_working_set_bytes": 43462656,
+          "private_bytes": 27090944,
+          "peak_pagefile_bytes": 28430336
+        },
+        "blocking_hold_failure": true,
+        "no_usable_prefix_on_failures": true,
+        "cleanup_acknowledged_only_after_work": true,
+        "fault_qualification": "Injected function-entry gates/delays and finite synthetic work; no arbitrary OS-I/O preemption proof. Uncooperative >1s cases are intentional counterexamples, not P07 passes.",
+        "assertion_failures": []
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0c\\run_experiments.py",
+        "--worker",
+        "fault",
+        "representative",
+        "identity-mismatch"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 439259700,
+      "stderr": "",
+      "measurement": {
+        "mode": "fault",
+        "shape": "representative",
+        "fault": "identity-mismatch",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "trace_initially_active": false,
+        "startup_trace_memory": null,
+        "native_sqlite": {
+          "status": "UNAVAILABLE",
+          "exact_backing_library_status_api_established": false,
+          "reason": "No safely established status interface for the exact SQLite library backing Python.",
+          "unrelated_library_loaded": false,
+          "query_native_peak_verified": false
+        },
+        "conditions": "Fresh synthetic setup primes OS cache; not cold-disk or production-owner evidence.",
+        "fixtures": [
+          {
+            "shape": "representative",
+            "events": 78,
+            "tasks": 20,
+            "dependencies": 0,
+            "metadata_bytes": 18695,
+            "canonical_rows_sha256": "db5a1acd2d5904f88e9e90f76b66fc1016757c03370cafde727df4a0b00beaf1",
+            "graph_sha256": "4fee8c35c06c03fe2dd3373423588db37605eb22a6d8f96c6a261bf97bfc4c18",
+            "alpha_supported": true,
+            "max_concurrency": 2,
+            "setup_file_identity": [
+              1801039310864222624,
+              6755399442063742
+            ]
+          }
+        ],
+        "process_before": {
+          "working_set_bytes": 43327488,
+          "peak_working_set_bytes": 43372544,
+          "private_bytes": 27402240,
+          "peak_pagefile_bytes": 28323840
+        },
+        "captures": [
+          {
+            "success": false,
+            "capture_completed": false,
+            "error": {
+              "type": "ResourceIdentityChanged",
+              "message": "S0-C fixture identity changed"
+            },
+            "phases": {
+              "admission_ns": 15700,
+              "coordination_wait_and_lease_ns": 28900,
+              "resource_preflight_ns": 1355400,
+              "rollback_and_passive_close_ns": 32700
+            },
+            "total_query_ns": 1492700,
+            "hold_seconds": 0.0014174,
+            "hold_within_one_second": true,
+            "resources_closed": true,
+            "closed_under_active_work": false,
+            "no_usable_prefix_on_error": true,
+            "cleanup_acknowledged": true,
+            "transaction_inactive_observed": true,
+            "connection_already_closed": false,
+            "acknowledgement_scope": "Synchronous capture body; no internal detached worker. Closed-connection property failure implies already-closed Python SQLite handle.",
+            "coordination_after": {
+              "readers": 0,
+              "writer": false,
+              "waiting_readers": 0,
+              "waiting_writers": 0,
+              "closing": false,
+              "lost": false,
+              "closed": false,
+              "close_in_progress": false,
+              "hold_overruns": 0
+            },
+            "admission_after": {
+              "active": 0,
+              "sources": [],
+              "principals": []
+            },
+            "observation": null
+          }
+        ],
+        "elapsed_ns": 1514100,
+        "process_after_query": {
+          "working_set_bytes": 43335680,
+          "peak_working_set_bytes": 43372544,
+          "private_bytes": 27402240,
+          "peak_pagefile_bytes": 28323840
+        },
+        "admission_after": {
+          "active": 0,
+          "sources": [],
+          "principals": []
+        },
+        "envelopes_after_query": [
+          {
+            "identity": [
+              1801039310864222624,
+              6755399442063742
+            ],
+            "files": {
+              "database": 32768,
+              "-wal": null,
+              "-shm": null,
+              "-journal": null
+            },
+            "database_limit_bytes": 67108864,
+            "within_database_limit": true,
+            "qualification": "Logical file sizes only; native/resident/sidecar growth bounds unproved."
+          }
+        ],
+        "shutdown_after_capture": [
+          {
+            "closed": true,
+            "elapsed_seconds": 0.0
+          }
+        ],
+        "fixture_handles_close_ns": 80500,
+        "process_after_cleanup": {
+          "working_set_bytes": 43335680,
+          "peak_working_set_bytes": 43372544,
+          "private_bytes": 27402240,
+          "peak_pagefile_bytes": 28323840
+        },
+        "blocking_hold_failure": false,
+        "no_usable_prefix_on_failures": true,
+        "cleanup_acknowledged_only_after_work": true,
+        "fault_qualification": "Injected function-entry gates/delays and finite synthetic work; no arbitrary OS-I/O preemption proof. Uncooperative >1s cases are intentional counterexamples, not P07 passes.",
+        "assertion_failures": []
+      }
+    },
+    {
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ai-engineering-orchestra\\tests\\experiments\\control_center_s0c\\run_experiments.py",
+        "--worker",
+        "fault",
+        "representative",
+        "connection-failure"
+      ],
+      "cwd": "D:\\Dev\\ai-engineering-orchestra",
+      "exit_code": 0,
+      "wall_ns": 397529800,
+      "stderr": "",
+      "measurement": {
+        "mode": "fault",
+        "shape": "representative",
+        "fault": "connection-failure",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "sqlite": "3.49.1",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "trace_initially_active": false,
+        "startup_trace_memory": null,
+        "native_sqlite": {
+          "status": "UNAVAILABLE",
+          "exact_backing_library_status_api_established": false,
+          "reason": "No safely established status interface for the exact SQLite library backing Python.",
+          "unrelated_library_loaded": false,
+          "query_native_peak_verified": false
+        },
+        "conditions": "Fresh synthetic setup primes OS cache; not cold-disk or production-owner evidence.",
+        "fixtures": [
+          {
+            "shape": "representative",
+            "events": 78,
+            "tasks": 20,
+            "dependencies": 0,
+            "metadata_bytes": 18695,
+            "canonical_rows_sha256": "db5a1acd2d5904f88e9e90f76b66fc1016757c03370cafde727df4a0b00beaf1",
+            "graph_sha256": "4fee8c35c06c03fe2dd3373423588db37605eb22a6d8f96c6a261bf97bfc4c18",
+            "alpha_supported": true,
+            "max_concurrency": 2,
+            "setup_file_identity": [
+              1801039310864222624,
+              7036874418774398
+            ]
+          }
+        ],
+        "process_before": {
+          "working_set_bytes": 43356160,
+          "peak_working_set_bytes": 43356160,
+          "private_bytes": 27328512,
+          "peak_pagefile_bytes": 28233728
+        },
+        "captures": [
+          {
+            "success": false,
+            "capture_completed": false,
+            "error": {
+              "type": "ProgrammingError",
+              "message": "Cannot operate on a closed database."
+            },
+            "phases": {
+              "admission_ns": 11200,
+              "coordination_wait_and_lease_ns": 22700,
+              "resource_preflight_ns": 4039600,
+              "transaction_begin_ns": 2500,
+              "rollback_and_passive_close_ns": 3500
+            },
+            "total_query_ns": 4126100,
+            "hold_seconds": 0.0040716,
+            "hold_within_one_second": true,
+            "resources_closed": true,
+            "closed_under_active_work": false,
+            "no_usable_prefix_on_error": true,
+            "cleanup_acknowledged": true,
+            "transaction_inactive_observed": false,
+            "connection_already_closed": true,
+            "acknowledgement_scope": "Synchronous capture body; no internal detached worker. Closed-connection property failure implies already-closed Python SQLite handle.",
+            "coordination_after": {
+              "readers": 0,
+              "writer": false,
+              "waiting_readers": 0,
+              "waiting_writers": 0,
+              "closing": false,
+              "lost": false,
+              "closed": false,
+              "close_in_progress": false,
+              "hold_overruns": 0
+            },
+            "admission_after": {
+              "active": 0,
+              "sources": [],
+              "principals": []
+            },
+            "observation": null
+          }
+        ],
+        "elapsed_ns": 4177400,
+        "process_after_query": {
+          "working_set_bytes": 43364352,
+          "peak_working_set_bytes": 43364352,
+          "private_bytes": 27328512,
+          "peak_pagefile_bytes": 28233728
+        },
+        "admission_after": {
+          "active": 0,
+          "sources": [],
+          "principals": []
+        },
+        "envelopes_after_query": [
+          {
+            "identity": [
+              1801039310864222624,
+              7036874418774398
+            ],
+            "files": {
+              "database": 32768,
+              "-wal": null,
+              "-shm": null,
+              "-journal": null
+            },
+            "database_limit_bytes": 67108864,
+            "within_database_limit": true,
+            "qualification": "Logical file sizes only; native/resident/sidecar growth bounds unproved."
+          }
+        ],
+        "shutdown_after_capture": [
+          {
+            "closed": true,
+            "elapsed_seconds": 0.0
+          }
+        ],
+        "fixture_handles_close_ns": 71200,
+        "process_after_cleanup": {
+          "working_set_bytes": 43364352,
+          "peak_working_set_bytes": 43364352,
+          "private_bytes": 27328512,
+          "peak_pagefile_bytes": 28233728
+        },
+        "blocking_hold_failure": false,
+        "no_usable_prefix_on_failures": true,
+        "cleanup_acknowledged_only_after_work": true,
+        "fault_qualification": "Injected function-entry gates/delays and finite synthetic work; no arbitrary OS-I/O preemption proof. Uncooperative >1s cases are intentional counterexamples, not P07 passes.",
+        "assertion_failures": []
+      }
+    }
+  ],
+  "startup_pythontracemalloc": null,
+  "wall_ns": 15896378900,
+  "all_execution_jobs_exit_zero": true,
+  "source_hashes": {
+    "tests\\experiments\\control_center_s0c\\capture.py": "f283076957b9ea75739600b6c9cccf9fa1f23901b679994e1a58b46a396a78ef",
+    "tests\\experiments\\control_center_s0c\\coordination.py": "c8071bffdaa4bc77f99bd6d441a467afe8df0a86389cd6a212e1ab4c3deb1354",
+    "tests\\experiments\\control_center_s0c\\resources.py": "f37587029877179f30024d65e154e99fdeb25a10b9d74be7d81bb101a81d4104",
+    "tests\\experiments\\control_center_s0c\\run_experiments.py": "d13ddc569e69373e98d99723fdfbe7a4dd1b78774cdaf39465d069a18591cbb8",
+    "tests\\experiments\\control_center_s0c\\test_concurrency.py": "b74aa9327617da204ea217d7f833a32fc8907f292ef22dbab0d47ac6e8fd1ca8",
+    "tests\\experiments\\control_center_s0c\\test_resources.py": "4bdb3e9dbde7233d7c29cb2afdbfea20dc2ef848a9b012970eb431c7bf9644bc"
+  },
+  "feasibility_recommendation": "NO-GO; full safety/native/P07 guarantees remain unverified; preserve hold-overrun counterexamples."
+}

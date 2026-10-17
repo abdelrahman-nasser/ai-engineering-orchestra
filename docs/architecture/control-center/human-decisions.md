@@ -236,3 +236,41 @@ committing, moving or deleting them. A separate archival disposition may be
 proposed for Human review; none is executed here.
 
 **STOP AT HUMAN CONTROL** after documentation closure and the roadmap report.
+
+## October 17, 2026 — evidence archival and first-Run documentation authorization
+
+**Source:** Explicit Human instruction titled
+`ITRU — Evidence Archival & Developer Alpha First-Run Guide`, with
+**HUMAN AUTHORIZATION: PROCEED**.
+
+This later instruction supersedes the prior prohibition on moving/staging the
+31 feasibility artifacts solely for the following archival disposition. Earlier
+decisions and historical evidence remain unchanged. S0 stays closed at NO-GO;
+architecture v2, P01–P10, P07 and the implementation plan are unchanged.
+
+**Phase A:** Inventory/hash all 31 artifacts; preserve their bytes in Git;
+retain the three reports at their documentation paths; quarantine experimental
+code outside the importable package and standard test discovery under
+`docs/architecture/control-center/evidence/`. Verify each copy before relocating
+its original. Record paths, SHA-256, byte counts, phase, classification and
+historical-path limitations. Inspect actual packaging/discovery statically
+without changing package build configuration. Obtain independent integrity and
+packaging/governance review. After successful scoped checks, create one local
+commit: `docs: archive S0 feasibility evidence`.
+
+**Phase B, only after Phase A succeeds:** Document the existing Developer Alpha
+journey in `docs/developer-alpha-first-run.md`; verify commands against source
+and authoritative documentation without executing them. Update discoverability
+and roadmap links only as necessary. Obtain independent documentation-accuracy
+and governance/safety review. After successful static checks, create one local
+documentation-only commit:
+`docs: add Developer Alpha first-run operator card`.
+
+No production/UI changes, runtime/CLI execution, inference/authentication tests,
+network access, dependency installation, package build, product tests, new Task
+IDs, external-system writes, release/deployment, push, merge, tag or publication
+are authorized. No other roadmap slice or reader work follows automatically.
+
+**STOP AT HUMAN CONTROL** after the two phase reports and local commits. Final
+Human acceptance remains required; this instruction already authorizes the
+specified archival relocation and commits within these bounds.

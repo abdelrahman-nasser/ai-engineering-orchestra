@@ -1,0 +1,265 @@
+"""S0-C complete SYNTHETIC capture composition; no operational owner/read API."""
+from dataclasses import asdict
+import hashlib
+import json
+from pathlib import Path
+import sqlite3
+import sys
+import threading
+import time
+from types import SimpleNamespace
+from unittest import mock
+
+from resources import (REPOSITORY, SCRATCH, guarded, helpers, open_passive,
+                       require_database_envelope, pinned_file_identity)
+sys.path.append(str(REPOSITORY / 'tests/experiments/control_center_s0r'))
+from indexed_replay import indexed_reconstruct
+from coordination import Admission, Coordinator
+from itru import task_run_state as state
+from itru import sqlite_task_run_state as store
+from itru.task_dependency import TaskNode, TaskDependency, build_task_graph, validate_task_graph
+from itru.task_scheduler import SchedulingSnapshot, evaluate_schedule
+from itru.control_center_read_budget import quota_json_bytes
+
+
+def fixture(shape):
+    """Core maximum stress is explicitly distinct from Alpha's 100-Task cap."""
+    dimensions = {'representative': (20, 4, 0), 'long': (1, 10000, 0),
+                  'alpha_max': (100, 100, 4753), 'core_max': (1000, 4, 10000)}
+    if shape not in dimensions: raise ValueError('fixed synthetic shape required')
+    tasks, count, edge_count = dimensions[shape]
+    events, nodes = [], []
+    for index in range(tasks):
+        task_id = 'synthetic-task' if tasks == 1 else f't{index:04d}'
+        nodes.append(TaskNode(task_id, 'synthetic-definition'))
+        length = count - 1 if tasks > 1 and index >= tasks - 2 else count
+        history = helpers.lifecycle_documents(length)
+        for event in history:
+            event['sequence'] = len(events) + 1
+            event['task_id'] = task_id
+            if event['operation'] in ('register', 'continue'):
+                run = event['data']['subject']['binding']['run']
+                run['run_id'] = task_id + '-' + run['run_id']
+                run['contract']['task_id'] = task_id
+            if event['operation'] in ('start', 'result'):
+                event['data']['run_id'] = task_id + '-' + event['data']['run_id']
+            if event['operation'] == 'result':
+                event['data']['result_identity'][-1] = task_id + '-' + event['data']['result_identity'][-1]
+            events.append(event)
+    # Last two capacity consumers are disconnected. Remaining DAG is bounded.
+    edges = []
+    for index in range(max(0, tasks - 2)):
+        for prerequisite in range(index):
+            if len(edges) >= edge_count: break
+            edges.append(TaskDependency(nodes[index].task_id, nodes[prerequisite].task_id))
+        if len(edges) >= edge_count: break
+    graph = build_task_graph(tuple(nodes), tuple(edges))
+    digest = hashlib.sha256(); payloads = []
+    for event in events:
+        text = state.encode(event); payloads.append(text)
+        digest.update(text.encode('utf-8')); digest.update(b'\n')
+    metadata_bytes = sum(len(text.encode('utf-8')) for text in payloads)
+    if len(events) > 10000 or metadata_bytes > 16 * 1024 ** 2:
+        raise AssertionError('synthetic fixture exceeds approved event/byte limits')
+    return events, payloads, graph, dict(shape=shape, events=len(events), tasks=tasks,
+        dependencies=len(edges), metadata_bytes=metadata_bytes,
+        canonical_rows_sha256=digest.hexdigest(),
+        graph_sha256=hashlib.sha256(json.dumps(asdict(graph), sort_keys=True).encode()).hexdigest(),
+        alpha_supported=tasks <= 100, max_concurrency=2)
+
+
+def establish(root, shape):
+    """Explicit experiment setup BEFORE query: new original-schema file/connection."""
+    events, payloads, graph, definition = fixture(shape)
+    path = guarded(root / (shape + '.sqlite3'))
+    if not path.is_relative_to(SCRATCH): raise ValueError('scratch required')
+    writer = sqlite3.connect(path, isolation_level=None)
+    try:
+        writer.execute('PRAGMA journal_mode=DELETE')
+        for _, _, sql in store._DDL: writer.execute(sql)
+        writer.execute('INSERT INTO metadata VALUES(1,?,?,?)', ('s', 'p', store._DDL_HASH))
+        writer.execute(f'PRAGMA application_id={store.APPLICATION_ID}')
+        writer.execute('PRAGMA user_version=1')
+        writer.execute('BEGIN')
+        writer.executemany('INSERT INTO events VALUES(?,?)', enumerate(payloads, 1))
+        writer.execute('COMMIT')
+        # Both handles are established explicitly by experiment setup, never query fallback.
+        definition['setup_file_identity'] = list(pinned_file_identity(path))
+        reader = open_passive(path, check_same_thread=False,
+                              expected_identity=tuple(definition['setup_file_identity']))
+        reader.row_factory = None
+        return writer, reader, path, graph, definition
+    except BaseException:
+        writer.close()
+        raise
+
+
+def validate_load(connection, checkpoint):
+    if (connection.execute('PRAGMA application_id').fetchone() != (store.APPLICATION_ID,)
+            or connection.execute('PRAGMA user_version').fetchone() != (1,)
+            or connection.execute('PRAGMA quick_check').fetchall() != [('ok',)]):
+        raise state.StateIntegrityError('incompatible or corrupt Store')
+    schema = tuple(sorted(connection.execute(
+        "SELECT name,type,sql FROM sqlite_schema WHERE name NOT LIKE 'sqlite_%'").fetchall()))
+    if schema != tuple(sorted(store._DDL)): raise state.StateIntegrityError('schema mismatch')
+    if connection.execute('SELECT * FROM metadata').fetchall() != [(1, 's', 'p', store._DDL_HASH)]:
+        raise state.StateIntegrityError('metadata mismatch')
+    events, size = [], 0
+    for sequence, payload in connection.execute('SELECT sequence,payload FROM events ORDER BY sequence LIMIT 10001'):
+        checkpoint()
+        size += len(payload.encode('utf-8'))
+        if len(events) >= 10000 or size > 16 * 1024 ** 2: raise ValueError('P07 event/byte limit')
+        event = state.decode(payload); state.validate_event(event)
+        if type(sequence) is not int or event['sequence'] != sequence:
+            raise state.StateIntegrityError('event index mismatch')
+        events.append(event)
+    return events
+
+
+def capture(reader, path, graph, admission, coordinator, *, source='source',
+            principal='principal', cancel=None, fault=None, query_barrier=None,
+            expected_identity=None):
+    """One preestablished synthetic resource; all mandatory capture work inside lease.
+
+    Failure returns ONLY measurements/error, never a partial descriptive result.
+    Phase checkpoints are cooperative; they cannot interrupt inside Core/OS calls.
+    """
+    started = time.perf_counter_ns(); phases = {}; lease = None; success = False
+    decision = None; projection = None; encoded = None; error = None
+    capture_completed = False
+    phase_inflight = False; closed_under_work = False; read_closed = False
+    transaction_inactive = False; already_closed_on_cleanup = False
+    admission_started = time.perf_counter_ns()
+    def rollback_if_open():
+        nonlocal transaction_inactive, already_closed_on_cleanup
+        try:
+            active = reader.in_transaction
+        except sqlite3.ProgrammingError as closed:
+            if 'closed' not in str(closed): raise
+            already_closed_on_cleanup = True
+            return
+        if active: reader.execute('ROLLBACK').close()
+        transaction_inactive = not reader.in_transaction
+        if not transaction_inactive:
+            raise RuntimeError('BLOCKING: transaction still active after rollback')
+    def pause(name):
+        if fault and fault['phase'] == name:
+            if fault.get('cancel') and not fault.get('inside'): cancel.set()
+            if fault.get('loss'): coordinator.lose_ownership()
+            if fault.get('delay'): time.sleep(fault['delay'])
+    try:
+        if expected_identity is None:
+            raise ValueError('setup-pinned identity is required')
+        with admission.query(source, principal):
+            phases['admission_ns'] = time.perf_counter_ns() - admission_started
+            wait = time.perf_counter_ns()
+            with coordinator.read(cancel=cancel) as lease:
+                phases['coordination_wait_and_lease_ns'] = time.perf_counter_ns() - wait
+                def check():
+                    lease.check()
+                    if (time.perf_counter_ns() - started) > 10_000_000_000:
+                        raise TimeoutError('whole-query work deadline')
+                def phase(name, function):
+                    nonlocal phase_inflight
+                    check(); start = time.perf_counter_ns()
+                    phase_inflight = True
+                    try:
+                        pause(name)
+                        if fault and fault['phase'] == name and fault.get('inside'):
+                            attribute = fault['inside']
+                            original = getattr(state, attribute)
+                            injected = False
+                            def gated(*args, **kwargs):
+                                nonlocal injected
+                                if not injected:
+                                    injected = True
+                                    cancel.set()
+                                    time.sleep(0.03)
+                                return original(*args, **kwargs)
+                            with mock.patch.object(state, attribute, gated):
+                                value = function()
+                        else:
+                            value = function()
+                        check()
+                        return value
+                    finally:
+                        phase_inflight = False
+                        phases[name + '_ns'] = time.perf_counter_ns() - start
+                try:
+                    phase('resource_preflight', lambda: require_database_envelope(path, expected_identity=expected_identity))
+                    phase('transaction_begin', lambda: reader.execute('BEGIN').close())
+                    events = phase('whole_store_decode_validate', lambda: validate_load(reader, check))
+                    tasks = phase('indexed_replay_and_freeze', lambda: indexed_reconstruct(events))
+                    def pin_domain():
+                        pinned = validate_task_graph(graph)
+                        expected = {node.task_id: node.definition_reference for node in pinned.nodes}
+                        if set(tasks) != set(expected) or any(task.definition_reference != expected[key] for key, task in tasks.items()):
+                            raise ValueError('full Task/definition domain mismatch')
+                        return pinned
+                    pinned = phase('full_domain_and_graph', pin_domain)
+                    decision = phase('core_scheduler', lambda: evaluate_schedule(pinned,
+                        SchedulingSnapshot('s', 'p', tuple(tasks.values())), max_concurrency=2))
+                    # Mandatory captured values are complete before any lease release.
+                    phase('final_identity_check', lambda: require_database_envelope(path, expected_identity=expected_identity))
+                finally:
+                    start = time.perf_counter_ns()
+                    try:
+                        pause('cleanup')
+                        rollback_if_open()
+                    finally:
+                        if phase_inflight: closed_under_work = True
+                        reader.close(); read_closed = True
+                        phases['rollback_and_passive_close_ns'] = time.perf_counter_ns() - start
+                lease.check()
+            phases['capture_through_release_ns'] = time.perf_counter_ns() - started
+            capture_completed = True
+            # Synthetic allocation-pressure projection, NOT P04 application DTO.
+            pause('encoding')
+            if cancel is not None and cancel.is_set(): raise RuntimeError('cancelled before projection')
+            begin = time.perf_counter_ns()
+            def logical(value):
+                if isinstance(value, (tuple, list)): return [logical(item) for item in value]
+                if isinstance(value, dict): return {key: logical(item) for key, item in value.items()}
+                return value
+            projection = logical(asdict(decision))
+            if fault and fault.get('allocation_bytes'):
+                projection['synthetic_pressure'] = 'x' * fault['allocation_bytes']
+            encoded = quota_json_bytes(projection)
+            if len(encoded) > 2 * 1024 ** 2: raise ValueError('synthetic projection exceeds 2MiB')
+            if query_barrier is not None: query_barrier.wait(timeout=3)
+            if cancel is not None and cancel.is_set(): raise RuntimeError('cancelled before publication')
+            if time.perf_counter_ns() - started > 10_000_000_000: raise TimeoutError('whole-query deadline')
+            phases['synthetic_projection_encoding_ns'] = time.perf_counter_ns() - begin
+            success = True
+    except Exception as caught:
+        error = dict(type=type(caught).__name__, message=str(caught))
+        decision = projection = encoded = None
+    finally:
+        if not read_closed:
+            start = time.perf_counter_ns()
+            try:
+                rollback_if_open()
+            finally:
+                reader.close(); read_closed = True
+                phases['outside_lease_cleanup_ns'] = time.perf_counter_ns() - start
+    hold = None if lease is None else lease.elapsed_ns / 1e9
+    state_after = asdict(coordinator.snapshot())
+    admission_after = asdict(admission.snapshot())
+    return dict(success=success, capture_completed=capture_completed, error=error, phases=phases,
+        total_query_ns=time.perf_counter_ns()-started, hold_seconds=hold,
+        hold_within_one_second=hold is not None and hold <= 1,
+        resources_closed=read_closed, closed_under_active_work=closed_under_work,
+        no_usable_prefix_on_error=not success and decision is None,
+        cleanup_acknowledged=(read_closed and not closed_under_work and
+            (transaction_inactive or already_closed_on_cleanup) and state_after['readers'] == 0 and
+            not state_after['writer'] and source not in admission_after['sources'] and
+            principal not in admission_after['principals']),
+        transaction_inactive_observed=transaction_inactive,
+        connection_already_closed=already_closed_on_cleanup,
+        acknowledgement_scope='Synchronous capture body; no internal detached worker. Closed-connection property failure implies already-closed Python SQLite handle.',
+        coordination_after=state_after,
+        admission_after=admission_after,
+        observation=None if not success else dict(scheduler_state=decision.state,
+            occupied_run_ids=list(decision.occupied_run_ids), tasks=len(decision.snapshot.tasks),
+            output_bytes=len(encoded), continuation='unassessed',
+            projection_notice='Synthetic scheduler/allocation structure; not a P04 success DTO'))

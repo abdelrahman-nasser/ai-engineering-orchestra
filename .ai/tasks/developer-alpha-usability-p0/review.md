@@ -1,5 +1,87 @@
 # Review and validation
 
+## Final Human closure decision — October 19, 2026
+
+Human decision: **APPROVE — PROCEED WITH FINAL CLOSURE**.
+Worktree: `D:\Dev\itru-core-usability`.
+Branch: `feature/developer-alpha-usability-p0`.
+Expected parent and preserved implementation checkpoint:
+`c2fef2e3c25415e75672d75b70e633f0f85a4caa`.
+Authorized single closure commit:
+`docs(alpha): finalize P0 approval-preview task closure`.
+
+The Human explicitly stated:
+
+> I explicitly approve final closure of the Developer Alpha P0 approval-preview Task.
+> Accept the reviewed implementation, focused verification, independent reviews and previous checkpoint commit.
+
+For this Task's final closure, the Human accepts as nonblocking non-P0 debt:
+
+- 24 broader Core failures.
+- 275 broader Core errors.
+- Five skips.
+- Inherited Markdown findings (retained result: 132 issues in 17 unchanged files).
+- Full C109 test not executed.
+
+All results, complete receipts, classification evidence and verification limits
+remain preserved. No failed/skipped result becomes PASS; no mandatory Quality
+Gate is waived. The final disposition is Task-specific and does not certify
+Core-wide health, repair the debt or establish new native/security assurance.
+[SCRUM-86](https://abdelrahmann-hegab.atlassian.net/browse/SCRUM-86) remains open
+in Ready/backlog, confirmed by a read-only lookup on October 19. No Jira record
+change is authorized or performed by this closure work.
+
+The Human accepts final P0 implementation and review evidence and supersedes
+earlier checkpoint-only/no-commit restrictions strictly for five necessary Task
+closure/audit files and one local closure commit. This authorizes neither
+product/test changes, Core-wide repairs, architecture/UI/Lane B work, push,
+merge, PR, tag, release, publication, operational reader integration nor further
+Task execution.
+
+Both outstanding acceptance decisions are explicitly satisfied. After closure
+checks and independent reviews passed, canonical status was set to `completed`.
+All 11 acceptance criteria are checked with supporting evidence. The required
+gates remain `documentation_consistency` and `independent_review`; neither is
+waived.
+
+### Closure checks and independent review
+
+Closure documentation consistency: **PASS**.
+Closure independent review: **PASS**.
+
+Independent `core_correctness` and `governance_security` reviewers inspected the
+complete five-file closure-only candidate, actual Human decision, retained
+verification and current closure-check receipts. Both issued **APPROVE** with
+no material findings. No unresolved findings remain within the P0 closure scope.
+Each independently verified all five candidate content hashes and all four
+initial command-output receipt pairs. The completed-state audit delta and final
+staged scope are checked before the authorized closure commit.
+
+Applicable closure validation passed: current Task schema with the required
+Workflow/gates preserved, all 11 acceptance decisions supported, four scoped
+Markdown files with zero lint issues, local documentation links/anchors,
+whitespace, exact five-file scope and sensitive-data inspection. No product,
+test, guide, architecture, UI or Lane B file changed. All 44 prior verification
+artifacts, original broad-suite/lint logs, checkpoint receipts and 36 external
+baseline-comparison evidence files remain hash-identical.
+
+The earlier five focused tests, 49 selected regressions and four fixture
+validators remain valid evidence for the unchanged implementation; they are
+not claimed as newly executed closure tests. No broad suite, blocked native/
+security test, operational Alpha execution or inference ran for this closure.
+Full C109 remains not executed. No failed/skipped result is relabelled PASS.
+
+Closure receipts and content fingerprints are retained separately under
+`.tmp/p0-task-closure-20261019/`. This final Task closure satisfies the applicable
+Task closure requirements without requiring SCRUM-86 to close. Core-wide debt
+and all original verification limits remain open and unchanged.
+
+## Historical verification and checkpoint records
+
+All sections below preserve prior evidence and decisions as historical
+snapshots. The final Human decision above supersedes their pending-acceptance,
+checkpoint-only and no-further-commit restrictions solely for this closure.
+
 The sections preceding the Human checkpoint record below are historical
 verification snapshots. Their no-commit/pending-authorization statements describe
 those earlier checkpoints and are superseded only for the explicitly authorized

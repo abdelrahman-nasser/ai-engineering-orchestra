@@ -1,5 +1,26 @@
 # P0 approval preview final verification
 
+## Final closure disposition — October 19, 2026
+
+The Human explicitly approves final P0 Task closure, accepting the reviewed
+implementation, focused verification, independent reviews and preserved
+checkpoint `c2fef2e3c25415e75672d75b70e633f0f85a4caa`. The 24 broader failures,
+275 errors, five skips, inherited Markdown findings and **full C109 not executed**
+are nonblocking non-P0 debt for final closure of this Task only. Their results
+and limitations remain unchanged; no mandatory Quality Gate is waived and no
+full-Core PASS is claimed. SCRUM-86 remains open and is not modified.
+
+The Human authorizes only necessary Task closure/audit updates and one local
+commit: `docs(alpha): finalize P0 approval-preview task closure`. The exact
+decision is recorded in [the final closure audit](review.md#final-human-closure-decision--october-19-2026).
+Closure-only schema/documentation checks and independent review passed;
+canonical Task status is `completed`. Actual outcomes are recorded in that audit.
+No implementation, test, guide, architecture, UI or Lane B change is included.
+
+The earlier sections below remain historical evidence. The new final Human
+decision supersedes their checkpoint-only/pending-closure restrictions for this
+Task's final closure, without changing any failed/skipped receipt or limit.
+
 ## Current Human checkpoint disposition — October 17, 2026
 
 The Human has now accepted the nine documented pre-existing baseline-failure

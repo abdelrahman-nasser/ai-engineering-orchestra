@@ -1,5 +1,27 @@
 # Developer Alpha approval preview context
 
+## Current final closure authorization — October 19, 2026
+
+The Human explicitly approves final closure of this P0 Task and accepts the
+reviewed implementation, focused verification, independent reviews and preserved
+checkpoint `c2fef2e3c25415e75672d75b70e633f0f85a4caa`. The Human extends the
+non-P0 debt disposition to final Task closure: 24 broader failures, 275 errors,
+five skips, inherited Markdown findings and full C109 not executed remain
+unchanged and are nonblocking for this Task only. No Quality Gate is waived.
+
+[SCRUM-86](https://abdelrahmann-hegab.atlassian.net/browse/SCRUM-86) separately
+tracks unresolved Core-wide debt and remains open. The authorization permits
+only necessary Task closure/audit changes and one local commit with message
+`docs(alpha): finalize P0 approval-preview task closure`, on the existing branch
+with expected parent `c2fef2e3c25415e75672d75b70e633f0f85a4caa`.
+The prior checkpoint-only/no-commit restrictions are superseded for that action
+only. Product, tests, architecture, UI, Lane B and Jira records remain unchanged.
+No push, merge, PR, tag, release, publication or further Task execution follows.
+After the closure-only checks and independent reviews passed, canonical Task
+status was set to `completed`. Closure outcomes are recorded in `review.md`.
+
+## Historical context before final closure
+
 The Human's October 17, 2026 parallel-lane instruction authorizes this scoped
 implementation on `feature/developer-alpha-usability-p0` in
 `D:\Dev\itru-core-usability`, based on

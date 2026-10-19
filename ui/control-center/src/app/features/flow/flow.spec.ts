@@ -56,6 +56,8 @@ describe('Flow feature page', () => {
 
     const emptyPanel = el.querySelector('cc-state-panel[kind="empty"]');
     expect(emptyPanel).not.toBeNull();
+    expect(emptyPanel?.textContent).toContain('No nodes in this mock scenario');
+    expect(emptyPanel?.textContent).not.toContain('filter criteria');
   });
 
   it('filters nodes based on search query', () => {
@@ -68,6 +70,16 @@ describe('Flow feature page', () => {
     const nodes = el.querySelectorAll('svg g.node');
     expect(nodes.length).toBe(1);
     expect(nodes[0].getAttribute('aria-label')).toContain('API Service Layer');
+  });
+
+  it('distinguishes an empty search from a supplied empty graph', () => {
+    const el = fixture.nativeElement as HTMLElement;
+    const search = el.querySelector<HTMLInputElement>('.search-input')!;
+    search.value = 'SYNTHETIC-no-match';
+    search.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(el.querySelector('cc-state-panel[kind="empty"]')?.textContent).toContain('No nodes match your filter criteria');
+    expect(el.textContent).not.toContain('No nodes in this mock scenario');
   });
 
   it('opens detail inspector when a node is selected', () => {

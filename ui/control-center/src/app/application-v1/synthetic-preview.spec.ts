@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { describe, expect, it } from 'vitest';
 import { SyntheticPreview } from './synthetic-preview';
+import { scenarios } from './fixtures';
 
 describe('application v1.0 synthetic preview', () => {
   async function open() {
@@ -29,14 +30,7 @@ describe('application v1.0 synthetic preview', () => {
     expect(element.querySelector('[data-testid="configured-route"]')?.textContent).toContain(
       'Unavailable',
     );
-    for (const scenario of [
-      'interrupted-success',
-      'conflict',
-      'partial-empty',
-      'stale',
-      'denied',
-      'complete-empty',
-    ]) {
+    for (const [scenario] of scenarios) {
       await choose(scenario);
       const buttons = Array.from(element.querySelectorAll<HTMLButtonElement>('button'));
       expect(buttons.map((button) => button.textContent)).toEqual([
@@ -49,6 +43,34 @@ describe('application v1.0 synthetic preview', () => {
     }
     expect(element.querySelector('cc-result-shell')).toBeNull();
     expect(element.querySelector('cc-continuation-shell')).toBeNull();
+  });
+  it('announces concise observation state changes and labels keyboard-scrollable scheduler columns', async () => {
+    const { element, choose } = await open();
+    const status = element.querySelector<HTMLElement>('[data-testid="scenario-status"]')!;
+    expect(status.getAttribute('role')).toBe('status');
+    expect(status.getAttribute('aria-atomic')).toBe('true');
+    expect(element.querySelector('label[for="application-scenario"]')).not.toBeNull();
+    const region = element.querySelector<HTMLElement>('.table-scroll')!;
+    expect(region.tabIndex).toBe(0);
+    expect(region.getAttribute('aria-label')).toContain('Supplied scheduler evaluations');
+    expect(Array.from(region.querySelectorAll('th')).every((th) => th.scope === 'col')).toBe(true);
+    await choose('partial-empty');
+    expect(status.textContent).toContain('Journal observation: partial');
+    await choose('denied');
+    expect(status.textContent).toContain('Lifecycle observation: denied');
+    expect(status.textContent).toContain('Operational controls unavailable');
+    expect(status.textContent).not.toContain('SYNTHETIC-run');
+  });
+  it('renders exact long synthetic identities and resource without weakening decoding', async () => {
+    const { element, choose } = await open();
+    await choose('long-text');
+    expect(element.querySelector('[data-testid="lifecycle-status"]')?.textContent).toBe('ready');
+    expect(element.querySelector('[data-testid="journal-status"]')?.textContent).toBe('ready');
+    expect(element.textContent).toContain(`SYNTHETIC-run-${'identity'.repeat(24)}`);
+    expect(element.textContent).toContain(`SYNTHETIC-grant-${'physical'.repeat(24)}`);
+    element.querySelector('details')!.open = true;
+    expect(element.textContent).toContain(`synthetic/${'resource'.repeat(24)}/example.txt`);
+    expect(element.querySelectorAll('[data-testid="journal-record"]')).toHaveLength(2);
   });
   it('shows independent lifecycle and Journal evidence, exact numbers, times and zero-byte success', async () => {
     const { element } = await open();

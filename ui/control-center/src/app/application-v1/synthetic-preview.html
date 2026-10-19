@@ -26,6 +26,11 @@
   </select>
 </div>
 
+<p class="sr-only" role="status" aria-atomic="true" data-testid="scenario-status">
+  Synthetic scenario: {{ scenarioLabel() }}. Lifecycle observation: {{ session().inspection.status }}.
+  Journal observation: {{ session().journal.status }}. Operational controls unavailable.
+</p>
+
 <section class="card" aria-label="Operational controls">
   <p>
     {{ unsupported.continuation }}. No displayed selection, Grant or Admission confers authority.
@@ -137,14 +142,14 @@
           <li>{{ edge.task_id }} waits for {{ edge.prerequisite_task_id }}</li>
         }
       </ul>
-      <div class="table-scroll">
+      <div class="table-scroll" role="region" aria-label="Supplied scheduler evaluations, scrollable table" tabindex="0">
         <table aria-label="Supplied scheduler evaluations">
           <thead>
             <tr>
-              <th>Task</th>
-              <th>Evaluation</th>
-              <th>Dependencies</th>
-              <th>Unsatisfied Tasks</th>
+              <th scope="col">Task</th>
+              <th scope="col">Evaluation</th>
+              <th scope="col">Dependencies</th>
+              <th scope="col">Unsatisfied Tasks</th>
             </tr>
           </thead>
           <tbody>

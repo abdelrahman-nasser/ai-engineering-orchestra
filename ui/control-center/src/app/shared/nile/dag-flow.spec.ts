@@ -176,6 +176,20 @@ describe('DagFlow', () => {
     expect(zoomLabel?.textContent).toBe('115%');
   });
 
+  it('fits the whole graph in a narrow canvas below the former 50% limit', () => {
+    const el = fixture.nativeElement as HTMLElement;
+    const viewport = el.querySelector<HTMLElement>('.viewport')!;
+    expect(viewport.querySelector('[aria-label="Canvas zoom and pan controls"]')).toBeNull();
+    Object.defineProperty(viewport, 'clientWidth', { value: 320 });
+    Object.defineProperty(viewport, 'clientHeight', { value: 480 });
+    el.querySelector<HTMLButtonElement>('[aria-label="Fit graph"]')!.click();
+    fixture.detectChanges();
+    const svg = el.querySelector<SVGElement>('.river-svg')!;
+    expect(parseFloat(svg.style.width)).toBeLessThanOrEqual(320);
+    expect(parseFloat(svg.style.height)).toBeLessThanOrEqual(480);
+    expect(parseInt(el.querySelector('.zoom-level')!.textContent!)).toBeLessThan(50);
+  });
+
   it('switches to list view table representation', () => {
     fixture.componentRef.setInput('viewMode', 'list');
     fixture.detectChanges();
@@ -186,5 +200,42 @@ describe('DagFlow', () => {
 
     const rows = el.querySelectorAll('table.list-table tbody tr');
     expect(rows.length).toBe(3);
+  });
+
+  it('navigates from the focused river node and moves focus with selection', () => {
+    fixture.componentRef.setInput('selectedNodeId', 'n3');
+    fixture.detectChanges();
+    let picked: string | undefined;
+    component.nodeSelect.subscribe((node) => { picked = node.id; });
+    const nodes = fixture.nativeElement.querySelectorAll('g.node') as NodeListOf<SVGElement>;
+    nodes[0].focus();
+    const event = new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true });
+    nodes[0].dispatchEvent(event);
+    expect(picked).toBe('n2');
+    expect(document.activeElement).toBe(nodes[1]);
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it('leaves toolbar and list arrow keys alone and exposes selection on native list buttons', () => {
+    fixture.componentRef.setInput('selectedNodeId', 'n1');
+    fixture.detectChanges();
+    let selections = 0;
+    component.nodeSelect.subscribe(() => selections++);
+    const el = fixture.nativeElement as HTMLElement;
+    const zoom = el.querySelector('[aria-label="Zoom in"]')!;
+    const toolbarKey = new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true });
+    zoom.dispatchEvent(toolbarKey);
+    expect(selections).toBe(0);
+    expect(toolbarKey.defaultPrevented).toBe(false);
+    fixture.componentRef.setInput('viewMode', 'list');
+    fixture.detectChanges();
+    const button = el.querySelector<HTMLButtonElement>('.node-btn-cell')!;
+    expect(button.getAttribute('aria-pressed')).toBe('true');
+    expect(el.querySelector('tr[aria-selected]')).toBeNull();
+    expect(el.querySelector<HTMLElement>('.list-view-container')!.tabIndex).toBe(0);
+    button.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    expect(selections).toBe(0);
+    button.click();
+    expect(selections).toBe(1);
   });
 });

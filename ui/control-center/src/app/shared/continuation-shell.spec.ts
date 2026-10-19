@@ -40,8 +40,9 @@ describe('ContinuationShell', () => {
   it('renders disclaimer banner on continuation affordance', async () => {
     const { element } = await createFixture();
     expect(text(element.querySelector('.disclaimer-banner'))).toContain(
-      'Continuation availability supplied by current data source',
+      'Mock continuation metadata only',
     );
+    expect(text(element.querySelector('.disclaimer-banner'))).toContain('No operational resume controls are connected');
   });
 
   it('renders missing continuation state honestly when none supplied', async () => {

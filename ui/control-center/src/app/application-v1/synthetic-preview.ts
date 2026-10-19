@@ -14,6 +14,9 @@ import { runLabels, schedulerLabels, taskLabels, unsupported } from './presentat
 export class SyntheticPreview {
   protected readonly scenarios = scenarios;
   protected readonly selected = signal('interrupted-success');
+  protected readonly scenarioLabel = computed(() =>
+    scenarios.find(([id]) => id === this.selected())?.[1] ?? '',
+  );
   protected readonly session = computed(() => scenarioSession(this.selected()));
   protected readonly inspection = computed(() => this.session().inspection.value);
   protected readonly journal = computed(() => this.session().journal.value);

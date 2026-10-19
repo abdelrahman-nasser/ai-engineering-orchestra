@@ -20,7 +20,7 @@
 .river-svg { display: block; transform-origin: 0 0; will-change: transform; }
 
 .floating-controls {
-  position: absolute; top: 12px; right: 12px; display: flex; align-items: center; gap: 4px;
+  align-self: flex-end; max-width: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 4px;
   background: color-mix(in srgb, var(--surface) 90%, transparent); backdrop-filter: blur(10px);
   border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 4px 6px; box-shadow: var(--shadow); z-index: 10;
 }

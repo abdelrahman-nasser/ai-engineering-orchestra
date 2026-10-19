@@ -188,7 +188,7 @@ describe('Screens (mock rendering)', () => {
     // Verify inspection card switched to run_h4_fail with interrupted continuation notice
     const updatedInspection = el.querySelector('[data-testid="run-inspection-card"]')!;
     expect(text(updatedInspection)).toContain('run_h4_fail');
-    expect(text(updatedInspection)).toContain('Continuation availability supplied by current data source');
+    expect(text(updatedInspection)).toContain('Mock continuation metadata only');
     expect(text(updatedInspection)).toContain('Runner VM preempted');
   });
 
@@ -233,7 +233,7 @@ describe('Screens (mock rendering)', () => {
     expect(text(el.querySelector('h1'))).toContain('Nile Flow & Scheduler');
     expect(el.querySelector('cc-scheduler-panel')).not.toBeNull();
     expect(text(el.querySelector('[data-testid="scheduler-disclaimer"]'))).toContain(
-      'Core scheduler semantics pending ITRU-063',
+      'No operational Core scheduler is connected',
     );
     expect(el.querySelectorAll('cc-dag-flow svg g.node').length).toBeGreaterThan(5);
     expect(el.querySelector('cc-dag-node-inspector')).not.toBeNull();

@@ -277,7 +277,7 @@ export class DagFlow {
   }
 
   protected zoomOut(): void {
-    this.zoom.update((z) => Math.max(Number((z - 0.15).toFixed(2)), 0.5));
+    this.zoom.update((z) => Math.max(Number((z - 0.15).toFixed(2)), 0.1));
   }
 
   protected resetView(): void {
@@ -294,16 +294,16 @@ export class DagFlow {
     }
     const vpWidth = vp.clientWidth;
     const vpHeight = vp.clientHeight;
+    if (vpWidth <= 0 || vpHeight <= 0) return;
     const scaleX = vpWidth / (l.width + 40);
     const scaleY = vpHeight / (l.height + 40);
-    const scale = Math.max(0.5, Math.min(scaleX, scaleY, 1.2));
-    this.zoom.set(Number(scale.toFixed(2)));
+    const scale = Math.min(scaleX, scaleY, 1.2);
+    this.zoom.set(scale);
     this.panX.set(0);
     this.panY.set(0);
   }
 
-  protected focusSelected(): void {
-    const selectedId = this.selectedNodeId();
+  protected focusSelected(selectedId = this.selectedNodeId()): void {
     const l = this.layout();
     const vp = this.viewportEl()?.nativeElement;
     if (!selectedId || !l || !vp) {
@@ -345,67 +345,45 @@ export class DagFlow {
   }
 
   protected handleKeydown(event: KeyboardEvent): void {
+    const viewport = this.viewportEl()?.nativeElement;
+    const target = event.target;
+    if (this.viewMode() !== 'river' || !viewport || !(target instanceof Element) ||
+        event.altKey || event.ctrlKey || event.metaKey) return;
+    const focusedNode = target.closest<SVGElement>('.node[data-node-id]');
+    // Toolbar and structured-list keys must retain their native behavior.
+    if (target !== viewport && !focusedNode) return;
     const g = this.graph();
-    const selectedId = this.selectedNodeId();
+    const selectedId = focusedNode?.getAttribute('data-node-id') ?? this.selectedNodeId();
     if (!g || g.nodes.length === 0) {
       return;
     }
 
-    if (event.key === 'Escape') {
-      // Clear selection
-      const first = g.nodes[0];
-      if (first) {
-        // Can emit undefined or deselect
-      }
-      return;
-    }
-
+    let next: DagNodePresentation | undefined;
     if (!selectedId) {
       if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
-        this.nodeSelect.emit(g.nodes[0]);
-        event.preventDefault();
+        next = g.nodes[0];
       }
-      return;
-    }
-
-    const current = g.nodeMap.get(selectedId);
-    if (!current) {
-      return;
-    }
-
-    if (event.key === 'ArrowRight') {
-      // Navigate downstream
-      if (current.downstreamNodeIds.length > 0) {
-        const nextId = current.downstreamNodeIds[0];
-        const nextNode = g.nodeMap.get(nextId);
-        if (nextNode) {
-          this.nodeSelect.emit(nextNode);
-          event.preventDefault();
-        }
-      }
-    } else if (event.key === 'ArrowLeft') {
-      // Navigate upstream
-      if (current.upstreamNodeIds.length > 0) {
-        const prevId = current.upstreamNodeIds[0];
-        const prevNode = g.nodeMap.get(prevId);
-        if (prevNode) {
-          this.nodeSelect.emit(prevNode);
-          event.preventDefault();
-        }
-      }
-    } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-      // Navigate to sibling in adjacent lane
-      const direction = event.key === 'ArrowDown' ? 1 : -1;
-      const siblings = g.nodes
-        .filter((n) => Math.abs(n.column - current.column) <= 0.5 && n.id !== current.id)
-        .sort((a, b) => a.lane - b.lane);
-      const target = direction > 0
-        ? siblings.find((n) => n.lane > current.lane)
-        : [...siblings].reverse().find((n) => n.lane < current.lane);
-      if (target) {
-        this.nodeSelect.emit(target);
-        event.preventDefault();
+    } else {
+      const current = g.nodeMap.get(selectedId);
+      if (!current) return;
+      if (event.key === 'ArrowRight') {
+        next = g.nodeMap.get(current.downstreamNodeIds[0]);
+      } else if (event.key === 'ArrowLeft') {
+        next = g.nodeMap.get(current.upstreamNodeIds[0]);
+      } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        const siblings = g.nodes
+          .filter((n) => Math.abs(n.column - current.column) <= 0.5 && n.id !== current.id)
+          .sort((a, b) => a.lane - b.lane);
+        next = event.key === 'ArrowDown'
+          ? siblings.find((n) => n.lane > current.lane)
+          : [...siblings].reverse().find((n) => n.lane < current.lane);
       }
     }
+    if (!next) return;
+    this.nodeSelect.emit(next);
+    Array.from(viewport.querySelectorAll<SVGElement>('.node[data-node-id]'))
+      .find((node) => node.getAttribute('data-node-id') === next.id)?.focus({ preventScroll: true });
+    this.focusSelected(next.id);
+    event.preventDefault();
   }
 }

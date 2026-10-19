@@ -1,5 +1,21 @@
 # Application v1.0 synthetic integration preparation
 
+## Current handoff — October 19, 2026
+
+The October 17 candidate described below was committed as
+`20f0abd8347bfbc054f926f0eb96308ed8092c36`. It already includes the accepted-Result
+identity guard and fourteen regressions. Its historical unstaged/uncommitted and
+pending-lint-disposition statements describe the precommit review, not current Git
+state. The later local commit receipt records accepted baseline lint exceptions;
+the checker itself still exited 1 with ten inherited findings.
+
+The separately Human-authorized browser QA and UI polish follow-up is recorded in
+[the October 19 QA report](application-v1-browser-qa-2026-10-19.md). This follow-up
+remains unstaged and uncommitted. Option D and the operational-reader deferral
+continue unchanged.
+
+## Preserved October 17 preparation and review
+
 This is standalone UI-only preparation on `ui/control-center-integration-prep`,
 based on UI commit `0485a5fe84746252b3f8f3bcd4f0d9e85e2a7a67`. The current Human
 instruction authorizes this synthetic scope. It does not resume S5 or the blocked

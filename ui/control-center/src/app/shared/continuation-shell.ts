@@ -23,7 +23,7 @@ import { StatusBadge } from './status-badge';
     <section class="continuation-container" role="region" [attr.aria-label]="regionLabel()">
       <div class="disclaimer-banner" role="note">
         <cc-icon name="info" />
-        <span>Continuation availability supplied by current data source · Core defines no canonical continuation/resume contract yet (pending ITRU-062)</span>
+        <span>Mock continuation metadata only · No operational resume controls are connected.</span>
       </div>
 
       @if (loading()) {
@@ -107,7 +107,7 @@ import { StatusBadge } from './status-badge';
           </div>
 
           <div class="safety-note muted">
-            Notice: Display of Journal entries or evidence does not prove continuation safety · Core defines no resume safety proofs.
+            Notice: Display of Journal entries or evidence does not prove continuation safety. This mock view establishes no continuation eligibility.
           </div>
         </div>
       }

@@ -3,6 +3,7 @@
   padding: var(--space-lg);
   max-width: 1800px;
   margin: auto;
+  overflow-wrap: anywhere;
 }
 .preview-header {
   margin-bottom: var(--space-lg);
@@ -31,8 +32,11 @@ li {
   background: var(--surface);
 }
 .notice {
+  display: block;
   border-left: 3px solid var(--warning);
 }
+.notice p + p,
+.notice strong + p { margin-top: var(--space-sm); }
 .toolbar,
 .controls {
   display: flex;
@@ -94,8 +98,10 @@ dd {
   overflow-wrap: anywhere;
 }
 .table-scroll {
+  min-width: 0;
   overflow-x: auto;
 }
+table { width: 100%; border-collapse: collapse; }
 th,
 td {
   text-align: left;

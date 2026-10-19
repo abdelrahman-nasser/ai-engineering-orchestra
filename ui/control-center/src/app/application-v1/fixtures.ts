@@ -303,13 +303,28 @@ export const scenarios = [
   ['exhausted', 'Read budget exhausted'],
   ['not-found', 'Run not found'],
   ['loading', 'Loading'],
+  ['long-text', 'Long synthetic identities and resource'],
 ] as const;
+
+/** Presentation stress only; exact replacements keep every supplied reference coherent. */
+const longTextValues: Readonly<Record<string, string>> = {
+  'SYNTHETIC-run-z': `SYNTHETIC-run-${'identity'.repeat(24)}`,
+  'SYNTHETIC-task-a': `SYNTHETIC-task-a-${'subject'.repeat(24)}`,
+  'SYNTHETIC-grant': `SYNTHETIC-grant-${'physical'.repeat(24)}`,
+  'synthetic/example.txt': `synthetic/${'resource'.repeat(24)}/example.txt`,
+};
+function withLongText<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value, (_key, item: unknown) =>
+    typeof item === 'string' ? longTextValues[item] ?? item : item,
+  )) as T;
+}
 export function scenarioSession(id: string): PreviewSession {
   const session = new PreviewSession(previewContext);
   const delivery = session.deliveryContext;
   if (id === 'loading') return session;
   const successfulHistory = id === 'success-task-active' || id === 'over-capacity';
-  const inspection = inspectionFixture(successfulHistory ? 'succeeded' : 'interrupted');
+  const baseInspection = inspectionFixture(successfulHistory ? 'succeeded' : 'interrupted');
+  const inspection = id === 'long-text' ? withLongText(baseInspection) : baseInspection;
   if (id === 'over-capacity') {
     inspection.scheduling.max_concurrency = 1;
     inspection.scheduling.state = 'over_capacity';
@@ -326,7 +341,8 @@ export function scenarioSession(id: string): PreviewSession {
     return session;
   }
   session.receiveInspection(inspection, delivery);
-  const journal = journalFixture();
+  const baseJournal = journalFixture();
+  const journal = id === 'long-text' ? withLongText(baseJournal) : baseJournal;
   if (successfulHistory) {
     journal.subject.accepted_result_identity = inspection.lifecycle.accepted_result_identity;
     journal.comparison.lifecycle_state_at_inspection = 'succeeded';

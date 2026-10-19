@@ -1,12 +1,18 @@
-<a class="skip-link" href="#main">Skip to content</a>
+<a class="skip-link" href="#main" (click)="skipToContent($event)">Skip to content</a>
 
 <div class="shell" [class.nav-open]="navOpen()">
   <aside
     class="sidebar"
     id="primary-sidebar"
     aria-label="Primary"
-    [attr.aria-modal]="navOpen() ? 'true' : null"
+    [attr.role]="isDrawer() && navOpen() ? 'dialog' : null"
+    [attr.aria-modal]="isDrawer() && navOpen() ? 'true' : null"
+    [inert]="isDrawer() && !navOpen()"
   >
+    <button type="button" class="btn btn-ghost drawer-close" aria-label="Close navigation" (click)="closeNav()">
+      <cc-icon name="close" [size]="20" />
+      <span>Close navigation</span>
+    </button>
     <a class="brand" routerLink="/" aria-label="ITRU Control Center — Overview">
       <span class="logo" aria-hidden="true">
         <svg viewBox="0 0 32 32" width="30" height="30" fill="none">
@@ -60,7 +66,10 @@
         <span class="origin-text">{{ applicationPreview() ? 'Synthetic application v1.0' : originLabel }}</span>
       </span>
       <small class="foot-note">Read-only foundation</small>
-      <a routerLink="/application-v1-preview">Synthetic application v1.0 preview</a>
+      <a class="preview-link" routerLink="/application-v1-preview" aria-label="Synthetic application v1.0 preview" title="Synthetic application v1.0 preview" (click)="closeNav()">
+        <cc-icon name="code" [size]="19" />
+        <span class="preview-link-label">Synthetic application v1.0 preview</span>
+      </a>
       @if (applicationPreview()) { <small class="foot-note">Primary navigation opens separate mock demonstrations.</small> }
     </div>
   </aside>
@@ -69,11 +78,12 @@
     type="button"
     class="scrim"
     aria-label="Close navigation"
-    [attr.tabindex]="navOpen() ? 0 : -1"
+    aria-hidden="true"
+    tabindex="-1"
     (click)="closeNav()"
   ></button>
 
-  <div class="content">
+  <div class="content" [inert]="isDrawer() && navOpen()">
     <header class="topbar">
       <button
         type="button"

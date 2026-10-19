@@ -157,8 +157,8 @@ describe('ExecutionTimeline', () => {
     const { el } = await createHost(SAMPLE_ENTRIES);
 
     const banner = el.querySelector('.timeline-disclaimer');
-    expect(banner?.textContent).toContain('Display order supplied by current data source');
-    expect(banner?.textContent).toContain('Core defines no canonical Journal ordering yet');
+    expect(banner?.textContent).toContain('Mock display order only');
+    expect(banner?.textContent).toContain('does not establish canonical Journal ordering');
   });
 
   it('renders all entries when filter is all', async () => {

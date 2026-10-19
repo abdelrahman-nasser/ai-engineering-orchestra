@@ -80,8 +80,9 @@ describe('SchedulerPanel', () => {
     const el: HTMLElement = fixture.nativeElement;
     const banner = el.querySelector('[data-testid="scheduler-disclaimer"]');
     expect(banner).not.toBeNull();
-    expect(banner?.textContent).toContain('Scheduler state supplied by current data source');
-    expect(banner?.textContent).toContain('Core scheduler semantics pending ITRU-063');
+    expect(banner?.textContent).toContain('Mock scheduler presentation only');
+    expect(banner?.textContent).toContain('No operational Core scheduler is connected');
+    expect(banner?.textContent).not.toContain('semantics pending');
   });
 
   it('renders scheduler state filter pills with correct counts', () => {

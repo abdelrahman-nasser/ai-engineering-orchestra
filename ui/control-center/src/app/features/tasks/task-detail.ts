@@ -198,7 +198,7 @@ import { StatusBadge } from '../../shared/status-badge';
                       <section class="inspector-block" aria-labelledby="heading-continuation">
                         <div class="block-header">
                           <h3 id="heading-continuation">Continuation &amp; Recovery</h3>
-                          <p class="muted text-xs">Presentation of source-supplied continuation affordances. Core defines no resume semantics yet.</p>
+                          <p class="muted text-xs">Mock continuation metadata; operational continuation is unavailable.</p>
                         </div>
                         <cc-continuation-shell
                           [continuation]="sel.continuation"
@@ -220,7 +220,7 @@ import { StatusBadge } from '../../shared/status-badge';
                         <section class="inspector-block" aria-labelledby="heading-timeline">
                           <div class="block-header">
                             <h3 id="heading-timeline">Execution Timeline</h3>
-                            <p class="muted text-xs">Presentation entries only. Core defines no Journal yet.</p>
+                            <p class="muted text-xs">Mock presentation entries; this is not the canonical Journal.</p>
                           </div>
                           <cc-execution-timeline [entries]="sel.timeline" />
                         </section>

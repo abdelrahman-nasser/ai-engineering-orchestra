@@ -49,7 +49,7 @@ export type TimelineFilter = 'all' | 'result' | 'evidence' | 'attention';
       <!-- Data source ordering disclaimer -->
       <div class="timeline-disclaimer" role="note">
         <cc-icon name="info" [size]="15" class="info-icon" />
-        <span>Display order supplied by current data source · Core defines no canonical Journal ordering yet</span>
+        <span>Mock display order only · This timeline does not establish canonical Journal ordering.</span>
       </div>
 
       @if (entries().length === 0) {

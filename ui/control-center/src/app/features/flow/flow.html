@@ -121,8 +121,8 @@
           @if (fg.nodes.length === 0) {
             <cc-state-panel
               kind="empty"
-              title="No nodes match your filter criteria"
-              message="Adjust search query or filter selections above to reveal nodes."
+              [title]="g.nodes.length === 0 ? 'No nodes in this mock scenario' : 'No nodes match your filter criteria'"
+              [message]="g.nodes.length === 0 ? 'This mock scenario supplies an empty graph. Choose another scenario to inspect its nodes.' : 'Adjust search query or filter selections above to reveal nodes.'"
             />
           } @else {
             <div class="flow-content-grid">

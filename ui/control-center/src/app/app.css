@@ -145,6 +145,14 @@
   border: 1px solid var(--border);
   border-radius: 12px;
 }
+.preview-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  overflow-wrap: anywhere;
+}
+.preview-link cc-icon { flex: none; }
+.drawer-close { display: none; }
 .origin {
   display: flex;
   align-items: center;
@@ -212,6 +220,7 @@
 }
 main {
   outline: none;
+  scroll-margin-top: var(--topbar-height);
 }
 
 /* ---- Responsive --------------------------------------------------------- */
@@ -231,6 +240,8 @@ main {
   .foot-note {
     display: none;
   }
+  .preview-link-label { display: none; }
+  .preview-link { justify-content: center; padding: var(--space-2); }
   .nav-link {
     justify-content: center;
     padding: 12px;
@@ -248,6 +259,8 @@ main {
   }
   .sidebar-foot {
     padding: var(--space-2);
+    width: 100%;
+    min-width: 0;
   }
 }
 
@@ -263,7 +276,10 @@ main {
     transform: translateX(-102%);
     transition: transform 0.28s var(--ease);
     box-shadow: var(--shadow-pop);
+    overflow-y: auto;
+    height: 100dvh;
   }
+  .drawer-close { display: inline-flex; align-self: flex-end; }
   .nav-open .sidebar {
     transform: none;
   }

@@ -47,17 +47,6 @@
 
   @if (viewMode() === 'river') {
     @if (layout(); as l) {
-      <div
-        #viewport
-        class="viewport"
-        tabindex="0"
-        role="region"
-        aria-label="Interactive Nile dependency river (drag to pan, keyboard arrows to traverse)"
-        (mousedown)="startPan($event)"
-        (mousemove)="onPan($event)"
-        (mouseup)="endPan()"
-        (mouseleave)="endPan()"
-      >
         <div class="floating-controls" role="toolbar" aria-label="Canvas zoom and pan controls">
           <button
             type="button"
@@ -109,6 +98,17 @@
           }
         </div>
 
+      <div
+        #viewport
+        class="viewport"
+        tabindex="0"
+        role="region"
+        aria-label="Interactive Nile dependency river (drag to pan, keyboard arrows to traverse)"
+        (mousedown)="startPan($event)"
+        (mousemove)="onPan($event)"
+        (mouseup)="endPan()"
+        (mouseleave)="endPan()"
+      >
         <svg
           class="river-svg"
           [attr.viewBox]="'0 0 ' + l.width + ' ' + l.height"
@@ -149,6 +149,7 @@
             @for (item of l.nodes; track item.node.id) {
               <g
                 class="node"
+                [attr.data-node-id]="item.node.id"
                 [attr.data-kind]="item.node.kind"
                 [attr.data-state]="item.node.schedulerState"
                 [class.selected]="item.isSelected"
@@ -205,7 +206,7 @@
     }
   } @else {
     <!-- Structured List View Fallback -->
-    <div class="list-view-container" role="region" aria-label="Structured node and dependency list">
+    <div class="list-view-container" role="region" aria-label="Structured node and dependency list" tabindex="0">
       <table class="list-table">
         <thead>
           <tr>
@@ -223,11 +224,10 @@
           @for (node of graph()?.nodes ?? []; track node.id) {
             <tr
               [class.selected]="node.id === selectedNodeId()"
-              [attr.aria-selected]="node.id === selectedNodeId()"
               (click)="chooseNode(node)"
             >
               <td>
-                <button type="button" class="node-btn-cell">
+                <button type="button" class="node-btn-cell" [attr.aria-pressed]="node.id === selectedNodeId()">
                   <span
                     class="swatch"
                     [attr.data-tone]="node.schedulerTone"
@@ -310,6 +310,6 @@
   <p class="footnote">
     <strong>Presentation topology only.</strong>
     Branches and river channels represent visual connectivity without canonical scheduling, ordering,
-    or readiness authority. Moving highlights are decorative. Core scheduler semantics pending ITRU-063.
+    or readiness authority. Moving highlights are decorative. No operational Core scheduler is connected.
   </p>
 </div>

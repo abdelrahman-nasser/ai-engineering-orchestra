@@ -12,8 +12,8 @@ import { DagEdgeReadModel, DagGraphReadModel, DagNodeReadModel } from './models'
 
 describe('dag-adapter', () => {
   it('exposes mandatory presentation disclaimers', () => {
-    expect(SCHEDULER_DISCLAIMER_NOTICE).toContain('Core scheduler semantics pending ITRU-063');
-    expect(DEPENDENCY_DISCLAIMER_NOTICE).toContain('Core readiness algorithm');
+    expect(SCHEDULER_DISCLAIMER_NOTICE).toContain('No operational Core scheduler is connected');
+    expect(DEPENDENCY_DISCLAIMER_NOTICE).toContain('establish no Core readiness or dispatch eligibility');
     expect(EFFECT_AMBIGUOUS_DAG_WARNING).toContain('Automatic retry or replay is strictly prohibited');
   });
 

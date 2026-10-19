@@ -6,7 +6,7 @@ import {
 import { CONTINUATION_STATUS } from '../shared/presentation';
 
 export const CONTINUATION_DISCLAIMER =
-  'Continuation availability supplied by current data source · Core defines no canonical continuation/resume contract yet (pending ITRU-062).';
+  'Mock continuation metadata only · No operational resume controls are connected.';
 
 /**
  * Pure adapter mapping a {@link RunContinuationReadModel} into a screen-ready
@@ -147,7 +147,7 @@ export function adaptContinuationReadModel(
       disclaimer: CONTINUATION_DISCLAIMER,
       actionDisabled: true,
       actionDisabledReason:
-        'Presentation demo only · Core persistence and resume mutation is uninvented pending ITRU-062.',
+        'Presentation demo only · Operational persistence and resume controls are not connected.',
     };
   }
 
@@ -196,7 +196,7 @@ export function adaptContinuationReadModel(
       disclaimer: CONTINUATION_DISCLAIMER,
       actionDisabled: true,
       actionDisabledReason:
-        'Presentation demo only · Core persistence and resume mutation is uninvented pending ITRU-062.',
+        'Presentation demo only · Operational persistence and resume controls are not connected.',
     };
   }
 

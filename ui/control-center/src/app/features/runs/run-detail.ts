@@ -73,7 +73,7 @@ import { StatusBadge } from '../../shared/status-badge';
                   <div class="card-head">
                     <div>
                       <h2>Continuation &amp; Recovery</h2>
-                      <p>Presentation of source-supplied continuation affordances. Core defines no resume semantics yet.</p>
+                      <p>Mock continuation metadata; operational continuation is unavailable.</p>
                     </div>
                   </div>
                   <cc-continuation-shell
@@ -87,7 +87,7 @@ import { StatusBadge } from '../../shared/status-badge';
                   <div class="card-head">
                     <div>
                       <h2>Execution timeline</h2>
-                      <p>Presentation entries only. Core defines no Journal yet.</p>
+                      <p>Mock presentation entries; this is not the canonical Journal.</p>
                     </div>
                   </div>
                   <cc-execution-timeline

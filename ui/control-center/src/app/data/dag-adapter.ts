@@ -52,10 +52,10 @@ export const SCHEDULER_STATE_CONFIG: Readonly<
 };
 
 export const SCHEDULER_DISCLAIMER_NOTICE =
-  'Scheduler state supplied by current data source · Core scheduler semantics pending ITRU-063.';
+  'Mock scheduler presentation only · No operational Core scheduler is connected.';
 
 export const DEPENDENCY_DISCLAIMER_NOTICE =
-  'Dependency relations supplied by presentation data source · Core readiness algorithm & dispatch eligibility pending ITRU-063.';
+  'Mock dependency relations only · These relationships establish no Core readiness or dispatch eligibility.';
 
 export const EFFECT_AMBIGUOUS_DAG_WARNING =
   'WARNING: effect_ambiguous result · Automatic retry or replay is strictly prohibited. Core defines no safe recovery without external verification.';

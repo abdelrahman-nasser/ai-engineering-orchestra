@@ -1,0 +1,117 @@
+{
+  "scope": "ITRU-065 closure-only mechanical evidence; Gate verdicts in review.md",
+  "runs": [
+    {
+      "result": "PASS",
+      "lifecycle_status": "in_progress",
+      "acceptance_criteria": "8/8 checked; explicit Human APPROVE #10753",
+      "checks": [
+        "Task/Workflow/used Role schemas",
+        "Workflow/Role/Gate/internal references",
+        "effective mandatory Gate set",
+        "exact closure scope",
+        "sensitive-data byte-pattern scan",
+        "scoped whitespace",
+        "accepted 15-file implementation identity",
+        "unchanged prior receipts/inventory/test/runtime",
+        "preserved historical failures/errors/skips/NOT RUN"
+      ],
+      "workflow": "standard-change",
+      "roles": [
+        "reviewer",
+        "software-engineer"
+      ],
+      "gates": [
+        "documentation_consistency",
+        "independent_review"
+      ],
+      "local_markdown_references": 0,
+      "scoped_markdown_lint": "NONMANDATORY / NOT RUN; manual and independent documentation Gate assessment",
+      "tests_executed": "NONE; previous eight-test PASS remains source-bound",
+      "remaining_debt": {
+        "owner": "SCRUM-86 remains OPEN",
+        "historical_failures": 24,
+        "errors": 275,
+        "skips": 5,
+        "other_failure_events": "23 NOT RERUN",
+        "full_C109": "NOT RUN",
+        "markdown_findings": 132,
+        "markdown_files": 17
+      },
+      "input_sha256": {
+        ".ai/tasks/ITRU-065-scrum-86-verification-debt-phase1/acceptance-criteria.md": "57e02b26411bfa10c836deb128b4ca657092153fe27da63504307b06790bfcae",
+        ".ai/tasks/ITRU-065-scrum-86-verification-debt-phase1/context.md": "27bc94c92c51ee2d4ca99be3e3c805e6cddc31d85daa7ec349cb65a8c5f35b75",
+        ".ai/tasks/ITRU-065-scrum-86-verification-debt-phase1/phase1-report.md": "16695c51d132bae037ae1f30fc7ed876d8700bbab7b8ff318a1d75a3a27dd644",
+        ".ai/tasks/ITRU-065-scrum-86-verification-debt-phase1/review.md": "64fa63a3dc20ae9284c87a823e429078438801a6f6e9a9913c964d3b5156283d",
+        ".ai/tasks/ITRU-065-scrum-86-verification-debt-phase1/task.yaml": "76bc8492170b5a6e09906bf016ff55896e25c63a3d9fd0a85dd675b97ffb7aa6"
+      },
+      "receipt_self_hash": "excluded to avoid self-reference; final frozen manifest binds all six files",
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ITRU\\worktrees\\itru-core-usability\\.ai\\local\\itru-065-closure\\verify_closure.py",
+        "candidate"
+      ],
+      "cwd": "D:\\Dev\\ITRU\\worktrees\\itru-core-usability",
+      "time_utc": "2026-10-20T13:36:02Z"
+    },
+    {
+      "result": "PASS",
+      "lifecycle_status": "completed",
+      "acceptance_criteria": "8/8 checked; explicit Human APPROVE #10753",
+      "closure_gate_results": {
+        "documentation_consistency": "PASS; fresh independent approval in review.md",
+        "independent_review": "PASS; fresh independent approval in review.md"
+      },
+      "checks": [
+        "Task/Workflow/used Role schemas",
+        "Workflow/Role/Gate/internal references",
+        "effective mandatory Gate set",
+        "exact closure scope",
+        "sensitive-data byte-pattern scan",
+        "scoped whitespace",
+        "accepted 15-file implementation identity",
+        "unchanged prior receipts/inventory/test/runtime",
+        "preserved historical failures/errors/skips/NOT RUN"
+      ],
+      "workflow": "standard-change",
+      "roles": [
+        "reviewer",
+        "software-engineer"
+      ],
+      "gates": [
+        "documentation_consistency",
+        "independent_review"
+      ],
+      "local_markdown_references": 0,
+      "scoped_markdown_lint": "NONMANDATORY / NOT RUN; manual and independent documentation Gate assessment",
+      "tests_executed": "NONE; previous eight-test PASS remains source-bound",
+      "remaining_debt": {
+        "owner": "SCRUM-86 remains OPEN",
+        "historical_failures": 24,
+        "errors": 275,
+        "skips": 5,
+        "other_failure_events": "23 NOT RERUN",
+        "full_C109": "NOT RUN",
+        "markdown_findings": 132,
+        "markdown_files": 17
+      },
+      "input_sha256": {
+        ".ai/tasks/ITRU-065-scrum-86-verification-debt-phase1/acceptance-criteria.md": "705e0b8520b7d10131c8d5775c87a8715bce489c9995c70d150f793be3986a4f",
+        ".ai/tasks/ITRU-065-scrum-86-verification-debt-phase1/context.md": "3fb4b3b19dab59fcb1f9a6b36f5e69b1f553f0408e32b0ad1b80af62eb31df32",
+        ".ai/tasks/ITRU-065-scrum-86-verification-debt-phase1/phase1-report.md": "f86523bcf0c15514e6f07dab9457e8bac6d8d79edd3cf1032691decf6de8a6b2",
+        ".ai/tasks/ITRU-065-scrum-86-verification-debt-phase1/review.md": "46b4a91b44e303d01a879b78a93ee3fb45757f06bdf3aec15409342d8d4248fb",
+        ".ai/tasks/ITRU-065-scrum-86-verification-debt-phase1/task.yaml": "b962b9f656a4dc1d6849d544398eef9af45d7022fcf4b2941dd20f79a2dee845"
+      },
+      "receipt_self_hash": "excluded to avoid self-reference; final frozen manifest binds all six files",
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-B",
+        "D:\\Dev\\ITRU\\worktrees\\itru-core-usability\\.ai\\local\\itru-065-closure\\verify_closure.py",
+        "candidate"
+      ],
+      "cwd": "D:\\Dev\\ITRU\\worktrees\\itru-core-usability",
+      "time_utc": "2026-10-20T13:38:49Z"
+    }
+  ]
+}

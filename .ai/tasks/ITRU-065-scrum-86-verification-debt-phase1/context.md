@@ -1,8 +1,8 @@
 # SCRUM-86 Phase 1 context
 
-The implementation authority and handoff below are historical. The final section
-records the later conditional checkpoint authority; final Task acceptance remains
-pending.
+The implementation authority, handoff and conditional checkpoint sections below
+are historical. The final closure section records the later Human acceptance and
+supersedes their pending-acceptance and no-closure statements for ITRU-065 only.
 
 The October 20, 2026 Human instruction and read-only
 [SCRUM-86 Jira requirements](https://abdelrahmann-hegab.atlassian.net/browse/SCRUM-86)
@@ -84,3 +84,32 @@ criterion stays unchecked.
 Scoped Markdown lint is nonmandatory for this bounded checkpoint; its result
 remains NOT RUN. The governing justification and independent confirmation are
 recorded in the checkpoint sections of `phase1-report.md` and `review.md`.
+
+## Final Human acceptance and closure authority - October 20, 2026
+
+Human decision: **APPROVE - October 20, 2026**, recorded in authorization comment
+`#10753`. Accepted implementation commit:
+`b1340a866852635458c938d3b769ee3385b6aa43`, with parent
+`e46aafd9790ced28a9ef6c1688c94bccdc4062b0`. The clean accepted checkpoint was
+verified in the relocated worktree on `feature/core-verification-debt-phase1`.
+All 15 implementation paths match the independently reviewed candidate and the
+retained post-commit receipt. The source-bound eight-test PASS and both independent
+implementation/checkpoint approvals remain applicable; no tests are rerun here.
+
+This later decision explicitly grants final acceptance of ITRU-065 and exactly
+one additional local closure-only commit:
+`docs(alpha): finalize ITRU-065 phase 1 verification task closure`.
+It supersedes the earlier exclusion of final Task closure and the earlier
+single-checkpoint-only staging/commit restriction only for these closure records.
+The eighth Human acceptance criterion is satisfied. Fresh closure validation and
+both independent closure reviews have passed with no material findings; canonical
+Task status is now `completed`. Final staged identity checks remain required before
+the one authorized closure commit.
+
+SCRUM-86 remains OPEN and owns the unresolved historical 24 failures, 275 errors,
+five skips, other 23 historical failure events not rerun, full C109 NOT RUN and
+132 inherited Markdown findings across 17 files. Scoped Markdown lint remains
+NONMANDATORY / NOT RUN under the governing determination already recorded.
+None of those results is converted to PASS and no mandatory Gate is waived.
+No Phase 2, runtime/test/specification change, native/security probe, provider
+request, UI integration, Jira transition, push or publication is authorized.

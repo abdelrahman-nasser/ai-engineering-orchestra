@@ -1,8 +1,8 @@
 # SCRUM-86 Phase 1 report
 
-The implementation handoff below is retained as historical evidence. The final
-checkpoint section records later authority and supersedes its no-stage/no-commit
-statements only for one conditional local checkpoint. Test outcomes are unchanged.
+The implementation handoff and conditional checkpoint sections below are retained
+as historical evidence. The final closure section records later Human acceptance
+and closure authority for ITRU-065 only. Historical test outcomes are unchanged.
 
 ## Outcome and scope
 
@@ -269,3 +269,57 @@ Final Human acceptance remains pending: ITRU-065 stays `in_progress`, seven of
 eight criteria checked; SCRUM-86 stays open. The historical 24 failures, 275 errors,
 five skips, other 23 failure events not rerun and full C109 NOT RUN remain exactly
 as recorded. STOP AT HUMAN CONTROL after the one verified checkpoint commit.
+
+## Final Human acceptance and Task closure - October 20, 2026
+
+Human decision: **APPROVE - October 20, 2026**, authorization comment `#10753`.
+Accepted implementation commit: `b1340a866852635458c938d3b769ee3385b6aa43`.
+The 15-path checkpoint, parent, clean baseline, eight focused tests PASS with
+zero errors/skips, both independent APPROVE verdicts and implementation Quality
+Gates PASS were verified against retained hashes and receipts before closure work.
+The eighth Human acceptance criterion is satisfied; all 8/8 criteria are checked.
+
+This final decision supersedes only the historical pending-acceptance/no-closure
+statements for ITRU-065 and grants exactly one additional local commit:
+`docs(alpha): finalize ITRU-065 phase 1 verification task closure`.
+Fresh closure checks and both independent closure reviews PASS with no material
+findings. Canonical Task status is `completed`, with all 8/8 criteria checked,
+after final Human acceptance and verification of the closure conditions.
+
+The exact closure candidate consists of these six paths under
+`.ai/tasks/ITRU-065-scrum-86-verification-debt-phase1/`:
+
+- `task.yaml`
+- `acceptance-criteria.md`
+- `context.md`
+- `review.md`
+- `phase1-report.md`
+- `evidence/closure-checks.json`
+
+Fresh closure validation checks Task/Workflow/Role schemas and references, the
+effective Gate set, internal references, scope, sensitive-data patterns, whitespace,
+accepted implementation identities and preservation of prior evidence. The new
+`evidence/closure-checks.json` records exact commands, input hashes and outcomes;
+additional raw snapshot/staged/post-commit receipts remain ignored in
+`.ai/local/itru-065-closure/`. The precheckpoint `verify_phase1.py` remains unchanged
+and is not rerun: its original baseline/status guards are historical evidence.
+The actual closure records receive independent review and final staged-content
+applicability checks. No product tests or broader verification are executed.
+
+Closure `independent_review`: PASS; fresh security/test-integrity and
+contract/documentation verdicts are both APPROVE. Closure
+`documentation_consistency`: PASS for the actual closure records, using manual
+comparison, repository inspection, schema/reference checks and independent review.
+These fresh outcomes do not reuse implementation-scoped approvals for new text.
+
+SCRUM-86 remains OPEN. Its unresolved evidence remains: historical 24 failures,
+275 errors, five skips; other 23 historical failure events not rerun; full C109
+NOT RUN; and 132 inherited Markdown findings across 17 files. Scoped Markdown
+lint remains NONMANDATORY / NOT RUN under the recorded Check/Gate determination.
+These are limitations outside this bounded Task's closure, not PASS results or
+waivers. No mandatory Quality Gate is waived, and no full-Core green claim is made.
+
+Original failure receipts, inventory, implementation/checkpoint reviews and prior
+verification evidence remain intact. Closure introduces no production, test,
+shared-specification, other-Task, Phase 2 or Jira state change. STOP AT HUMAN
+CONTROL after the single verified local closure commit; no push or publication.

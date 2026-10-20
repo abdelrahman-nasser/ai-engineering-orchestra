@@ -1,8 +1,8 @@
 # SCRUM-86 Phase 1 review
 
-The implementation-handoff review below is historical. The final section records
-the later conditional checkpoint authority and review applicability; it supersedes
-earlier no-stage/no-commit statements only within that authorization.
+The implementation-handoff and conditional checkpoint reviews below are
+historical. The final closure review section records the later Human acceptance
+and fresh closure-specific review; earlier authority limits remain historical.
 
 Review date: October 20, 2026. The reviewers are separate Agent execution
 instances from the implementer. Both read the actual test diff, authoritative
@@ -78,3 +78,44 @@ preserving original raw worktree files and ignored raw-output backups. No check
 rule, attribute or persistent Git configuration is weakened or changed. Exact
 staged and post-commit checks are retained in ignored
 `.ai/local/itru-065-checkpoint/` without adding candidate paths.
+
+## Final Human acceptance and closure review - October 20, 2026
+
+Human decision: **APPROVE - October 20, 2026**, authorization comment `#10753`.
+Accepted implementation commit: `b1340a866852635458c938d3b769ee3385b6aa43`.
+All 8/8 acceptance criteria are satisfied. The Human authorizes exactly one
+additional local closure-only commit, not closure of the umbrella SCRUM-86 issue.
+
+Implementation/checkpoint security/test-integrity and contract/documentation
+reviews remain APPROVE, and their implementation Quality Gates remain PASS.
+Those approvals are retained as historical evidence; they are not reused to
+approve the newly edited closure records.
+
+Fresh independent reviews evaluated the actual six-file closure-only diff and
+fresh mechanical receipts, separately from implementation/checkpoint approvals:
+
+| Closure review | Independent reviewer | Outcome |
+| --- | --- | --- |
+| Security and test integrity | `/root/security_review` | APPROVE; no material findings |
+| Contract and documentation consistency | `/root/cli_review` | APPROVE; documentation consistency PASS |
+
+Closure verdicts: security/test integrity APPROVE;
+contract/documentation APPROVE.
+Closure `independent_review`: PASS. Closure `documentation_consistency`: PASS.
+
+Fresh checks PASS for Task/Workflow/used Role schemas, Workflow/Role/Gate/internal
+references, effective Gate requirements, exact six-path scope, sensitive-data
+patterns, whitespace and unchanged implementation/prior evidence. They are
+recorded with input hashes in `evidence/closure-checks.json`. Canonical Task is
+`completed` with all 8/8 criteria checked after Human acceptance, fresh checks and
+both independent approvals. Final staged applicability compares all closure blobs
+with the reviewed closure candidate; post-commit identities and clean Git status
+are retained in ignored `.ai/local/itru-065-closure/` receipts.
+
+SCRUM-86 remains OPEN for 24 historical failures, 275 errors, five skips, other
+23 historical failure events not rerun, full C109 NOT RUN and 132 inherited
+Markdown findings across 17 files. Scoped Markdown lint stays NONMANDATORY /
+NOT RUN. No mandatory Gate is waived and no historical result is relabeled PASS.
+Prior failed test, viewer, receipt-write and checkpoint-helper attempts and their
+corrective evidence remain preserved. No implementation, tests, inventory or
+historical receipts are modified by closure.

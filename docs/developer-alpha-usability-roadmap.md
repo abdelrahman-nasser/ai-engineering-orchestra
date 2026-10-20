@@ -1,5 +1,23 @@
 # Developer Alpha usability roadmap
 
+## SCRUM-87 implementation disposition — October 20, 2026
+
+The authorized, uncommitted current checkout implements offline
+`alpha diagnose --config`, fixed sanitized configuration/provider diagnostics
+and recovery guidance. It also preserves provider-failure categories in CLI rows
+without changing cancellation, approval digests or canonical Core contracts.
+The [manual](developer-alpha.md#offline-provider-diagnostics-and-recovery) and
+[first-Run card](developer-alpha-first-run.md) describe the current behavior.
+The existing offline ZIP predates these features. Final Human review and any
+commit remain pending; verification/reviews belong to
+[SCRUM-87](../.ai/tasks/SCRUM-87-provider-diagnostics/review.md).
+
+The provider-failure proposal below is implemented within this bounded scope.
+Only provider configuration/credential-presence checking from the static
+preflight proposal is implemented; work preflight remains a proposal. The
+remaining historical proposals and broader CLI/Provider milestones retain their
+original authorization boundaries. SCRUM-86 verification debt remains open.
+
 ## Current documentation disposition — October 17, 2026
 
 The separately authorized [first-Run operator card](developer-alpha-first-run.md)

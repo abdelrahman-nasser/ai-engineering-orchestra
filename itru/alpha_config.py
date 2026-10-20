@@ -4,7 +4,9 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
-import re
+
+from itru.alpha_diagnostics import AlphaDiagnosticError
+from itru.alpha_provider import PROVIDER_KEYS, validate_provider
 
 from itru._native_repository_file_read import _resource_components, _NativeFailure
 from itru.sqlite_task_run_state import _plain, _security
@@ -13,7 +15,6 @@ from itru.task_dependency import TaskNode, TaskDependency, build_task_graph
 CONFIG_KEYS = {'format_version', 'workspace', 'project_id', 'runtime_id',
     'environment_id', 'domain_id', 'ledger_id', 'journal_id', 'store_id',
     'max_concurrency', 'provider'}
-PROVIDER_KEYS = {'kind', 'endpoint', 'model', 'key_env', 'timeout_seconds'}
 
 
 def canonical(value):
@@ -58,8 +59,23 @@ def read_json(path):
 
 
 def load_config(path):
+    try:
+        return _load_config(path)
+    except AlphaDiagnosticError:
+        raise
+    except FileNotFoundError:
+        raise AlphaDiagnosticError('config_missing') from None
+    except OSError:
+        raise AlphaDiagnosticError('config_unreadable') from None
+    except Exception:
+        raise AlphaDiagnosticError('config_invalid') from None
+
+
+def _load_config(path):
     path = Path(path).absolute()
     cfg = read_json(path)
+    if type(cfg) is dict and 'provider' not in cfg and set(cfg) == CONFIG_KEYS - {'provider'}:
+        raise AlphaDiagnosticError('provider_config_missing')
     closed(cfg, CONFIG_KEYS)
     if type(cfg['format_version']) is not int or cfg['format_version'] != 1:
         raise ValueError('unsupported Alpha config version')
@@ -69,20 +85,7 @@ def load_config(path):
         raise ValueError('config must be workspace/alpha.json with exact workspace identity')
     if type(cfg['max_concurrency']) is not int or cfg['max_concurrency'] not in (1, 2):
         raise ValueError('Alpha supports one or two agent workers')
-    p = cfg['provider']
-    closed(p, PROVIDER_KEYS)
-    if p['kind'] not in ('demo', 'compatible'):
-        raise ValueError('unsupported provider adapter')
-    text(p['model'])
-    if type(p['endpoint']) is not str or type(p['key_env']) is not str:
-        raise ValueError('endpoint/key_env must be strings')
-    if p['key_env'] and not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', p['key_env']):
-        raise ValueError('key_env must name an environment variable')
-    if type(p['timeout_seconds']) is not int or not 1 <= p['timeout_seconds'] <= 120:
-        raise ValueError('provider timeout must be 1..120 seconds')
-    if p['kind'] == 'compatible':
-        from itru.alpha_provider import validate_endpoint
-        validate_endpoint(p['endpoint'])
+    validate_provider(cfg['provider'])
     _security(path.parent, directory=True)
     _security(path, directory=False)
     return cfg

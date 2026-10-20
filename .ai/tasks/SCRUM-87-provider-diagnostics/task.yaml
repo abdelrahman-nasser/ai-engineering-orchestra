@@ -1,0 +1,32 @@
+id: SCRUM-87
+title: Safe Developer Alpha provider diagnostics and recovery
+type: implementation
+status: in_progress
+complexity: medium
+risk: medium
+execution:
+  mode: standard
+workflow: security-sensitive-change
+objective: >
+  Provide safe offline CLI configuration diagnostics and actionable provider
+  recovery without changing execution, approval or canonical Core contracts.
+scope:
+  include:
+    - Alpha-only provider configuration validation and offline diagnose command
+    - Fixed sanitized Alpha CLI errors and provider failure recovery messages
+    - Focused deterministic offline tests and current first-run documentation
+    - New Task evidence and independent security and CLI usability reviews
+  exclude:
+    - Network requests, live inference and operational Core-to-UI integration
+    - Changes to canonical Task, Run, Result, Journal or approval contracts
+    - Completed P0 Task records and SCRUM-86 Core verification remediation
+    - Stage, commit, push, merge, PR, release, publication and final Task closure
+dependencies: []
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

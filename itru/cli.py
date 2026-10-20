@@ -147,9 +147,17 @@ def cmd_verify(args: argparse.Namespace, project_root: Path) -> int:
         return 2
 
 
-def build_parser() -> argparse.ArgumentParser:
+class _AlphaArgumentParser(argparse.ArgumentParser):
+    def error(self, message):
+        import json
+        from itru.alpha_diagnostics import diagnostic
+        self.exit(2, json.dumps({'status': 'rejected', **diagnostic('alpha_arguments_invalid')})+'\n')
+
+
+def build_parser(*, safe_alpha_errors=False) -> argparse.ArgumentParser:
     """Build the CLI argument parser with subcommands."""
-    parser = argparse.ArgumentParser(
+    parser_type = _AlphaArgumentParser if safe_alpha_errors else argparse.ArgumentParser
+    parser = parser_type(
         description="Repository CLI — unified entry point for repository tooling.",
     )
     from itru import __version__
@@ -213,6 +221,9 @@ def build_parser() -> argparse.ArgumentParser:
     commands = alpha.add_subparsers(dest='alpha_command', required=True)
     init = commands.add_parser('init', help='Create a new private Windows local workspace')
     init.add_argument('directory')
+    diagnose_help = 'Check local configuration and credential presence offline; no network, owner acquisition or execution'
+    diagnose = commands.add_parser('diagnose', help=diagnose_help, description=diagnose_help)
+    diagnose.add_argument('--config', required=True, help='Existing private workspace/alpha.json; values are never displayed')
     for name in ('load', 'plan', 'run', 'resume', 'complete', 'stop', 'history'):
         p = commands.add_parser(name)
         p.add_argument('--config', required=True)
@@ -245,8 +256,9 @@ def main(argv: list[str] | None = None) -> int:
     Returns:
         Exit code: 0 for success, 1 for domain issues, 2 for invocation errors.
     """
-    parser = build_parser()
-    args = parser.parse_args(argv)
+    invocation = sys.argv[1:] if argv is None else argv
+    parser = build_parser(safe_alpha_errors=bool(invocation and invocation[0] == 'alpha'))
+    args = parser.parse_args(invocation)
 
     if args.command is None:
         parser.print_help()
@@ -263,7 +275,8 @@ def main(argv: list[str] | None = None) -> int:
             print('Alpha interrupted; inspect state before any continuation.', file=sys.stderr)
             return 130
         except Exception as exc:
-            print(json.dumps({'status': 'rejected', 'reason': str(exc)}), file=sys.stderr)
+            from itru.alpha_diagnostics import exception_diagnostic
+            print(json.dumps({'status': 'rejected', **exception_diagnostic(exc)}), file=sys.stderr)
             return 2
 
     # Discover project root from caller's working directory

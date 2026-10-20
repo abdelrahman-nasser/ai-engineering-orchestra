@@ -10,7 +10,8 @@ import secrets
 
 from itru.alpha_config import (canonical, digest, load_config, read_json, text,
                                validate_work, write_private)
-from itru.alpha_provider import plan_task
+from itru.alpha_provider import plan_task, check_credential, provider_diagnostic
+from itru.alpha_diagnostics import AlphaDiagnosticError
 from itru.alpha_authority import AlphaExecution, Clock
 from itru import task_run_state as state
 from itru.sqlite_task_run_state import SqliteTaskRunStateStore, _plain, _security
@@ -139,8 +140,9 @@ def make_plan(cfg, store, action='run', task_id=None, reference=None):
 
 
 def require_approval(plan, supplied):
-    if not supplied or not plan['approval'] or not secrets.compare_digest(plan['approval'], supplied):
-        raise ValueError('fresh exact Human approval required; inspect alpha plan and pass its digest with --approve')
+    if (type(supplied) is not str or not supplied or not supplied.isascii()
+            or not plan['approval'] or not secrets.compare_digest(plan['approval'], supplied)):
+        raise AlphaDiagnosticError('human_approval_required')
 
 
 def _run_value(cfg, task):
@@ -193,11 +195,12 @@ def execute(cfg, approval, *, resume_task=None):
                 for run, registered in runs:
                     try:
                         advisory = futures[run.run_id].result()
-                    except Exception:
+                    except Exception as exc:
                         store.transition(run.contract.task_id, expected_revision=registered.revision,
                                          operation='stop', reference='provider_failed_before_tool')
                         results.append({'task_id': run.contract.task_id, 'run_id': run.run_id,
-                                        'outcome': 'provider_failed_before_tool'})
+                                        'outcome': 'provider_failed_before_tool',
+                                        'provider_diagnostic': provider_diagnostic(exc)})
                         failures = True
                         continue
                     running = store.start_run(run.contract.task_id, run.run_id, expected_revision=registered.revision)
@@ -242,6 +245,13 @@ def command(args):
         return initialize(args.directory)
     cfg = load_config(args.config)
     action = args.alpha_command
+    if action == 'diagnose':
+        credential = check_credential(cfg['provider'])
+        return {'status': 'configuration_valid', 'provider': cfg['provider']['kind'],
+                'credential': credential, 'network': 'not_checked',
+                'authority': 'not_checked', 'storage': 'not_checked',
+                'execution_readiness': 'not_checked',
+                'guidance': 'Local configuration and credential presence only; no connectivity, credential validity, authority or execution readiness is established. After edits, obtain a fresh plan and explicit Human approval before execution.'}
     if action == 'load':
         return load_work(cfg, args.work)
     if action in ('run', 'resume'):

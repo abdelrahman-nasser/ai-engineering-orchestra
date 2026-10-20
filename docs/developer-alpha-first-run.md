@@ -82,6 +82,19 @@ BYO sends the objective and resource path, not file bytes: use nonsecret subject
 `plan` neither calls the provider nor checks credential presence. Provider edits
 invalidate earlier digests; obtain a new plan afterward.
 
+**Current-checkout option:** when using a CLI from the authorized current
+checkout, `itru alpha diagnose --config $cfg` provides a passive local check.
+This is an optional aside, outside the installed-bundle command sequence above.
+The existing offline ZIP predates `diagnose`; its executable cannot run this
+command. Do not rebuild the bundle as a recovery step.
+`configuration_valid` (exit 0) means only that local config validation passed
+and any configured credential is present. Demo needs no credential or inference.
+No provider request, work loading, owner acquisition, startup recovery, Run
+registration or Tool invocation occurs. Diagnostics print no input values or
+credential names/values. They do not establish connectivity, credential validity,
+Human authorization, storage health or execution readiness. Stop on exit 2 and
+follow its fixed `code`/`recovery`; keep generated workspace/identity fields intact.
+
 ## 4. Load explicit work and inspect the proposed plan
 
 The generated `example-work.json` explicitly defines `read-a`, `read-b` and
@@ -162,6 +175,9 @@ Run success alone does not complete Tasks or update repository Task files.
 | Exit 2 (`rejected`/error), partial init/load or stale approval | Stop and inspect the reason/local state. Failed setup may leave resources; do not rerun init over the path, delete/relocate storage or assume rollback. Replan only after Human inspection resolves the cause. |
 | Exit 130 / Ctrl+C, missing original Result or commit uncertainty | Treat effects as unresolved; inspect history deliberately. No automatic retry. Journal success cannot reconstruct or repair a missing lifecycle Result. |
 | Busy owner | Do not seize ownership. `stop` cannot acquire another process's owner; coordinate with its Human operator. |
+| `provider_credential_missing` / `provider_config_missing` / `provider_config_invalid` / `provider_unsupported` | Correct only the private provider setup using the manual, then rerun `diagnose`. Never paste credentials into JSON/output or switch adapters automatically. Config edits invalidate earlier approvals. |
+| `provider_failed_before_tool` with `provider_diagnostic` | The provider worker failed before Tool invocation and the pending Run is cancelled. Inspect history deliberately; only eligible continuation may use a fresh resume plan and explicit Human approval. No automatic retry. |
+| `human_approval_required` | Review a new exact plan and let the Human explicitly approve its digest. Provider credentials or passing diagnostics do not satisfy approval. |
 | Interrupted or `effect_ambiguous` history | Cannot resume in this Alpha. Stop for Human inspection; do not replay, repair or infer no effect. |
 
 Only Core-eligible history may continue with a separately reviewed fresh resume
@@ -172,6 +188,7 @@ before any such action. A generic failure or missing Result never proves no effe
 
 For full work/config limits, recovery and provider details use the
 [Alpha manual](developer-alpha.md). Remaining usability proposals are in the
-[roadmap](developer-alpha-usability-roadmap.md); they are not implemented features.
+[roadmap](developer-alpha-usability-roadmap.md), whose current disposition
+distinguishes implemented slices from remaining proposals.
 Static command/source verification and review are recorded
 [separately](developer-alpha-first-run-review.md).

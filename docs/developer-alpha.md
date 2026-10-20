@@ -3,7 +3,7 @@
 Start with the [first-Run operator card](developer-alpha-first-run.md) for the
 short offline install, explicit-work and Human approval sequence. The card is
 provided in this repository; the existing local offline ZIP predates both the
-card and the approval preview described below.
+card, the approval preview and the offline diagnostics described below.
 
 This local Windows/Python 3.12 Alpha runs explicit read workflows using your
 configured model. Its controlled Tool is the bounded native repository file
@@ -100,6 +100,65 @@ project/runtime/environment/domain/ledger/Journal/Store identities. Do not edit
 these identity fields or relocate storage. max_concurrency is exactly 1 or 2.
 The provider object is mutable between commands and invalidates old plan digests.
 Configuration and work inputs are bounded to 1 MiB and reject duplicate keys.
+
+## Offline provider diagnostics and recovery
+
+The current checkout adds this CLI-only check (the existing offline ZIP does not
+include it; no release rebuild is part of this change):
+
+```powershell
+itru alpha diagnose --config $cfg
+```
+
+It reads only the existing config, reuses closed validation and local file-security
+checks, and checks whether the named credential is nonempty in the current process
+environment. It does not load work, acquire a lifecycle/authority owner, perform
+startup recovery, provision/mutate storage, register a Run or invoke a Tool or
+provider. There is no network request, even for loopback endpoints.
+
+Exit 0 prints `status: configuration_valid` with a fixed `provider` kind and
+`credential` state: `not_required` (demo), `not_configured` (compatible with empty
+`key_env`) or `present_not_verified`. `network`, `authority`, `storage` and
+`execution_readiness` are all `not_checked`. Presence is not credential validity,
+remote authorization, connectivity, quota, protocol compatibility, storage health
+or permission to execute. `plan` still does not check credentials; `plan` and
+`history` retain their operational owner/startup-recovery behavior.
+
+Alpha invocation errors and command exceptions now use rejection JSON on stderr (exit 2) with fixed
+`code`, `reason` and `recovery`; raw exception text is withheld. Config values,
+endpoint/model/key names, environment values and HTTP bodies are never rendered
+in these diagnostics. Successful plans/history retain exact subjects and successful
+execution retains advisory text; continue using nonsecret objectives/resources.
+
+| Situation | Diagnostic and recovery |
+| --- | --- |
+| Malformed Alpha command arguments | `alpha_arguments_invalid`: consult alpha/command help; supplied argument values are withheld. Never put credentials on the command line. |
+| Missing file / unreadable or unsafe file / malformed or wrong closed config | `config_missing` / `config_unreadable` / `config_invalid`: check the existing private workspace/alpha.json and documented format. Preserve generated identities; do not rerun init over an existing path or bypass security checks. |
+| Missing/incomplete provider / extra or invalid provider fields / unsupported kind | `provider_config_missing` / `provider_config_invalid` / `provider_unsupported`: supply exactly the five documented fields, selecting demo or compatible explicitly. Endpoint whitespace/control characters and embedded userinfo are rejected. |
+| Named credential absent or empty | `provider_credential_missing`: supply it privately in the current process environment and rerun diagnose. Do not paste its value into commands, JSON or reports. Empty key_env is only for an intentionally credential-free endpoint. |
+| External request failure | `provider_request_failed`: the remote cause is unknown, including whether remote authentication failed. Inspect private provider setup separately; diagnostics never probe it. This is separate from Human approval. |
+| Malformed, oversized or tool/function-call response / redirect | `provider_response_rejected` / `provider_redirect_rejected`: check adapter compatibility or configure the intended final endpoint directly. No automatic retry or failover. |
+| Missing, stale or invalid Human approval | `human_approval_required`: inspect a fresh exact plan and obtain explicit Human approval. Credentials and diagnostic success cannot authorize execution. |
+| Busy lifecycle owner / uncertain commit / other exception | `alpha_owner_busy` / `alpha_commit_uncertain` / `alpha_operation_failed`: coordinate with the Human owner or stop for inspection. Do not seize ownership, infer no effect, relocate/delete storage or automatically replay. |
+
+Before: a missing key during an approved Run yielded only
+`provider_failed_before_tool`. Now: `diagnose` can reject locally with
+`provider_credential_missing` before any Run exists. If the approved execution
+still encounters that failure, its CLI row preserves `provider_failed_before_tool`
+and adds a fixed `provider_diagnostic` containing `code`, `reason` and `recovery`.
+The pending Run is still cancelled before the Tool starts; no original Result is
+fabricated. Unexpected worker exceptions map to `provider_request_failed`.
+
+Before: an Alpha exception could print arbitrary private exception details. Now:
+unknown exceptions report only `alpha_operation_failed` and conservative next
+steps. Known Human approval rejection has its own fixed category. These are Alpha
+presentation changes; canonical Task/Run/Result/Journal contracts are unchanged.
+
+After correcting private provider setup, rerun diagnose. Any provider-config edit
+requires a new plan and Human review. If a prior Run failed, inspect history
+deliberately and use only Core-eligible continuation with a separately reviewed
+fresh resume plan/approval. Interrupted or effect_ambiguous history remains
+ineligible. The CLI never repairs, approves or resumes automatically.
 
 ## Explicit work, approval, restart and history
 

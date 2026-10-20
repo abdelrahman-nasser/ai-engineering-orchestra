@@ -1,0 +1,11 @@
+{
+  "initial_before_attempt": {
+    "child_exit_code": 1,
+    "raw_output": "before-1792498308042041100.txt",
+    "receipt_preserved": true,
+    "viewer_result": "FAILED: parent UnicodeEncodeError while displaying decoded child output after the raw log and child exit receipt were saved",
+    "cause": "Windows isolated child inherited its default output codec; parent console could not encode a replacement character from display decoding",
+    "correction": "Set parent and isolated child stdout/stderr to UTF-8 before output, without changing selected test or runtime source",
+    "result_policy": "Original child failure and viewer failure remain historical FAILED results; corrected reproduction is a separate invocation"
+  }
+}

@@ -731,10 +731,13 @@ class TestActiveProjectIntegration(unittest.TestCase):
         with patch("itru.cli.find_project_root", side_effect=AssertionError), \
                 patch("sys.argv", ["rook.py"]):
             for args, expected in [
-                (["--help"], "{tasks,inspect,verify}"),
+                # Explicit inventory includes the separately approved Alpha CLI.
+                (["--help"], "{tasks,inspect,verify,alpha}"),
                 (["tasks", "--help"], "--status"),
                 (["inspect", "--help"], "task_id"),
                 (["verify", "--help"], "project-declared verification checks"),
+                (["alpha", "--help"], "diagnose"),
+                (["alpha", "diagnose", "--help"], "credential presence offline"),
             ]:
                 with self.subTest(args=args), \
                         patch("sys.stdout", new_callable=StringIO) as out, \

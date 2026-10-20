@@ -1,0 +1,39 @@
+id: ITRU-065
+title: Core verification debt Phase 1 - CLI help expectation drift
+type: bugfix
+status: in_progress
+complexity: medium
+risk: low
+execution:
+  mode: standard
+workflow: standard-change
+objective: >
+  Inventory retained Core verification failures and remediate only the stale
+  nonsecurity CLI help expectation against the already approved Alpha command
+  surface, with deterministic offline before/after evidence and independent review.
+scope:
+  include:
+    - Read-only inventory of retained failure, error, skip and Markdown receipts
+    - Explicit CLI help expectations in the one selected test_cli.py method
+    - Selected help-only test and directly affected help/parser regressions
+    - Phase 1 canonical Task, durable report, inventory and verification receipts
+    - Independent test-integrity/security and contract/documentation reviews
+  exclude:
+    - Production/runtime code, execution semantics, contracts and architecture changes
+    - Native ACL/storage, privileged, containment and hazardous security probes
+    - Network, provider requests, dependency installation and broad test discovery
+    - Packaging, migration, namespace, Journal and fixture remediation in this slice
+    - Completed SCRUM-83, SCRUM-87 and other historical Task changes
+    - Operational Core-to-UI integration, Lane B and Option D changes
+    - Stage/commit beyond the single conditional Human checkpoint recorded in context.md
+    - Push, merge, PR, tag, release, deployment and publication
+    - Final Task closure or closing Jira SCRUM-86
+dependencies: []
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

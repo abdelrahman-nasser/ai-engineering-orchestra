@@ -1,0 +1,14 @@
+{
+  "python": "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+  "version": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "workspace": "D:\\Dev\\ITRU\\worktrees\\itru-core-usability",
+  "baseline_head": "e46aafd9790ced28a9ef6c1688c94bccdc4062b0",
+  "branch": "feature/core-verification-debt-phase1",
+  "packages": {
+    "PyYAML": "6.0.3",
+    "jsonschema": "4.26.0",
+    "referencing": "0.37.0"
+  },
+  "network_or_installs": "none in tests or diagnostics"
+}

@@ -1,0 +1,15 @@
+test_help_is_available_without_project_and_uses_wrapper_name (tests.test_cli.TestActiveProjectIntegration.test_help_is_available_without_project_and_uses_wrapper_name) ... FAIL
+
+======================================================================
+FAIL: test_help_is_available_without_project_and_uses_wrapper_name (tests.test_cli.TestActiveProjectIntegration.test_help_is_available_without_project_and_uses_wrapper_name)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\Dev\ITRU\worktrees\itru-core-usability\tests\test_cli.py", line 745, in test_help_is_available_without_project_and_uses_wrapper_name
+    self.assertIn(expected, out.getvalue())
+AssertionError: '{tasks,inspect,verify}' not found in "usage: rook.py [-h] [--version] {tasks,inspect,verify,alpha} ...\n\nRepository CLI — unified entry point for repository tooling.\n\noptions:\n  -h, --help            show this help message and exit\n  --version             show program's version number and exit\n\ncommands:\n  {tasks,inspect,verify,alpha}\n    tasks               List repository Tasks\n    inspect             Inspect a Task by declared Task ID\n    verify              Validate supported ITRU structure and project\n                        verification checks\n    alpha               Local Developer Alpha controlled read workflows\n"
+
+----------------------------------------------------------------------
+Ran 1 test in 0.009s
+
+FAILED (failures=1)
+IMPORT_ROOT D:\Dev\ITRU\worktrees\itru-core-usability\itru\__init__.py isolated 1 bytecode_disabled 1

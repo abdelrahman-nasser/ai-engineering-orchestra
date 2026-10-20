@@ -1,0 +1,77 @@
+test_help_is_available_without_project_and_uses_wrapper_name (tests.test_cli.TestActiveProjectIntegration.test_help_is_available_without_project_and_uses_wrapper_name) ... ok
+test_no_command_returns_2 (tests.test_cli.TestRootHelp.test_no_command_returns_2)
+Running with no command prints help and returns exit 2. ... ok
+test_root_help_shows_commands (tests.test_cli.TestRootHelp.test_root_help_shows_commands)
+Root --help includes tasks, inspect, and verify. ... ok
+test_tasks_help_exits_0 (tests.test_cli.TestTasksHelp.test_tasks_help_exits_0) ... ok
+test_inspect_help_exits_0 (tests.test_cli.TestInspectHelp.test_inspect_help_exits_0) ... ok
+test_verify_help_discloses_execution_and_structure_only_mode (tests.test_cli.TestVerifyHelp.test_verify_help_discloses_execution_and_structure_only_mode) ... ok
+test_verify_help_exits_0 (tests.test_cli.TestVerifyHelp.test_verify_help_exits_0) ... ok
+test_unknown_command_exits_2 (tests.test_cli.TestUnknownCommand.test_unknown_command_exits_2)
+argparse rejects unknown commands with exit code 2. ... usage: -c [-h] [--version] {tasks,inspect,verify,alpha} ...
+-c: error: argument command: invalid choice: 'banana' (choose from tasks, inspect, verify, alpha)
+ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.038s
+
+OK
+IMPORT_ROOT D:\Dev\ITRU\worktrees\itru-core-usability\itru\__init__.py isolated 1 bytecode_disabled 1
+usage: -c [-h] [--version] {tasks,inspect,verify,alpha} ...
+
+Repository CLI — unified entry point for repository tooling.
+
+options:
+  -h, --help            show this help message and exit
+  --version             show program's version number and exit
+
+commands:
+  {tasks,inspect,verify,alpha}
+    tasks               List repository Tasks
+    inspect             Inspect a Task by declared Task ID
+    verify              Validate supported ITRU structure and project
+                        verification checks
+    alpha               Local Developer Alpha controlled read workflows
+usage: -c [-h] [--version] {tasks,inspect,verify,alpha} ...
+
+Repository CLI — unified entry point for repository tooling.
+
+options:
+  -h, --help            show this help message and exit
+  --version             show program's version number and exit
+
+commands:
+  {tasks,inspect,verify,alpha}
+    tasks               List repository Tasks
+    inspect             Inspect a Task by declared Task ID
+    verify              Validate supported ITRU structure and project
+                        verification checks
+    alpha               Local Developer Alpha controlled read workflows
+usage: -c tasks [-h] [--status STATUS] [--workflow WORKFLOW]
+
+List and filter Tasks in the Manifest-configured directory.
+
+options:
+  -h, --help           show this help message and exit
+  --status STATUS      Filter by canonical status (e.g. completed,
+                       in_progress).
+  --workflow WORKFLOW  Filter by declared workflow ID (e.g. standard-change).
+usage: -c inspect [-h] task_id
+
+Inspect a Task by its declared Task ID.
+
+positional arguments:
+  task_id     Declared Task ID from task.yaml.
+
+options:
+  -h, --help  show this help message and exit
+usage: -c verify [-h] [--structure]
+
+Validate supported ITRU structure and run project-declared verification checks
+from .ai/project.yaml using the caller's current environment and permissions.
+Declared commands are not sandboxed or isolated.
+
+options:
+  -h, --help   show this help message and exit
+  --structure  Validate supported ITRU structure only; do not plan, resolve,
+               or execute project-declared commands.

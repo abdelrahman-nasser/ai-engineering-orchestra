@@ -1,11 +1,12 @@
 <header class="preview-header">
   <p class="eyebrow">Developer Alpha · Application v1.0</p>
-  <h1>Guided developer demo</h1>
+  <h1>Synthetic evidence workspace</h1>
   <p>
-    Task → Approval preview → Run → Result → Journal. Follow synthetic evidence through five
-    guided stops, then inspect the existing Application boundary preview below.
+    Inspect the Application v1 lifecycle and Journal observations freely. The optional Guided
+    Explorer explains Task → Approval preview → Run → Result → Journal alongside any page.
   </p>
   <a routerLink="/">Return to existing mock demonstrations</a>
+  <button type="button" class="btn" (click)="explorer.open()">Open Guided Explorer</button>
 </header>
 
 <section class="notice" aria-label="Preview boundary">
@@ -21,7 +22,7 @@
   <label for="application-scenario">Synthetic scenario</label>
   <select id="application-scenario" [value]="selected()" (change)="choose($event)">
     @for (scenario of scenarios; track scenario[0]) {
-      <option [value]="scenario[0]">{{ scenario[1] }}</option>
+      <option [value]="scenario[0]" [selected]="selected() === scenario[0]">{{ scenario[1] }}</option>
     }
   </select>
 </div>
@@ -30,8 +31,6 @@
   Synthetic scenario: {{ scenarioLabel() }}. Lifecycle observation: {{ session().inspection.status }}.
   Journal observation: {{ session().journal.status }}. Operational controls unavailable.
 </p>
-
-<cc-guided-journey [session]="session()" [scenario]="selected()" />
 
 <section class="card" aria-label="Operational controls">
   <p>
@@ -103,7 +102,7 @@
         <dt>Rich definition metadata</dt>
         <dd>Unavailable — not_in_first_slice</dd>
       </dl>
-      <details>
+      <details id="contract-evidence" tabindex="-1">
         <summary>Exact Contract fields</summary>
         <dl>
           @for (entry of contractEntries(); track entry[0]) {
@@ -112,7 +111,7 @@
           }
         </dl>
       </details>
-      <h3>Task Run history · registration order</h3>
+      <h3 id="run-history-evidence" tabindex="-1">Task Run history · registration order</h3>
       <p data-testid="latest-run">
         Latest registered Run: {{ value.task_run_history.latest_run_id }}
       </p>
@@ -254,7 +253,7 @@
         Separate observations may disagree. No winner, lifecycle promotion, repair or continuation
         eligibility is inferred.
       </p>
-      <h3>Recorded evidence · current page</h3>
+      <h3 id="result-evidence" tabindex="-1">Recorded evidence · current page</h3>
       @for (record of value.records; track record.sequence) {
         <article class="record" data-testid="journal-record">
           <h4>{{ record.event_kind }} · sequence {{ record.sequence }}</h4>

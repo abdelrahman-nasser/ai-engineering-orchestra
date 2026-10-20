@@ -66,9 +66,9 @@
         <span class="origin-text">{{ applicationPreview() ? 'Synthetic application v1.0' : originLabel }}</span>
       </span>
       <small class="foot-note">Read-only foundation</small>
-      <a class="preview-link" routerLink="/application-v1-preview" aria-label="Guided developer demo — synthetic application v1.0" title="Guided developer demo — synthetic application v1.0" (click)="closeNav()">
+      <a class="preview-link" routerLink="/application-v1-preview" aria-label="Synthetic application v1.0 evidence" title="Synthetic application v1.0 evidence" (click)="closeNav()">
         <cc-icon name="code" [size]="19" />
-        <span class="preview-link-label">Guided developer demo</span>
+        <span class="preview-link-label">Synthetic evidence workspace</span>
       </a>
       @if (applicationPreview()) { <small class="foot-note">Primary navigation opens separate mock demonstrations.</small> }
     </div>
@@ -101,6 +101,7 @@
         <span>Control Center</span>
       </div>
       <div class="topbar-actions">
+        <button type="button" class="btn explorer-launch" aria-label="Open Guided Explorer" [attr.aria-expanded]="explorer.active() && explorer.expanded()" (click)="explorer.open()">Guide</button>
         <span class="pill-origin" title="All data on screen is fabricated for UI review">{{ applicationPreview() ? 'Synthetic application v1.0' : originLabel }}</span>
         <button
           type="button"
@@ -115,8 +116,11 @@
       </div>
     </header>
 
-    <main id="main" tabindex="-1">
-      <router-outlet />
-    </main>
+    <div class="workspace" [class.explorer-active]="explorer.active()" [class.explorer-minimized]="!explorer.expanded()" [style.--explorer-keyboard-inset]="keyboardInset() + 'px'">
+      <main id="main" tabindex="-1">
+        <router-outlet />
+      </main>
+      @if (explorer.active()) { <cc-guided-journey /> }
+    </div>
   </div>
 </div>

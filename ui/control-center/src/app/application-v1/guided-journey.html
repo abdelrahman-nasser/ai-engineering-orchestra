@@ -1,274 +1,267 @@
-<section class="journey" aria-label="Guided Developer Alpha walkthrough">
-  <div class="journey-intro">
-    <div>
-      <p class="eyebrow">Five stops · about five minutes</p>
-      <h2>Follow the evidence</h2>
-      <p>
-        Explore a fabricated developer journey. Each stop explains an observation; moving between
-        stops performs no operation.
+@if (explorer.expanded()) {
+  <section class="explorer" aria-labelledby="explorer-title">
+    <header class="explorer-header">
+      <div>
+        <h2 id="explorer-title">Guided Explorer</h2>
+        <span class="small">Synthetic only &middot; non-modal</span>
+      </div>
+      <button type="button" aria-label="Minimize guide" (click)="minimize()">&minus;</button>
+      <button type="button" aria-label="Exit Guided Explorer" (click)="exit()">&times;</button>
+    </header>
+    <div class="guide-scroll" tabindex="0" role="region" aria-label="Scrollable guide explanation">
+      <p class="small">
+        This panel retains its synthetic scenario while you browse. Other pages use separate mock
+        models. No Core source or operational action is connected.
       </p>
-    </div>
-    <span class="demo-label">Local synthetic demo</span>
-  </div>
-
-  <nav aria-label="Developer demo steps">
-    <ol class="steps">
-      @for (label of steps; track $index) {
-        <li>
-          <button
-            type="button"
-            [attr.aria-current]="step() === $index ? 'step' : null"
-            (click)="go($index)"
-          >
-            <span class="step-number" aria-hidden="true">{{ $index + 1 }}</span
-            >{{ label }}
-          </button>
-        </li>
-      }
-    </ol>
-  </nav>
-
-  <div class="journey-body">
-    <div class="step-content">
-      <p class="eyebrow">Step {{ step() + 1 }} of 5 · explore in any order</p>
-      <h3 id="guided-step-title" tabindex="-1">{{ steps[step()] }}</h3>
-      @switch (step()) {
-        @case (0) {
-          <p>
-            Illustrative scope: inspect a sample repository file and compare the supplied lifecycle
-            with recorded evidence. This description is demo guidance; rich Task definition metadata
-            is unavailable.
-          </p>
-          @if (inspection(); as value) {
-            <dl>
-              <dt>Selected Task</dt>
-              <dd>{{ value.lifecycle.task_id }}</dd>
-              <dt>Task state</dt>
-              <dd>
-                {{ taskLabels[value.lifecycle.task_state] }} ({{ value.lifecycle.task_state }})
-              </dd>
-              <dt>Selected Run</dt>
-              <dd>{{ value.lifecycle.binding.run.run_id }}</dd>
-              <dt>Operation / exact resource</dt>
-              <dd>
-                {{ value.lifecycle.binding.run.contract.operation_id }} /
-                {{ value.lifecycle.binding.run.contract.resource }}
-              </dd>
-            </dl>
-          } @else {
+      <div class="guide-fields">
+        <label for="explorer-stage">Explore step</label>
+        <select id="explorer-stage" [value]="step()" (change)="selectStep($event)">
+          @for (label of steps; track $index) {
+            <option [value]="$index" [selected]="step() === $index">{{ label }}</option>
+          }
+        </select>
+        <label for="explorer-scenario">Guide scenario</label>
+        <select id="explorer-scenario" [value]="scenario()" (change)="choose($event)">
+          @for (entry of scenarios; track entry[0]) {
+            <option [value]="entry[0]" [selected]="scenario() === entry[0]">{{ entry[1] }}</option>
+          }
+        </select>
+      </div>
+      <p class="sr-only" role="status" aria-atomic="true">
+        Step {{ step() + 1 }} of 5: {{ steps[step()] }}. Scenario: {{ scenario() }}. Lifecycle
+        {{ session().inspection.status }}; Journal {{ session().journal.status }}. Operational
+        actions unavailable. {{ locateStatus() }}
+      </p>
+      <div class="step-content">
+        <p class="eyebrow">Step {{ step() + 1 }} of 5</p>
+        <h3 id="guided-step-title">{{ steps[step()] }}</h3>
+        @switch (step()) {
+          @case (0) {
             <p>
-              Selected subjects unavailable · {{ session().inspection.status }}. No previous Task or
-              Run references are retained here.
+              Illustrative scope: inspect a sample repository file and compare the supplied
+              lifecycle with recorded evidence. This description is demo guidance; rich Task
+              definition metadata is unavailable.
             </p>
-          }
-          <a href="#lifecycle-evidence" (click)="evidence($event, 'lifecycle-evidence')"
-            >Inspect Task history, dependencies and supplied scheduler evidence ↓</a
-          >
-        }
-        @case (1) {
-          <p class="callout">
-            <strong
-              >Illustrative approval preview — no authorization is requested or granted.</strong
-            >
-            This stop explains the selected subject. It does not create a Grant, consume authority
-            or enable execution.
-          </p>
-          @if (inspection(); as value) {
-            <dl>
-              <dt>Task / Run</dt>
-              <dd>{{ value.lifecycle.task_id }} / {{ value.lifecycle.binding.run.run_id }}</dd>
-              <dt>Workflow / Stage / Role</dt>
-              <dd>
-                {{ value.lifecycle.binding.run.contract.workflow_id }} /
-                {{ value.lifecycle.binding.run.contract.stage_id }} /
-                {{ value.lifecycle.binding.run.contract.role_id }}
-              </dd>
-              <dt>Actor</dt>
-              <dd>{{ value.lifecycle.binding.run.contract.actor_id }}</dd>
-              <dt>Runtime / Inference Option</dt>
-              <dd>
-                {{ value.lifecycle.binding.run.contract.runtime_option_id }} /
-                {{ value.lifecycle.binding.run.contract.option_id }}
-              </dd>
-              <dt>Environment</dt>
-              <dd>{{ value.lifecycle.binding.run.contract.environment_id }}</dd>
-              <dt>Operation / exact resource</dt>
-              <dd>
-                {{ value.lifecycle.binding.run.contract.operation_id }} /
-                {{ value.lifecycle.binding.run.contract.resource }}
-              </dd>
-              <dt>Execution Mode</dt>
-              <dd>{{ value.lifecycle.binding.run.contract.execution_mode }}</dd>
-            </dl>
-          } @else {
-            <p>Approval subject unavailable · {{ session().inspection.status }}.</p>
-          }
-          <p>
-            Approvals are unavailable, never zero. Displayed selections, Grants and Admissions
-            confer no authority. Continuation remains unassessed; a real Human decision belongs
-            outside this demo.
-          </p>
-          <a href="#lifecycle-evidence" (click)="evidence($event, 'lifecycle-evidence')"
-            >Inspect the exact Contract and Binding ↓</a
-          >
-        }
-        @case (2) {
-          @if (inspection(); as value) {
-            <p class="observation">
-              Supplied Run state: <strong>{{ runLabels[value.lifecycle.run_state] }}</strong> ({{
-                value.lifecycle.run_state
-              }})
-            </p>
-            <p>{{ lifecycleNotes[value.lifecycle.run_state] }}</p>
-            <p>
-              Observed at {{ value.source_observation.observed_at }} · revision
-              {{ value.lifecycle.run_revision }}.
-            </p>
-          } @else {
-            <p>No Run lifecycle observation is displayed · {{ session().inspection.status }}.</p>
-          }
-          <details>
-            <summary>Understand the seven predefined lifecycle states</summary>
-            <p>
-              Educational reference only. These examples are not a transition sequence and do not
-              change the selected scenario.
-            </p>
-            <dl>
-              @for (entry of lifecycleExamples; track entry[0]) {
-                <dt>{{ entry[0] }}</dt>
-                <dd>{{ entry[1] }}</dd>
-              }
-            </dl>
-          </details>
-          <a href="#lifecycle-evidence" (click)="evidence($event, 'lifecycle-evidence')"
-            >Compare Run registration history and accepted identity ↓</a
-          >
-        }
-        @case (3) {
-          <p>
-            Lifecycle acceptance and recorded Result summaries are independent. A recorded success
-            can coexist with an interrupted Run, and Run success does not complete a Task.
-          </p>
-          @if (inspection(); as value) {
-            <p>
-              Lifecycle accepted Result identity:
-              <span class="mono">{{
-                value.lifecycle.accepted_result_identity?.join(' / ') ??
-                  'Unavailable — explicit null'
-              }}</span>
-            </p>
-          }
-          <p>
-            Journal observation: <strong>{{ session().journal.status }}</strong
-            >. Summaries below belong to the current page only.
-          </p>
-          @if (session().journal.status === 'stale') {
-            <p class="callout">
-              Historical summaries retained under continuing entitlement. Original observation
-              completed at {{ journal()?.journal_observation?.completed_at }}.
-            </p>
-          }
-          @for (record of summaries(); track record.sequence) {
-            <article class="result-summary" data-testid="guided-result">
-              <h4>
-                Recorded {{ record.result_summary!.outcome }} · sequence {{ record.sequence }}
-              </h4>
+            @if (inspection(); as value) {
+              <dl>
+                <dt>Selected Task</dt>
+                <dd>{{ value.lifecycle.task_id }}</dd>
+                <dt>Task state</dt>
+                <dd>
+                  {{ taskLabels[value.lifecycle.task_state] }} ({{ value.lifecycle.task_state }})
+                </dd>
+                <dt>Selected Run</dt>
+                <dd>{{ value.lifecycle.binding.run.run_id }}</dd>
+                <dt>Operation / exact resource</dt>
+                <dd>
+                  {{ value.lifecycle.binding.run.contract.operation_id }} /
+                  {{ value.lifecycle.binding.run.contract.resource }}
+                </dd>
+              </dl>
+            } @else {
               <p>
-                Grant subject: <span class="mono">{{ record.admission.grant.grant_id }}</span>
-              </p>
-              <p>
-                Diagnostic: {{ record.result_summary!.diagnostic_code ?? 'None (explicit null)' }} ·
-                byte count: {{ record.result_summary!.byte_count ?? 'Unavailable (explicit null)' }}
-              </p>
-            </article>
-          } @empty {
-            <p>
-              No Result summary is displayed. This does not establish absence of invocation or
-              effects; inspect Journal status and coverage.
-            </p>
-          }
-          <p>
-            Payload and historical content are unavailable. Recorded metadata does not reconstruct a
-            live Result. Conflicting subjects and outcomes remain separate; no winner or
-            continuation eligibility is inferred.
-          </p>
-          <a href="#journal-evidence" (click)="evidence($event, 'journal-evidence')"
-            >Inspect full physical identities and Journal evidence ↓</a
-          >
-        }
-        @case (4) {
-          <p>
-            Follow the provenance, physical subject and traversal coverage before interpreting an
-            outcome.
-          </p>
-          <p>
-            Journal observation: <strong>{{ session().journal.status }}</strong
-            >.
-          </p>
-          @if (journal(); as value) {
-            <p>
-              Coverage: {{ value.comparison.coverage }} · stop reason:
-              {{ value.traversal.stop_reason }} · frozen high water:
-              {{ value.traversal.high_water }}.
-            </p>
-            @if (!value.traversal.complete) {
-              <p class="callout">
-                Partial traversal. Absence, agreement and subject uniqueness remain unproven. An
-                empty page can still require continuation.
-              </p>
-            } @else if (value.traversal.matched_count === '0') {
-              <p class="callout">
-                Complete with no matching recorded evidence in this Journal at this high water. This
-                does not establish absence of invocation, effects, lost Results or evidence
-                elsewhere.
+                Selected subjects unavailable · {{ session().inspection.status }}. No previous Task
+                or Run references are retained here.
               </p>
             }
+          }
+          @case (1) {
+            <p class="callout">
+              <strong
+                >Illustrative approval preview — no authorization is requested or granted.</strong
+              >
+              This stop explains the selected subject. It does not create a Grant, consume authority
+              or enable execution.
+            </p>
+            @if (inspection(); as value) {
+              <dl>
+                <dt>Task / Run</dt>
+                <dd>{{ value.lifecycle.task_id }} / {{ value.lifecycle.binding.run.run_id }}</dd>
+                <dt>Workflow / Stage / Role</dt>
+                <dd>
+                  {{ value.lifecycle.binding.run.contract.workflow_id }} /
+                  {{ value.lifecycle.binding.run.contract.stage_id }} /
+                  {{ value.lifecycle.binding.run.contract.role_id }}
+                </dd>
+                <dt>Actor</dt>
+                <dd>{{ value.lifecycle.binding.run.contract.actor_id }}</dd>
+                <dt>Runtime / Inference Option</dt>
+                <dd>
+                  {{ value.lifecycle.binding.run.contract.runtime_option_id }} /
+                  {{ value.lifecycle.binding.run.contract.option_id }}
+                </dd>
+                <dt>Environment</dt>
+                <dd>{{ value.lifecycle.binding.run.contract.environment_id }}</dd>
+                <dt>Operation / exact resource</dt>
+                <dd>
+                  {{ value.lifecycle.binding.run.contract.operation_id }} /
+                  {{ value.lifecycle.binding.run.contract.resource }}
+                </dd>
+                <dt>Execution Mode</dt>
+                <dd>{{ value.lifecycle.binding.run.contract.execution_mode }}</dd>
+              </dl>
+            } @else {
+              <p>Approval subject unavailable · {{ session().inspection.status }}.</p>
+            }
+            <p>
+              Approvals are unavailable, never zero. Displayed selections, Grants and Admissions
+              confer no authority. Continuation remains unassessed; a real Human decision belongs
+              outside this demo.
+            </p>
+          }
+          @case (2) {
+            @if (inspection(); as value) {
+              <p class="observation">
+                Supplied Run state: <strong>{{ runLabels[value.lifecycle.run_state] }}</strong> ({{
+                  value.lifecycle.run_state
+                }})
+              </p>
+              <p>{{ lifecycleNotes[value.lifecycle.run_state] }}</p>
+              <p>
+                Observed at {{ value.source_observation.observed_at }} · revision
+                {{ value.lifecycle.run_revision }}.
+              </p>
+            } @else {
+              <p>No Run lifecycle observation is displayed · {{ session().inspection.status }}.</p>
+            }
+            <details>
+              <summary>Understand the seven predefined lifecycle states</summary>
+              <p>
+                Educational reference only. These examples are not a transition sequence and do not
+                change the selected scenario.
+              </p>
+              <dl>
+                @for (entry of lifecycleExamples; track entry[0]) {
+                  <dt>{{ entry[0] }}</dt>
+                  <dd>{{ entry[1] }}</dd>
+                }
+              </dl>
+            </details>
+          }
+          @case (3) {
+            <p>
+              Lifecycle acceptance and recorded Result summaries are independent. A recorded success
+              can coexist with an interrupted Run, and Run success does not complete a Task.
+            </p>
+            @if (inspection(); as value) {
+              <p>
+                Lifecycle accepted Result identity:
+                <span class="mono">{{
+                  value.lifecycle.accepted_result_identity?.join(' / ') ??
+                    'Unavailable — explicit null'
+                }}</span>
+              </p>
+            }
+            <p>
+              Journal observation: <strong>{{ session().journal.status }}</strong
+              >. Summaries below belong to the current page only.
+            </p>
             @if (session().journal.status === 'stale') {
               <p class="callout">
-                Historical evidence under continuing entitlement. Original observed interval:
-                {{ value.journal_observation.started_at }} /
-                {{ value.journal_observation.completed_at }}.
+                Historical summaries retained under continuing entitlement. Original observation
+                completed at {{ journal()?.journal_observation?.completed_at }}.
+              </p>
+            }
+            @for (record of summaries(); track record.sequence) {
+              <article class="result-summary" data-testid="guided-result">
+                <h4>
+                  Recorded {{ record.result_summary!.outcome }} · sequence {{ record.sequence }}
+                </h4>
+                <p>
+                  Grant subject: <span class="mono">{{ record.admission.grant.grant_id }}</span>
+                </p>
+                <p>
+                  Diagnostic:
+                  {{ record.result_summary!.diagnostic_code ?? 'None (explicit null)' }} · byte
+                  count: {{ record.result_summary!.byte_count ?? 'Unavailable (explicit null)' }}
+                </p>
+              </article>
+            } @empty {
+              <p>
+                No Result summary is displayed. This does not establish absence of invocation or
+                effects; inspect Journal status and coverage.
               </p>
             }
             <p>
-              Supplied discrepancies:
-              {{ value.comparison.discrepancies.join(', ') || 'None supplied' }}. Separate
-              observations may disagree; no repair or lifecycle promotion is inferred.
-            </p>
-          } @else {
-            <p>
-              No Journal records from this request are displayed; absence of evidence remains
-              unproven.
+              Payload and historical content are unavailable. Recorded metadata does not reconstruct
+              a live Result. Conflicting subjects and outcomes remain separate; no winner or
+              continuation eligibility is inferred.
             </p>
           }
-          <a href="#journal-evidence" (click)="evidence($event, 'journal-evidence')"
-            >Explore the existing Journal evidence panel ↓</a
-          >
+          @case (4) {
+            <p>
+              Follow the provenance, physical subject and traversal coverage before interpreting an
+              outcome.
+            </p>
+            <p>
+              Journal observation: <strong>{{ session().journal.status }}</strong
+              >.
+            </p>
+            @if (journal(); as value) {
+              <p>
+                Coverage: {{ value.comparison.coverage }} · stop reason:
+                {{ value.traversal.stop_reason }} · frozen high water:
+                {{ value.traversal.high_water }}.
+              </p>
+              @if (!value.traversal.complete) {
+                <p class="callout">
+                  Partial traversal. Absence, agreement and subject uniqueness remain unproven. An
+                  empty page can still require continuation.
+                </p>
+              } @else if (value.traversal.matched_count === '0') {
+                <p class="callout">
+                  Complete with no matching recorded evidence in this Journal at this high water.
+                  This does not establish absence of invocation, effects, lost Results or evidence
+                  elsewhere.
+                </p>
+              }
+              @if (session().journal.status === 'stale') {
+                <p class="callout">
+                  Historical evidence under continuing entitlement. Original observed interval:
+                  {{ value.journal_observation.started_at }} /
+                  {{ value.journal_observation.completed_at }}.
+                </p>
+              }
+              <p>
+                Supplied discrepancies:
+                {{ value.comparison.discrepancies.join(', ') || 'None supplied' }}. Separate
+                observations may disagree; no repair or lifecycle promotion is inferred.
+              </p>
+            } @else {
+              <p>
+                No Journal records from this request are displayed; absence of evidence remains
+                unproven.
+              </p>
+            }
+          }
         }
-      }
+      </div>
+      <aside class="explore" aria-label="Scenario exploration prompt">
+        <p class="eyebrow">What to notice</p>
+        <p>{{ scenarioNote() }}</p>
+        <a routerLink="/flow">Explore the separate mock DAG / Nile workbench &rarr;</a>
+        <p class="small">
+          The workbench uses separate mock models. It does not visualize this Application v1
+          observation or map Journal events to Workflow Stages.
+        </p>
+      </aside>
     </div>
-    <aside class="explore" aria-label="Scenario exploration prompt">
-      <p class="eyebrow">What to notice</p>
-      <p>{{ scenarioNote() }}</p>
-      <p>
-        Change the synthetic scenario above at any stop. Your place in the walkthrough is retained.
-      </p>
-      <a routerLink="/flow">Explore the separate mock DAG / Nile workbench →</a>
-      <p class="small">
-        The workbench uses separate mock models. It does not visualize this Application v1
-        observation or map Journal events to Workflow Stages.
-      </p>
-    </aside>
-  </div>
-
-  <footer class="journey-footer">
-    <button type="button" [disabled]="step() === 0" (click)="go(step() - 1)">Previous stop</button>
-    @if (step() < 4) {
-      <button type="button" class="next" (click)="go(step() + 1)">
-        Next: {{ steps[step() + 1] }} →
-      </button>
-    } @else {
-      <button type="button" class="next" (click)="go(0)">Back to Task</button>
-    }
-  </footer>
-</section>
+    <footer class="explorer-footer">
+      <button type="button" [disabled]="step() === 0" (click)="go(step() - 1)">Previous</button>
+      <button type="button" [disabled]="step() === 4" (click)="go(step() + 1)">Next</button>
+      <button type="button" class="locate" (click)="locate()">Locate Section</button>
+    </footer>
+  </section>
+} @else {
+  <section class="minimized-guide" aria-label="Minimized Guided Explorer">
+    <button
+      type="button"
+      class="explorer-expand"
+      aria-label="Expand Guided Explorer"
+      (click)="explorer.open()"
+    >
+      <span aria-hidden="true">Guide</span><span class="minimized-step">{{ steps[step()] }}</span>
+    </button>
+    <button type="button" aria-label="Exit Guided Explorer" (click)="exit()">&times;</button>
+  </section>
+}

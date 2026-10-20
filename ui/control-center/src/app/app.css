@@ -223,6 +223,29 @@ main {
   scroll-margin-top: var(--topbar-height);
 }
 
+.workspace.explorer-active {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 12px;
+  padding-right: 12px;
+  --explorer-height: min(52dvh, 460px);
+}
+.workspace.explorer-minimized {
+  --explorer-height: 64px;
+}
+.workspace.explorer-active.explorer-minimized {
+  grid-template-columns: minmax(0, 1fr) 76px;
+}
+.workspace main { min-width: 0; }
+@media (max-width: 900px) {
+  .workspace.explorer-active,
+  .workspace.explorer-active.explorer-minimized {
+    display: block;
+    padding-right: 0;
+    padding-bottom: calc(var(--explorer-height) + 24px + env(safe-area-inset-bottom, 0px) + var(--explorer-keyboard-inset, 0px));
+  }
+}
+
 /* ---- Responsive --------------------------------------------------------- */
 
 /* Compact rail: icons only. */
@@ -308,6 +331,9 @@ main {
   .topbar {
     padding: 0 var(--space-4);
   }
+  .topbar-actions { min-width: 0; gap: 8px; }
+  .pill-origin { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .explorer-launch, .theme-btn { flex: none; }
 }
 
 @media (max-width: 560px) {

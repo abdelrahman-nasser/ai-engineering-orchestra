@@ -10,6 +10,7 @@ import { NileFlow } from '../../shared/nile/nile-flow';
 import { buildPortfolioTopology } from '../../shared/nile/nile-topology';
 import { toLoadState } from '../../shared/load-state';
 import { AVAILABILITY, PRESENTATION_STATE, TASK_STATUS } from '../../shared/presentation';
+import { GuidedExplorerState } from '../../application-v1/guided-explorer-state';
 
 @Component({
   selector: 'cc-overview',
@@ -27,9 +28,9 @@ import { AVAILABILITY, PRESENTATION_STATE, TASK_STATUS } from '../../shared/pres
         <div>
           <p class="eyebrow">New here? · Synthetic Developer Alpha</p>
           <h2>Follow a Task from scope to evidence</h2>
-          <p>A five-stop guided demo with 18 scenarios. No Core connection or operational actions.</p>
+          <p>Browse freely with an optional guide and 18 synthetic scenarios. No Core connection or operational actions.</p>
         </div>
-        <a routerLink="/application-v1-preview" class="btn btn-primary">Open guided developer demo →</a>
+        <button type="button" class="btn btn-primary" (click)="explorer.open()">Open Guided Explorer</button>
       </div>
 
       @switch (state().status) {
@@ -163,6 +164,7 @@ import { AVAILABILITY, PRESENTATION_STATE, TASK_STATUS } from '../../shared/pres
   `,
 })
 export class Overview {
+  protected readonly explorer = inject(GuidedExplorerState);
   private readonly dataSource = inject(ControlCenterDataSource);
   private readonly router = inject(Router);
 

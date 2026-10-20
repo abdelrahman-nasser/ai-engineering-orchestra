@@ -1,11 +1,13 @@
 import { DOCUMENT } from '@angular/common';
-import { afterNextRender, ChangeDetectionStrategy, Component, computed, ElementRef, inject, Injector, signal } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, Injector, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { ControlCenterDataSource } from './data/control-center-data-source';
 import { Icon, IconName } from './shared/icon';
 import { ThemeService } from './shared/theme.service';
+import { GuidedExplorerState } from './application-v1/guided-explorer-state';
+import { GuidedJourney } from './application-v1/guided-journey';
 
 interface NavItem {
   readonly label: string;
@@ -28,12 +30,13 @@ export const PRIMARY_NAV: readonly NavItem[] = [
 @Component({
   selector: 'cc-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, Icon],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, Icon, GuidedJourney],
   templateUrl: './app.html',
   styleUrl: './app.css',
   host: {
     '(document:keydown)': 'handleNavKeydown($event)',
     '(window:resize)': 'updateViewport()',
+    '(focusin)': 'handleEditingFocus($event)',
   },
 })
 export class App {
@@ -43,6 +46,9 @@ export class App {
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
   protected readonly theme = inject(ThemeService);
+  protected readonly explorer = inject(GuidedExplorerState);
+  protected readonly keyboardInset = signal(0);
+  private readonly destroyRef = inject(DestroyRef);
 
   protected readonly nav = PRIMARY_NAV;
   protected readonly originLabel = this.dataSource.originLabel;
@@ -63,6 +69,30 @@ export class App {
   );
 
   constructor() {
+    effect(() => {
+      if (this.explorer.openRequest() > 0) {
+        untracked(() => afterNextRender(() => {
+          if (this.explorer.active() && this.explorer.expanded()) {
+            const region = this.element.nativeElement.querySelector<HTMLElement>('.guide-scroll');
+            region?.focus({ preventScroll: true });
+          }
+        }, { injector: this.injector }));
+      }
+    });
+    const viewport = this.document.defaultView?.visualViewport;
+    const updateKeyboard = () => {
+      const editing = this.document.activeElement?.matches('input, textarea, [contenteditable="true"]');
+      const inset = viewport && editing ? Math.max(0, (this.document.defaultView?.innerHeight ?? 0) - viewport.height - viewport.offsetTop) : 0;
+      this.keyboardInset.set(inset);
+      if (inset > 120 && this.isDrawer()) this.explorer.minimize();
+    };
+    viewport?.addEventListener('resize', updateKeyboard);
+    viewport?.addEventListener('scroll', updateKeyboard);
+    this.destroyRef.onDestroy(() => {
+      viewport?.removeEventListener('resize', updateKeyboard);
+      viewport?.removeEventListener('scroll', updateKeyboard);
+    });
+    updateKeyboard();
     // Close the mobile drawer after any navigation.
     toSignal(
       this.router.events.pipe(
@@ -70,6 +100,13 @@ export class App {
         map(() => this.closeNav()),
       ),
     );
+  }
+
+  protected handleEditingFocus(event: FocusEvent): void {
+    const target = event.target;
+    if (this.isDrawer() && target instanceof Element && target.matches('input, textarea, [contenteditable="true"]') && !target.closest('cc-guided-journey')) {
+      this.explorer.minimize();
+    }
   }
 
   protected toggleNav(): void {

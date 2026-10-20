@@ -3,15 +3,16 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   ElementRef,
   inject,
   Injector,
-  input,
   signal,
 } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import type { InspectRun } from './contracts';
-import { PreviewSession, runLabels, taskLabels } from './presentation';
+import { runLabels, taskLabels } from './presentation';
+import { GuidedExplorerState } from './guided-explorer-state';
 
 /** Educational copy only. These are not simulated transitions or new observations. */
 const lifecycleNotes: Record<InspectRun['lifecycle']['run_state'], string> = {
@@ -69,12 +70,17 @@ const scenarioNotes: Readonly<Record<string, string>> = {
   styleUrl: './guided-journey.css',
 })
 export class GuidedJourney {
-  readonly session = input.required<PreviewSession>();
-  readonly scenario = input.required<string>();
+  protected readonly explorer = inject(GuidedExplorerState);
+  protected readonly session = this.explorer.session;
+  protected readonly scenario = this.explorer.selected;
+  protected readonly scenarios = this.explorer.scenarios;
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
-  protected readonly steps = ['Task', 'Approval preview', 'Run', 'Result', 'Journal'] as const;
-  protected readonly step = signal(0);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
+  protected readonly locateStatus = signal('');
+  protected readonly steps = this.explorer.steps;
+  protected readonly step = this.explorer.step;
   protected readonly inspection = computed(() => this.session().inspection.value);
   protected readonly journal = computed(() => this.session().journal.value);
   protected readonly summaries = computed(
@@ -89,22 +95,68 @@ export class GuidedJourney {
   protected readonly lifecycleExamples = Object.entries(lifecycleNotes);
 
   protected go(index: number): void {
-    this.step.set(index);
+    this.explorer.go(index);
+    this.locateStatus.set('');
+  }
+
+  protected selectStep(event: Event): void {
+    this.go(Number((event.target as HTMLSelectElement).value));
+  }
+
+  protected choose(event: Event): void {
+    this.explorer.choose((event.target as HTMLSelectElement).value);
+    this.locateStatus.set('');
+  }
+
+  protected minimize(): void {
+    this.explorer.minimize();
+    this.focusControl('.explorer-expand');
+  }
+
+  protected exit(): void {
+    this.element.nativeElement.ownerDocument
+      .querySelector<HTMLElement>('.explorer-launch')
+      ?.focus({ preventScroll: true });
+    this.explorer.exit();
+  }
+
+  private focusControl(selector: string): void {
+    const document = this.element.nativeElement.ownerDocument;
     afterNextRender(
-      () => {
-        const heading = this.element.nativeElement.querySelector<HTMLElement>('#guided-step-title');
-        heading?.focus({ preventScroll: true });
-        heading?.scrollIntoView?.({ block: 'start' });
-      },
+      () => document.querySelector<HTMLElement>(selector)?.focus({ preventScroll: true }),
       { injector: this.injector },
     );
   }
 
-  protected evidence(event: Event, id: string): void {
-    // A native # link would resolve against the app's base href and lose this route.
-    event.preventDefault();
-    const target = this.element.nativeElement.ownerDocument.getElementById(id);
-    target?.focus({ preventScroll: true });
-    target?.scrollIntoView?.({ block: 'start' });
+  protected async locate(): Promise<void> {
+    const targets = [
+      'lifecycle-evidence',
+      'contract-evidence',
+      'run-history-evidence',
+      'result-evidence',
+      'journal-evidence',
+    ];
+    const step = this.step();
+    const id = targets[step];
+    const document = this.element.nativeElement.ownerDocument;
+    await this.router.navigateByUrl('/application-v1-preview');
+    if (this.destroyRef.destroyed || !this.explorer.active()) return;
+    afterNextRender(
+      () => {
+        const exact = document.getElementById(id);
+        const target =
+          exact ?? document.getElementById(step < 3 ? 'lifecycle-evidence' : 'journal-evidence');
+        this.locateStatus.set(
+          exact
+            ? 'Selected synthetic section located.'
+            : 'Selected section unavailable. Showing its observation status.',
+        );
+        if (target instanceof HTMLDetailsElement) target.open = true;
+        target?.focus({ preventScroll: true });
+        // Explicit Locate is the only guide action that scrolls application content.
+        target?.scrollIntoView?.({ block: 'start', behavior: 'instant' });
+      },
+      { injector: this.injector },
+    );
   }
 }

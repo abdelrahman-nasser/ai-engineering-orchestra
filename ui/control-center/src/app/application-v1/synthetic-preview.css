@@ -115,12 +115,10 @@ a {
 summary {
   cursor: pointer;
 }
-#lifecycle-evidence,
-#journal-evidence {
+[tabindex='-1'] {
   scroll-margin-top: calc(var(--topbar-height) + var(--space-md));
 }
-#lifecycle-evidence:focus,
-#journal-evidence:focus {
+[tabindex='-1']:focus {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
 }

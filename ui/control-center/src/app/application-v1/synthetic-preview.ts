@@ -1,24 +1,25 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { recordIdentity } from './decode';
-import { scenarioSession, scenarios } from './fixtures';
+import { scenarios } from './fixtures';
 import { runLabels, schedulerLabels, taskLabels, unsupported } from './presentation';
-import { GuidedJourney } from './guided-journey';
+import { GuidedExplorerState } from './guided-explorer-state';
 
 @Component({
   selector: 'cc-application-v1-preview',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, GuidedJourney],
+  imports: [RouterLink],
   templateUrl: './synthetic-preview.html',
   styleUrl: './synthetic-preview.css',
 })
 export class SyntheticPreview {
+  protected readonly explorer = inject(GuidedExplorerState);
   protected readonly scenarios = scenarios;
-  protected readonly selected = signal('interrupted-success');
+  protected readonly selected = this.explorer.selected;
   protected readonly scenarioLabel = computed(() =>
     scenarios.find(([id]) => id === this.selected())?.[1] ?? '',
   );
-  protected readonly session = computed(() => scenarioSession(this.selected()));
+  protected readonly session = this.explorer.session;
   protected readonly inspection = computed(() => this.session().inspection.value);
   protected readonly journal = computed(() => this.session().journal.value);
   protected readonly taskLabels = taskLabels;
@@ -30,6 +31,6 @@ export class SyntheticPreview {
     Object.entries(this.inspection()?.lifecycle.binding.run.contract ?? {}),
   );
   protected choose(event: Event): void {
-    this.selected.set((event.target as HTMLSelectElement).value);
+    this.explorer.choose((event.target as HTMLSelectElement).value);
   }
 }

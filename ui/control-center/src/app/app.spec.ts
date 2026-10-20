@@ -49,7 +49,7 @@ describe('App shell', () => {
     await ctx.fixture.whenStable();
     expect(ctx.router.url).toBe('/application-v1-preview');
     expect(document.activeElement).toBe(ctx.el.querySelector('main'));
-    expect(ctx.el.querySelector('h1')?.textContent).toContain('Application boundary preview');
+    expect(ctx.el.querySelector('h1')?.textContent).toContain('Guided developer demo');
   });
 
   it('shows the primary destinations in order', async () => {
@@ -57,6 +57,18 @@ describe('App shell', () => {
     const labels = Array.from(el.querySelectorAll('nav a.nav-link .nav-label')).map((n) => n.textContent?.trim());
     expect(labels).toEqual(['Overview', 'Flow', 'Runs', 'Tasks', 'Agents', 'Approvals']);
     expect(PRIMARY_NAV.map((item) => item.path)).toEqual(['/', '/flow', '/runs', '/tasks', '/agents', '/approvals']);
+  });
+
+  it('discovers the demo from Overview and focuses detailed evidence without leaving its route', async () => {
+    const ctx = await createShell();
+    await go(ctx, '/');
+    expect(ctx.el.querySelector('.demo-entry a')?.getAttribute('href')).toBe('/application-v1-preview');
+    expect(ctx.el.querySelector('.preview-link')?.textContent).toContain('Guided developer demo');
+    await go(ctx, '/application-v1-preview');
+    ctx.el.querySelector<HTMLAnchorElement>('cc-guided-journey a[href="#lifecycle-evidence"]')!.click();
+    await ctx.fixture.whenStable();
+    expect(ctx.router.url).toBe('/application-v1-preview');
+    expect(document.activeElement).toBe(ctx.el.querySelector('#lifecycle-evidence'));
   });
 
   it('labels the data origin as mock in the shell', async () => {
@@ -76,7 +88,7 @@ describe('App shell', () => {
     expect(ctx.el.querySelector('.nav-badge')?.textContent?.trim()).toBe('—');
     expect(ctx.el.querySelector('.nav-badge')?.getAttribute('aria-label')).toContain('unavailable');
     expect(ctx.el.querySelector('.pill-origin')?.textContent).toContain('Synthetic application v1.0');
-    expect(ctx.el.querySelector('h1')?.textContent).toContain('Application boundary preview');
+    expect(ctx.el.querySelector('h1')?.textContent).toContain('Guided developer demo');
     await go(ctx, '/');
     expect(ctx.el.querySelector('.nav-badge')?.textContent?.trim()).toBe('3');
     expect(ctx.el.querySelector('.pill-origin')?.textContent).toContain('Mock data');

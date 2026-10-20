@@ -66,9 +66,9 @@
         <span class="origin-text">{{ applicationPreview() ? 'Synthetic application v1.0' : originLabel }}</span>
       </span>
       <small class="foot-note">Read-only foundation</small>
-      <a class="preview-link" routerLink="/application-v1-preview" aria-label="Synthetic application v1.0 preview" title="Synthetic application v1.0 preview" (click)="closeNav()">
+      <a class="preview-link" routerLink="/application-v1-preview" aria-label="Guided developer demo — synthetic application v1.0" title="Guided developer demo — synthetic application v1.0" (click)="closeNav()">
         <cc-icon name="code" [size]="19" />
-        <span class="preview-link-label">Synthetic application v1.0 preview</span>
+        <span class="preview-link-label">Guided developer demo</span>
       </a>
       @if (applicationPreview()) { <small class="foot-note">Primary navigation opens separate mock demonstrations.</small> }
     </div>

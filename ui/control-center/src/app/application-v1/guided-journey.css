@@ -1,0 +1,215 @@
+:host {
+  display: block;
+  margin: var(--space-lg) 0;
+  min-width: 0;
+}
+.journey {
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  overflow: hidden;
+}
+.journey-intro,
+.journey-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+}
+.journey-intro {
+  background: linear-gradient(120deg, var(--accent-soft), var(--surface));
+}
+h2 {
+  margin: var(--space-sm) 0;
+  font-size: var(--text-2xl);
+}
+h3 {
+  margin: var(--space-sm) 0 var(--space-md);
+  font-size: var(--text-xl);
+  scroll-margin-top: calc(var(--topbar-height) + var(--space-md));
+}
+h4 {
+  margin: 0;
+  font-size: var(--text-base);
+}
+p {
+  line-height: 1.65;
+  margin: var(--space-sm) 0 var(--space-md);
+}
+.eyebrow {
+  margin: 0;
+}
+.demo-label {
+  flex: none;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  padding: 6px 12px;
+  font-size: var(--text-sm);
+  color: var(--accent-strong);
+}
+.steps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  list-style: none;
+  padding: var(--space-md);
+  margin: 0;
+  gap: var(--space-sm);
+  border-block: 1px solid var(--border);
+}
+.steps li {
+  min-width: 0;
+}
+button {
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font: inherit;
+  cursor: pointer;
+  min-height: 44px;
+}
+.steps button {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  text-align: left;
+}
+.steps button[aria-current='step'] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+.step-number {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--surface-3);
+  font-family: var(--font-mono);
+}
+.journey-body {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(210px, 1fr);
+}
+.step-content,
+.explore {
+  padding: var(--space-lg);
+  min-width: 0;
+}
+.explore {
+  border-left: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.small {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+dl {
+  display: grid;
+  grid-template-columns: minmax(100px, 1fr) minmax(0, 2fr);
+  gap: 10px 16px;
+  margin: var(--space-lg) 0;
+}
+dt {
+  color: var(--text-muted);
+}
+dd {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+dd,
+.mono {
+  font-family: var(--font-mono);
+  overflow-wrap: anywhere;
+}
+.callout {
+  border-left: 3px solid var(--warning);
+  padding: var(--space-md);
+  background: var(--warning-soft);
+}
+.observation {
+  color: var(--accent-strong);
+}
+.result-summary {
+  padding: var(--space-md);
+  margin: var(--space-md) 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.result-summary p:last-child {
+  margin-bottom: 0;
+}
+summary {
+  cursor: pointer;
+  padding-block: 12px;
+}
+a {
+  color: var(--accent);
+  line-height: 1.6;
+  text-underline-offset: 3px;
+}
+details {
+  margin-bottom: var(--space-md);
+}
+.journey-footer {
+  border-top: 1px solid var(--border);
+}
+.next {
+  border-color: var(--accent);
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+button:focus-visible,
+a:focus-visible,
+summary:focus-visible,
+h3:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+@media (max-width: 1100px) {
+  .journey-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .explore {
+    border-left: 0;
+    border-top: 1px solid var(--border);
+  }
+}
+@media (max-width: 600px) {
+  .journey-intro {
+    flex-direction: column;
+    align-items: start;
+  }
+  .journey-intro,
+  .step-content,
+  .explore,
+  .journey-footer {
+    padding: var(--space-md);
+  }
+  .steps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  dl {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+  dd {
+    margin-bottom: 10px;
+  }
+  .journey-footer {
+    flex-wrap: wrap;
+  }
+  .journey-footer button {
+    flex: 1 1 auto;
+  }
+}

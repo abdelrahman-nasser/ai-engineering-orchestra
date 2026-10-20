@@ -115,6 +115,15 @@ a {
 summary {
   cursor: pointer;
 }
+#lifecycle-evidence,
+#journal-evidence {
+  scroll-margin-top: calc(var(--topbar-height) + var(--space-md));
+}
+#lifecycle-evidence:focus,
+#journal-evidence:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
 @media (max-width: 1100px) {
   .panels {
     grid-template-columns: minmax(0, 1fr);

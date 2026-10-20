@@ -1,9 +1,9 @@
 <header class="preview-header">
-  <p class="eyebrow">Synthetic fixtures · Application v1.0</p>
-  <h1>Application boundary preview</h1>
+  <p class="eyebrow">Developer Alpha · Application v1.0</p>
+  <h1>Guided developer demo</h1>
   <p>
-    No operational source is connected. These fabricated observations exercise the approved v2
-    response contract.
+    Task → Approval preview → Run → Result → Journal. Follow synthetic evidence through five
+    guided stops, then inspect the existing Application boundary preview below.
   </p>
   <a routerLink="/">Return to existing mock demonstrations</a>
 </header>
@@ -31,6 +31,8 @@
   Journal observation: {{ session().journal.status }}. Operational controls unavailable.
 </p>
 
+<cc-guided-journey [session]="session()" [scenario]="selected()" />
+
 <section class="card" aria-label="Operational controls">
   <p>
     {{ unsupported.continuation }}. No displayed selection, Grant or Admission confers authority.
@@ -42,7 +44,7 @@
 </section>
 
 <div class="panels">
-  <section class="card" aria-label="Lifecycle observation">
+  <section class="card" id="lifecycle-evidence" tabindex="-1" aria-label="Lifecycle observation">
     <h2>Lifecycle observation</h2>
     <p class="state" data-testid="lifecycle-status">{{ session().inspection.status }}</p>
     @if (session().inspection.failure; as failure) {
@@ -175,7 +177,7 @@
     }
   </section>
 
-  <section class="card" aria-label="Journal observation">
+  <section class="card" id="journal-evidence" tabindex="-1" aria-label="Journal observation">
     <h2>Journal observation</h2>
     <p class="state" data-testid="journal-status">{{ session().journal.status }}</p>
     @if (session().journal.failure; as failure) {

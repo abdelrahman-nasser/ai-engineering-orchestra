@@ -3,11 +3,12 @@ import { RouterLink } from '@angular/router';
 import { recordIdentity } from './decode';
 import { scenarioSession, scenarios } from './fixtures';
 import { runLabels, schedulerLabels, taskLabels, unsupported } from './presentation';
+import { GuidedJourney } from './guided-journey';
 
 @Component({
   selector: 'cc-application-v1-preview',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink],
+  imports: [RouterLink, GuidedJourney],
   templateUrl: './synthetic-preview.html',
   styleUrl: './synthetic-preview.css',
 })

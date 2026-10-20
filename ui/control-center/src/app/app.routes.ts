@@ -45,7 +45,7 @@ export const routes: Routes = [
 
   {
     path: 'application-v1-preview',
-    title: 'Synthetic application v1.0 preview · ITRU Control Center',
+    title: 'Guided synthetic developer demo · ITRU Control Center',
     loadComponent: () => import('./application-v1/synthetic-preview').then((m) => m.SyntheticPreview),
   },
   {

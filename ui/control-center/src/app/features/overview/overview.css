@@ -1,3 +1,15 @@
+.demo-entry {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+.demo-entry h2 { margin: var(--space-sm) 0; }
+.demo-entry p { margin: var(--space-sm) 0; }
+.demo-entry a { white-space: normal; }
+
 .river-layout {
   gap: var(--space-4);
 }

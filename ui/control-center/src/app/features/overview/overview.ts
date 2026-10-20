@@ -23,6 +23,15 @@ import { AVAILABILITY, PRESENTATION_STATE, TASK_STATUS } from '../../shared/pres
         lede="A calm look at what is moving through the workspace, and what needs a person."
       />
 
+      <div class="card demo-entry">
+        <div>
+          <p class="eyebrow">New here? · Synthetic Developer Alpha</p>
+          <h2>Follow a Task from scope to evidence</h2>
+          <p>A five-stop guided demo with 18 scenarios. No Core connection or operational actions.</p>
+        </div>
+        <a routerLink="/application-v1-preview" class="btn btn-primary">Open guided developer demo →</a>
+      </div>
+
       @switch (state().status) {
         @case ('loading') {
           <cc-state-panel kind="loading" />

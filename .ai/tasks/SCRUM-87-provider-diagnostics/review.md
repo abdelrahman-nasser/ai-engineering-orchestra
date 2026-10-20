@@ -1,5 +1,70 @@
 # SCRUM-87 review
 
+## Final Human closure decision — October 20, 2026
+
+**Final Human acceptance: APPROVED — October 20, 2026.** The Human explicitly
+approves final acceptance and Task closure of SCRUM-87, accepting implementation
+commit `705c306c51278e6c218f316db7ab63244b58515c`. Security and CLI usability
+reviews are APPROVE. Implementation documentation consistency and independent
+review are PASS. The remaining Human acceptance criterion is now satisfied.
+
+The Human authorizes exactly one local closure-only commit:
+`docs(alpha): finalize SCRUM-87 provider diagnostics task closure`.
+This approval supplies final Task acceptance; it is separate from the earlier
+checkpoint-only approval. It grants no provider, Tool or operational authority.
+
+### Accepted nonblocking limitations for SCRUM-87 closure only
+
+| Limitation | Preserved result |
+| --- | --- |
+| Native ACL/storage readiness | Unverified |
+| Packaged clean installation | Unverified; clean installation NOT RUN here |
+| Native integration, loopback HTTP and release verification | NOT RUN |
+| Broader Core verification | 24 failures, 275 errors and five skips remain unresolved |
+| Full C109 | NOT RUN |
+| Existing broader Markdown findings | Unresolved; previous broad lint remains FAILED |
+
+SCRUM-86 continues to own broader Core verification debt. These limitations are
+nonblocking for this Task closure only. No failed, skipped or unexecuted result
+is reclassified as PASS, no mandatory Quality Gate is waived, and no full Core,
+native-readiness or packaged-installation certification is claimed. Earlier
+failed attempts and corrective evidence remain preserved below and in
+[verification](verification.md).
+
+### Closure-specific validation and independent review
+
+Fresh closure mechanical checks PASS: Task fixtures (54/54), declared Workflow
+references (26/26), this Task's schema and Workflow/Role/Gate references,
+structure-only verification, relative Markdown references, four Task Markdown
+files (zero lint issues), whitespace, exact five-file scope, sensitive-data
+inspection and historical-report preservation. Exact receipts are recorded in
+`verification.md`.
+
+Independent Security and CLI/documentation reviewer executions inspected the
+actual five-file closure diff and the exact final Human authority. Both issued
+**APPROVE**, with no material findings. They independently verified the four
+fresh command/log hashes and the separate four-file lint receipt. Their new
+review covers the closure records, not only the prior implementation.
+
+Closure-specific `independent_review`: **PASS**.
+Closure-specific `documentation_consistency`: **PASS**.
+All eight criteria and final Human acceptance are satisfied. The canonical Task
+is `completed`. Final lifecycle metadata and staged-content applicability are
+checked again before the single authorized local closure commit. No mandatory
+Gate is failed, skipped or waived. This Task closure does not close SCRUM-86.
+
+### Historical-record interpretation
+
+The review below is the preserved precommit handoff snapshot. Its no-commit,
+pending-acceptance and earlier-HEAD statements describe that historical phase.
+The corresponding verification report and roadmap implementation disposition
+retain the same historical meaning. The accepted checkpoint and this explicit
+final Human decision supersede only those commit/closure-status statements.
+Current lifecycle status is owned by `task.yaml`; all historical results remain
+unchanged. Shared guides and implementation files are outside this closure diff.
+
+## Historical implementation review (preserved)
+
 ## Review scope and evidence
 
 The authorized SCRUM-87 implementation adds offline provider diagnostics and safe

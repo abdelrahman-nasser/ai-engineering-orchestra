@@ -1,5 +1,37 @@
 # SCRUM-87 context
 
+## Final closure authority — October 20, 2026
+
+The Human explicitly approved final acceptance of SCRUM-87 and accepted
+implementation checkpoint `705c306c51278e6c218f316db7ab63244b58515c`. The approved
+local closure-only commit subject is
+`docs(alpha): finalize SCRUM-87 provider diagnostics task closure`.
+
+Only `task.yaml`, `acceptance-criteria.md`, `context.md`, `review.md` and
+`verification.md` in this Task directory may change. Product code, tests, the
+verification helper, shared architecture, guides and Lane B remain unchanged.
+Jira Done, push, merge, PR, tag, release, deployment and publication are excluded.
+
+The Human accepts the enumerated native, packaging and Core verification limits
+as nonblocking for this Task closure only; [review](review.md) preserves their
+actual statuses. SCRUM-86 continues to own broader Core verification debt. No
+mandatory Quality Gate is waived or failed/skipped/unexecuted result relabelled.
+
+This authority supersedes earlier no-closure restrictions only for the bounded
+closure action. The historical implementation context below, the precommit
+review/verification reports and the roadmap's October 20 implementation
+disposition describe earlier handoff states. Their pending-commit/acceptance
+wording is superseded by the accepted checkpoint and this decision; their product
+facts, failures, receipts and limitations remain historical evidence unchanged.
+The canonical Task lifecycle and current closure records are authoritative.
+
+Fresh closure checks and independent Security/CLI review approved the five-file
+closure records. Final Human acceptance and all eight criteria are satisfied;
+the canonical lifecycle is `completed`. Final lifecycle/staged-content checks
+must preserve the accepted checkpoint and exact closure-only scope.
+
+## Historical implementation context (preserved)
+
 Human authorization on October 20, 2026 permits implementation, deterministic
 offline testing and independent review of
 [SCRUM-87](https://abdelrahmann-hegab.atlassian.net/browse/SCRUM-87).

@@ -1,5 +1,86 @@
 # SCRUM-87 implementation and verification
 
+## Final closure verification — October 20, 2026
+
+**Final Human acceptance: APPROVED — October 20, 2026.** Accepted implementation:
+`705c306c51278e6c218f316db7ab63244b58515c`, on branch
+`feature/developer-alpha-usability-p0` in
+`D:\Dev\ITRU\worktrees\itru-core-usability`. The clean expected baseline and all
+15 accepted checkpoint blob identities were verified before closure edits.
+Seven implementation criteria retain their evidence; the eighth, Human
+acceptance criterion is satisfied by the explicit final closure decision.
+
+The authorization permits exactly one local closure-only commit, with subject
+`docs(alpha): finalize SCRUM-87 provider diagnostics task closure`.
+The only changed paths are the five canonical Task records: `task.yaml`,
+`acceptance-criteria.md`, `context.md`, `review.md` and `verification.md`.
+No product, test, guide, architecture, Lane B or verification-helper change is
+authorized. No Jira transition or publication is authorized.
+
+### Fresh closure checks
+
+Fresh mechanical closure checks PASS. Independent closure Security and CLI/
+documentation reviewers both issued APPROVE on the actual five-file changes.
+Exact closure command/log/hash receipts are retained separately
+at `C:\Users\ABDELR~1\AppData\Local\Temp\scrum87-closure-4vtf_k3a`.
+The baseline receipt includes original copies/hashes of all six Task artifacts.
+
+The closure checks cover the Task schema and Workflow/Role/Gate references,
+documentation consistency and relative references, scoped Markdown, whitespace,
+five-file scope, sensitive-data inspection, accepted-checkpoint identity, and
+preservation of historical reports and receipts. Both reviewers independently
+verified the four fresh command/log hashes and the fresh lint receipt. No
+material findings remain. The new closure independent-review and documentation-
+consistency Gates PASS; prior implementation-scoped PASS was not reused as
+approval of these edits. With final Human acceptance and all eight criteria
+satisfied, the Task is `completed`. Final lifecycle/staged-content applicability
+is checked again before the one local commit.
+
+| Fresh closure check | Result |
+| --- | --- |
+| Task fixture validator and declared Workflow references | PASS: 54/54 cases; 26/26 references |
+| SCRUM-87 Task schema and Workflow/Role/Gate references | PASS; status still `in_progress` during draft checks |
+| Final completed-state schema, criteria and references | PASS: `completed`, eight checked criteria; same five-file scope |
+| Structure-only verification | PASS; no project-declared commands executed |
+| Relative Markdown references | PASS: five local references resolve |
+| Scoped Markdown | PASS: four Task Markdown files; zero issues |
+| Whitespace, exact five-file scope and sensitive-data checks | PASS |
+| Historical report bodies and verification helper | Unchanged; preservation check PASS |
+
+`commands.jsonl` records each fresh schema/reference/structure/whitespace command,
+cwd, exit code, duration and raw-output SHA-256. `draft-markdown-receipt.json`
+retains the fresh cached-linter command and exact encoded output/hash. All these
+commands exited 0. The cached linter ran offline with approved read access;
+there was no dependency installation or network request. Final lifecycle and
+staged-content checks retain separate receipts in the same closure directory.
+The `final-` command receipts repeat schema/reference, structure and whitespace
+checks after the lifecycle change and confirm the actual completed candidate.
+Historical preservation and scope/sensitive-data checks also pass on that state.
+
+### Retained implementation results and nonblocking limitations
+
+The prior 28 focused tests, 50 offline regressions, schema/structure checks and
+scoped lint results remain retained implementation evidence, not newly executed
+closure tests. Security and CLI usability implementation reviews are APPROVE;
+implementation documentation consistency and independent review are PASS.
+The accepted product and tests are unchanged, so implementation is not repeated.
+
+The Human accepts native ACL/storage readiness and packaged clean installation
+as unverified, native integration/loopback HTTP/release verification as NOT RUN,
+and broader Core 24 failures/275 errors/five skips, full C109 NOT RUN and unresolved
+broader Markdown findings as nonblocking for SCRUM-87 closure only. SCRUM-86
+continues to own broader Core verification debt. Nothing is waived, repaired or
+reclassified; no new validation of these limitations is claimed.
+
+The report below is the preserved precommit snapshot. Its old HEAD, uncommitted
+and pending-approval statements are historical and superseded in status by the
+accepted checkpoint and final Human decision above. The context/review addenda
+likewise supersede historical roadmap handoff-status wording without changing
+shared documentation. Every prior failure, skip, not-run result and retained
+receipt remains unchanged.
+
+## Historical implementation verification (preserved)
+
 ## Handoff state
 
 October 20, 2026. Implementation/testing authorized; final Human acceptance,

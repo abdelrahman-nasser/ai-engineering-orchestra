@@ -16,4 +16,19 @@
   distinguish local validation from connectivity, authority and readiness.
 - [x] Independent security and CLI usability reviews and documentation consistency
   are recorded; SCRUM-86 debt and all failed/skipped evidence remain explicit.
-- [ ] Human reviews the unstaged, uncommitted handoff before any commit or closure.
+- [x] Human reviews the unstaged, uncommitted handoff before any commit or closure.
+
+## Final Human acceptance — October 20, 2026
+
+**Final Human acceptance: APPROVED — October 20, 2026.** The Human accepted
+implementation commit `705c306c51278e6c218f316db7ab63244b58515c`, the Security and
+CLI usability APPROVE verdicts, and the implementation documentation-consistency
+and independent-review PASS results. The Human acceptance criterion is satisfied;
+the seven previously checked implementation criteria retain their evidence.
+
+The Human explicitly approved final Task closure and exactly one local closure-only
+commit. The limitations listed in [review](review.md) are accepted as nonblocking
+for SCRUM-87 Task closure only. SCRUM-86 retains broader Core verification debt;
+no failed, skipped or unexecuted result becomes PASS and no mandatory Gate is
+waived. Fresh closure-documentation checks and independent review are recorded
+separately in [verification](verification.md).

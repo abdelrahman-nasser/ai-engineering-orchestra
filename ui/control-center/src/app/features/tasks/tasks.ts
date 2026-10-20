@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ControlCenterDataSource } from '../../data/control-center-data-source';
 import { TaskStatus } from '../../data/models';
 import { toLoadState } from '../../shared/load-state';
@@ -8,11 +8,7 @@ import { APPROVAL_LEVEL, LEVEL, TASK_STATUS, humanize } from '../../shared/prese
 import { StatePanel } from '../../shared/state-panel';
 import { StatusBadge } from '../../shared/status-badge';
 
-type TaskFilter =
-  | 'all'
-  | TaskStatus
-  | 'attention-required'
-  | 'continuation-available';
+type TaskFilter = 'all' | TaskStatus | 'attention-required' | 'continuation-available';
 
 @Component({
   selector: 'cc-tasks',
@@ -34,14 +30,18 @@ type TaskFilter =
           <cc-state-panel kind="error" title="Could not load Tasks" />
         }
         @default {
-          <div class="filters" role="group" aria-label="Filter tasks by status or history affordance">
+          <div
+            class="filters"
+            role="group"
+            aria-label="Filter tasks by status or history affordance"
+          >
             @for (option of filters; track option.value) {
               <button
                 type="button"
                 class="filter"
                 [attr.aria-pressed]="filter() === option.value"
                 [attr.data-testid]="'task-filter-' + option.value"
-                (click)="filter.set(option.value)"
+                (click)="changeFilter(option.value)"
               >
                 {{ option.label }} <span class="count">{{ counts()[option.value] }}</span>
               </button>
@@ -72,15 +72,26 @@ type TaskFilter =
                     @for (task of rows(); track task.id) {
                       <tr>
                         <td class="title-cell">
-                          <a class="row-link mono" [routerLink]="['/tasks', task.id]">{{ task.id }}</a>
+                          <a class="row-link mono" [routerLink]="['/tasks', task.id]">{{
+                            task.id
+                          }}</a>
                           <div class="muted">{{ task.title }}</div>
                         </td>
-                        <td><cc-status-badge [label]="status[task.status].label" [tone]="status[task.status].tone" /></td>
+                        <td>
+                          <cc-status-badge
+                            [label]="status[task.status].label"
+                            [tone]="status[task.status].tone"
+                          />
+                        </td>
                         <td>
                           @if (task.runCount && task.runCount > 0) {
                             <div>{{ task.runCount }} run{{ task.runCount === 1 ? '' : 's' }}</div>
                             @if (task.latestRunId) {
-                              <a class="mono text-xs muted row-link" [routerLink]="['/runs', task.latestRunId]">latest: {{ task.latestRunId }}</a>
+                              <a
+                                class="mono text-xs muted row-link"
+                                [routerLink]="['/runs', task.latestRunId]"
+                                >latest: {{ task.latestRunId }}</a
+                              >
                             }
                           } @else {
                             <span class="muted text-xs">No runs yet</span>
@@ -101,10 +112,19 @@ type TaskFilter =
                           }
                         </td>
                         <td>{{ task.type }}</td>
-                        <td><cc-status-badge [label]="level[task.risk].label" [tone]="level[task.risk].tone" /></td>
-                        <td><span class="chip">{{ task.executionMode }}</span></td>
+                        <td>
+                          <cc-status-badge
+                            [label]="level[task.risk].label"
+                            [tone]="level[task.risk].tone"
+                          />
+                        </td>
+                        <td>
+                          <span class="chip">{{ task.executionMode }}</span>
+                        </td>
                         <td>{{ humanize(task.workflowId) }}</td>
-                        <td class="muted nowrap text-xs">{{ task.lastActivityLabel || task.updatedLabel }}</td>
+                        <td class="muted nowrap text-xs">
+                          {{ task.lastActivityLabel || task.updatedLabel }}
+                        </td>
                       </tr>
                     }
                   </tbody>
@@ -118,6 +138,10 @@ type TaskFilter =
   `,
 })
 export class Tasks {
+  /** The URL owns the list filter so Back/Forward can restore it. */
+  readonly taskFilter = input<string>();
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly dataSource = inject(ControlCenterDataSource);
 
   protected readonly status = TASK_STATUS;
@@ -126,7 +150,17 @@ export class Tasks {
   protected readonly humanize = humanize;
 
   protected readonly state = toLoadState(this.dataSource.listTasks());
-  protected readonly filter = signal<TaskFilter>('all');
+  protected readonly filter = computed<TaskFilter>(
+    () => this.filters.find((option) => option.value === this.taskFilter())?.value ?? 'all',
+  );
+
+  protected changeFilter(value: TaskFilter): void {
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { taskFilter: value === 'all' ? null : value },
+      queryParamsHandling: 'merge',
+    });
+  }
 
   protected readonly filters: readonly { value: TaskFilter; label: string }[] = [
     { value: 'all', label: 'All' },
@@ -157,7 +191,9 @@ export class Tasks {
       case 'cancelled':
         return all.filter((task) => task.status === filter);
       case 'attention-required':
-        return all.filter((task) => task.status === 'blocked' || task.latestRunState === 'needs-attention');
+        return all.filter(
+          (task) => task.status === 'blocked' || task.latestRunState === 'needs-attention',
+        );
       case 'continuation-available':
         return all.filter((task) => Boolean(task.continuationAvailable));
     }
@@ -172,7 +208,9 @@ export class Tasks {
       blocked: tasks.filter((t) => t.status === 'blocked').length,
       completed: tasks.filter((t) => t.status === 'completed').length,
       cancelled: tasks.filter((t) => t.status === 'cancelled').length,
-      'attention-required': tasks.filter((t) => t.status === 'blocked' || t.latestRunState === 'needs-attention').length,
+      'attention-required': tasks.filter(
+        (t) => t.status === 'blocked' || t.latestRunState === 'needs-attention',
+      ).length,
       'continuation-available': tasks.filter((t) => Boolean(t.continuationAvailable)).length,
     };
   });

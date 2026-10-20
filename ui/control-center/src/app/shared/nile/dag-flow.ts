@@ -3,6 +3,7 @@ import {
   Component,
   ElementRef,
   computed,
+  inject,
   input,
   output,
   signal,
@@ -98,6 +99,7 @@ function wobble(seed: string): number {
   },
 })
 export class DagFlow {
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   readonly graph = input<DagGraphPresentation | null>(null);
   readonly selectedNodeId = input<string | undefined>();
   readonly viewMode = input<'river' | 'list'>('river');
@@ -170,7 +172,7 @@ export class DagFlow {
       const isDimmed = hasSelection && !isSelected && !isUpstream && !isDownstream;
       const color = node.isEffectAmbiguous
         ? 'var(--danger)'
-        : TONE_COLORS[node.schedulerTone] ?? 'var(--text-muted)';
+        : (TONE_COLORS[node.schedulerTone] ?? 'var(--text-muted)');
       const hasPulse =
         node.schedulerState === 'active-looking' ||
         node.schedulerState === 'attention' ||
@@ -268,6 +270,32 @@ export class DagFlow {
     this.nodeSelect.emit(node);
   }
 
+  /** Explicit inspector dismissal only; query/history changes never steal focus. */
+  restoreNodeFocus(nodeId: string | undefined): boolean {
+    if (!nodeId || !this.graph()?.nodeMap.has(nodeId)) return false;
+    const trigger = Array.from(
+      this.host.nativeElement.querySelectorAll<HTMLElement | SVGElement>('[data-node-id]'),
+    ).find((element) => element.getAttribute('data-node-id') === nodeId);
+    if (!trigger || trigger.closest('[hidden], [inert]')) return false;
+    const viewport = this.viewportEl()?.nativeElement;
+    if (viewport && this.viewMode() === 'river') {
+      const nodeBounds = trigger.getBoundingClientRect();
+      const bounds = viewport.getBoundingClientRect();
+      // Do not return focus to a node clipped out of its panned canvas.
+      if (
+        bounds.width > 0 &&
+        nodeBounds.width > 0 &&
+        (nodeBounds.right <= bounds.left ||
+          nodeBounds.left >= bounds.right ||
+          nodeBounds.bottom <= bounds.top ||
+          nodeBounds.top >= bounds.bottom)
+      )
+        return false;
+    }
+    trigger.focus({ preventScroll: true });
+    return trigger.ownerDocument.activeElement === trigger;
+  }
+
   protected setViewMode(mode: 'river' | 'list'): void {
     this.viewModeChange.emit(mode);
   }
@@ -347,8 +375,15 @@ export class DagFlow {
   protected handleKeydown(event: KeyboardEvent): void {
     const viewport = this.viewportEl()?.nativeElement;
     const target = event.target;
-    if (this.viewMode() !== 'river' || !viewport || !(target instanceof Element) ||
-        event.altKey || event.ctrlKey || event.metaKey) return;
+    if (
+      this.viewMode() !== 'river' ||
+      !viewport ||
+      !(target instanceof Element) ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey
+    )
+      return;
     const focusedNode = target.closest<SVGElement>('.node[data-node-id]');
     // Toolbar and structured-list keys must retain their native behavior.
     if (target !== viewport && !focusedNode) return;
@@ -374,15 +409,17 @@ export class DagFlow {
         const siblings = g.nodes
           .filter((n) => Math.abs(n.column - current.column) <= 0.5 && n.id !== current.id)
           .sort((a, b) => a.lane - b.lane);
-        next = event.key === 'ArrowDown'
-          ? siblings.find((n) => n.lane > current.lane)
-          : [...siblings].reverse().find((n) => n.lane < current.lane);
+        next =
+          event.key === 'ArrowDown'
+            ? siblings.find((n) => n.lane > current.lane)
+            : [...siblings].reverse().find((n) => n.lane < current.lane);
       }
     }
     if (!next) return;
     this.nodeSelect.emit(next);
     Array.from(viewport.querySelectorAll<SVGElement>('.node[data-node-id]'))
-      .find((node) => node.getAttribute('data-node-id') === next.id)?.focus({ preventScroll: true });
+      .find((node) => node.getAttribute('data-node-id') === next.id)
+      ?.focus({ preventScroll: true });
     this.focusSelected(next.id);
     event.preventDefault();
   }

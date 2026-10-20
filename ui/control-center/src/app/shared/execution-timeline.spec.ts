@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { TimelineEntry } from '../data/models';
 import { ExecutionTimeline } from './execution-timeline';
 
@@ -10,12 +10,14 @@ import { ExecutionTimeline } from './execution-timeline';
     <cc-execution-timeline
       [entries]="entries()"
       [(selectedId)]="selectedId"
+      (entrySelect)="onEntrySelect($event)"
     />
   `,
 })
 class TestHost {
   readonly entries = signal<readonly TimelineEntry[]>([]);
   readonly selectedId = signal<string | null>(null);
+  onEntrySelect: (entry: TimelineEntry | null) => void = () => undefined;
 }
 
 describe('ExecutionTimeline', () => {
@@ -204,7 +206,8 @@ describe('ExecutionTimeline', () => {
 
     expect(el.querySelector('.timeline-detail-pane')).toBeNull();
 
-    const secondEntry = el.querySelectorAll<HTMLElement>('ol.timeline li.entry')[1];
+    const secondEntry = el.querySelectorAll<HTMLButtonElement>('.entry-trigger')[1];
+    secondEntry.focus();
     secondEntry.click();
     fixture.detectChanges();
     await fixture.whenStable();
@@ -221,24 +224,93 @@ describe('ExecutionTimeline', () => {
 
     // Click close button to deselect
     const closeBtn = pane?.querySelector<HTMLButtonElement>('.close-btn');
+    closeBtn?.focus();
+    const focus = vi.spyOn(secondEntry, 'focus');
     closeBtn?.click();
     fixture.detectChanges();
     await fixture.whenStable();
 
     expect(host.selectedId()).toBeNull();
     expect(el.querySelector('.timeline-detail-pane')).toBeNull();
+    expect(document.activeElement).toBe(secondEntry);
+    expect(focus).toHaveBeenCalledWith({ preventScroll: true });
   });
 
-  it('supports keyboard selection with Enter key', async () => {
+  it('exposes native toggle buttons within ordered list items', async () => {
     const { fixture, host, el } = await createHost(SAMPLE_ENTRIES);
 
-    const firstEntry = el.querySelectorAll<HTMLElement>('ol.timeline li.entry')[0];
-    firstEntry.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    const firstEntry = el.querySelector<HTMLButtonElement>('ol.timeline li.entry > button')!;
+    expect(firstEntry.type).toBe('button');
+    expect(firstEntry.getAttribute('aria-pressed')).toBe('false');
+    expect(el.querySelector('li[role="button"], [aria-selected]')).toBeNull();
+    firstEntry.focus();
+    firstEntry.click();
     fixture.detectChanges();
     await fixture.whenStable();
 
     expect(host.selectedId()).toBe('tl-1');
-    expect(el.querySelector('.timeline-detail-pane')?.textContent).toContain('Stage "implement" entered');
+    expect(document.activeElement).toBe(firstEntry);
+    expect(firstEntry.getAttribute('aria-pressed')).toBe('true');
+    expect(el.querySelector('.timeline-detail-pane')?.textContent).toContain(
+      'Stage "implement" entered',
+    );
+    firstEntry.click();
+    await fixture.whenStable();
+    expect(host.selectedId()).toBeNull();
+    expect(firstEntry.getAttribute('aria-pressed')).toBe('false');
+    expect(document.activeElement).toBe(firstEntry);
+  });
+
+  it('returns to a visible event when filters hide the original trigger', async () => {
+    const { fixture, el } = await createHost(SAMPLE_ENTRIES);
+    el.querySelector<HTMLButtonElement>('.entry-trigger[data-entry-id="tl-1"]')!.click();
+    await fixture.whenStable();
+    el.querySelector<HTMLButtonElement>('.filter-attention')!.click();
+    await fixture.whenStable();
+    expect(el.querySelector('.entry-trigger[data-entry-id="tl-1"]')).toBeNull();
+    const close = el.querySelector<HTMLButtonElement>('.close-btn')!;
+    close.focus();
+    close.click();
+    await fixture.whenStable();
+    expect(document.activeElement).toBe(el.querySelector('.entry-trigger[data-entry-id="tl-3"]'));
+    expect(el.querySelector('.timeline-detail-pane')).toBeNull();
+  });
+
+  it('returns to the All filter when closing leaves no matching event', async () => {
+    const { fixture, host, el } = await createHost(SAMPLE_ENTRIES);
+    el.querySelector<HTMLButtonElement>('.entry-trigger[data-entry-id="tl-3"]')!.click();
+    await fixture.whenStable();
+    el.querySelector<HTMLButtonElement>('.filter-attention')!.click();
+    await fixture.whenStable();
+    host.onEntrySelect = (entry) => {
+      if (entry === null) host.entries.set([SAMPLE_ENTRIES[0]]);
+    };
+    const close = el.querySelector<HTMLButtonElement>('.close-btn')!;
+    close.focus();
+    close.click();
+    await fixture.whenStable();
+    expect(el.querySelector('.entry-trigger')).toBeNull();
+    expect(el.textContent).toContain('No matching timeline entries');
+    expect(document.activeElement).toBe(el.querySelector('.filter-btn'));
+    expect(document.activeElement?.textContent).toContain('All (1)');
+  });
+
+  it('returns to its named region if the parent removes entries while closing', async () => {
+    const { fixture, host, el } = await createHost(SAMPLE_ENTRIES);
+    el.querySelector<HTMLButtonElement>('.entry-trigger')!.click();
+    await fixture.whenStable();
+    host.onEntrySelect = (entry) => {
+      if (entry === null) host.entries.set([]);
+    };
+    const close = el.querySelector<HTMLButtonElement>('.close-btn')!;
+    close.focus();
+    close.click();
+    await fixture.whenStable();
+    const region = el.querySelector<HTMLElement>('.timeline-wrapper')!;
+    expect(region.getAttribute('aria-label')).toBe('Execution timeline');
+    expect(region.tabIndex).toBe(-1);
+    expect(document.activeElement).toBe(region);
+    expect(el.querySelector('.timeline-detail-pane')).toBeNull();
   });
 
   it('renders empty state when entries are empty', async () => {

@@ -95,6 +95,7 @@ export class GuidedJourney {
   protected readonly lifecycleExamples = Object.entries(lifecycleNotes);
 
   protected go(index: number): void {
+    if (!Number.isInteger(index) || index < 0 || index >= this.steps.length) return;
     this.explorer.go(index);
     this.locateStatus.set('');
   }

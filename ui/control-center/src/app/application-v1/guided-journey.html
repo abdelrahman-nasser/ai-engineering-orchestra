@@ -247,8 +247,12 @@
       </aside>
     </div>
     <footer class="explorer-footer">
-      <button type="button" [disabled]="step() === 0" (click)="go(step() - 1)">Previous</button>
-      <button type="button" [disabled]="step() === 4" (click)="go(step() + 1)">Next</button>
+      <button type="button" [attr.aria-disabled]="step() === 0" (click)="go(step() - 1)">
+        Previous
+      </button>
+      <button type="button" [attr.aria-disabled]="step() === 4" (click)="go(step() + 1)">
+        Next
+      </button>
       <button type="button" class="locate" (click)="locate()">Locate Section</button>
     </footer>
   </section>

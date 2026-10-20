@@ -1,11 +1,12 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   computed,
-  effect,
   inject,
   input,
   signal,
+  viewChild,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -13,10 +14,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
 import { ControlCenterDataSource } from '../../data/control-center-data-source';
 import { adaptDagGraphReadModel } from '../../data/dag-adapter';
-import {
-  DagGraphPresentation,
-  DagNodePresentation,
-} from '../../data/models';
+import { DagGraphPresentation, DagNodePresentation } from '../../data/models';
 import { DagFlow } from '../../shared/nile/dag-flow';
 import { DagNodeInspector } from '../../shared/nile/dag-node-inspector';
 import { SchedulerPanel } from '../../shared/nile/scheduler-panel';
@@ -28,15 +26,7 @@ import { StatePanel } from '../../shared/state-panel';
 @Component({
   selector: 'cc-flow',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    FormsModule,
-    PageHeader,
-    StatePanel,
-    Icon,
-    SchedulerPanel,
-    DagFlow,
-    DagNodeInspector,
-  ],
+  imports: [FormsModule, PageHeader, StatePanel, Icon, SchedulerPanel, DagFlow, DagNodeInspector],
   templateUrl: './flow.html',
   styleUrl: './flow.css',
 })
@@ -49,41 +39,40 @@ export class Flow {
   private readonly dataSource = inject(ControlCenterDataSource);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly dag = viewChild(DagFlow);
 
   protected readonly scenarios = toSignal(this.dataSource.listDagScenarios(), {
     initialValue: [],
   });
 
-  protected readonly selectedScenarioId = signal<string>('fan-out-fan-in');
+  // Query inputs are authoritative, including their removal on Back/Forward.
+  protected readonly selectedScenarioId = computed(() => this.scenario() ?? 'fan-out-fan-in');
   protected readonly searchQuery = signal<string>('');
   protected readonly activeStateFilter = signal<string>('all');
   protected readonly featureFilter = signal<string>('all');
   protected readonly actorFilter = signal<string>('all');
   protected readonly viewMode = signal<'river' | 'list'>('river');
-  protected readonly selectedNodeId = signal<string | undefined>(undefined);
-
-  constructor() {
-    effect(() => {
-      const s = this.scenario();
-      if (s && s !== this.selectedScenarioId()) {
-        this.selectedScenarioId.set(s);
-      }
-    });
-    effect(() => {
-      const n = this.node();
-      if (n && n !== this.selectedNodeId()) {
-        this.selectedNodeId.set(n);
-      }
-    });
-  }
-
-  protected readonly state = toLoadStateFor(this.selectedScenarioId, (scenarioId) =>
-    this.dataSource.getDagGraph(scenarioId).pipe(map((readModel) => adaptDagGraphReadModel(readModel))),
+  private readonly graphState = toLoadStateFor(this.selectedScenarioId, (scenarioId) =>
+    this.dataSource.getDagGraph(scenarioId).pipe(
+      map((readModel) => ({
+        scenarioId,
+        graph: adaptDagGraphReadModel(readModel),
+      })),
+    ),
   );
+
+  protected readonly state = computed(() => {
+    const state = this.graphState();
+    // The previous response must not be presented under a newly bound query.
+    return state.status === 'ready' && state.data.scenarioId !== this.selectedScenarioId()
+      ? { status: 'loading' as const }
+      : state;
+  });
 
   protected readonly graph = computed<DagGraphPresentation | null>(() => {
     const s = this.state();
-    return s.status === 'ready' ? s.data : null;
+    return s.status === 'ready' ? s.data.graph : null;
   });
 
   /** Distinct actors observed across current graph for filter dropdown. */
@@ -129,9 +118,7 @@ export class Flow {
     }
 
     if (stateFilter !== 'all') {
-      filteredNodes = filteredNodes.filter(
-        (n) => n.schedulerState === stateFilter,
-      );
+      filteredNodes = filteredNodes.filter((n) => n.schedulerState === stateFilter);
     }
 
     if (featFilter !== 'all') {
@@ -164,18 +151,16 @@ export class Flow {
 
   /** The currently selected node presentation object. */
   protected readonly selectedNode = computed<DagNodePresentation | null>(() => {
-    const selectedId = this.selectedNodeId();
+    const selectedId = this.node();
     const g = this.graph();
     if (!selectedId || !g) {
       return null;
     }
     return g.nodeMap.get(selectedId) ?? null;
   });
-
+  protected readonly selectedNodeId = computed(() => this.selectedNode()?.id);
 
   protected changeScenario(scenarioId: string): void {
-    this.selectedScenarioId.set(scenarioId);
-    this.selectedNodeId.set(undefined);
     void this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { scenario: scenarioId, node: null },
@@ -188,7 +173,6 @@ export class Flow {
   }
 
   protected onNodeSelect(node: DagNodePresentation): void {
-    this.selectedNodeId.set(node.id);
     void this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { node: node.id },
@@ -197,7 +181,14 @@ export class Flow {
   }
 
   protected closeInspector(): void {
-    this.selectedNodeId.set(undefined);
+    // Restore a surviving control before query navigation removes Close.
+    // The graph owns its river/list trigger; filtered-out nodes use search.
+    if (!this.dag()?.restoreNodeFocus(this.selectedNodeId())) {
+      const fallback =
+        this.host.nativeElement.querySelector<HTMLElement>('.search-input') ??
+        this.host.nativeElement.querySelector<HTMLElement>('#scenario-dropdown');
+      fallback?.focus({ preventScroll: true });
+    }
     void this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { node: null },

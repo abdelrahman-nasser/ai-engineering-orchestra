@@ -1,5 +1,7 @@
 :host {
   display: block;
+  min-width: 0;
+  container: execution-timeline / inline-size;
 }
 
 .timeline-wrapper {
@@ -100,8 +102,10 @@
   gap: var(--space-4);
   align-items: start;
 }
-.timeline-layout.has-selection {
-  grid-template-columns: minmax(320px, 1fr) minmax(320px, 1fr);
+@container execution-timeline (min-width: 680px) {
+  .timeline-layout.has-selection {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
 }
 
 .timeline-list-pane {
@@ -129,19 +133,27 @@
 .entry {
   --c: var(--muted);
   position: relative;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.15s var(--ease);
+}
+.entry-trigger {
+  width: 100%;
   display: grid;
   grid-template-columns: 28px minmax(0, 1fr);
   gap: var(--space-3);
   padding: var(--space-2) var(--space-3) var(--space-3) 0;
-  border-radius: var(--radius-sm);
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
   cursor: pointer;
-  outline: none;
-  transition: background-color 0.15s var(--ease);
 }
 .entry:hover {
   background: color-mix(in srgb, var(--surface-2) 65%, transparent);
 }
-.entry:focus-visible {
+.entry-trigger:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
@@ -150,10 +162,18 @@
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
-.entry[data-state='finished'] { --c: var(--success); }
-.entry[data-state='in-progress'] { --c: var(--info); }
-.entry[data-state='needs-attention'] { --c: var(--warning); }
-.entry[data-state='not-started'] { --c: var(--text-muted); }
+.entry[data-state='finished'] {
+  --c: var(--success);
+}
+.entry[data-state='in-progress'] {
+  --c: var(--info);
+}
+.entry[data-state='needs-attention'] {
+  --c: var(--warning);
+}
+.entry[data-state='not-started'] {
+  --c: var(--text-muted);
+}
 
 .marker {
   display: grid;
@@ -170,8 +190,12 @@
   animation: ring 2.4s ease-out infinite;
 }
 @keyframes ring {
-  from { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c) 45%, transparent); }
-  to { box-shadow: 0 0 0 10px transparent; }
+  from {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--c) 45%, transparent);
+  }
+  to {
+    box-shadow: 0 0 0 10px transparent;
+  }
 }
 
 .body {
@@ -299,8 +323,6 @@
   overflow-y: auto;
 }
 
-
-
 .detail-desc {
   font-size: 13px;
   color: var(--text);
@@ -324,7 +346,7 @@
   margin: 0;
 }
 
-@media (max-width: 1020px) {
+@container execution-timeline (max-width: 679px) {
   .timeline-layout.has-selection {
     grid-template-columns: minmax(0, 1fr);
   }

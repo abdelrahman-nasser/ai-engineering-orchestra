@@ -8,7 +8,10 @@ describe('Screens (mock rendering)', () => {
   let settle: () => Promise<void> = async () => undefined;
 
   async function open(url: string): Promise<HTMLElement> {
-    await TestBed.configureTestingModule({ imports: [App], providers: testProviders() }).compileComponents();
+    await TestBed.configureTestingModule({
+      imports: [App],
+      providers: testProviders(),
+    }).compileComponents();
     const fixture = TestBed.createComponent(App);
     settle = async () => {
       await fixture.whenStable();
@@ -45,9 +48,13 @@ describe('Screens (mock rendering)', () => {
     el.querySelector<HTMLButtonElement>('[data-testid="run-filter-needs-attention"]')!.click();
     await settle();
     expect(el.querySelectorAll('table[aria-label="Runs"] tbody tr')).toHaveLength(4);
-    expect(el.querySelector('[data-testid="run-filter-needs-attention"]')?.getAttribute('aria-pressed')).toBe('true');
+    expect(
+      el.querySelector('[data-testid="run-filter-needs-attention"]')?.getAttribute('aria-pressed'),
+    ).toBe('true');
 
-    el.querySelector<HTMLButtonElement>('[data-testid="run-filter-continuation-available"]')!.click();
+    el.querySelector<HTMLButtonElement>(
+      '[data-testid="run-filter-continuation-available"]',
+    )!.click();
     await settle();
     expect(el.querySelectorAll('table[aria-label="Runs"] tbody tr').length).toBeGreaterThan(0);
   });
@@ -55,13 +62,21 @@ describe('Screens (mock rendering)', () => {
   it('Run detail composes river, timeline, result shell with canonical Result semantics, identity and evidence', async () => {
     const el = await open('/runs/run_a41c07e2');
     expect(el.querySelectorAll('cc-nile-flow g.node').length).toBeGreaterThan(8);
-    expect(el.querySelector('cc-nile-flow g.node.selected')?.getAttribute('aria-label')).toContain('security-reviewer');
+    expect(el.querySelector('cc-nile-flow g.node.selected')?.getAttribute('aria-label')).toContain(
+      'security-reviewer',
+    );
     expect(el.querySelectorAll('cc-execution-timeline li.entry').length).toBeGreaterThan(2);
-    expect(text(el.querySelector('cc-result-shell'))).toContain('Canonical ITRU-060 in-memory evidence');
+    expect(text(el.querySelector('cc-result-shell'))).toContain(
+      'Canonical ITRU-060 in-memory evidence',
+    );
     expect(text(el.querySelector('cc-result-shell'))).toContain('Effect Ambiguous');
     expect(text(el.querySelector('cc-result-shell'))).toContain('Uncertain effect boundary');
-    expect(text(el.querySelector('cc-result-shell'))).toContain('Do NOT automatically retry or replay');
-    expect(text(el.querySelector('dl[aria-label="Run identity"]'))).toContain('repository_file_read');
+    expect(text(el.querySelector('cc-result-shell'))).toContain(
+      'Do NOT automatically retry or replay',
+    );
+    expect(text(el.querySelector('dl[aria-label="Run identity"]'))).toContain(
+      'repository_file_read',
+    );
     expect(el.querySelectorAll('cc-evidence-panel details').length).toBeGreaterThan(0);
   });
 
@@ -117,9 +132,11 @@ describe('Screens (mock rendering)', () => {
     expect(entries.length).toBeGreaterThan(1);
 
     // Select the tool execution entry
-    const toolEntry = Array.from(entries).find((e) => text(e).includes('executed repository_file_read'));
+    const toolEntry = Array.from(entries).find((e) =>
+      text(e).includes('executed repository_file_read'),
+    );
     expect(toolEntry).toBeDefined();
-    toolEntry!.click();
+    toolEntry!.querySelector<HTMLButtonElement>('.entry-trigger')!.click();
     await settle();
 
     // Verify timeline inspector opened
@@ -129,7 +146,7 @@ describe('Screens (mock rendering)', () => {
     expect(text(inspector)).toContain('Supplied Metadata & Provenance');
 
     // Verify Evidence Explorer updated header
-    expect(text(el)).toContain('Filtered to event');
+    expect(text(el)).toContain('Event-scoped evidence');
   });
 
   it('Run detail surfaces unavailable evidence in the Evidence Explorer', async () => {
@@ -142,14 +159,20 @@ describe('Screens (mock rendering)', () => {
   it('Tasks lists tasks with Core statuses and filters them', async () => {
     const el = await open('/tasks');
     expect(el.querySelectorAll('table[aria-label="Tasks"] tbody tr')).toHaveLength(10);
-    const badges = Array.from(el.querySelectorAll('table tbody cc-status-badge')).map((b) => text(b));
-    expect(badges).toEqual(expect.arrayContaining(['Planned', 'In progress', 'Blocked', 'Completed', 'Cancelled']));
+    const badges = Array.from(el.querySelectorAll('table tbody cc-status-badge')).map((b) =>
+      text(b),
+    );
+    expect(badges).toEqual(
+      expect.arrayContaining(['Planned', 'In progress', 'Blocked', 'Completed', 'Cancelled']),
+    );
 
     el.querySelector<HTMLButtonElement>('[data-testid="task-filter-blocked"]')!.click();
     await settle();
     expect(el.querySelectorAll('table[aria-label="Tasks"] tbody tr')).toHaveLength(1);
 
-    el.querySelector<HTMLButtonElement>('[data-testid="task-filter-continuation-available"]')!.click();
+    el.querySelector<HTMLButtonElement>(
+      '[data-testid="task-filter-continuation-available"]',
+    )!.click();
     await settle();
     expect(el.querySelectorAll('table[aria-label="Tasks"] tbody tr').length).toBeGreaterThan(0);
   });

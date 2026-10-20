@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { DagFlow } from './dag-flow';
 import { DagGraphPresentation, DagNodePresentation } from '../../data/models';
 import { SCHEDULER_DISCLAIMER_NOTICE } from '../../data/dag-adapter';
@@ -85,7 +85,14 @@ describe('DagFlow', () => {
     nodes: [mockNode1, mockNode2, mockNode3],
     edges: [
       { id: 'e1', from: 'n1', to: 'n2', isTributary: false, weight: 'main', state: 'finished' },
-      { id: 'e2', from: 'n2', to: 'n3', isTributary: false, weight: 'main', state: 'needs-attention' },
+      {
+        id: 'e2',
+        from: 'n2',
+        to: 'n3',
+        isTributary: false,
+        weight: 'main',
+        state: 'needs-attention',
+      },
     ],
     schedulerSummary: {
       queuedCount: 1,
@@ -166,9 +173,9 @@ describe('DagFlow', () => {
 
   it('adjusts zoom level when zoom controls are invoked', () => {
     const el: HTMLElement = fixture.nativeElement;
-    const zoomInBtn = Array.from(el.querySelectorAll<HTMLButtonElement>('.floating-controls button')).find((b) =>
-      b.getAttribute('aria-label') === 'Zoom in',
-    );
+    const zoomInBtn = Array.from(
+      el.querySelectorAll<HTMLButtonElement>('.floating-controls button'),
+    ).find((b) => b.getAttribute('aria-label') === 'Zoom in');
     zoomInBtn?.click();
     fixture.detectChanges();
 
@@ -206,10 +213,16 @@ describe('DagFlow', () => {
     fixture.componentRef.setInput('selectedNodeId', 'n3');
     fixture.detectChanges();
     let picked: string | undefined;
-    component.nodeSelect.subscribe((node) => { picked = node.id; });
+    component.nodeSelect.subscribe((node) => {
+      picked = node.id;
+    });
     const nodes = fixture.nativeElement.querySelectorAll('g.node') as NodeListOf<SVGElement>;
     nodes[0].focus();
-    const event = new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true });
+    const event = new KeyboardEvent('keydown', {
+      key: 'ArrowRight',
+      bubbles: true,
+      cancelable: true,
+    });
     nodes[0].dispatchEvent(event);
     expect(picked).toBe('n2');
     expect(document.activeElement).toBe(nodes[1]);
@@ -223,7 +236,11 @@ describe('DagFlow', () => {
     component.nodeSelect.subscribe(() => selections++);
     const el = fixture.nativeElement as HTMLElement;
     const zoom = el.querySelector('[aria-label="Zoom in"]')!;
-    const toolbarKey = new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true });
+    const toolbarKey = new KeyboardEvent('keydown', {
+      key: 'ArrowRight',
+      bubbles: true,
+      cancelable: true,
+    });
     zoom.dispatchEvent(toolbarKey);
     expect(selections).toBe(0);
     expect(toolbarKey.defaultPrevented).toBe(false);
@@ -237,5 +254,57 @@ describe('DagFlow', () => {
     expect(selections).toBe(0);
     button.click();
     expect(selections).toBe(1);
+  });
+
+  it('restores only a surviving current-view node with preventScroll and never emits a selection', () => {
+    const el = fixture.nativeElement as HTMLElement;
+    const selection = vi.fn();
+    component.nodeSelect.subscribe(selection);
+    for (const mode of ['river', 'list'] as const) {
+      fixture.componentRef.setInput('viewMode', mode);
+      fixture.detectChanges();
+      const trigger = el.querySelector<HTMLElement | SVGElement>('[data-node-id="n2"]')!;
+      const focus = vi.spyOn(trigger, 'focus');
+      expect(component.restoreNodeFocus('n2')).toBe(true);
+      expect(document.activeElement).toBe(trigger);
+      expect(focus).toHaveBeenCalledWith({ preventScroll: true });
+      expect(component.restoreNodeFocus('missing')).toBe(false);
+      expect(component.restoreNodeFocus(undefined)).toBe(false);
+    }
+    expect(selection).not.toHaveBeenCalled();
+  });
+
+  it('declines hidden or panned-out node focus so the owner can choose its scoped fallback', () => {
+    const el = fixture.nativeElement as HTMLElement;
+    const trigger = el.querySelector<SVGElement>('[data-node-id="n1"]')!;
+    const viewport = el.querySelector<HTMLElement>('.viewport')!;
+    const focus = vi.spyOn(trigger, 'focus');
+    viewport.setAttribute('inert', '');
+    expect(component.restoreNodeFocus('n1')).toBe(false);
+    viewport.removeAttribute('inert');
+    vi.spyOn(viewport, 'getBoundingClientRect').mockReturnValue({
+      left: 0,
+      right: 320,
+      top: 0,
+      bottom: 480,
+      width: 320,
+      height: 480,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    });
+    vi.spyOn(trigger, 'getBoundingClientRect').mockReturnValue({
+      left: 400,
+      right: 420,
+      top: 10,
+      bottom: 30,
+      width: 20,
+      height: 20,
+      x: 400,
+      y: 10,
+      toJSON: () => ({}),
+    });
+    expect(component.restoreNodeFocus('n1')).toBe(false);
+    expect(focus).not.toHaveBeenCalled();
   });
 });

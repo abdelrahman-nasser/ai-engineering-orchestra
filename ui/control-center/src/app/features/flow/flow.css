@@ -1,6 +1,7 @@
 :host {
   display: block;
   overflow-wrap: anywhere;
+  container: flow-workspace / inline-size;
 }
 
 .flow-page {
@@ -96,7 +97,8 @@
   position: relative;
   display: flex;
   align-items: center;
-  min-width: 240px;
+  min-width: 0;
+  flex: 1 1 240px;
 }
 
 .search-box cc-icon {
@@ -132,6 +134,7 @@
 }
 
 .filter-select {
+  max-width: 100%;
   padding: 6px 10px;
   border-radius: var(--radius);
   border: 1px solid var(--border);
@@ -152,15 +155,15 @@
   align-items: start;
 }
 
-@media (min-width: 1080px) {
+@container flow-workspace (min-width: 760px) {
   .flow-content-grid {
-    grid-template-columns: minmax(0, 1fr) 380px;
+    grid-template-columns: minmax(320px, 1fr) 360px;
   }
-}
-
-@media (min-width: 1440px) {
-  .flow-content-grid {
-    grid-template-columns: minmax(0, 1fr) 420px;
+  .aside-column {
+    position: sticky;
+    top: calc(var(--topbar-height) + var(--space-4));
+    max-height: calc(100dvh - var(--topbar-height) - var(--space-6));
+    overflow-y: auto;
   }
 }
 
@@ -173,19 +176,15 @@
 
 .aside-column {
   min-width: 0;
-  position: sticky;
-  top: calc(var(--topbar-height) + var(--space-4));
   height: fit-content;
-  max-height: calc(100vh - var(--topbar-height) - var(--space-6));
-  overflow-y: auto;
 }
 
-@media (max-width: 1079px) {
-  .aside-column {
-    position: static;
-    max-height: none;
-    overflow-y: visible;
-  }
+.selection-notice {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+@container flow-workspace (max-width: 759px) {
   .search-box {
     min-width: 100%;
   }

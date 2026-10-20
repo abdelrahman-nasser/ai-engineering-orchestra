@@ -1,0 +1,38 @@
+id: ITRU-066
+title: Task-to-Evidence Integrity & Inspection UX
+type: bugfix
+status: in_progress
+version_target: "0.1.0"
+complexity: medium
+risk: medium
+execution:
+  mode: standard
+workflow: standard-change
+objective: >
+  Make the mock Control Center Task, Run, event and evidence inspection journey
+  preserve exact identity, evidence scope, navigation context and keyboard focus.
+scope:
+  include:
+    - Canonical Task records mapping ITRU-066 to Jira SCRUM-89
+    - Task and selected Run identity reconciliation across route and read states
+    - Honest separation of event evidence from Run-wide evidence
+    - Task filter and Flow query state ownership across browser history
+    - Inspector focus restoration, native selection semantics and guide endpoint focus
+    - DAG layout based on available container width
+    - Compact read-only Task context using existing supplied mock data
+    - Focused and full UI validation, Chrome observations, QA documentation and independent reviews
+  exclude:
+    - Core files, approved Application v1 contract or decoder changes
+    - Operational Core readers, transports, live providers or writable actions
+    - Operational Execute, Approve, Cancel, Resume or inferred Human authority
+    - Parked SCRUM-81 imports, unrelated polish or changes to completed Task records
+    - Staging, commits, push, merge, PR, release, deployment or publication
+dependencies: []
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

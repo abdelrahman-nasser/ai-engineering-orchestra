@@ -36,7 +36,8 @@
     <div class="stale-banner" role="alert" data-testid="stale-banner">
       <cc-icon name="alert" [size]="16" />
       <div>
-        <strong>Stale Presentation Snapshot:</strong> The current data source indicates this graph was last observed {{ graph()?.updatedLabel }}.
+        <strong>Stale Presentation Snapshot:</strong> The current data source indicates this graph
+        was last observed {{ graph()?.updatedLabel }}.
       </div>
     </div>
   }
@@ -54,6 +55,12 @@
     }
     @default {
       @if (graph(); as g) {
+        @if (node() !== undefined && !selectedNode()) {
+          <p class="selection-notice" role="status">
+            The requested node is not supplied by this mock scenario. Select an available node to
+            inspect it.
+          </p>
+        }
         <!-- Scheduler Presentation Panel -->
         <cc-scheduler-panel
           [summary]="g.schedulerSummary"
@@ -105,12 +112,13 @@
               </select>
             }
 
-            @if (searchQuery() || activeStateFilter() !== 'all' || featureFilter() !== 'all' || actorFilter() !== 'all') {
-              <button
-                type="button"
-                class="btn btn-ghost btn-sm"
-                (click)="resetFilters()"
-              >
+            @if (
+              searchQuery() ||
+              activeStateFilter() !== 'all' ||
+              featureFilter() !== 'all' ||
+              actorFilter() !== 'all'
+            ) {
+              <button type="button" class="btn btn-ghost btn-sm" (click)="resetFilters()">
                 Reset filters
               </button>
             }
@@ -121,8 +129,16 @@
           @if (fg.nodes.length === 0) {
             <cc-state-panel
               kind="empty"
-              [title]="g.nodes.length === 0 ? 'No nodes in this mock scenario' : 'No nodes match your filter criteria'"
-              [message]="g.nodes.length === 0 ? 'This mock scenario supplies an empty graph. Choose another scenario to inspect its nodes.' : 'Adjust search query or filter selections above to reveal nodes.'"
+              [title]="
+                g.nodes.length === 0
+                  ? 'No nodes in this mock scenario'
+                  : 'No nodes match your filter criteria'
+              "
+              [message]="
+                g.nodes.length === 0
+                  ? 'This mock scenario supplies an empty graph. Choose another scenario to inspect its nodes.'
+                  : 'Adjust search query or filter selections above to reveal nodes.'
+              "
             />
           } @else {
             <div class="flow-content-grid">
@@ -147,6 +163,12 @@
             </div>
           }
         }
+      } @else {
+        <cc-state-panel
+          kind="not-found"
+          title="Mock scenario not found"
+          message="The requested scenario is not supplied by the current mock data source. Choose an available scenario above."
+        />
       }
     }
   }

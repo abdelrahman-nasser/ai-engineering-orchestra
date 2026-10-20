@@ -1,7 +1,12 @@
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
+  ElementRef,
+  inject,
+  Injector,
   input,
   model,
   output,
@@ -45,11 +50,14 @@ export type TimelineFilter = 'all' | 'result' | 'evidence' | 'attention';
   imports: [Icon, StatePanel, StatusBadge, ResultShell, EvidencePanel],
   styleUrl: './execution-timeline.css',
   template: `
-    <div class="timeline-wrapper">
+    <div class="timeline-wrapper" role="region" aria-label="Execution timeline" tabindex="-1">
       <!-- Data source ordering disclaimer -->
       <div class="timeline-disclaimer" role="note">
         <cc-icon name="info" [size]="15" class="info-icon" />
-        <span>Mock display order only · This timeline does not establish canonical Journal ordering.</span>
+        <span
+          >Mock display order only · This timeline does not establish canonical Journal
+          ordering.</span
+        >
       </div>
 
       @if (entries().length === 0) {
@@ -145,7 +153,9 @@ export type TimelineFilter = 'all' | 'result' | 'evidence' | 'attention';
             title="No matching timeline entries"
             message="No events match the selected filter criteria."
           >
-            <button type="button" class="btn btn-ghost" (click)="resetFilters()">Clear filters</button>
+            <button type="button" class="btn btn-ghost" (click)="resetFilters()">
+              Clear filters
+            </button>
           </cc-state-panel>
         } @else {
           <div class="timeline-layout" [class.has-selection]="selectedEntry()">
@@ -156,77 +166,86 @@ export type TimelineFilter = 'all' | 'result' | 'evidence' | 'attention';
                     class="entry"
                     [attr.data-state]="entry.state"
                     [class.is-selected]="selectedId() === entry.id"
-                    [attr.aria-selected]="selectedId() === entry.id"
-                    tabindex="0"
-                    role="button"
-                    (click)="selectEntry(entry)"
-                    (keydown.enter)="selectEntry(entry)"
-                    (keydown.space)="$event.preventDefault(); selectEntry(entry)"
                   >
-                    <span class="marker" aria-hidden="true">
-                      <cc-icon [name]="icon(entry)" [size]="14" />
-                    </span>
+                    <button
+                      type="button"
+                      class="entry-trigger"
+                      [attr.data-entry-id]="entry.id"
+                      [attr.aria-pressed]="selectedId() === entry.id"
+                      (click)="selectEntry(entry)"
+                    >
+                      <span class="marker" aria-hidden="true">
+                        <cc-icon [name]="icon(entry)" [size]="14" />
+                      </span>
 
-                    <div class="body">
-                      <div class="head">
-                        <div class="title-wrap">
-                          <span class="kind-tag">{{ entry.kind }}</span>
-                          <strong class="entry-title">{{ entry.title }}</strong>
-                        </div>
-                        <div class="badge-cluster">
-                          @if (entry.hasResult) {
-                            <span class="result-pill chip" [attr.data-outcome]="entry.result?.outcome">
-                              <cc-icon name="check" [size]="11" />
-                              {{ entry.result?.outcomeLabel }}
+                      <span class="body">
+                        <span class="head">
+                          <span class="title-wrap">
+                            <span class="kind-tag">{{ entry.kind }}</span>
+                            <strong class="entry-title">{{ entry.title }}</strong>
+                          </span>
+                          <span class="badge-cluster">
+                            @if (entry.hasResult) {
+                              <span
+                                class="result-pill chip"
+                                [attr.data-outcome]="entry.result?.outcome"
+                              >
+                                <cc-icon name="check" [size]="11" />
+                                {{ entry.result?.outcomeLabel }}
+                              </span>
+                            }
+                            <cc-status-badge [label]="entry.stateLabel" [tone]="entry.stateTone" />
+                          </span>
+                        </span>
+
+                        @if (entry.detail) {
+                          <span class="detail">{{ entry.detail }}</span>
+                        }
+
+                        <span class="meta">
+                          <span class="timestamp" title="Display timestamp">
+                            <cc-icon name="clock" [size]="12" /> {{ entry.atLabel }}
+                          </span>
+                          @if (entry.stageId) {
+                            <span class="chip" title="Workflow Stage">{{ entry.stageId }}</span>
+                          }
+                          @if (entry.actorId) {
+                            <span class="chip mono" title="Actor">
+                              <cc-icon name="agents" [size]="12" /> {{ entry.actorId }}
                             </span>
                           }
-                          <cc-status-badge [label]="entry.stateLabel" [tone]="entry.stateTone" />
-                        </div>
-                      </div>
-
-                      @if (entry.detail) {
-                        <p class="detail">{{ entry.detail }}</p>
-                      }
-
-                      <div class="meta">
-                        <span class="timestamp" title="Display timestamp">
-                          <cc-icon name="clock" [size]="12" /> {{ entry.atLabel }}
+                          @if (entry.toolId) {
+                            <span class="chip mono" title="Tool">
+                              <cc-icon name="tool" [size]="12" /> {{ formatTool(entry.toolId) }}
+                            </span>
+                          }
+                          @if (entry.executionEntryRef) {
+                            <span class="chip mono" title="Execution Entry Claim">
+                              <cc-icon name="lock" [size]="12" /> {{ entry.executionEntryRef }}
+                            </span>
+                          }
+                          @if (entry.hasEvidence) {
+                            <span
+                              class="chip chip-evidence"
+                              [class.chip-warn]="entry.hasUnavailableEvidence"
+                              title="Evidence records"
+                            >
+                              <cc-icon name="file" [size]="12" /> {{ entry.evidenceCount }} evidence
+                            </span>
+                          }
                         </span>
-                        @if (entry.stageId) {
-                          <span class="chip" title="Workflow Stage">{{ entry.stageId }}</span>
-                        }
-                        @if (entry.actorId) {
-                          <span class="chip mono" title="Actor">
-                            <cc-icon name="agents" [size]="12" /> {{ entry.actorId }}
-                          </span>
-                        }
-                        @if (entry.toolId) {
-                          <span class="chip mono" title="Tool">
-                            <cc-icon name="tool" [size]="12" /> {{ formatTool(entry.toolId) }}
-                          </span>
-                        }
-                        @if (entry.executionEntryRef) {
-                          <span class="chip mono" title="Execution Entry Claim">
-                            <cc-icon name="lock" [size]="12" /> {{ entry.executionEntryRef }}
-                          </span>
-                        }
-                        @if (entry.hasEvidence) {
-                          <span
-                            class="chip chip-evidence"
-                            [class.chip-warn]="entry.hasUnavailableEvidence"
-                            title="Evidence records"
-                          >
-                            <cc-icon name="file" [size]="12" /> {{ entry.evidenceCount }} evidence
-                          </span>
-                        }
-                      </div>
 
-                      <div class="action-bar">
-                        <span class="action-hint">
-                          {{ selectedId() === entry.id ? 'Viewing details' : 'Click to inspect event' }}
+                        <span class="action-bar">
+                          <span class="action-hint">
+                            {{
+                              selectedId() === entry.id
+                                ? 'Viewing details'
+                                : 'Click to inspect event'
+                            }}
+                          </span>
                         </span>
-                      </div>
-                    </div>
+                      </span>
+                    </button>
                   </li>
                 }
               </ol>
@@ -262,23 +281,36 @@ export type TimelineFilter = 'all' | 'result' | 'evidence' | 'attention';
                   <div class="detail-section">
                     <h4 class="section-title">Supplied Metadata & Provenance</h4>
                     <dl class="kv" aria-label="Event metadata">
-                      <dt>Event ID</dt><dd class="mono">{{ selected.id }}</dd>
-                      <dt>State</dt><dd><cc-status-badge [label]="selected.stateLabel" [tone]="selected.stateTone" /></dd>
-                      <dt>Timestamp</dt><dd>{{ selected.atLabel }}</dd>
+                      <dt>Event ID</dt>
+                      <dd class="mono">{{ selected.id }}</dd>
+                      <dt>State</dt>
+                      <dd>
+                        <cc-status-badge
+                          [label]="selected.stateLabel"
+                          [tone]="selected.stateTone"
+                        />
+                      </dd>
+                      <dt>Timestamp</dt>
+                      <dd>{{ selected.atLabel }}</dd>
                       @if (selected.stageId) {
-                        <dt>Stage</dt><dd>{{ selected.stageId }}</dd>
+                        <dt>Stage</dt>
+                        <dd>{{ selected.stageId }}</dd>
                       }
                       @if (selected.actorId) {
-                        <dt>Actor</dt><dd class="mono">{{ selected.actorId }}</dd>
+                        <dt>Actor</dt>
+                        <dd class="mono">{{ selected.actorId }}</dd>
                       }
                       @if (selected.toolId) {
-                        <dt>Tool</dt><dd class="mono">{{ selected.toolId }}</dd>
+                        <dt>Tool</dt>
+                        <dd class="mono">{{ selected.toolId }}</dd>
                       }
                       @if (selected.executionEntryRef) {
-                        <dt>Entry Claim</dt><dd class="mono">{{ selected.executionEntryRef }}</dd>
+                        <dt>Entry Claim</dt>
+                        <dd class="mono">{{ selected.executionEntryRef }}</dd>
                       }
                       @if (selected.runIdRef) {
-                        <dt>Run Ref</dt><dd class="mono">{{ selected.runIdRef }}</dd>
+                        <dt>Run Ref</dt>
+                        <dd class="mono">{{ selected.runIdRef }}</dd>
                       }
                     </dl>
                   </div>
@@ -308,6 +340,9 @@ export type TimelineFilter = 'all' | 'result' | 'evidence' | 'attention';
   `,
 })
 export class ExecutionTimeline {
+  private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly injector = inject(Injector);
+  private readonly destroyRef = inject(DestroyRef);
   readonly entries = input.required<readonly TimelineEntry[]>();
   readonly selectedId = model<string | null>(null);
   readonly entrySelect = output<TimelineEntry | null>();
@@ -332,17 +367,11 @@ export class ExecutionTimeline {
     return Array.from(set);
   });
 
-  protected readonly hasAnyResult = computed(() =>
-    this.entries().some((e) => e.hasResult),
-  );
+  protected readonly hasAnyResult = computed(() => this.entries().some((e) => e.hasResult));
 
-  protected readonly resultCount = computed(
-    () => this.entries().filter((e) => e.hasResult).length,
-  );
+  protected readonly resultCount = computed(() => this.entries().filter((e) => e.hasResult).length);
 
-  protected readonly hasAnyEvidence = computed(() =>
-    this.entries().some((e) => e.hasEvidence),
-  );
+  protected readonly hasAnyEvidence = computed(() => this.entries().some((e) => e.hasEvidence));
 
   protected readonly evidenceCount = computed(
     () => this.entries().filter((e) => e.hasEvidence).length,
@@ -412,8 +441,23 @@ export class ExecutionTimeline {
   }
 
   protected clearSelection(): void {
+    const previousId = this.selectedId();
     this.selectedId.set(null);
     this.entrySelect.emit(null);
+    afterNextRender(
+      () => {
+        if (this.destroyRef.destroyed || this.selectedId() !== null) return;
+        const element = this.element.nativeElement;
+        const triggers = Array.from(element.querySelectorAll<HTMLButtonElement>('.entry-trigger'));
+        const target =
+          triggers.find((trigger) => trigger.dataset['entryId'] === previousId) ??
+          triggers[0] ??
+          element.querySelector<HTMLElement>('.filter-btn') ??
+          element.querySelector<HTMLElement>('.timeline-wrapper');
+        target?.focus({ preventScroll: true });
+      },
+      { injector: this.injector },
+    );
   }
 
   protected setFilter(f: TimelineFilter): void {

@@ -97,12 +97,52 @@ describe('non-modal Guided Explorer', () => {
     expect(focus).not.toHaveBeenCalled();
     expect(scroll).not.toHaveBeenCalled();
     expect(
-      ctx.guide().querySelector<HTMLButtonElement>('footer button:nth-child(2)')!.disabled,
-    ).toBe(true);
+      ctx
+        .guide()
+        .querySelector<HTMLButtonElement>('footer button:nth-child(2)')!
+        .getAttribute('aria-disabled'),
+    ).toBe('true');
     ctx.guide().querySelector<HTMLButtonElement>('footer button')!.click();
     await ctx.fixture.whenStable();
     expect(ctx.state.step()).toBe(3);
     expect(scroll).not.toHaveBeenCalled();
+  });
+
+  it('retains the activating footer button at both endpoints and ignores unavailable navigation', async () => {
+    const ctx = await open();
+    const previous = ctx.guide().querySelector<HTMLButtonElement>('footer button')!;
+    const next = ctx.guide().querySelector<HTMLButtonElement>('footer button:nth-child(2)')!;
+    const focus = vi.spyOn(HTMLElement.prototype, 'focus');
+    const navigate = vi.spyOn(ctx.router, 'navigateByUrl');
+    const scroll = vi.fn();
+    ctx.guide().querySelector<HTMLElement>('#guided-step-title')!.scrollIntoView = scroll;
+    ctx.element.querySelector<HTMLElement>('#lifecycle-evidence')!.scrollIntoView = scroll;
+
+    for (const [from, endpoint, button] of [
+      [3, 4, next],
+      [1, 0, previous],
+    ] as const) {
+      await ctx.stage(from);
+      button.focus();
+      focus.mockClear();
+      button.click();
+      await ctx.fixture.whenStable();
+      expect(ctx.state.step()).toBe(endpoint);
+      expect(button.disabled).toBe(false);
+      expect(button.getAttribute('aria-disabled')).toBe('true');
+      expect(document.activeElement).toBe(button);
+      const boundaryAnnouncement = ctx.guide().querySelector('[role="status"]')!.textContent;
+      button.click();
+      button.click();
+      await ctx.fixture.whenStable();
+      expect(ctx.state.step()).toBe(endpoint);
+      expect(document.activeElement).toBe(button);
+      expect(ctx.guide().querySelector('[role="status"]')!.textContent).toBe(boundaryAnnouncement);
+      expect(focus).not.toHaveBeenCalled();
+      expect(scroll).not.toHaveBeenCalled();
+      expect(navigate).not.toHaveBeenCalled();
+      expect(ctx.router.url).toBe('/application-v1-preview');
+    }
   });
 
   it('allows wheel, touch and scrolling keys through before, during and after the guide', async () => {

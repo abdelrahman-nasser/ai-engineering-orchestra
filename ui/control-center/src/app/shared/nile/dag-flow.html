@@ -47,56 +47,56 @@
 
   @if (viewMode() === 'river') {
     @if (layout(); as l) {
-        <div class="floating-controls" role="toolbar" aria-label="Canvas zoom and pan controls">
+      <div class="floating-controls" role="toolbar" aria-label="Canvas zoom and pan controls">
+        <button
+          type="button"
+          class="btn-icon"
+          (click)="zoomIn()"
+          title="Zoom in (+)"
+          aria-label="Zoom in"
+        >
+          <cc-icon name="tool" [size]="14" />
+        </button>
+        <span class="zoom-level" aria-live="polite">{{ (zoom() * 100).toFixed(0) }}%</span>
+        <button
+          type="button"
+          class="btn-icon"
+          (click)="zoomOut()"
+          title="Zoom out (-)"
+          aria-label="Zoom out"
+        >
+          <cc-icon name="slash" [size]="14" />
+        </button>
+        <button
+          type="button"
+          class="btn-icon"
+          (click)="resetView()"
+          title="Reset zoom & pan (1:1)"
+          aria-label="Reset view"
+        >
+          <cc-icon name="clock" [size]="14" />
+        </button>
+        <button
+          type="button"
+          class="btn-icon"
+          (click)="fitGraph()"
+          title="Fit entire graph to window"
+          aria-label="Fit graph"
+        >
+          <cc-icon name="overview" [size]="14" />
+        </button>
+        @if (selectedNodeId()) {
           <button
             type="button"
             class="btn-icon"
-            (click)="zoomIn()"
-            title="Zoom in (+)"
-            aria-label="Zoom in"
+            (click)="focusSelected()"
+            title="Center view on selected node"
+            aria-label="Center on selected node"
           >
-            <cc-icon name="tool" [size]="14" />
+            <cc-icon name="branch" [size]="14" />
           </button>
-          <span class="zoom-level" aria-live="polite">{{ (zoom() * 100).toFixed(0) }}%</span>
-          <button
-            type="button"
-            class="btn-icon"
-            (click)="zoomOut()"
-            title="Zoom out (-)"
-            aria-label="Zoom out"
-          >
-            <cc-icon name="slash" [size]="14" />
-          </button>
-          <button
-            type="button"
-            class="btn-icon"
-            (click)="resetView()"
-            title="Reset zoom & pan (1:1)"
-            aria-label="Reset view"
-          >
-            <cc-icon name="clock" [size]="14" />
-          </button>
-          <button
-            type="button"
-            class="btn-icon"
-            (click)="fitGraph()"
-            title="Fit entire graph to window"
-            aria-label="Fit graph"
-          >
-            <cc-icon name="overview" [size]="14" />
-          </button>
-          @if (selectedNodeId()) {
-            <button
-              type="button"
-              class="btn-icon"
-              (click)="focusSelected()"
-              title="Center view on selected node"
-              aria-label="Center on selected node"
-            >
-              <cc-icon name="branch" [size]="14" />
-            </button>
-          }
-        </div>
+        }
+      </div>
 
       <div
         #viewport
@@ -138,8 +138,16 @@
                 <path class="glow" [attr.d]="edge.d" filter="url(#dag-nile-glow)" />
                 <path class="body" [attr.d]="edge.d" />
                 <path class="sheen" [attr.d]="edge.d" />
-                <path class="flow flow-a" [attr.d]="edge.d" [style.animation-delay.s]="-(i * 0.43)" />
-                <path class="flow flow-b" [attr.d]="edge.d" [style.animation-delay.s]="-(i * 0.91)" />
+                <path
+                  class="flow flow-a"
+                  [attr.d]="edge.d"
+                  [style.animation-delay.s]="-(i * 0.43)"
+                />
+                <path
+                  class="flow flow-b"
+                  [attr.d]="edge.d"
+                  [style.animation-delay.s]="-(i * 0.91)"
+                />
               </g>
             }
           </g>
@@ -190,11 +198,21 @@
                 }
 
                 <!-- Labels -->
-                <text class="label" [attr.x]="item.labelX" [attr.y]="item.labelY" [attr.text-anchor]="item.anchor">
+                <text
+                  class="label"
+                  [attr.x]="item.labelX"
+                  [attr.y]="item.labelY"
+                  [attr.text-anchor]="item.anchor"
+                >
                   {{ item.label }}
                 </text>
                 @if (item.sublabel) {
-                  <text class="sub" [attr.x]="item.labelX" [attr.y]="item.subY" [attr.text-anchor]="item.anchor">
+                  <text
+                    class="sub"
+                    [attr.x]="item.labelX"
+                    [attr.y]="item.subY"
+                    [attr.text-anchor]="item.anchor"
+                  >
                     {{ item.sublabel }}
                   </text>
                 }
@@ -206,7 +224,12 @@
     }
   } @else {
     <!-- Structured List View Fallback -->
-    <div class="list-view-container" role="region" aria-label="Structured node and dependency list" tabindex="0">
+    <div
+      class="list-view-container"
+      role="region"
+      aria-label="Structured node and dependency list"
+      tabindex="0"
+    >
       <table class="list-table">
         <thead>
           <tr>
@@ -222,12 +245,14 @@
         </thead>
         <tbody>
           @for (node of graph()?.nodes ?? []; track node.id) {
-            <tr
-              [class.selected]="node.id === selectedNodeId()"
-              (click)="chooseNode(node)"
-            >
+            <tr [class.selected]="node.id === selectedNodeId()" (click)="chooseNode(node)">
               <td>
-                <button type="button" class="node-btn-cell" [attr.aria-pressed]="node.id === selectedNodeId()">
+                <button
+                  type="button"
+                  class="node-btn-cell"
+                  [attr.data-node-id]="node.id"
+                  [attr.aria-pressed]="node.id === selectedNodeId()"
+                >
                   <span
                     class="swatch"
                     [attr.data-tone]="node.schedulerTone"
@@ -241,7 +266,9 @@
                   </div>
                 </button>
               </td>
-              <td><span class="chip">{{ node.kind }}</span></td>
+              <td>
+                <span class="chip">{{ node.kind }}</span>
+              </td>
               <td>
                 <span class="badge" [attr.data-tone]="node.schedulerTone">
                   {{ node.schedulerStateLabel }}
@@ -252,7 +279,9 @@
               </td>
               <td>
                 @if (node.actorId) {
-                  <div><code>{{ node.actorId }}</code></div>
+                  <div>
+                    <code>{{ node.actorId }}</code>
+                  </div>
                   <small class="muted">{{ node.roleId }}</small>
                 } @else {
                   <span class="muted">—</span>
@@ -293,7 +322,9 @@
                     <span class="badge success" title="Terminal Result available">Result</span>
                   }
                   @if (node.hasEvidence) {
-                    <span class="badge info" title="Evidence items attached">E ({{ node.evidenceCount }})</span>
+                    <span class="badge info" title="Evidence items attached"
+                      >E ({{ node.evidenceCount }})</span
+                    >
                   }
                   @if (node.hasContinuation) {
                     <span class="badge" title="Continuation metadata present">Continuation</span>
@@ -309,7 +340,8 @@
 
   <p class="footnote">
     <strong>Presentation topology only.</strong>
-    Branches and river channels represent visual connectivity without canonical scheduling, ordering,
-    or readiness authority. Moving highlights are decorative. No operational Core scheduler is connected.
+    Branches and river channels represent visual connectivity without canonical scheduling,
+    ordering, or readiness authority. Moving highlights are decorative. No operational Core
+    scheduler is connected.
   </p>
 </div>

@@ -1,11 +1,19 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  linkedSignal,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { of } from 'rxjs';
+import { map, of } from 'rxjs';
 import { ControlCenterDataSource } from '../../data/control-center-data-source';
+import { TaskDetail } from '../../data/models';
 import { ContinuationShell } from '../../shared/continuation-shell';
 import { EvidencePanel } from '../../shared/evidence-panel';
 import { ExecutionTimeline } from '../../shared/execution-timeline';
-import { toLoadState, toLoadStateFor } from '../../shared/load-state';
+import { LoadState, toLoadState, toLoadStateFor } from '../../shared/load-state';
 import { PageHeader } from '../../shared/page-header';
 import {
   APPROVAL_LEVEL,
@@ -18,6 +26,7 @@ import {
 import { ResultShell } from '../../shared/result-shell';
 import { StatePanel } from '../../shared/state-panel';
 import { StatusBadge } from '../../shared/status-badge';
+import { TaskContextSummary } from './task-context-summary';
 
 @Component({
   selector: 'cc-task-detail',
@@ -31,6 +40,7 @@ import { StatusBadge } from '../../shared/status-badge';
     ResultShell,
     ExecutionTimeline,
     EvidencePanel,
+    TaskContextSummary,
   ],
   styleUrl: './task-detail.css',
   template: `
@@ -57,6 +67,14 @@ import { StatusBadge } from '../../shared/status-badge';
                 <div><strong>Blocked.</strong> {{ t.blockedReason }}</div>
               </div>
             }
+
+            <cc-task-context-summary
+              [task]="t"
+              [runs]="runs()"
+              [runReadStatus]="runState().status"
+              [selectedRun]="selectedRun()"
+              [selectionStatus]="selectedRunState().status"
+            />
 
             <div class="grid grid-main-aside">
               <div class="stack column">
@@ -96,34 +114,54 @@ import { StatusBadge } from '../../shared/status-badge';
                   <div class="card-head">
                     <div>
                       <h2>Task Run History</h2>
-                      <p>Associated runs for this Task. Select a run to inspect its continuation, result, timeline, and evidence.</p>
+                      <p>
+                        Associated runs for this Task. Select a run to inspect its continuation,
+                        result, timeline, and evidence.
+                      </p>
                     </div>
                   </div>
-                  @if (runs().length === 0) {
-                    <cc-state-panel kind="empty" title="No runs yet" message="Nothing has been run for this Task." />
+                  @if (runState().status === 'loading') {
+                    <cc-state-panel kind="loading" title="Loading associated Runs" />
+                  } @else if (runState().status === 'error') {
+                    <cc-state-panel
+                      kind="error"
+                      title="Associated Runs unavailable"
+                      message="The Run list could not be read. No Run association is established by this view."
+                    />
+                  } @else if (runs().length === 0) {
+                    <cc-state-panel
+                      kind="empty"
+                      title="No matching Run records supplied"
+                      [message]="
+                        t.runIds.length
+                          ? 'This Task supplies Run references, but matching observations are unavailable. Execution history is not established.'
+                          : 'No Run references or matching observations were supplied for this Task. This does not establish that execution never occurred.'
+                      "
+                    />
                   } @else {
                     <div class="run-tree-wrapper">
-                      <div class="run-tree" role="tree" [attr.aria-label]="'Runs for task ' + t.id">
+                      <div class="run-tree">
                         <div class="tree-root">
                           <span class="mono tree-root-id">{{ t.id }}</span>
-                          <span class="badge-count">{{ runs().length }} run{{ runs().length === 1 ? '' : 's' }}</span>
+                          <span class="badge-count"
+                            >{{ runs().length }} run{{ runs().length === 1 ? '' : 's' }}</span
+                          >
                         </div>
-                        <div class="tree-children" role="group">
+                        <ul class="tree-children" [attr.aria-label]="'Runs for task ' + t.id">
                           @for (run of runs(); track run.runId; let last = $last) {
-                            <div
-                              class="tree-item"
-                              role="treeitem"
-                              [class.active]="activeRunId() === run.runId"
-                              [attr.aria-selected]="activeRunId() === run.runId"
-                              [attr.data-testid]="'run-tree-item-' + run.runId"
-                              tabindex="0"
-                              (click)="selectRun(run.runId)"
-                              (keydown.enter)="selectRun(run.runId)"
-                              (keydown.space)="selectRun(run.runId); $event.preventDefault()"
-                            >
-                              <div class="tree-branch-glyph" aria-hidden="true">{{ last ? '└─' : '├─' }}</div>
-                              <div class="tree-node-main">
-                                <div class="tree-node-header">
+                            <li class="tree-item" [class.active]="activeRunId() === run.runId">
+                              <div class="tree-branch-glyph" aria-hidden="true">
+                                {{ last ? '└─' : '├─' }}
+                              </div>
+                              <button
+                                type="button"
+                                class="tree-node-main run-select"
+                                [attr.aria-pressed]="activeRunId() === run.runId"
+                                [attr.aria-label]="'Inspect Run ' + run.runId"
+                                [attr.data-testid]="'run-tree-item-' + run.runId"
+                                (click)="selectRun(run.runId)"
+                              >
+                                <span class="tree-node-header">
                                   <span class="mono run-id-label">{{ run.runId }}</span>
                                   <cc-status-badge
                                     [label]="presentation[run.presentationState].label"
@@ -145,38 +183,68 @@ import { StatusBadge } from '../../shared/status-badge';
                                     </span>
                                   }
                                   @if (run.evidenceCount && run.evidenceCount > 0) {
-                                    <span class="chip-sm faint">{{ run.evidenceCount }} evidence</span>
+                                    <span class="chip-sm faint"
+                                      >{{ run.evidenceCount }} evidence</span
+                                    >
                                   }
-                                </div>
-                                <div class="tree-node-meta muted text-xs">
-                                  <span>Stage: <strong>{{ run.contract.stageId }}</strong></span>
-                                  <span>Role: <strong>{{ run.contract.roleId }}</strong></span>
-                                  <span>Actor: <code class="mono">{{ run.contract.actorId }}</code></span>
+                                </span>
+                                <span class="tree-node-meta muted text-xs">
+                                  <span
+                                    >Stage: <strong>{{ run.contract.stageId }}</strong></span
+                                  >
+                                  <span
+                                    >Role: <strong>{{ run.contract.roleId }}</strong></span
+                                  >
+                                  <span
+                                    >Actor:
+                                    <code class="mono">{{ run.contract.actorId }}</code></span
+                                  >
                                   @if (run.lastActivityLabel) {
                                     <span>Activity: {{ run.lastActivityLabel }}</span>
                                   }
-                                </div>
-                              </div>
+                                </span>
+                              </button>
                               <div class="tree-node-actions">
                                 <a
                                   class="btn-subtle"
                                   [routerLink]="['/runs', run.runId]"
                                   (click)="$event.stopPropagation()"
-                                  [attr.aria-label]="'Open dedicated Run Detail page for ' + run.runId"
+                                  [attr.aria-label]="
+                                    'Open dedicated Run Detail page for ' + run.runId
+                                  "
                                 >
                                   Detail &rarr;
                                 </a>
                               </div>
-                            </div>
+                            </li>
                           }
-                        </div>
+                        </ul>
                       </div>
                     </div>
                   }
                 </div>
 
+                @if (activeRunId() && selectedRunState().status === 'loading') {
+                  <cc-state-panel kind="loading" title="Loading selected Run" />
+                } @else if (activeRunId() && selectedRunState().status === 'error') {
+                  <cc-state-panel
+                    kind="error"
+                    title="Selected Run unavailable"
+                    message="No matching Run details or evidence can be shown for this Task."
+                  />
+                } @else if (activeRunId() && !selectedRun()) {
+                  <cc-state-panel
+                    kind="empty"
+                    title="Selected Run details unavailable"
+                    message="The current source supplied no matching Run details for this Task."
+                  />
+                }
                 @if (selectedRun(); as sel) {
-                  <div class="card run-inspector" [attr.aria-label]="'Inspection for run ' + sel.runId" data-testid="run-inspection-card">
+                  <div
+                    class="card run-inspector"
+                    [attr.aria-label]="'Inspection for run ' + sel.runId"
+                    data-testid="run-inspection-card"
+                  >
                     <div class="card-head">
                       <div>
                         <div class="inspector-badge-row">
@@ -185,7 +253,9 @@ import { StatusBadge } from '../../shared/status-badge';
                         </div>
                         <p>
                           Viewing Run in context of Task {{ t.id }}.
-                          <a class="row-link" [routerLink]="['/runs', sel.runId]">Open full Run Detail page &rarr;</a>
+                          <a class="row-link" [routerLink]="['/runs', sel.runId]"
+                            >Open full Run Detail page &rarr;</a
+                          >
                         </p>
                       </div>
                       <cc-status-badge
@@ -198,7 +268,9 @@ import { StatusBadge } from '../../shared/status-badge';
                       <section class="inspector-block" aria-labelledby="heading-continuation">
                         <div class="block-header">
                           <h3 id="heading-continuation">Continuation &amp; Recovery</h3>
-                          <p class="muted text-xs">Mock continuation metadata; operational continuation is unavailable.</p>
+                          <p class="muted text-xs">
+                            Mock continuation metadata; operational continuation is unavailable.
+                          </p>
                         </div>
                         <cc-continuation-shell
                           [continuation]="sel.continuation"
@@ -220,7 +292,9 @@ import { StatusBadge } from '../../shared/status-badge';
                         <section class="inspector-block" aria-labelledby="heading-timeline">
                           <div class="block-header">
                             <h3 id="heading-timeline">Execution Timeline</h3>
-                            <p class="muted text-xs">Mock presentation entries; this is not the canonical Journal.</p>
+                            <p class="muted text-xs">
+                              Mock presentation entries; this is not the canonical Journal.
+                            </p>
                           </div>
                           <cc-execution-timeline [entries]="sel.timeline" />
                         </section>
@@ -243,13 +317,34 @@ import { StatusBadge } from '../../shared/status-badge';
                 <div class="card">
                   <div class="card-head"><h2>Classification</h2></div>
                   <dl class="kv" aria-label="Task classification">
-                    <dt>Task ID</dt><dd class="mono">{{ t.id }}</dd>
-                    <dt>Type</dt><dd>{{ t.type }}</dd>
-                    <dt>Risk</dt><dd><cc-status-badge [label]="level[t.risk].label" [tone]="level[t.risk].tone" /></dd>
-                    <dt>Complexity</dt><dd><cc-status-badge [label]="level[t.complexity].label" [tone]="level[t.complexity].tone" /></dd>
-                    <dt>Execution mode</dt><dd><span class="chip">{{ t.executionMode }}</span></dd>
-                    <dt>Human approval</dt><dd><cc-status-badge [label]="approval[t.approvalLevel].label" [tone]="approval[t.approvalLevel].tone" /></dd>
-                    <dt>Updated</dt><dd>{{ t.updatedLabel }}</dd>
+                    <dt>Task ID</dt>
+                    <dd class="mono">{{ t.id }}</dd>
+                    <dt>Type</dt>
+                    <dd>{{ t.type }}</dd>
+                    <dt>Risk</dt>
+                    <dd>
+                      <cc-status-badge [label]="level[t.risk].label" [tone]="level[t.risk].tone" />
+                    </dd>
+                    <dt>Complexity</dt>
+                    <dd>
+                      <cc-status-badge
+                        [label]="level[t.complexity].label"
+                        [tone]="level[t.complexity].tone"
+                      />
+                    </dd>
+                    <dt>Execution mode</dt>
+                    <dd>
+                      <span class="chip">{{ t.executionMode }}</span>
+                    </dd>
+                    <dt>Human approval</dt>
+                    <dd>
+                      <cc-status-badge
+                        [label]="approval[t.approvalLevel].label"
+                        [tone]="approval[t.approvalLevel].tone"
+                      />
+                    </dd>
+                    <dt>Updated</dt>
+                    <dd>{{ t.updatedLabel }}</dd>
                   </dl>
                 </div>
 
@@ -257,11 +352,15 @@ import { StatusBadge } from '../../shared/status-badge';
                   <div class="card-head"><h2>Scope</h2></div>
                   <h3 class="sub">Included</h3>
                   <ul class="list">
-                    @for (item of t.scopeIncluded; track item) { <li>{{ item }}</li> }
+                    @for (item of t.scopeIncluded; track item) {
+                      <li>{{ item }}</li>
+                    }
                   </ul>
                   <h3 class="sub">Excluded</h3>
                   <ul class="list">
-                    @for (item of t.scopeExcluded; track item) { <li>{{ item }}</li> }
+                    @for (item of t.scopeExcluded; track item) {
+                      <li>{{ item }}</li>
+                    }
                   </ul>
                 </div>
 
@@ -287,7 +386,11 @@ import { StatusBadge } from '../../shared/status-badge';
               </div>
             </div>
           } @else {
-            <cc-state-panel kind="not-found" title="Task not found" message="No Task with this identifier exists in the current data source.">
+            <cc-state-panel
+              kind="not-found"
+              title="Task not found"
+              message="No Task with this identifier exists in the current data source."
+            >
               <a class="btn" routerLink="/tasks">Back to Tasks</a>
             </cc-state-panel>
           }
@@ -309,10 +412,24 @@ export class TaskDetailPage {
   protected readonly continuationStatus = CONTINUATION_STATUS;
   protected readonly humanize = humanize;
 
-  protected readonly state = toLoadStateFor(this.taskId, (id) => this.dataSource.getTask(id));
-  private readonly runState = toLoadState(this.dataSource.listRuns());
+  private readonly taskRead = toLoadStateFor(this.taskId, (id) =>
+    this.dataSource.getTask(id).pipe(map((data) => ({ id, data }))),
+  );
+  protected readonly state = computed<LoadState<TaskDetail | undefined>>(() => {
+    const read = this.taskRead();
+    if (read.status !== 'ready') return read;
+    if (read.data.id !== this.taskId()) return { status: 'loading' };
+    if (read.data.data && read.data.data.id !== this.taskId()) {
+      return { status: 'error', message: 'Task identity does not match the requested Task.' };
+    }
+    return { status: 'ready', data: read.data.data };
+  });
+  protected readonly runState = toLoadState(this.dataSource.listRuns());
 
-  readonly selectedRunId = signal<string | null>(null);
+  readonly selectedRunId = linkedSignal<string, string | null>({
+    source: this.taskId,
+    computation: () => null,
+  });
 
   protected readonly task = computed(() => {
     const state = this.state();
@@ -325,15 +442,17 @@ export class TaskDetailPage {
     if (!task || state.status !== 'ready') {
       return [];
     }
-    return state.data.filter((run) => run.contract.taskId === task.id);
+    return state.data.filter(
+      (run) => run.contract.taskId === task.id && task.runIds.includes(run.runId),
+    );
   });
 
   protected readonly activeRunId = computed(() => {
     const current = this.selectedRunId();
-    if (current) {
+    const list = this.runs();
+    if (current && list.some((run) => run.runId === current)) {
       return current;
     }
-    const list = this.runs();
     return list.length > 0 ? list[list.length - 1].runId : '';
   });
 
@@ -343,10 +462,17 @@ export class TaskDetailPage {
 
   protected readonly selectedRun = computed(() => {
     const s = this.selectedRunState();
-    return s.status === 'ready' ? s.data : undefined;
+    const task = this.task();
+    return s.status === 'ready' &&
+      task &&
+      s.data?.runId === this.activeRunId() &&
+      s.data.contract.taskId === task.id &&
+      task.runIds.includes(s.data.runId)
+      ? s.data
+      : undefined;
   });
 
   selectRun(runId: string): void {
-    this.selectedRunId.set(runId);
+    if (this.runs().some((run) => run.runId === runId)) this.selectedRunId.set(runId);
   }
 }

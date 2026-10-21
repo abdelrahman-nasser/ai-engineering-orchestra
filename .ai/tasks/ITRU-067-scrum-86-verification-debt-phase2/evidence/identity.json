@@ -1,0 +1,96 @@
+{
+  "record_kind": "Task-local identity audit, not a Core contract",
+  "date": "2026-10-21",
+  "authority": "Human instruction; SCRUM-86 approval comment #10767",
+  "recording_method": "Root and independent agent tool observations transcribed; no remote fetch or Jira query",
+  "entry_observations_before_creation": {
+    "commands": [
+      ["git", "branch", "--show-current"],
+      ["git", "rev-parse", "HEAD"],
+      ["git", "status", "--short"]
+    ],
+    "branch": "feature/core-verification-debt-phase1",
+    "head": "4775d649e13639504a8007e57890f80c699bb1be",
+    "status_stdout": "",
+    "exit_codes": [0, 0, 0],
+    "observers": ["/root", "/root/assertion_namespace_assessment"]
+  },
+  "registered_worktrees": {
+    "D:/Dev/ITRU/worktrees/ai-engineering-orchestra": "2323c2726061785ff29e1bdfc65ccf90b7d057b2",
+    "D:/Dev/ITRU/worktrees/itru-alpha-distribution": "2323c2726061785ff29e1bdfc65ccf90b7d057b2",
+    "D:/Dev/ITRU/worktrees/itru-core-usability": "4775d649e13639504a8007e57890f80c699bb1be",
+    "D:/Dev/ITRU/worktrees/itru-provider-usability": "2323c2726061785ff29e1bdfc65ccf90b7d057b2",
+    "D:/Dev/ITRU/worktrees/itru-ui": "0485a5fe84746252b3f8f3bcd4f0d9e85e2a7a67",
+    "D:/Dev/ITRU/worktrees/itru-ui-integration": "9b70a6c81c7a3d227317bf7a8cd92a4e6a5d8dcb"
+  },
+  "ref_inventory_command": "git for-each-ref --format='%(objectname)' refs/heads refs/remotes refs/tags | Sort-Object -Unique",
+  "unique_local_ref_tips": [
+    "003fa24e0eda62d9fd0f872bf4bf2e73d8ad3ab2",
+    "0485a5fe84746252b3f8f3bcd4f0d9e85e2a7a67",
+    "1966f3ea2a3beb7de7ce22bf74f5cdffb3afb9f2",
+    "19a321fc0876e73b9f83109f2a58528c9d54e331",
+    "2323c2726061785ff29e1bdfc65ccf90b7d057b2",
+    "23de8713552b95403108e54b1ea8a0ade935d559",
+    "3191b37992957a22cdd132e2858b23e27d53db4c",
+    "415f7d5382ec1fab4675e1e4ef10c0736f41265d",
+    "4775d649e13639504a8007e57890f80c699bb1be",
+    "484525e2b866c77df2393c0b07ffc4e234162c9c",
+    "55e8001b79a7903cea3b5a97c62bd300a97e0641",
+    "5a4dae8ffcca8f986c0eb42755db9a958c57d187",
+    "5cca2fc5010defa2d789fb08795602c1ca038f55",
+    "61e817c1f7a2c3987710a73366b516d792402520",
+    "726e11a2f2e408ee02a4981c64eaae031fb25381",
+    "77be6bab4c2726c03c5d233a59c466804d786d31",
+    "905813a349b0a34248c9d719b27b05e88ca8cdc1",
+    "9b70a6c81c7a3d227317bf7a8cd92a4e6a5d8dcb",
+    "b3a433f8ba31354cfe61054176789392b5a2f7d7",
+    "cd2bdcbae15fdcb3ae248f19edae50ad4aca310e",
+    "d951dff3b9786fafc2d8348d541511d80f37e592",
+    "e46aafd9790ced28a9ef6c1688c94bccdc4062b0",
+    "f611ba544b8e9faac726944e3e2e939b8408e0fd"
+  ],
+  "searches": [
+    {
+      "observer": "/root",
+      "when": "Before Task creation",
+      "command": "rg -n --hidden --no-ignore -g '!.git' -g '!.git/**' -g '!node_modules/**' 'ITRU-067|ITRU-066|SCRUM-89' .ai docs core templates schemas AGENTS.md",
+      "stdout": "",
+      "search_exit": 1,
+      "meaning": "No matches, including ignored current-worktree .ai state"
+    },
+    {
+      "observer": "/root/assertion_namespace_assessment",
+      "when": "Before Task creation",
+      "command_template": "git grep -n -i -e ITRU-067 -e ITRU-67 <all 23 unique local ref tips> -- . ':(exclude).tmp/**' ':(exclude).ai/local/**'",
+      "stdout": "",
+      "search_exit": 1
+    },
+    {
+      "observer": "/root/assertion_namespace_assessment",
+      "when": "Before Task creation",
+      "command_template": "rg -n --hidden -i -g '!.git' -g '!.tmp/**' -g '!.ai/local/**' -g '!**/__pycache__/**' -g '!**/node_modules/**' -e 'ITRU-0?67' <all six registered worktree roots>",
+      "stdout": "",
+      "search_exit": 1
+    },
+    {
+      "observer": "/root/assertion_namespace_assessment",
+      "when": "Supplement after creation; excludes only the new authorized Task in the current worktree",
+      "command_template": "rg -n --hidden --no-ignore -i -e 'ITRU-0?67' <each of six .ai roots>; add -g '!**/tasks/ITRU-067-scrum-86-verification-debt-phase2/**' only for current worktree",
+      "stdout_per_root": ["", "", "", "", "", ""],
+      "search_exit_per_root": [1, 1, 1, 1, 1, 1],
+      "coverage": "Task records, ignored .ai/local and reservations; no prior use found"
+    }
+  ],
+  "existing_itru_066": {
+    "path": "D:/Dev/ITRU/worktrees/itru-ui-integration/.ai/tasks/ITRU-066-scrum-89-evidence-integrity/task.yaml",
+    "id": "ITRU-066",
+    "status": "completed",
+    "jira": "SCRUM-89",
+    "human_final_approval_comment": "10762",
+    "sha256": "f9caf1da60ea645c73bf5912cb422c6556cf2ed9728fac0e10b0a66d10027279",
+    "committed_tip": "9b70a6c81c7a3d227317bf7a8cd92a4e6a5d8dcb",
+    "disposition": "Preserved; never allocated to Phase 2"
+  },
+  "finding": "ITRU-067 unused within inspected local repository records and reservations before creation",
+  "limits": "No remote fetch, full historical object traversal or external reservation service query. Direct Human instruction reserves 066 and approves candidate 067. An initial supplemental absolute-path exclusion pattern returned only the four newly-created canonical records; corrected exclusion returned no prior matches."
+}

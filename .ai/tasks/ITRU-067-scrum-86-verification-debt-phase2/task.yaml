@@ -1,0 +1,39 @@
+id: ITRU-067
+title: Core verification debt Phase 2 - static package resource expectations
+type: bugfix
+status: in_progress
+complexity: medium
+risk: low
+execution:
+  mode: standard
+workflow: standard-change
+objective: >
+  Correct only the static packaging test's three stale resource expectations
+  against accepted ITRU-062 and ITRU-064 decisions, with an unchanged-source
+  failure receipt, four focused offline tests and independent review.
+scope:
+  include:
+    - Repository and ITRU-067 identity checks and preserved baseline hashes
+    - Three expectation corrections inside PackagingTests.test_explicit_resource_allowlist
+    - One selected before test and exactly four approved after test methods
+    - Canonical Task records, scoped verification support, receipts and report
+    - Independent test-integrity/security and contract/documentation reviews
+  exclude:
+    - Shared PACKAGED_SCHEMAS, production code, runtime lookup and package configuration
+    - Schema, migration, Journal, fixture, namespace, C111 and other test remediation
+    - Native ACL, ownership, SQLite execution, containment and security probes
+    - Network, Provider operations, dependency installation and broad discovery
+    - Operational Core reader, UI integration, Option D and S0 NO-GO changes
+    - Historical Task, receipt, inventory or verification-count changes
+    - Stage, commit, push, merge, PR, release, deployment and publication
+    - Jira transitions, final Task acceptance and closure
+dependencies:
+  - ITRU-065
+quality_gates:
+  - documentation_consistency
+  - independent_review
+human_control:
+  final_review_required: true
+  architecture_changes_require_approval: true
+  breaking_schema_changes_require_approval: true
+  breaking_contract_changes_require_approval: true

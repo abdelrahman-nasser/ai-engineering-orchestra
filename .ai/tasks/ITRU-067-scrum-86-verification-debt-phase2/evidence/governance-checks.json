@@ -1,0 +1,164 @@
+{
+  "runs": [
+    {
+      "result": "PASS",
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-I",
+        "-B",
+        "D:\\Dev\\ITRU\\worktrees\\itru-core-usability\\.ai\\tasks\\ITRU-067-scrum-86-verification-debt-phase2\\verify_phase2.py",
+        "checks"
+      ],
+      "cwd": "D:\\Dev\\ITRU\\worktrees\\itru-core-usability",
+      "time_utc": "2026-10-21T10:07:02Z",
+      "checks": [
+        "Task/Workflow/used Role schemas",
+        "Task/dependency/Role/Gate identities and references",
+        "exact three-correction byte diff",
+        "protected tracked and historical receipt hashes",
+        "source-bound one-failure/four-PASS receipts",
+        "HEAD/branch/empty index and exact path scope",
+        "local Markdown references",
+        "nonreceipt whitespace",
+        "git diff --check"
+      ],
+      "markdown_references": 4,
+      "markdown_lint": "NONMANDATORY / NOT RUN; independent documentation comparison required",
+      "inputs_sha256": {
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/acceptance-criteria.md": "67b4fed4a02f233ba896308bd6c6c94274eb75136cd278410bd297f3617cdbd9",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/context.md": "c880d483a3555bc978585f7cd397d63a4d7210b4d226c53ace87f9eeed90cfbe",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/after.txt": "a2b02455bae9d92f986fccee2d6880e229cc70eca061c56cdb13f36fc12eb629",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/baseline.json": "a4b2d207970d2d154962dedf0a9a5f416700b0ca4269a3a313e2840f56017e55",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/before.txt": "edee0fa80fe7d55f6246deac879ad99bc9d770d4dab78370c5c7c24d43c4abd0",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/commands.jsonl": "ec27993af5a2a2f9c12c64cd5e4cc75fc011ba5af71949ba12f4173bd8e30b2c",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/identity.json": "ea90ec0f92bfd41479dc9a19774572fbed8c133b9c173b6793fedd80d9ddfd68",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/review.md": "b0d410afc478214d5024d8344a994311da04c1ebeda0b444680729dc663d94fe",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/task.yaml": "a51f8fbb56fe1258d8ffee93f2fa9187e41a1f551be1787240060fa77b983b88",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/verify_phase2.py": "da2ea186c880bbe4dc20122312755eb1f0d37315ce51a0149897ffdae394a6b8",
+        "tests/test_packaging.py": "e9d4ccb8580fff9a8c0fae6e9ac9960b3ae7d686e18884dad596a99f874049b4"
+      },
+      "candidate_paths": [
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/acceptance-criteria.md",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/context.md",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/after.txt",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/baseline.json",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/before.txt",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/commands.jsonl",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/governance-checks.json",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/identity.json",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/review.md",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/task.yaml",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/verify_phase2.py",
+        "tests/test_packaging.py"
+      ]
+    },
+    {
+      "result": "PASS",
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-I",
+        "-B",
+        "D:\\Dev\\ITRU\\worktrees\\itru-core-usability\\.ai\\tasks\\ITRU-067-scrum-86-verification-debt-phase2\\verify_phase2.py",
+        "checks"
+      ],
+      "cwd": "D:\\Dev\\ITRU\\worktrees\\itru-core-usability",
+      "time_utc": "2026-10-21T10:08:51Z",
+      "checks": [
+        "Task/Workflow/used Role schemas",
+        "Task/dependency/Role/Gate identities and references",
+        "exact three-correction byte diff",
+        "protected tracked and historical receipt hashes",
+        "source-bound one-failure/four-PASS receipts",
+        "HEAD/branch/empty index and exact path scope",
+        "local Markdown references",
+        "nonreceipt whitespace",
+        "git diff --check"
+      ],
+      "markdown_references": 13,
+      "markdown_lint": "NONMANDATORY / NOT RUN; independent documentation comparison required",
+      "inputs_sha256": {
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/acceptance-criteria.md": "22f5804a129014ae6fe3131beef83fb1e2e94089b80d0c7f533ee11d37ba997f",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/context.md": "4bedd32eead4859d78016969fb3b02c86120050a0cb11e140b539b583ff893f3",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/after.txt": "a2b02455bae9d92f986fccee2d6880e229cc70eca061c56cdb13f36fc12eb629",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/baseline.json": "a4b2d207970d2d154962dedf0a9a5f416700b0ca4269a3a313e2840f56017e55",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/before.txt": "edee0fa80fe7d55f6246deac879ad99bc9d770d4dab78370c5c7c24d43c4abd0",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/commands.jsonl": "ec27993af5a2a2f9c12c64cd5e4cc75fc011ba5af71949ba12f4173bd8e30b2c",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/identity.json": "ea90ec0f92bfd41479dc9a19774572fbed8c133b9c173b6793fedd80d9ddfd68",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/phase2-report.md": "61707bf60aa2dc9687ee942b1359fd5f9fc5e9546daaabdc1065f4d5fdc44870",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/review.md": "e4015571b1fab8bbd265205fb1347e0f824d220b0975fad988ff38c928f94829",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/task.yaml": "a51f8fbb56fe1258d8ffee93f2fa9187e41a1f551be1787240060fa77b983b88",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/verify_phase2.py": "da2ea186c880bbe4dc20122312755eb1f0d37315ce51a0149897ffdae394a6b8",
+        "tests/test_packaging.py": "e9d4ccb8580fff9a8c0fae6e9ac9960b3ae7d686e18884dad596a99f874049b4"
+      },
+      "candidate_paths": [
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/acceptance-criteria.md",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/context.md",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/after.txt",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/baseline.json",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/before.txt",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/commands.jsonl",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/governance-checks.json",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/identity.json",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/phase2-report.md",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/review.md",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/task.yaml",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/verify_phase2.py",
+        "tests/test_packaging.py"
+      ]
+    },
+    {
+      "result": "PASS",
+      "command": [
+        "C:\\Users\\Abdelrahman\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-I",
+        "-B",
+        "D:\\Dev\\ITRU\\worktrees\\itru-core-usability\\.ai\\tasks\\ITRU-067-scrum-86-verification-debt-phase2\\verify_phase2.py",
+        "checks"
+      ],
+      "cwd": "D:\\Dev\\ITRU\\worktrees\\itru-core-usability",
+      "time_utc": "2026-10-21T10:11:41Z",
+      "checks": [
+        "Task/Workflow/used Role schemas",
+        "Task/dependency/Role/Gate identities and references",
+        "exact three-correction byte diff",
+        "protected tracked and historical receipt hashes",
+        "source-bound one-failure/four-PASS receipts",
+        "HEAD/branch/empty index and exact path scope",
+        "local Markdown references",
+        "nonreceipt whitespace",
+        "git diff --check"
+      ],
+      "markdown_references": 14,
+      "markdown_lint": "NONMANDATORY / NOT RUN; independent documentation comparison required",
+      "inputs_sha256": {
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/acceptance-criteria.md": "a1205a01909614e29ef06c80b5bcedf238a81fbf96136a42f627a281bb42f8e8",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/context.md": "4bedd32eead4859d78016969fb3b02c86120050a0cb11e140b539b583ff893f3",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/after.txt": "a2b02455bae9d92f986fccee2d6880e229cc70eca061c56cdb13f36fc12eb629",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/baseline.json": "a4b2d207970d2d154962dedf0a9a5f416700b0ca4269a3a313e2840f56017e55",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/before.txt": "edee0fa80fe7d55f6246deac879ad99bc9d770d4dab78370c5c7c24d43c4abd0",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/commands.jsonl": "ec27993af5a2a2f9c12c64cd5e4cc75fc011ba5af71949ba12f4173bd8e30b2c",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/identity.json": "ea90ec0f92bfd41479dc9a19774572fbed8c133b9c173b6793fedd80d9ddfd68",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/phase2-report.md": "630007f124bc0d31bfafc000b82203cfac594b5a9ed207e07944bcbaaf6e8ae6",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/review.md": "86cf214c1e39806b8e4cf97b2428d22bfa5a57128572792f61701dc9d632c9f6",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/task.yaml": "a51f8fbb56fe1258d8ffee93f2fa9187e41a1f551be1787240060fa77b983b88",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/verify_phase2.py": "da2ea186c880bbe4dc20122312755eb1f0d37315ce51a0149897ffdae394a6b8",
+        "tests/test_packaging.py": "e9d4ccb8580fff9a8c0fae6e9ac9960b3ae7d686e18884dad596a99f874049b4"
+      },
+      "candidate_paths": [
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/acceptance-criteria.md",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/context.md",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/after.txt",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/baseline.json",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/before.txt",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/commands.jsonl",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/governance-checks.json",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/evidence/identity.json",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/phase2-report.md",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/review.md",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/task.yaml",
+        ".ai/tasks/ITRU-067-scrum-86-verification-debt-phase2/verify_phase2.py",
+        "tests/test_packaging.py"
+      ]
+    }
+  ]
+}

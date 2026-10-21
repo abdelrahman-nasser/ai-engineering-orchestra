@@ -494,11 +494,13 @@ class PackagingTests(unittest.TestCase):
         self.assertEqual(config["packages"],
                          ["itru", "itru._schemas",
                           "itru._roles",
-                          "itru._sqlite_admission_migrations"])
+                          "itru._sqlite_admission_migrations",
+                          "itru._sqlite_journal_migrations"])
         self.assertEqual(config["package-data"], {
-            "itru._schemas": list(PACKAGED_SCHEMAS),
+            "itru._schemas": ["task-run-state-event.schema.json", *PACKAGED_SCHEMAS],
             "itru._roles": ["*.yaml"],
             "itru._sqlite_admission_migrations": ["*.sql"],
+            "itru._sqlite_journal_migrations": ["*.sql"],
         })
 
     def test_documented_scope_is_local_and_verify_is_portable(self):

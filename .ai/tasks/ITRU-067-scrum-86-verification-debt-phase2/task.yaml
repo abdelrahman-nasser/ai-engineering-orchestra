@@ -1,7 +1,7 @@
 id: ITRU-067
 title: Core verification debt Phase 2 - static package resource expectations
 type: bugfix
-status: in_progress
+status: completed
 complexity: medium
 risk: low
 execution:
@@ -18,15 +18,17 @@ scope:
     - One selected before test and exactly four approved after test methods
     - Canonical Task records, scoped verification support, receipts and report
     - Independent test-integrity/security and contract/documentation reviews
+    - Human-approved ITRU-067-only closure documentation and lifecycle bookkeeping
   exclude:
     - Shared PACKAGED_SCHEMAS, production code, runtime lookup and package configuration
     - Schema, migration, Journal, fixture, namespace, C111 and other test remediation
     - Native ACL, ownership, SQLite execution, containment and security probes
     - Network, Provider operations, dependency installation and broad discovery
     - Operational Core reader, UI integration, Option D and S0 NO-GO changes
-    - Historical Task, receipt, inventory or verification-count changes
-    - Stage, commit, push, merge, PR, release, deployment and publication
-    - Jira transitions, final Task acceptance and closure
+    - Other Tasks, existing receipts, inventories and historical verification-count changes
+    - Stage/commit beyond the single Human-authorized closure-only local commit
+    - Push, merge, PR, tag, release, deployment and publication
+    - Jira transitions, Phase 3 and broader Core verification-debt remediation
 dependencies:
   - ITRU-065
 quality_gates:

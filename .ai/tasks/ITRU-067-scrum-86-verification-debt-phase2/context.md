@@ -1,5 +1,9 @@
 # ITRU-067 Phase 2 context
 
+The implementation-authority and handoff sections below are historical. The final
+acceptance section records later Human authority for ITRU-067 only and supersedes
+their pending-checkpoint, pending-acceptance and uncommitted-state descriptions.
+
 ## Authority and identity
 
 The Human's October 21, 2026 APPROVE IMPLEMENTATION AND TESTING instruction,
@@ -74,3 +78,45 @@ historical receipts remain unchanged. Jira SCRUM-86 remains open.
 Leave this Task `in_progress`, unstaged and uncommitted. STOP AT HUMAN CONTROL
 for a separate checkpoint decision after implementation, validation and review.
 Final Human acceptance and Task closure remain pending.
+
+## Final Human acceptance and closure authority - October 21, 2026
+
+Final Human decision: **APPROVE - October 21, 2026**, SCRUM-86 authorization
+comment #10778. The attached direct Human instruction is approval evidence;
+no fresh Jira query or transition is claimed. Accepted implementation commit:
+`4db4785916ce721c6769bb43ac9dcfd0519af861`, parent
+`4775d649e13639504a8007e57890f80c699bb1be`, on the expected branch.
+
+Earlier Human checkpoint authorization #10770 permitted exactly that one local
+implementation commit. The exact 13-file checkpoint, matching reviewed blobs,
+retained one-test FAIL/four-test PASS and clean entry were verified before
+closure edits. H01 is now reconciled; the original handoff records remain history.
+
+The new decision grants exactly one conditional closure-only local commit:
+`docs(alpha): finalize ITRU-067 phase 2 verification task closure`.
+Only task.yaml, acceptance-criteria.md, context.md, review.md, the closure addendum
+in phase2-report.md, and new evidence/closure-checks.json may change.
+
+Final acceptance is granted. Fresh closure validation passed, and both independent
+actual-change reviews APPROVE without findings. Closure documentation_consistency
+and independent_review PASS. H02 is satisfied; Task status is `completed` with
+all 11/11 criteria checked. Final candidate checks and independent applicability
+confirmation bind these completed records before the conditional closure commit.
+The fresh [closure receipt](evidence/closure-checks.json) records actual mechanical
+checks, input identities and review dispositions, without adding a Core schema.
+Additional snapshots and staged/post-commit evidence stay ignored under
+`.ai/local/itru-067-closure/`.
+
+Existing implementation reviews and Gates remain applicable to unchanged code
+and receipts. Separate closure-specific documentation_consistency and
+independent_review verdicts PASS for these new records. No tests are
+rerun, no old helper mode is replayed and no implementation receipt is rewritten.
+Scoped Markdownlint remains NONMANDATORY / NOT RUN under the recorded Check/Gate
+determination, with no waiver or full-Core green claim.
+
+SCRUM-86 remains OPEN for historical 24 failures, 275 errors, five skips, full C109
+NOT RUN and 132 broader Markdown findings. No built-wheel correctness, Journal
+runtime health, native security or operational reader verification is established.
+Option D/S0 NO-GO remains binding. No Phase 3, other-lane work, Jira transition,
+push, merge, PR, tag, release, deployment or publication is authorized.
+STOP AT HUMAN CONTROL after the single verified local closure commit.
